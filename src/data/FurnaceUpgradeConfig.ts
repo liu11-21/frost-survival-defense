@@ -9,8 +9,8 @@ export const FURNACE = {
   healMinimum: 5,
   healTick: 0.5,
   startLevel: 1,
-  /** Endless cap. The data structure allows raising this later. */
-  maxLevel: 20,
+  /** Furnace progression cap shared by stage and endless modes. */
+  maxLevel: 100,
   radius: 2.3,
 };
 

@@ -1,6 +1,6 @@
 import { Color3, Mesh, MeshBuilder, PBRMaterial, Scene, TransformNode, Vector3 } from "@babylonjs/core";
 import { allocateDamageId, type Damageable, type TargetKind } from "../combat/Damageable";
-import { advanceStructureSelfRepair } from "../combat/StructureSelfRepair";
+import { advanceStructureSelfRepair, STRUCTURE_SELF_REPAIR } from "../combat/StructureSelfRepair";
 import { FURNACE, furnaceMaxHealth } from "../data/FurnaceUpgradeConfig";
 import { MaterialFactory } from "../scene/MaterialFactory";
 import type { LightingSetup } from "../scene/LightingSetup";
@@ -39,6 +39,7 @@ export class Furnace implements Damageable {
   private glowRange = 18;
   private sinceDamage = 0;
   private selfHealTimer = 0;
+  private fixedSelfHealApplied = false;
   private hitFlash = 0;
 
   constructor(
@@ -175,6 +176,7 @@ export class Furnace implements Damageable {
     this.health -= amount;
     this.sinceDamage = 0;
     this.selfHealTimer = 0;
+    this.fixedSelfHealApplied = false;
     this.hitFlash = 1;
     if (this.health <= 0) {
       this.health = 0;
@@ -202,6 +204,9 @@ export class Furnace implements Damageable {
   restoreToFull(): void {
     this.health = this.maxHealth;
     this._alive = true;
+    this.sinceDamage = 0;
+    this.selfHealTimer = 0;
+    this.fixedSelfHealApplied = false;
   }
 
   resetForNewRun(): void {
@@ -211,6 +216,7 @@ export class Furnace implements Damageable {
     this._alive = true;
     this.sinceDamage = 0;
     this.selfHealTimer = 0;
+    this.fixedSelfHealApplied = false;
     this.upgradeAnim = -1;
     this.heat.setRadius(13);
     for (const part of this.upgradeParts) part.setEnabled(false);
@@ -232,9 +238,13 @@ export class Furnace implements Damageable {
         this.maxHealth,
         this.sinceDamage,
         this.selfHealTimer,
+        this.fixedSelfHealApplied,
+        this.tier,
         dt,
+        furnaceMaxHealth(STRUCTURE_SELF_REPAIR.fixedBurstStartLevel),
       );
       this.selfHealTimer = repair.timer;
+      this.fixedSelfHealApplied = repair.fixedBurstApplied;
       if (repair.amount > 0) {
         this.health = Math.min(this.maxHealth, this.health + repair.amount);
         healed = true;

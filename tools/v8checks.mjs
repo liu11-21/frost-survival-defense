@@ -282,6 +282,23 @@ export async function runV8Checks(ctx) {
 
   const wave10 = await call("endlessWavePreview", 10, 2);
   check("wave 10 is an elite wave: no boss, includes a level-4-tier unit", !wave10.boss && wave10.groups.some((g) => ["juggernaut", "breacher", "icearmor", "commander"].includes(g.enemyId)), JSON.stringify(wave10.groups));
+  const wave11 = await call("endlessWavePreview", 11, 2);
+  const wave11Scaling = await call("endlessScalingAt", 11);
+  check(
+    "wave 11 resets to a controlled 16-18-enemy step instead of the old post-elite spike",
+    wave11.individuals >= 16 && wave11.individuals <= 18 && wave11.individuals < wave10.individuals,
+    JSON.stringify({ wave10: wave10.individuals, wave11: wave11.individuals, groups: wave11.groups }),
+  );
+  check(
+    "wave 11 high-tier presence stays near the new 25% composition budget",
+    wave11.highTierIndividuals / wave11.individuals <= 0.3,
+    JSON.stringify(wave11),
+  );
+  check(
+    "wave 11 uses the softened 8%-health and 5%-attack linear scaling",
+    Math.abs(wave11Scaling.health - 1.8) < 1e-6 && Math.abs(wave11Scaling.attack - 1.5) < 1e-6,
+    JSON.stringify(wave11Scaling),
+  );
   const wave15 = await call("endlessWavePreview", 15, 2);
   check("wave 15 is a strengthened elite: no full boss, includes the level-5 unit", !wave15.boss && wave15.groups.some((g) => g.enemyId === "bombardier"), JSON.stringify(wave15.groups));
 

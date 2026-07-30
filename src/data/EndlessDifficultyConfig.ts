@@ -21,24 +21,26 @@ export const ENDLESS_DIFFICULTY = {
   laterBossEscortCount: 2,
 
   /** Soft field-cap targets (total individual units this wave aims for), one
-   * tier per bracket. Difficulty before wave 11 comes mostly from *count*. */
+   * tier per bracket. Wave 11 intentionally drops below the wave-10 elite
+   * headcount, then resumes a smooth climb instead of spiking immediately. */
   fieldCapBrackets: [
-    { throughWave: 5, min: 10, max: 20 },
-    { throughWave: 10, min: 15, max: 30 },
-    { throughWave: 15, min: 20, max: 40 },
-    { throughWave: 20, min: 25, max: 50 },
+    { throughWave: 5, min: 8, max: 14 },
+    { throughWave: 10, min: 12, max: 20 },
+    { throughWave: 15, min: 14, max: 26 },
+    { throughWave: 20, min: 20, max: 36 },
   ],
   /** Above wave 20, the cap keeps climbing at the last bracket's own slope. */
-  fieldCapGrowthPastWave20: 1.2,
+  fieldCapGrowthPastWave20: 0.8,
 
   /** Share of the wave's spend that may go to level-3+ enemies. Waves 1-10
    * are almost pure numbers; the mix only really opens up from wave 11, and
    * boss-tier composition only ramps once bosses themselves have started. */
   highTierShareByWave: [
     { throughWave: 10, share: 0.15 },
-    { throughWave: 19, share: 0.4 },
-    { throughWave: 30, share: 0.55 },
-    { throughWave: Infinity, share: 0.65 },
+    { throughWave: 14, share: 0.25 },
+    { throughWave: 19, share: 0.35 },
+    { throughWave: 30, share: 0.5 },
+    { throughWave: Infinity, share: 0.6 },
   ],
 };
 

@@ -19,7 +19,7 @@ export function runFrame(s: GameSystems, dt: number, support: SupportSystems): v
   s.heroSkills.update(dt);
   s.squads.update(dt, s.hero.alive ? s.hero.position : null);
   s.navigator.update(dt);
-  s.buildings.update(dt, s.ctx, s.hero.position, s.run.productionRate);
+  s.buildings.update(dt, s.ctx, s.hero.position, s.run.productionRate, s.furnace.currentLevel);
   s.projectiles.update(dt);
   s.world.removeDead();
 

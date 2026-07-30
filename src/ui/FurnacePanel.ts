@@ -1,6 +1,7 @@
 import { costLine, costText } from "./CostLine";
 import { costBreakdown } from "./PanelText";
 import type { PanelDeps, PanelResult } from "./ActionPanels";
+import { FURNACE } from "../data/FurnaceUpgradeConfig";
 
 /**
  * The furnace upgrade panel: exact before/after numbers, the full cost, and —
@@ -26,6 +27,21 @@ export function renderFurnacePanel(
   const cost = run.furnaceUpgradeCost;
   const missing = costBreakdown(store, cost);
   const preview = run.previewNextLevel();
+  const repairLine =
+    `設施持續自修：每秒 ${(preview.repairPercent * 100).toFixed(0)}% → ` +
+    `${(preview.nextRepairPercent * 100).toFixed(0)}%（未受擊 15 秒後）`;
+  const fixedLine =
+    `8 秒一次性修復：${preview.fixedRepair} → ${preview.nextFixedRepair} HP（每次受擊後重置）`;
+
+  if (furnace.currentLevel >= FURNACE.maxLevel) {
+    list.innerHTML = `
+      <div class="entry static"><div class="entry-main">
+        <div class="entry-name">火爐已達最高等級 Lv.${FURNACE.maxLevel}</div>
+        <div class="entry-desc">設施持續自修：每秒 ${(preview.repairPercent * 100).toFixed(0)}%（未受擊 15 秒後）</div>
+        <div class="entry-desc">8 秒一次性修復：${preview.fixedRepair} HP（每次受擊後重置）</div>
+      </div></div>`;
+    return null;
+  }
 
   list.innerHTML = `
     <div class="entry static"><div class="entry-main">
@@ -35,6 +51,8 @@ export function renderFurnacePanel(
       <div class="entry-desc">近戰攻擊：${Math.round(heroStats.meleeAttack)} → ${preview.melee}</div>
       <div class="entry-desc">攻擊間隔：${heroStats.attackInterval.toFixed(2)} 秒 → ${preview.interval.toFixed(2)} 秒</div>
       <div class="entry-desc">火爐最大生命：${furnace.maxHealth} → ${preview.furnaceHealth}</div>
+      <div class="entry-desc">${repairLine}</div>
+      <div class="entry-desc">${fixedLine}</div>
       <div class="entry-desc">${preview.squadLimitNote}</div>
     </div></div>`;
 

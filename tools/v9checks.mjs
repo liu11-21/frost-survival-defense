@@ -12,6 +12,7 @@ export async function runV9Checks(ctx) {
   console.log("\n> minimap snapshot and full-map toggle");
   await call("startStage", "stage-1");
   await step(0.016, 20);
+  await call("setPrepCountdown", 9999);
   const snap = await call("minimapSnapshot");
   check("minimap snapshot reports the hero's own position", snap && Number.isFinite(snap.hero.x) && Number.isFinite(snap.hero.z), snap?.hero);
   check("minimap snapshot reports all four wall sides", Array.isArray(snap.wallSides) && snap.wallSides.length === 4, snap?.wallSides?.length);
@@ -40,6 +41,25 @@ export async function runV9Checks(ctx) {
     capacity.count === 2 && capacity.units === 4,
     capacity,
   );
+  await step(0.016, 10);
+  const bottomPanelLayout = await page.evaluate(() => {
+    const furnace = document.querySelector(".furnace-box")?.getBoundingClientRect();
+    const squad = document.querySelector(".squad-hud")?.getBoundingClientRect();
+    if (!furnace || !squad) return null;
+    return {
+      furnaceRight: furnace.right,
+      furnaceBottom: furnace.bottom,
+      squadLeft: squad.left,
+      squadBottom: squad.bottom,
+    };
+  });
+  check(
+    "remaining-squad panel sits immediately to the right of the bottom-centre furnace panel",
+    bottomPanelLayout &&
+      bottomPanelLayout.squadLeft >= bottomPanelLayout.furnaceRight - 1 &&
+      Math.abs(bottomPanelLayout.squadBottom - bottomPanelLayout.furnaceBottom) <= 2,
+    bottomPanelLayout,
+  );
 
   // -------------------------------------------------------- attack range --
   console.log("\n> attack-range display reflects a built tower's real data");
@@ -59,7 +79,8 @@ export async function runV9Checks(ctx) {
   await step(0.016, 20);
   check("the range overlay turns off once the hero leaves", (await call("rangeDisplayState")).outerOn === false);
 
-  console.log("\n> attackable facilities share the furnace self-repair cadence");
+  console.log("\n> attackable facilities use level-scaled percentage repair plus the post-Lv.10 burst");
+  await call("setFurnaceLevel", 1);
   await call("damageSlot", "northFrontA", 100);
   const damagedFacility = await call("slotHealth", "northFrontA");
   await step(0.016, 920);
@@ -71,10 +92,54 @@ export async function runV9Checks(ctx) {
   );
   await step(0.016, 60);
   const afterRepairPulse = await call("slotHealth", "northFrontA");
+  const levelOneRepair = afterRepairPulse.health - beforeRepairDelay.health;
   check(
-    "the facility begins fixed repair pulses after the shared delay",
-    afterRepairPulse.health > beforeRepairDelay.health && afterRepairPulse.health <= afterRepairPulse.max,
+    "Lv.1 begins repairing 1% of maximum HP per second after the shared delay",
+    Math.abs(levelOneRepair - afterRepairPulse.max * 0.005) < 0.01,
     { beforeRepairDelay, afterRepairPulse },
+  );
+
+  await call("setFurnaceLevel", 10);
+  await call("damageSlot", "northFrontA", 200);
+  const levelTenDamaged = await call("slotHealth", "northFrontA");
+  await step(0.016, 980);
+  const levelTenRepaired = await call("slotHealth", "northFrontA");
+  const levelTenRepair = levelTenRepaired.health - levelTenDamaged.health;
+  check(
+    "Lv.10 reaches the 10%-of-maximum-HP-per-second repair cap",
+    Math.abs(levelTenRepair - levelTenRepaired.max * 0.05) < 0.01,
+    { levelTenDamaged, levelTenRepaired },
+  );
+
+  await call("setFurnaceLevel", 11);
+  await call("damageSlot", "northFrontA", 200);
+  const levelElevenDamaged = await call("slotHealth", "northFrontA");
+  await step(0.016, 480);
+  const beforeFixedBurst = await call("slotHealth", "northFrontA");
+  check(
+    "the Lv.11 fixed repair does not fire before 8 quiet seconds",
+    beforeFixedBurst.health === levelElevenDamaged.health,
+    { levelElevenDamaged, beforeFixedBurst },
+  );
+  await step(0.016, 40);
+  const afterFixedBurst = await call("slotHealth", "northFrontA");
+  check(
+    "Lv.11 restores 10% of that facility's maximum HP once after 8 quiet seconds",
+    Math.abs(afterFixedBurst.health - beforeFixedBurst.health - afterFixedBurst.max * 0.1) < 0.01,
+    { beforeFixedBurst, afterFixedBurst },
+  );
+  const burstBase = await call("structureRepairBurstAt", 11, 60000);
+  const burstNext = await call("structureRepairBurstAt", 12, 60000);
+  const burstAtTwenty = await call("structureRepairBurstAt", 20, 60000);
+  check(
+    "post-Lv.11 burst growth is a flat 5,000 HP per level, not another percentage",
+    burstBase === 6000 && burstNext === 11000 && burstAtTwenty === 51000,
+    { burstBase, burstNext, burstAtTwenty },
+  );
+  check(
+    "furnace upgrade level is clamped at the new maximum of 100",
+    (await call("setFurnaceLevel", 999)) === 100 && (await call("furnaceLevel")) === 100,
+    await call("furnaceLevel"),
   );
 
   // ------------------------------------------------------ build menu (UI) --

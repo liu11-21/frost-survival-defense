@@ -28,6 +28,10 @@ import type { HeroStats } from "../hero/HeroStats";
 import type { HeroController } from "../hero/HeroController";
 import type { HeroSkills } from "../hero/HeroSkills";
 import { HERO_REVIVE } from "../data/UnitDefinitions";
+import {
+  structureRepairFixedBurst,
+  structureRepairPercentPerSecond,
+} from "../combat/StructureSelfRepair";
 
 export interface RunDeps {
   upgrades: UpgradeState;
@@ -221,18 +225,27 @@ export class RunController {
     melee: number;
     interval: number;
     furnaceHealth: number;
+    repairPercent: number;
+    nextRepairPercent: number;
+    fixedRepair: number;
+    nextFixedRepair: number;
     squadLimitNote: string;
   } {
     const current = this.deps.furnace.currentLevel;
+    const next = Math.min(FURNACE.maxLevel, current + 1);
     const stats = this.deps.heroStats;
     const before = current;
-    stats.setFurnaceLevel(current + 1);
+    stats.setFurnaceLevel(next);
     const preview = {
       heroHealth: stats.maxHealth,
       ranged: Math.round(stats.rangedAttack),
       melee: Math.round(stats.meleeAttack),
       interval: stats.attackInterval,
-      furnaceHealth: furnaceMaxHealth(current + 1),
+      furnaceHealth: furnaceMaxHealth(next),
+      repairPercent: structureRepairPercentPerSecond(current),
+      nextRepairPercent: structureRepairPercentPerSecond(next),
+      fixedRepair: structureRepairFixedBurst(current, furnaceMaxHealth(11)),
+      nextFixedRepair: structureRepairFixedBurst(next, furnaceMaxHealth(11)),
       squadLimitNote:
         this.rules.squadLimitPerFurnaceLevel > 0
           ? "小隊上限：" + this.squadLimit + " → " + (this.squadLimit + this.rules.squadLimitPerFurnaceLevel)

@@ -6,6 +6,8 @@ import {
   isLevel6BossWave,
 } from "../data/EndlessDifficultyConfig";
 import { buildEndlessWave } from "../data/WaveDefinitions";
+import { ENEMY_BY_ID } from "../data/EnemyDefinitions";
+import { endlessAttackMultiplier, endlessHealthMultiplier } from "../data/GameModeRules";
 import type { GameSystems } from "./GameSystems";
 
 /**
@@ -36,6 +38,10 @@ export function createV8DebugApi(s: GameSystems): Record<string, unknown> {
       phase: s.waves.currentPhase,
       remaining: Number(s.waves.timeToNextWave.toFixed(2)),
     }),
+    endlessScalingAt: (wave: number) => ({
+      health: Number(endlessHealthMultiplier(wave).toFixed(3)),
+      attack: Number(endlessAttackMultiplier(wave).toFixed(3)),
+    }),
     bossEligibility: (wave: number) => ({
       isLevel6BossWave: isLevel6BossWave(wave),
       healthMultiplier: Number(bossHealthMultiplier(wave).toFixed(3)),
@@ -45,9 +51,19 @@ export function createV8DebugApi(s: GameSystems): Record<string, unknown> {
      * simulating anything — the cheap way to audit the 1-20 curve. */
     endlessWavePreview: (wave: number, laneCount = 2) => {
       const built = buildEndlessWave(wave, laneCount);
+      let individuals = 0;
+      let highTierIndividuals = 0;
+      for (const group of built.groups) {
+        const def = ENEMY_BY_ID.get(group.enemyId);
+        const count = group.squads * (def?.squadSize ?? 0);
+        individuals += count;
+        if ((def?.level ?? 1) >= 3) highTierIndividuals += count;
+      }
       return {
         boss: built.boss === true,
         groups: built.groups.map((g) => ({ enemyId: g.enemyId, squads: g.squads })),
+        individuals,
+        highTierIndividuals,
       };
     },
   };

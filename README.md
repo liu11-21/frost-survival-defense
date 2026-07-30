@@ -136,14 +136,21 @@ rises through **lane count, enemy mix and starting resources**, not inflated ene
 **無限 Endless** — one continuous run, linear scaling only:
 
 ```text
-enemy health = 1 + 0.12 × (wave − 1)
-enemy attack = 1 + 0.08 × (wave − 1)
-enemy count  = 1 + 0.10 × (wave − 1)
+enemy health = 1 + 0.08 × (wave − 1)
+enemy attack = 1 + 0.05 × (wave − 1)
+enemy count  = 1 + 0.06 × (wave − 1)
 ```
 
-Every 10 waves: one more lane (max 6), a boss wave, and a **three-choice run upgrade**. Furnace
-levels add **+2 squad slots** here and nowhere else. Scores go to a **local `localStorage`
+Every 10 waves: one more lane (max 6) and a **three-choice run upgrade**. The first Boss arrives at
+wave 20 and then every 10 waves. Furnace levels add **+2 squad slots** here and nowhere else. Scores go to a **local `localStorage`
 leaderboard** — per-browser only, explicitly not a verifiable global board.
+
+Furnace upgrades now cap at **Lv.100**. The furnace and every attackable facility share the same
+level-scaled recovery: after 15 seconds without taking damage they restore **1% of maximum HP per
+second per furnace level**, capped at 10%/s from Lv.10 onward. Every level above 10 also adds one
+burst after 8 quiet seconds: Lv.11 starts at **10% of that structure's Lv.11 maximum HP**, and every
+later level adds a flat **5,000 HP** instead of another percentage increase. The burst can occur once
+per damage cycle.
 
 ---
 
@@ -418,9 +425,10 @@ whenever a claim would pay out, refreshed on the same per-frame HUD pass everyth
 before most runs have a real economy, army or perimeter. Endless now runs three distinct phases:
 
 - **Waves 1-9, 11-14, 16-19** — regular waves, composed against a soft field-cap target that climbs by
-  bracket (10-20 units for waves 1-5, 15-30 for 6-10, 20-40 for 11-15, 25-50 for 16-20, then +1.2/wave
-  after) and a level-3+ "high-tier share" ceiling that only opens up from wave 11 onward (15% through
-  wave 10, 40% through 19, 55% through 30, 65% after) — `EndlessDifficultyConfig.ts`.
+  bracket (8-14 units for waves 1-5, 12-20 for 6-10, 14-26 for 11-15, 20-36 for 16-20, then +0.8/wave
+  after). Wave 11 deliberately resets to roughly 16-18 units instead of spiking after the elite wave.
+  The level-3+ "high-tier share" ceiling is 15% through wave 10, 25% through 14, 35% through 19,
+  50% through 30 and 60% after — `EndlessDifficultyConfig.ts`.
 - **Wave 10** — an elite wave: one existing level-4 unit (juggernaut) alongside grunt/slinger/bruiser
   fodder. No Boss.
 - **Wave 15** — a strengthened elite: bombardier (level 5) at +30% HP/+15% damage, alongside icearmor

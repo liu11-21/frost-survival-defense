@@ -123,11 +123,19 @@ const HTML = `
     </div>
   </div>
 
-  <div class="panel-box furnace-box">
-    <div class="bar-label">火爐 <span id="ui-furnace-level">Lv.1</span> <span id="ui-furnace-text">30000 / 30000</span></div>
-    <div class="bar bar-warm"><i id="ui-furnace-bar"></i></div>
-    <button class="mini-btn" id="ui-upgrade">升級火爐 (U)</button>
-    <div class="squad-line">小隊 <b id="ui-squads">0 / 8</b></div>
+  <div class="bottom-centre">
+    <div class="panel-box furnace-box">
+      <div class="bar-label">火爐 <span id="ui-furnace-level">Lv.1</span> <span id="ui-furnace-text">30000 / 30000</span></div>
+      <div class="bar bar-warm"><i id="ui-furnace-bar"></i></div>
+      <button class="mini-btn" id="ui-upgrade">升級火爐 (U)</button>
+      <div class="squad-line">小隊 <b id="ui-squads">0 / 8</b></div>
+    </div>
+
+    <div class="squad-hud" id="ui-squad-hud">
+      <div class="squad-title" id="ui-squad-header">我方小隊　0 / 8</div>
+      <div class="squad-list" id="ui-squad-list"></div>
+      <div class="squad-foot">點擊兵種可高亮，Esc 取消</div>
+    </div>
   </div>
 
   <div class="panel-box rebuild-box" id="ui-rebuild-box">
@@ -168,12 +176,6 @@ const HTML = `
 <div class="lane-hud" id="ui-lane-hud">
   <div class="lane-title">來襲路線</div>
   <div class="lane-list" id="ui-lane-list"></div>
-</div>
-
-<div class="squad-hud" id="ui-squad-hud">
-  <div class="squad-title" id="ui-squad-header">我方小隊　0 / 8</div>
-  <div class="squad-list" id="ui-squad-list"></div>
-  <div class="squad-foot">點擊兵種可高亮，Esc 取消</div>
 </div>
 
 <div class="edge-layer" id="ui-edge-layer"></div>

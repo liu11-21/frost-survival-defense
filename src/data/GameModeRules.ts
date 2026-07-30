@@ -104,9 +104,9 @@ export const LEVEL_BY_ID = new Map(LEVELS.map((l) => [l.id, l]));
 
 /** Endless scaling. Linear on purpose — nothing here compounds. */
 export const ENDLESS_SCALING = {
-  healthPerWave: 0.12,
-  attackPerWave: 0.08,
-  countPerWave: 0.1,
+  healthPerWave: 0.08,
+  attackPerWave: 0.05,
+  countPerWave: 0.06,
   startingLanes: 2,
   maxLanes: 6,
   /** A new lane and a boss every this many waves. */

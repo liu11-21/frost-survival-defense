@@ -53,6 +53,7 @@ export class Building implements Damageable {
   private attackTimer = 0;
   private sinceDamaged = Infinity;
   private selfHealTimer = 0;
+  private fixedSelfHealApplied = false;
   private demolishProgress = 0;
   private demolishing = false;
   /** True from the instant combat kills this structure until its collapse
@@ -164,6 +165,7 @@ export class Building implements Damageable {
     this.health -= amount;
     this.sinceDamaged = 0;
     this.selfHealTimer = 0;
+    this.fixedSelfHealApplied = false;
     if (this.health <= 0) {
       this.health = 0;
       this._alive = false;
@@ -187,7 +189,14 @@ export class Building implements Damageable {
    * Advances construction, production and — for towers — combat.
    * `productionRate` folds in the endless-mode production upgrade.
    */
-  update(dt: number, ctx: CombatContext, productionRate: number, autoCollect: boolean, buildSpeedBonus = 0): void {
+  update(
+    dt: number,
+    ctx: CombatContext,
+    productionRate: number,
+    autoCollect: boolean,
+    buildSpeedBonus = 0,
+    furnaceLevel = 1,
+  ): void {
     if (!this._alive) {
       // Reuses the same take-apart animation the player's own demolish order
       // plays — a combat kill just collapses on a slightly different cue
@@ -218,9 +227,12 @@ export class Building implements Damageable {
         this.maxHealth,
         this.sinceDamaged,
         this.selfHealTimer,
+        this.fixedSelfHealApplied,
+        furnaceLevel,
         dt,
       );
       this.selfHealTimer = repair.timer;
+      this.fixedSelfHealApplied = repair.fixedBurstApplied;
       if (repair.amount > 0) this.repair(repair.amount);
     }
 

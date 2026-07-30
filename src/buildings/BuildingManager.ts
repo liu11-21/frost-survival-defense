@@ -165,7 +165,7 @@ export class BuildingManager {
     return this.wallRebuildsThisWave.get(slotId) ?? 0;
   }
 
-  update(dt: number, ctx: CombatContext, heroPos: Vector3, productionRate: number): void {
+  update(dt: number, ctx: CombatContext, heroPos: Vector3, productionRate: number, furnaceLevel = 1): void {
     this.clock += dt;
     if (this.rebuildCooldown > 0) this.rebuildCooldown -= dt;
 
@@ -182,7 +182,7 @@ export class BuildingManager {
         // is not actually freed (and the model not actually removed) until
         // that animation has finished playing — never the same frame health
         // hit zero.
-        b.update(dt, ctx, productionRate, autoCollect);
+        b.update(dt, ctx, productionRate, autoCollect, 0, furnaceLevel);
         if (!b.readyForRemoval) {
           // Mirrors the demolish path just below: a warehouse still holds the
           // cap open for as long as its collapse animation is playing. Drop
@@ -211,7 +211,7 @@ export class BuildingManager {
 
       const wasComplete = b.isComplete;
       const buildBonus = !b.isComplete && engineerNearby(this.world, slot.x, slot.z) ? ENGINEER_BUILD_BOOST.bonus : 0;
-      b.update(dt, ctx, productionRate, autoCollect, buildBonus);
+      b.update(dt, ctx, productionRate, autoCollect, buildBonus, furnaceLevel);
       if (b.def.canBeAttacked && b.secondsSinceDamaged <= dt * 1.5) this.onStructureDamaged?.(b);
       if (b.isDemolishing) {
         // A warehouse still holds the cap open until it is actually gone, so the
