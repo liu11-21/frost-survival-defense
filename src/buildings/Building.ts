@@ -5,6 +5,7 @@ import type { GameEvents } from "../game/GameEvents";
 import { MaterialFactory } from "../scene/MaterialFactory";
 import { allocateDamageId, type Damageable, type TargetKind } from "../combat/Damageable";
 import type { CombatContext } from "../combat/CombatContext";
+import { advanceStructureSelfRepair } from "../combat/StructureSelfRepair";
 import { makeBox, type BoxShape } from "../util/Collision";
 import { BuildingVisualController, type VisualIntegrity } from "./BuildingVisualController";
 import { fireBuilding, tickBuildingCombat } from "./BuildingCombat";
@@ -51,6 +52,7 @@ export class Building implements Damageable {
   private produceTimer = 0;
   private attackTimer = 0;
   private sinceDamaged = Infinity;
+  private selfHealTimer = 0;
   private demolishProgress = 0;
   private demolishing = false;
   /** True from the instant combat kills this structure until its collapse
@@ -161,6 +163,7 @@ export class Building implements Damageable {
     if (!this._alive || !this.def.canBeAttacked || this.demolishing) return;
     this.health -= amount;
     this.sinceDamaged = 0;
+    this.selfHealTimer = 0;
     if (this.health <= 0) {
       this.health = 0;
       this._alive = false;
@@ -208,6 +211,18 @@ export class Building implements Damageable {
       return;
     }
     this.visual.update(dt);
+
+    if (this.def.canBeAttacked) {
+      const repair = advanceStructureSelfRepair(
+        this.health,
+        this.maxHealth,
+        this.sinceDamaged,
+        this.selfHealTimer,
+        dt,
+      );
+      this.selfHealTimer = repair.timer;
+      if (repair.amount > 0) this.repair(repair.amount);
+    }
 
     if (this.def.produces && this.def.produceInterval) {
       this.produceTimer += dt * productionRate;

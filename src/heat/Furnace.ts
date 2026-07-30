@@ -1,5 +1,6 @@
 import { Color3, Mesh, MeshBuilder, PBRMaterial, Scene, TransformNode, Vector3 } from "@babylonjs/core";
 import { allocateDamageId, type Damageable, type TargetKind } from "../combat/Damageable";
+import { advanceStructureSelfRepair } from "../combat/StructureSelfRepair";
 import { FURNACE, furnaceMaxHealth } from "../data/FurnaceUpgradeConfig";
 import { MaterialFactory } from "../scene/MaterialFactory";
 import type { LightingSetup } from "../scene/LightingSetup";
@@ -173,6 +174,7 @@ export class Furnace implements Damageable {
     if (!this._alive) return;
     this.health -= amount;
     this.sinceDamage = 0;
+    this.selfHealTimer = 0;
     this.hitFlash = 1;
     if (this.health <= 0) {
       this.health = 0;
@@ -208,6 +210,7 @@ export class Furnace implements Damageable {
     this.health = this.maxHealth;
     this._alive = true;
     this.sinceDamage = 0;
+    this.selfHealTimer = 0;
     this.upgradeAnim = -1;
     this.heat.setRadius(13);
     for (const part of this.upgradeParts) part.setEnabled(false);
@@ -224,15 +227,17 @@ export class Furnace implements Damageable {
 
     if (this._alive) {
       this.sinceDamage += dt;
-      if (this.sinceDamage >= FURNACE.selfHealDelay && this.health < this.maxHealth) {
-        this.selfHealTimer += dt;
-        while (this.selfHealTimer >= FURNACE.selfHealTick) {
-          this.selfHealTimer -= FURNACE.selfHealTick;
-          this.health = Math.min(this.maxHealth, this.health + FURNACE.selfHealAmount);
-          healed = true;
-        }
-      } else {
-        this.selfHealTimer = 0;
+      const repair = advanceStructureSelfRepair(
+        this.health,
+        this.maxHealth,
+        this.sinceDamage,
+        this.selfHealTimer,
+        dt,
+      );
+      this.selfHealTimer = repair.timer;
+      if (repair.amount > 0) {
+        this.health = Math.min(this.maxHealth, this.health + repair.amount);
+        healed = true;
       }
     }
 

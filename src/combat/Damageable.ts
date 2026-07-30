@@ -3,18 +3,15 @@ import type { Faction } from "../data/CombatTypes";
 
 export type TargetKind = "unit" | "hero" | "wall" | "tower" | "warehouse" | "recruitHall" | "furnace";
 
-/**
- * Enemy fallback order, straight from the design brief. Lower goes first once
- * taunts, blocking walls and nearby friendlies have all been ruled out.
- */
+/** Coarse kind-level order; unit subtiers are resolved in `UnitTargeting`. */
 export const TARGET_PRIORITY: Record<TargetKind, number> = {
   hero: 3,
-  unit: 3,
-  wall: 2,
+  unit: 2,
+  wall: 0,
   tower: 4,
-  warehouse: 5,
-  recruitHall: 6,
-  furnace: 7,
+  warehouse: 4,
+  recruitHall: 4,
+  furnace: 5,
 };
 
 /** Anything that can be attacked and can die. */

@@ -189,6 +189,16 @@
   text-overflow: ellipsis;
   white-space: nowrap;
 }
+.skill-description {
+  min-height: 12px;
+  margin-top: 2px;
+  font-size: 9px;
+  line-height: 1.2;
+  color: rgba(222, 235, 255, 0.72);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
 .skill-bar {
   height: 5px;
   margin: 4px 0 2px;

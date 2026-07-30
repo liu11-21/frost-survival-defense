@@ -1,15 +1,15 @@
 import type { LiteRig } from "./LiteHumanoid";
 
 /** Seconds the death pose plays before the body starts to sink. */
-export const DEATH_ANIMATION = 1.1;
+export const DEATH_ANIMATION = 0.25;
 /** Seconds the body stays visible in total, animation included. */
-export const CORPSE_TIME = 2.9;
+export const CORPSE_TIME = 0.75;
 /**
  * Hard ceiling. If the death animation event never fires for any reason, the
  * body is recycled anyway rather than standing in the snow for the rest of the
  * run — the previous build had no such guarantee.
  */
-export const DEATH_HARD_LIMIT = 4;
+export const DEATH_HARD_LIMIT = 1;
 
 export interface CorpseState {
   /** Seconds since the unit died. */

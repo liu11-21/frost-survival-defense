@@ -8,15 +8,17 @@ import type { HeroStats } from "./HeroStats";
 export interface HeroSkillStateView {
   id: HeroSkillId;
   key: string;
+  keyLabel: string;
   name: string;
   description: string;
+  shortDescription: string;
   cooldown: number;
   remaining: number;
   ready: boolean;
 }
 
 /**
- * Cooldowns and effects for the hero's Q/R/F active skills. Kept out of
+ * Cooldowns and effects for the hero's 1/2/3 active skills. Kept out of
  * `HeroController` so that file stays about movement/auto-attack; this owns
  * nothing the controller doesn't already expose (position, target, heal).
  */
@@ -55,8 +57,10 @@ export class HeroSkills {
       return {
         id: s.id,
         key: s.key,
+        keyLabel: s.keyLabel,
         name: s.name,
         description: s.description,
+        shortDescription: s.shortDescription,
         cooldown: s.cooldown,
         remaining,
         ready: remaining <= 0,

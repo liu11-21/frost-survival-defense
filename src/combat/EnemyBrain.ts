@@ -1,9 +1,9 @@
 import { validateTarget } from "../ai/TargetValidator";
 import type { CombatUnit } from "./CombatUnit";
-import { targetOutOfLeash } from "./UnitTargeting";
+import { enemyTargetPriority, targetOutOfLeash } from "./UnitTargeting";
 
-/** How often an enemy re-asks whether its target is still gettable. */
-const REACH_INTERVAL = 0.35;
+/** How often an enemy re-asks whether a higher-priority target has appeared. */
+const REACH_INTERVAL = 0.2;
 
 /**
  * The compact enemy loop.
@@ -22,14 +22,25 @@ export function updateEnemyBrain(unit: CombatUnit, dt: number, reachTimer: numbe
   const staleReach = nextTimer <= 0;
   if (staleReach) nextTimer = REACH_INTERVAL;
 
-  const current = unit.currentTarget;
-  if (
+  let current = unit.currentTarget;
+  const currentInvalid =
     !current ||
     validateTarget(unit, current) !== "ok" ||
     targetOutOfLeash(unit, current) ||
-    (staleReach && !unit.canReach(current))
-  ) {
+    (staleReach && !unit.canReach(current));
+
+  if (currentInvalid) {
     unit.setTarget(unit.findHostileTarget());
+  } else if (staleReach && !unit.def.siegeFocus && !unit.def.selfDestruct) {
+    // `findHostileTarget` writes its result onto the unit. Keep a legal target
+    // within its own tier to avoid nearest-target oscillation, but retain the
+    // new result whenever it belongs to an earlier tier. This is what makes a
+    // rebuilt wall or newly arrived shield immediately reclaim attention.
+    const previous = current;
+    const preferred = unit.findHostileTarget();
+    if (!preferred || enemyTargetPriority(preferred) >= enemyTargetPriority(previous)) {
+      unit.setTarget(previous);
+    }
   }
 
   const target = unit.currentTarget;

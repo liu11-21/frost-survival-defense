@@ -8,10 +8,6 @@ export const FURNACE = {
   healFraction: 0.01,
   healMinimum: 5,
   healTick: 0.5,
-  /** Seconds without taking damage before the furnace repairs itself. */
-  selfHealDelay: 15,
-  selfHealTick: 0.5,
-  selfHealAmount: 20,
   startLevel: 1,
   /** Endless cap. The data structure allows raising this later. */
   maxLevel: 20,

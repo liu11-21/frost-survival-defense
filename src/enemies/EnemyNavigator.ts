@@ -95,6 +95,17 @@ export class EnemyNavigator {
       }
     }
 
+    // General enemies now share the same top priority as the combat selector:
+    // if any lane wall is still relevant from outside the perimeter, attack
+    // it instead of walking around to a lower-priority open approach.
+    const priorityWall = this.gates.breachTargetFor(x, z, unit.laneIndex);
+    if (priorityWall) {
+      unit.navPoint = null;
+      unit.breachTarget = priorityWall;
+      unit.navStuck = 0;
+      return;
+    }
+
     if (sealed || unit.navStuck >= STUCK_LIMIT) {
       unit.navPoint = null;
       unit.breachTarget = this.gates.breachTargetFor(x, z, unit.laneIndex);

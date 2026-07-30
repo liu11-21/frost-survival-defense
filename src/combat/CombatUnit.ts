@@ -276,7 +276,14 @@ export class CombatUnit implements Damageable {
 
   /** Nearest legal hostile, honouring an active taunt first. */
   findHostileTarget(): Damageable | null {
-    if (this.tauntSource && validateTarget(this, this.tauntSource) === "ok" && this.canReach(this.tauntSource)) {
+    // General enemies enforce their wall/shield/... tier order inside
+    // `acquireEnemyTarget`; an old taunt reference must not jump ahead of it.
+    if (
+      this.faction === "ally" &&
+      this.tauntSource &&
+      validateTarget(this, this.tauntSource) === "ok" &&
+      this.canReach(this.tauntSource)
+    ) {
       return this.tauntSource;
     }
     const found = this.faction === "ally" ? acquireAllyTarget(this, this.ctx) : acquireEnemyTarget(this, this.ctx);

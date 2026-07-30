@@ -57,7 +57,7 @@ with the numbers the game actually runs on.
 | `Esc` | Unwinds one layer: dialog → codex → highlight → panel → pause |
 | `B` | Build menu · `G` recruit menu · `U` furnace · `N` call next wave · `T` auto-rebuild toggle |
 | `M` | Toggle the full tactical map (an always-on minimap sits in the HUD corner) |
-| **`Q` / `R` / `F`** | **Hero active skills** — 冰霜震擊 Frost Nova / 火力齊射 Focused Barrage / 緊急集結 Emergency Rally |
+| **`1` / `2` / `3`** | **Hero active skills** — 冰霜震擊 Frost Nova / 火力齊射 Focused Barrage / 緊急集結 Emergency Rally |
 | Mouse wheel | Zoom (limited range) |
 | Mouse | Click panels and menus |
 
@@ -66,8 +66,7 @@ action, and the cost or status. The hero attacks entirely on its own: it picks t
 enemy in range, shoots from distance, and switches to a wider melee swing inside 2.2 units. Gathering
 is the same — stand next to a tree or rock and the axe swings automatically.
 
-Recruiting moved from `R` to `G` this pass so the three hero skills could sit on the conventional
-Q/R/F ability row, which sees far more use mid-combat than a pre-wave economy menu ever does.
+Recruiting uses `G`; the three hero skills use the number row so they stay easy to reach and read.
 
 ### Hero active skills
 
@@ -75,12 +74,12 @@ Each is purely cooldown-gated — like the hero's own auto-attack, none of them 
 
 | Key | Skill | Effect | Cooldown |
 | --- | --- | --- | --- |
-| `Q` | 冰霜震擊 Frost Nova | Instant AoE burst centred on the hero: damages and slows every enemy within 6.5 units (halved slow, shorter duration vs. the boss tier) | 9 s |
-| `R` | 火力齊射 Focused Barrage | Four rapid shots at the hero's current target, for roughly triple a single normal ranged hit | 11 s |
-| `F` | 緊急集結 Emergency Rally | Heals the hero and every ally within 8 units, and grants them a brief 35% damage-reduction shield | 18 s |
+| `1` | 冰霜震擊 Frost Nova | Instant AoE burst centred on the hero: damages and slows every enemy within 6.5 units (halved slow, shorter duration vs. the boss tier) | 9 s |
+| `2` | 火力齊射 Focused Barrage | Four rapid shots at the hero's current target, for roughly triple a single normal ranged hit | 11 s |
+| `3` | 緊急集結 Emergency Rally | Heals the hero and every ally within 8 units, and grants them a brief 35% damage-reduction shield | 18 s |
 
 A small skill row sits under the hero's HP bar in the HUD, showing each key, name, and a cooldown fill
-that reaches "ready" at exactly the moment `Q`/`R`/`F` would actually work — same source of truth, so
+that reaches "ready" at exactly the moment `1`/`2`/`3` would actually work — same source of truth, so
 the HUD can never lie about readiness. All three reset to ready at the start of a new run.
 
 ### Developer keys

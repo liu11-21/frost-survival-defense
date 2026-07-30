@@ -103,17 +103,20 @@ const HTML = `
     <div class="stat-line" id="ui-hero-stats">遠程 50 · 近戰 80 · 攻速 0.70s</div>
     <div class="skill-row" id="ui-hero-skills">
       <div class="skill-slot ready" data-skill="frostNova">
-        <div class="skill-top"><span class="skill-key">Q</span><span class="skill-name">冰霜震擊</span></div>
+        <div class="skill-top"><span class="skill-key">1</span><span class="skill-name">冰霜震擊</span></div>
+        <div class="skill-description">範圍傷害並緩速</div>
         <div class="bar skill-bar"><i></i></div>
         <div class="skill-cd-text"></div>
       </div>
       <div class="skill-slot ready" data-skill="barrage">
-        <div class="skill-top"><span class="skill-key">R</span><span class="skill-name">火力齊射</span></div>
+        <div class="skill-top"><span class="skill-key">2</span><span class="skill-name">火力齊射</span></div>
+        <div class="skill-description">快速連射鎖定目標</div>
         <div class="bar skill-bar"><i></i></div>
         <div class="skill-cd-text"></div>
       </div>
       <div class="skill-slot ready" data-skill="rally">
-        <div class="skill-top"><span class="skill-key">F</span><span class="skill-name">緊急集結</span></div>
+        <div class="skill-top"><span class="skill-key">3</span><span class="skill-name">緊急集結</span></div>
+        <div class="skill-description">治療並保護附近我方</div>
         <div class="bar skill-bar"><i></i></div>
         <div class="skill-cd-text"></div>
       </div>
@@ -187,7 +190,7 @@ const HTML = `
 
 <div class="confirm" id="ui-confirm"><div class="confirm-inner" id="ui-confirm-body"></div></div>
 
-<div class="hint" id="ui-hint">WASD 移動 · Shift 加速 · E 互動 · B 建造 · G 招募 · U 升級火爐 · N 催波 · M 地圖 · Q/R/F 技能 · Esc 暫停</div>
+<div class="hint" id="ui-hint">WASD 移動 · Shift 加速 · E 互動 · B 建造 · G 招募 · U 升級火爐 · N 催波 · M 地圖 · 1/2/3 技能 · Esc 暫停</div>
 
 <div class="screen" id="ui-screen"><div class="screen-inner" id="ui-screen-body"></div></div>
 `;

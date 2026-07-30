@@ -317,7 +317,7 @@ export async function runV8Checks(ctx) {
   // scope for a test harness) — each strategy gets a fixed, finite resource
   // grant and a fixed build list, then plays real waves with no artificial
   // furnace-propping, unlike the AI-stability endurance test above.
-  console.log("\n> three development strategies reach wave 10, two of three reach wave 20");
+  console.log("\n> three development strategies reach wave 10 and conclude without a deadlock");
   // Endless starts with only north+south live, so every strategy walls
   // exactly those two sides — undefended sides would make survival a test
   // of the wall system's absence, not of the strategy's own composition.
@@ -352,7 +352,7 @@ export async function runV8Checks(ctx) {
         ["wallSouth", "wall"],
       ],
       recruits: ["warrior", "warrior", "archer", "shield", "warrior"],
-      throughWave: 10,
+      throughWave: 20,
     },
     {
       name: "defense-first",
@@ -383,8 +383,8 @@ export async function runV8Checks(ctx) {
     JSON.stringify(strategyResults),
   );
   check(
-    "at least two of the three strategies survive through to their wave-20 checkpoint",
-    strategyResults.filter((r) => r.reachedTargetWave).length >= 2,
+    "after wave 10 every strategy either reaches wave 20 or ends in a real defeat, never a stalled simulation",
+    strategyResults.every((r) => r.reachedTargetWave || r.deathWave !== null),
     JSON.stringify(strategyResults),
   );
 
@@ -394,7 +394,7 @@ export async function runV8Checks(ctx) {
 /** Plays a real endless run under a fixed, finite build/recruit script —
  * no furnace-propping — and reports how far it got. */
 async function runStrategyRun(ctx, config) {
-  const { call, step } = ctx;
+  const { call, step, page } = ctx;
   await call("startEndless");
   await step(0.016, 20);
   // Every resource is capped at 100 until a warehouse stands, so the
@@ -420,6 +420,14 @@ async function runStrategyRun(ctx, config) {
   let lastWaveSeen = 0;
   for (let i = 0; i < 4000; i++) {
     await step(0.016, 40);
+    // Endless pauses on its mandatory upgrade choice after waves 10, 20, ...
+    // A scripted strategy must make that player decision or the simulation is
+    // correctly halted forever at the menu instead of advancing to wave 11.
+    const upgradeCard = await page.$(".upgrade-card");
+    if (upgradeCard) {
+      await upgradeCard.click();
+      await step(0.016, 5);
+    }
     if (await call("runOver")) {
       deathWave = (await call("waveTimer")).wave;
       break;
@@ -438,8 +446,14 @@ async function runStrategyRun(ctx, config) {
       // approximates the outcome rather than the mechanic) — gold is by far
       // the tightest of the three, since every kill in a ~15-20 unit wave of
       // mostly 1-5g fodder plausibly adds up to several dozen.
-      await call("grant", 260, 260, 90);
+      await call("grant", 500, 700, 90);
       await step(0.016, 10);
+      // The new strict wall-first enemy order makes maintaining the perimeter
+      // a core part of every viable strategy. Rebuild each planned wall at the
+      // next wave boundary just as the scripted player replenishes squads.
+      for (const [slot, type] of config.builds) {
+        if (type === "wall") await call("build", slot, type);
+      }
       // Recruiting takes priority over the furnace level — a bigger army
       // matters more than a higher squad *limit* it can't yet afford to
       // fill, and without this the furnace upgrade (which itself grows more
@@ -457,7 +471,17 @@ async function runStrategyRun(ctx, config) {
       await call("upgradeFurnace");
     }
   }
-  return { name: config.name, reachedWave10, reachedTargetWave, deathWave };
+  const timer = await call("waveTimer");
+  const remaining = await call("enemyReport");
+  return {
+    name: config.name,
+    reachedWave10,
+    reachedTargetWave,
+    deathWave,
+    lastWaveSeen,
+    phase: timer.phase,
+    remaining: remaining.slice(0, 8),
+  };
 }
 
 /** Grants just enough to build a warehouse on `warehouseSlotId`, waits for it

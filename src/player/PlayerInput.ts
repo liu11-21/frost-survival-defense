@@ -13,9 +13,9 @@ export type ActionKey =
   | "balancePanel"
   | "verifyPanel"
   | "map"
-  | "skillQ"
-  | "skillR"
-  | "skillF";
+  | "skill1"
+  | "skill2"
+  | "skill3";
 
 const MOVE_KEYS = new Set([
   "KeyW",
@@ -39,17 +39,15 @@ const ACTION_KEYS: Record<string, ActionKey> = {
   F8: "stressPanel",
   F9: "balancePanel",
   KeyB: "build",
-  // Recruit moved off R so the hero's three active skills can sit on the
-  // conventional Q/R/F ability row, which sees far more use mid-combat than
-  // a pre-wave economy menu ever does.
+  // Recruit stays on G while the hero's three active skills use the number row.
   KeyG: "recruit",
   KeyU: "upgrade",
   KeyN: "callWave",
   KeyT: "toggleRebuild",
   KeyM: "map",
-  KeyQ: "skillQ",
-  KeyR: "skillR",
-  KeyF: "skillF",
+  Digit1: "skill1",
+  Digit2: "skill2",
+  Digit3: "skill3",
   Escape: "pause",
 };
 

@@ -8,9 +8,6 @@ import { claimCap, claimScore } from "../ai/ThreatTracker";
 export const ALLY_ENGAGE_RANGE = 13;
 export const ENEMY_AGGRO_RANGE = 8;
 
-/** Fallback order once taunts and nearby friendlies are ruled out. */
-const STRUCTURE_ORDER = ["tower", "warehouse", "recruitHall"] as const;
-
 function isRanged(unit: CombatUnit): boolean {
   return unit.def.attackType === "rangedSingle" || unit.def.attackType === "rangedArea";
 }
@@ -63,27 +60,70 @@ export function acquireAllyTarget(unit: CombatUnit, ctx: CombatContext): Damagea
   return best;
 }
 
+/** Enemy target tiers. Lower numbers always pre-empt higher ones. */
+export function enemyTargetPriority(target: Damageable): number {
+  if (target.kind === "wall") return 0;
+  if (target.kind === "unit") {
+    const defId = (target as Damageable & { def?: { id?: string } }).def?.id;
+    return defId === "shield" ? 1 : 2;
+  }
+  if (target.kind === "hero") return 3;
+  if (target.kind === "tower" || target.kind === "warehouse" || target.kind === "recruitHall") return 4;
+  if (target.kind === "furnace") return 5;
+  return 6;
+}
+
+function nearestReachableAlly(
+  unit: CombatUnit,
+  ctx: CombatContext,
+  include: (candidate: CombatUnit) => boolean,
+): CombatUnit | null {
+  let best: CombatUnit | null = null;
+  let bestDist = Infinity;
+  for (const candidate of ctx.world.allies) {
+    if (!candidate.alive || !include(candidate) || !unit.canReach(candidate)) continue;
+    const dx = candidate.position.x - unit.position.x;
+    const dz = candidate.position.z - unit.position.z;
+    const dist = dx * dx + dz * dz;
+    if (dist < bestDist) {
+      best = candidate;
+      bestDist = dist;
+    }
+  }
+  return best;
+}
+
+function nearestReachableStructure(unit: CombatUnit, ctx: CombatContext): Damageable | null {
+  let best: Damageable | null = null;
+  let bestDist = Infinity;
+  for (const candidate of ctx.world.structures) {
+    if (!candidate.alive || candidate.kind === "wall" || !unit.canReach(candidate)) continue;
+    const dx = candidate.position.x - unit.position.x;
+    const dz = candidate.position.z - unit.position.z;
+    const dist = dx * dx + dz * dz;
+    if (dist < bestDist) {
+      best = candidate;
+      bestDist = dist;
+    }
+  }
+  return best;
+}
+
 /**
- * Enemy target selection.
- *
- * Reachability comes *before* priority, always. The old order was taunt →
- * nearby friendly → structure → wall → core, with no test for whether any of
- * those could actually be walked to; a taunting shield trooper behind a closed
- * lane therefore became the chosen target, and the unit walked at it until the
- * steering solver squeezed it around the end of the wall model. Now every
- * candidate is filtered through `world.reachable`, and a unit with nothing
- * reachable is given the wall that is in its way.
+ * Legacy behaviour retained only for explicit specialist enemies. Breachers
+ * own a lane wall and bombers race the nearest reachable victim; neither is
+ * allowed to inherit the general-purpose six-tier order accidentally.
  */
-export function acquireEnemyTarget(unit: CombatUnit, ctx: CombatContext): Damageable | null {
+function acquireSpecialistEnemyTarget(unit: CombatUnit, ctx: CombatContext): Damageable | null {
   const world = ctx.world;
   const x = unit.position.x;
   const z = unit.position.z;
   const canReach = (t: Damageable | null): t is Damageable =>
     t !== null && t.alive && world.reachable(x, z, t);
 
+  if (unit.def.siegeFocus && unit.breachTarget?.alive) return unit.breachTarget;
+
   const taunter = world.tauntSourceFor(unit.faction, x, z, false);
-  // A taunt from behind a wall still raises attention — it just cannot be
-  // answered until the wall is down, so it becomes a reason to break through.
   if (canReach(taunter)) return taunter;
 
   const ranged = isRanged(unit);
@@ -100,7 +140,12 @@ export function acquireEnemyTarget(unit: CombatUnit, ctx: CombatContext): Damage
     if (heroClose && canReach(hero)) return hero;
   }
 
-  const structure = world.nearestStructure(x, z, ENEMY_AGGRO_RANGE + 4, STRUCTURE_ORDER);
+  const structure = world.nearestStructure(
+    x,
+    z,
+    ENEMY_AGGRO_RANGE + 4,
+    ["tower", "warehouse", "recruitHall"],
+  );
   if (canReach(structure)) return structure;
 
   // Nothing can be got at: navigation has already chosen which wall is in the
@@ -116,6 +161,53 @@ export function acquireEnemyTarget(unit: CombatUnit, ctx: CombatContext): Damage
     if (blocker) return blocker;
   }
   return furnace;
+}
+
+/**
+ * General enemy order, evaluated as strict tiers:
+ * wall → shield → nearest other ally → hero → nearest facility → furnace.
+ *
+ * A wall is the lane blocker chosen by navigation (or the wall directly
+ * between the enemy and the furnace). Reachability is applied *within* every
+ * later tier so a unit never tries to walk through that wall to honour a
+ * nominally higher target behind it.
+ */
+export function acquireEnemyTarget(unit: CombatUnit, ctx: CombatContext): Damageable | null {
+  if (unit.def.siegeFocus || unit.def.selfDestruct) {
+    return acquireSpecialistEnemyTarget(unit, ctx);
+  }
+
+  const world = ctx.world;
+  const x = unit.position.x;
+  const z = unit.position.z;
+  const furnace = world.furnace;
+
+  if (unit.breachTarget?.alive) return unit.breachTarget;
+  // A navigator already steering through an open gate must not abandon that
+  // route to hit an unrelated wall beside it.
+  if (!unit.navPoint && furnace?.alive) {
+    const blocker = world.wallBlocks(x, z, furnace.position.x, furnace.position.z);
+    if (blocker?.alive) return blocker;
+  }
+
+  const shield = nearestReachableAlly(unit, ctx, (candidate) => candidate.def.id === "shield");
+  if (shield) return shield;
+
+  const otherAlly = nearestReachableAlly(unit, ctx, (candidate) => candidate.def.id !== "shield");
+  if (otherAlly) return otherAlly;
+
+  const hero = world.hero;
+  if (hero?.alive && unit.canReach(hero)) return hero;
+
+  const structure = nearestReachableStructure(unit, ctx);
+  if (structure) return structure;
+
+  if (furnace?.alive) {
+    const blocker = world.wallBlocks(x, z, furnace.position.x, furnace.position.z);
+    if (blocker?.alive) return blocker;
+    return furnace;
+  }
+  return null;
 }
 
 /**

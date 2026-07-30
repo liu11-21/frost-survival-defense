@@ -73,15 +73,19 @@ export function createDebugApi(s: GameSystems, controls: DebugControls): Record<
       enemyReport: () =>
         s.world.enemies
           .filter((e) => e.alive)
-          .map((e) => ({
-            id: e.def.id,
-            x: Number(e.position.x.toFixed(1)),
-            z: Number(e.position.z.toFixed(1)),
-            r: Number(Math.hypot(e.position.x, e.position.z).toFixed(1)),
-            hp: Math.ceil(e.health),
-            target: e.currentTarget ? e.currentTarget.kind : "none",
-            nav: e.navPoint ? "gate" : e.breachTarget ? "wall" : "none",
-          })),
+          .map((e) => {
+            const target = e.currentTarget as (typeof e.currentTarget & { def?: { id?: string } }) | null;
+            return {
+              id: e.def.id,
+              x: Number(e.position.x.toFixed(1)),
+              z: Number(e.position.z.toFixed(1)),
+              r: Number(Math.hypot(e.position.x, e.position.z).toFixed(1)),
+              hp: Math.ceil(e.health),
+              target: target ? target.kind : "none",
+              targetId: target?.def?.id ?? target?.kind ?? "none",
+              nav: e.navPoint ? "gate" : e.breachTarget ? "wall" : "none",
+            };
+          }),
       resetHealStats: () => {
         healStats.events = 0;
         healStats.healedUnits = 0;
@@ -333,7 +337,7 @@ export function createDebugApi(s: GameSystems, controls: DebugControls): Record<
       ...createV7DebugApi(s),
       // --- v8: universal slots, layout validation, early-wave reward, boss pacing ---
       ...createV8DebugApi(s),
-      // --- v9: hero active skills (Q/R/F) -----------------------------------
+      // --- v9: hero active skills (1/2/3) -----------------------------------
       ...createV9DebugApi(s),
   };
 }

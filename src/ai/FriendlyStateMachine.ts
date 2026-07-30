@@ -181,6 +181,29 @@ export class FriendlyBrain {
       }
     }
 
+    // A normal combat unit with living enemies must never spend a frame parked
+    // in formation/hold with no target. This immediate safety net sits above
+    // the slower state timers, so a kill or pooled-corpse cleanup cannot leave
+    // the survivor visibly idle while another valid enemy is still present.
+    if (
+      !this.isHealer &&
+      !this.isEngineer &&
+      !this.target &&
+      this._state !== "spawn" &&
+      this._state !== "dead" &&
+      this.deps.ctx.world.livingEnemyCount > 0
+    ) {
+      const found = this.unit.findHostileTarget();
+      if (found) {
+        this.target = found;
+        this.retargetTimer = this.isRanged ? RETARGET_INTERVAL.ranged : RETARGET_INTERVAL.melee;
+        this.heartbeat.markMeaningfulAction(this.clock);
+        this.heartbeat.markTargetAcquired(this.clock);
+        this.stuck.reset(this.unit.position.x, this.unit.position.z, this.clock);
+        this.transition("moveToTarget", "autoLockSafety");
+      }
+    }
+
     this.dispatch(dt);
   }
 

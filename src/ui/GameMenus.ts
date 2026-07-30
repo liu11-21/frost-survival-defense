@@ -85,7 +85,7 @@ export class GameMenus {
           </div>
         </div>
       </div>
-      <p class="foot">WASD 移動 · Shift 加速 · B 建造 · G 招募 · U 升級火爐 · N 催下一波 · T 自動重建開關 · Q/R/F 技能 · Esc 暫停</p>
+      <p class="foot">WASD 移動 · Shift 加速 · B 建造 · G 招募 · U 升級火爐 · N 催下一波 · T 自動重建開關 · 1/2/3 技能 · Esc 暫停</p>
     `);
 
     const stageBox = this.refs.screenBody.querySelector("#menu-stages");

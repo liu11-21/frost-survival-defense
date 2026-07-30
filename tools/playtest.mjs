@@ -5,7 +5,7 @@
  * rule checks (rebuild FIFO, taunt, medic healing, wall blocking, warehouse
  * loss, mode reset), captures screenshots and fails on any console error.
  *
- *   node tools/playtest.mjs [--url http://localhost:5173]
+ *   node tools/playtest.mjs [--url http://localhost:5173] [--suite v8|v9]
  */
 import puppeteer from "puppeteer-core";
 import { mkdirSync, existsSync } from "node:fs";
@@ -23,6 +23,8 @@ const CHROME = "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe";
 const args = process.argv.slice(2);
 const urlIndex = args.indexOf("--url");
 const url = urlIndex >= 0 ? args[urlIndex + 1] : "http://localhost:5173";
+const suiteIndex = args.indexOf("--suite");
+const requestedSuite = suiteIndex >= 0 ? args[suiteIndex + 1] : null;
 const outDir = resolve(process.cwd(), "playtest-shots");
 if (!existsSync(outDir)) mkdirSync(outDir, { recursive: true });
 
@@ -95,6 +97,23 @@ await page.waitForFunction(
 await page.evaluate(() => window.frostbound?.stopLoop());
 console.log("> booted, rAF detached");
 await shot("main-menu");
+
+// Fast, isolated iteration for the two newest suites. The default remains the
+// complete end-to-end run below.
+if (requestedSuite === "v8" || requestedSuite === "v9") {
+  if (requestedSuite === "v8") await runV8Checks({ check, call, step, shot, page });
+  else await runV9Checks({ check, call, step, shot, page });
+  await browser.close();
+  const failed = checks.filter((c) => !c.ok).length;
+  console.log(`\nchecks: ${checks.length - failed}/${checks.length} passed`);
+  if (problems.length > 0) {
+    console.error(`PLAYTEST FAILED — ${problems.length} problem(s):`);
+    for (const problem of problems) console.error(` - ${problem}`);
+    process.exit(1);
+  }
+  console.log("PLAYTEST PASSED");
+  process.exit(0);
+}
 
 // ---------------------------------------------------------------- stage 1 --
 console.log("\n> stage 1: economy and construction");
@@ -301,10 +320,12 @@ check(
 );
 await shot("taunt");
 await call("killAllEnemies");
+await call("killAllAllies");
 await step(0.016, 200);
 
 // Medic: one squad-wide heal event per interval, not one per medic.
-// Parked clear of the furnace aura (radius 9) so only the medic is healing.
+// Start with only the two test squads and park clear of the furnace aura
+// (radius 9), so only the medic contributes to the measured health change.
 await call("teleport", 0, 16);
 await call("recruit", "medic");
 await call("recruit", "warrior");
