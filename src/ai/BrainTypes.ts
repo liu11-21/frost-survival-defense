@@ -49,7 +49,7 @@ export interface BrainDeps {
   findHealPosition?: (unit: CombatUnit) => { x: number; z: number } | null;
   /** Applies the armed squad heal on the healer's hit frame. */
   releaseHeal?: (unit: CombatUnit) => boolean;
-  /** Engineer: the weakest repairable structure in range, or null. */
+  /** Engineer: the nearest unclaimed repairable structure, or null. */
   findRepairTarget?: (unit: CombatUnit) => Damageable | null;
   /** Arms one squad-wide repair event on the given structure. */
   requestRepair?: (unit: CombatUnit, target: Damageable) => boolean;

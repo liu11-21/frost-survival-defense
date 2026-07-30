@@ -32,6 +32,8 @@ import {
   structureRepairFixedBurst,
   structureRepairPercentPerSecond,
 } from "../combat/StructureSelfRepair";
+import { allyUpgradeCost, allyUpgradeMultiplier } from "../data/AllyProgressionConfig";
+import { engineerSquadLimit, ENGINEER_RULES } from "../data/EngineerConfig";
 
 export interface RunDeps {
   upgrades: UpgradeState;
@@ -60,6 +62,7 @@ export class RunController {
   private pendingUpgradeWave = 0;
   private lastScaledWave = -1;
   private readonly earlyReward: EarlyWaveRewardTracker;
+  private readonly allyUpgradeLevels = new Map<string, number>();
 
   readonly upgrades: UpgradeState;
 
@@ -98,6 +101,9 @@ export class RunController {
     const bonus = (this.deps.furnace.currentLevel - 1) * this.rules.squadLimitPerFurnaceLevel;
     return this.rules.initialSquadLimit + bonus;
   }
+  get engineerLimit(): number {
+    return engineerSquadLimit(this.deps.furnace.currentLevel);
+  }
   get furnaceUpgradeCost(): ReturnType<typeof furnaceUpgradeCost> {
     return furnaceUpgradeCost(this.deps.furnace.currentLevel + 1);
   }
@@ -123,6 +129,7 @@ export class RunController {
     this.lastScaledWave = -1;
     this.earlyReward.reset();
     this.upgrades.reset();
+    this.allyUpgradeLevels.clear();
 
     d.squads.clearAll();
     d.buildings.resetAll();
@@ -261,22 +268,67 @@ export class RunController {
     return Math.max(1, Math.round((def.recruitCost ?? 0) * this.upgrades.multiplier("recruitCost")));
   }
 
+  allyUpgradeLevel(defId: string): number {
+    return this.allyUpgradeLevels.get(defId) ?? 0;
+  }
+
+  allyUpgradeCost(defId: string): number {
+    const def = ALLY_BY_ID.get(defId);
+    if (!def || def.canRepair) return 0;
+    return allyUpgradeCost(def, this.allyUpgradeLevel(defId) + 1);
+  }
+
+  allyUpgradeStats(defId: string): { health: number; power: number; interval: number } | null {
+    const def = ALLY_BY_ID.get(defId);
+    if (!def) return null;
+    const multiplier = allyUpgradeMultiplier(this.allyUpgradeLevel(defId));
+    return {
+      health: Math.round(def.maxHealth * this.deps.scaling.allyHealth * multiplier),
+      power: Math.round(def.attackPower * this.deps.scaling.allyAttack * multiplier * 10) / 10,
+      interval: def.attackInterval / multiplier,
+    };
+  }
+
+  /** Strengthens the selected ally class for this run, including deployed squads. */
+  tryUpgradeAlly(defId: string): string | null {
+    const d = this.deps;
+    const def = ALLY_BY_ID.get(defId);
+    if (!def) return "未知兵種";
+    if (def.canRepair) return "工程兵無法升級";
+    if (!d.buildings.hasRecruitHall) return "招募所未完成";
+    const cost = this.allyUpgradeCost(defId);
+    if (d.store.gold < cost || !d.store.spend({ gold: cost })) return "金幣不足";
+    const level = this.allyUpgradeLevel(defId) + 1;
+    this.allyUpgradeLevels.set(defId, level);
+    d.squads.setAllyUpgradeLevel(defId, level);
+    d.events.emit("squadUpgraded", { defId, name: def.name, level });
+    return null;
+  }
+
   /** Returns null on success, or the reason the recruit was refused. */
   tryRecruit(defId: string): string | null {
     const d = this.deps;
     const def = ALLY_BY_ID.get(defId);
     if (!def) return "未知兵種";
     if (!d.buildings.hasRecruitHall) return "招募所未完成";
-    // Every recruit action creates one squad slot, regardless of whether that
-    // squad definition contains one member or three.
-    if (d.squads.allySquadSlotsUsed >= this.squadLimit) return "小隊已達上限";
+    if (def.canRepair) {
+      if (d.squads.engineerSquadsUsed >= this.engineerLimit) return "工程兵已達上限";
+    } else if (d.squads.allySquadSlotsUsed >= this.squadLimit) {
+      return "小隊已達上限";
+    }
     const cost = this.recruitCost(defId);
     if (d.store.gold < cost) return "金幣不足";
     if (!d.store.spend({ gold: cost })) return "金幣不足";
 
-    const hero = d.hero.position;
+    const centre = def.canRepair ? d.furnace.position : d.hero.position;
     const angle = Math.random() * Math.PI * 2;
-    d.squads.recruit(defId, hero.x + Math.sin(angle) * 2.2, hero.z + Math.cos(angle) * 2.2);
+    const radius = def.canRepair ? ENGINEER_RULES.furnaceIdleRadius : 2.2;
+    d.squads.recruit(
+      defId,
+      centre.x + Math.sin(angle) * radius,
+      centre.z + Math.cos(angle) * radius,
+      this.allyUpgradeLevel(defId),
+    );
     d.events.emit("squadRecruited", { defId, name: def.name });
     return null;
   }

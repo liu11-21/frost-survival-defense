@@ -494,9 +494,20 @@ A three-person warrior squad is 3 × 400 HP and 3 × 10 attack, never one pooled
 | 醫療兵 Medic | 3 | 500 | 20 heal | 1.00 s | 14 | 30 | **one** squad-wide event per tick |
 | 魔法師 Mage | 1 | 150 | 100 | 1.40 s | 8 | 70 | blast radius 2.5 |
 | 突擊手 Assault | 3 | 120 | 100 | 0.70 s | 2.2 | 80 | blinks onto the top-tier enemy, 2 s / 50% DR |
-| 工程兵 Engineer | 3 | 300 | 8 | 1.00 s | 2.2 | 35 | repairs the weakest structure in range instead of fighting |
+| 工程兵 Engineer | 1 | 100 | 0 | — | 2.2 | 35 | independently repairs the nearest damaged non-furnace facility |
 | 火槍手 Musketeer | 3 | 250 | 45 | 1.40 s | 12 | 45 | +40%/+20% vs Lv4-5/Boss, stacking on-hit slow |
 | 冰霜術士 Frost Sorcerer | 1 | 180 | 35 | 1.60 s | 9 | 55 | AoE slow + a Freeze Zone every 10 s |
+
+Every non-Engineer ally class can be strengthened from the recruit panel. Each run-local level adds
+**10% maximum HP, 10% power and 10% attack speed** to all deployed and future squads of that class.
+The first level costs 50% of its recruit price; subsequent levels add another 25% of that base price.
+
+Engineers use a separate cap and never consume ordinary squad slots: 2 squads normally, 3 at furnace
+Lv.20, 4 at Lv.50 and 5 at Lv.80. They spawn beside the furnace, do not follow the hero and cannot be
+upgraded or attack. They reserve the nearest damaged facility so two Engineers never repair the same
+target. Once in range, one complete 3-second countdown restores exactly 10% of that facility's maximum
+HP; while the facility is under repeated attack the complete countdown is 6 seconds. Destroyed
+facilities and the central furnace are never repair targets.
 
 | Enemy | Lv | Squad | HP each | Power | Gold | Siege | Notes |
 | --- | --- | --- | --- | --- | --- | --- | --- |
@@ -918,7 +929,7 @@ and this pass's additions:
 **254 assertions total**, all passing, plus this pass's additions (`tools/v6checks.mjs`) covering
 the seven new units:
 
-- the Engineer repairs the weakest attackable structure in range and never the furnace
+- the Engineer scans every 3 seconds for the nearest unclaimed damaged facility, never the furnace
 - the Musketeer's bonus damage vs Lv4-5/Boss and its stacking on-hit slow, capped at 3 stacks
 - the Frost Sorcerer's normal-attack slow and its periodic Freeze Zone stun-then-slow
 - the Breacher always targets its lane's blocking wall over a taunting ally behind it

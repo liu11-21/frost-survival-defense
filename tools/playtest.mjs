@@ -98,10 +98,11 @@ await page.evaluate(() => window.frostbound?.stopLoop());
 console.log("> booted, rAF detached");
 await shot("main-menu");
 
-// Fast, isolated iteration for the two newest suites. The default remains the
+// Fast, isolated iteration for focused suites. The default remains the
 // complete end-to-end run below.
-if (requestedSuite === "v8" || requestedSuite === "v9") {
-  if (requestedSuite === "v8") await runV8Checks({ check, call, step, shot, page });
+if (requestedSuite === "v6" || requestedSuite === "v8" || requestedSuite === "v9") {
+  if (requestedSuite === "v6") await runV6Checks({ check, call, step, shot, page });
+  else if (requestedSuite === "v8") await runV8Checks({ check, call, step, shot, page });
   else await runV9Checks({ check, call, step, shot, page });
   await browser.close();
   const failed = checks.filter((c) => !c.ok).length;
@@ -407,14 +408,20 @@ const runWarehouse = await call("build", "northMid", "warehouse");
 check("warehouse affordable from a clean start", runWarehouse?.ok === true, JSON.stringify(runWarehouse));
 await step(0.016, 260);
 await call("grant", 9000, 9000, 9000);
-await call("build", "northFrontA", "mine");
-await call("build", "northFrontB", "lumberyard");
+// Stage 1 attacks from north and south. A competent full build puts actual
+// fire support on both live approaches instead of sealing the north side
+// behind two economy buildings and waiting minutes for one bruiser to finish
+// a 12,000-HP wall.
+await call("build", "northFrontA", "tower");
+await call("build", "northFrontB", "tower");
 await call("build", "northBack", "recruitHall");
 await call("build", "eastFrontB", "autoCollector");
 await call("build", "eastFrontA", "autoRebuilder");
+await call("build", "eastMid", "mine");
+await call("build", "eastBack", "lumberyard");
 for (const id of await call("wallSlotIds")) await call("build", id, "wall");
 const remainingUniversalSlots = [
-  "eastMid", "eastBack", "southFrontA", "southFrontB", "southMid", "southBack", "westFrontA", "westFrontB",
+  "southFrontA", "southFrontB", "southMid", "southBack", "westFrontA", "westFrontB",
 ];
 for (const id of remainingUniversalSlots) await call("build", id, "tower");
 await step(0.016, 400);

@@ -227,7 +227,7 @@ export class ActionPanels {
 
   private firstEnabledButton(): HTMLButtonElement | null {
     const host = this.open === "build" ? this.d.refs.buildList : this.d.refs.recruitList;
-    return host.querySelector<HTMLButtonElement>("button.entry:not(:disabled)");
+    return host.querySelector<HTMLButtonElement>("button.entry:not(:disabled), button.recruit-action:not(:disabled)");
   }
 
   // -------------------------------------------------------------- build ----

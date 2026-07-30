@@ -81,6 +81,7 @@ export class Game {
       s.hud.toast(`${squad.def.name}小隊全滅`, "failure");
     };
     s.events.on("squadRecruited", () => s.squadHud.markDirty());
+    s.events.on("squadUpgraded", () => s.squadHud.markDirty());
     s.events.on("wavePreview", (p) => {
       s.laneMarkers.clearWarnings();
       for (const lane of p.lanes) s.laneMarkers.warn(lane.laneIndex);

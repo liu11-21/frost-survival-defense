@@ -49,6 +49,8 @@ export function createCombatContext(
     const hit = world.queryUnits(victimFaction, x, z, radius, scratch);
     let count = 0;
     for (let i = 0; i < hit.length && count < maxTargets; i++) {
+      // Engineers are protected support staff until the hero has fallen.
+      if (attackerFaction === "enemy" && hit[i].def.id === "engineer" && world.hero?.alive) continue;
       damage(hit[i], amount, x, z);
       onHit?.(hit[i]);
       count++;

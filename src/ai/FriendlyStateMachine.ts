@@ -103,6 +103,7 @@ export class FriendlyBrain {
       },
       setTarget: (t) => {
         this.target = t;
+        this.unit.setTarget(t);
       },
       go: (to, reason) => this.transition(to, reason),
       startHeal: () => this.beginAttack("healWindup"),
@@ -140,6 +141,7 @@ export class FriendlyBrain {
   /** Forced re-plan used by the watchdog and by wave transitions. */
   forceReacquire(reason: string): void {
     this.target = null;
+    this.unit.setTarget(null);
     this.pendingToken = -1;
     this.unit.clearAnimationLock();
     this.retargetTimer = 0;
@@ -149,6 +151,7 @@ export class FriendlyBrain {
 
   onDeath(): void {
     this.target = null;
+    this.unit.setTarget(null);
     this.transition("dead", "died");
   }
 
@@ -156,6 +159,7 @@ export class FriendlyBrain {
   onWaveBoundary(): void {
     if (this._state === "dead") return;
     this.target = null;
+    this.unit.setTarget(null);
     this.pendingToken = -1;
     this.unit.clearAnimationLock();
     this.transition(this.replanState, "waveBoundary");
@@ -176,6 +180,7 @@ export class FriendlyBrain {
     // single check that used to be scattered and inconsistent.
     if (this.target && validateTarget(this.unit, this.target) !== "ok") {
       this.target = null;
+      this.unit.setTarget(null);
       if (this.isCombatState()) {
         this.transition(this.replanState, "targetInvalid");
       }
@@ -394,6 +399,7 @@ export class FriendlyBrain {
         break;
       case "dropTarget":
         this.target = null;
+        this.unit.setTarget(null);
         this.transition("acquireTarget", "stuckDroppedTarget");
         break;
       case "finished":

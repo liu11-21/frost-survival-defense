@@ -102,6 +102,7 @@ export class HeroSkills {
       );
     });
     this.ctx.vfx.burstAt("freezeZone", x, z, 40);
+    this.ctx.vfx.heroSkill("frostNova", x, z, FROST_NOVA.radius);
     this.ctx.vfx.sound("heroSkillFrost", 0.8);
   }
 
@@ -120,6 +121,7 @@ export class HeroSkills {
         this.ctx.vfx.rangedHit(hx, hz);
       });
     }
+    this.ctx.vfx.heroSkill("barrage", x, z, 2.8);
     this.ctx.vfx.sound("heroSkillBarrage", 0.8);
     return true;
   }
@@ -134,6 +136,7 @@ export class HeroSkills {
       unit.grantDamageReduction(RALLY.shieldFactor, RALLY.shieldDuration);
       this.ctx.vfx.heal(unit.position.x, unit.position.z);
     }
+    this.ctx.vfx.heroSkill("rally", x, z, RALLY.radius);
     this.ctx.vfx.sound("heroSkillRally", 0.8);
   }
 }

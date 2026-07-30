@@ -17,6 +17,7 @@ import { earlyDetonate } from "./BomberLogic";
 import { CombatUnitAbilities } from "./CombatUnitAbilities";
 import { UnitStatusEffects } from "./UnitStatusEffects";
 import { crossesBreakPoint, mitigate } from "./ArmorLogic";
+import { ALLY_PROGRESSION, allyUpgradeMultiplier } from "../data/AllyProgressionConfig";
 
 const TAUNT_CHECK_INTERVAL = 0.4;
 
@@ -35,7 +36,7 @@ export class CombatUnit implements Damageable {
   generation = 1;
 
   health: number;
-  readonly maxHealth: number;
+  maxHealth: number;
   private _alive = true;
   private readonly corpse = newCorpseState();
 
@@ -53,6 +54,7 @@ export class CombatUnit implements Damageable {
   siegeMultiplier = 1;
   private attackSpeedBonus = 0;
   private moveSpeedBonus = 0;
+  private allyUpgradeLevelValue = 0;
 
   /** Slows and the Freeze Zone stun/immunity window — see `UnitStatusEffects`. */
   private readonly status = new UnitStatusEffects();
@@ -84,7 +86,7 @@ export class CombatUnit implements Damageable {
     readonly faction: Faction,
     private readonly rig: LiteRig,
     private readonly ctx: CombatContext,
-    healthMultiplier: number,
+    private readonly healthMultiplier: number,
     private readonly attackMultiplier: number,
     readonly squadId: number,
   ) {
@@ -103,25 +105,36 @@ export class CombatUnit implements Damageable {
   get readyToRemove(): boolean { return !this._alive && corpseExpired(this.corpse); }
   /** Seconds since death, for the tests and the squad HUD. */
   get corpseAge(): number { return this._alive ? 0 : this.corpse.elapsed; }
-  get displayName(): string { return this.def.name; }
+  get displayName(): string {
+    return this.faction === "ally" && !this.def.canRepair && this.allyUpgradeLevelValue > 0
+      ? `${this.def.name} +${this.allyUpgradeLevelValue}`
+      : this.def.name;
+  }
   get hitRadius(): number { return 0.42 * this.def.scale; }
   get level(): number { return this.def.level ?? 0; }
-  get threat(): number { return this.def.attackPower * this.attackMultiplier; }
-  get attackPower(): number { return this.def.attackPower * this.attackMultiplier; }
+  get threat(): number { return this.attackPower; }
+  get attackPower(): number {
+    return this.def.attackPower * this.attackMultiplier * allyUpgradeMultiplier(this.allyUpgradeLevelValue);
+  }
+  get allyUpgradeLevel(): number { return this.allyUpgradeLevelValue; }
+  get supportPowerMultiplier(): number { return allyUpgradeMultiplier(this.allyUpgradeLevelValue); }
   get tauntRadius(): number { return this.def.tauntRadius ?? 0; }
   get tauntAffectsBuildings(): boolean { return this.def.tauntAffectsBuildings === true; }
   get currentTarget(): Damageable | null { return this.target; }
   get aiState(): string { return this.brain ? this.brain.state : "enemy"; }
   get aiBrain(): FriendlyBrain | null { return this.brain; }
   get recoverTime(): number {
-    return Math.min(0.5, this.def.attackInterval * 0.35);
+    return Math.min(0.5, this.effectiveInterval * 0.35);
   }
   get movementSpeed(): number {
     return this.speed;
   }
   /** Effective interval and speed, including any boss-phase bonuses. */
   get effectiveInterval(): number {
-    return this.def.attackInterval / (1 + this.attackSpeedBonus + this.abilities.auraAttackBonus);
+    const upgradeSpeed = this.faction === "ally"
+      ? this.allyUpgradeLevelValue * ALLY_PROGRESSION.statPerLevel
+      : 0;
+    return this.def.attackInterval / (1 + upgradeSpeed + this.attackSpeedBonus + this.abilities.auraAttackBonus);
   }
   get effectiveMoveSpeed(): number {
     return this.def.moveSpeed * (1 + this.moveSpeedBonus + this.abilities.auraMoveBonus) * (1 - this.slowFactor);
@@ -152,6 +165,21 @@ export class CombatUnit implements Damageable {
   applySpeedBonus(attackBonus: number, moveBonus: number): void {
     this.attackSpeedBonus = attackBonus;
     this.moveSpeedBonus = moveBonus;
+  }
+
+  /** Applies a run-local class upgrade to an already deployed or new ally. */
+  applyAllyUpgradeLevel(level: number): void {
+    if (this.faction !== "ally" || this.def.canRepair) return;
+    const next = Math.max(0, Math.floor(level));
+    if (next === this.allyUpgradeLevelValue) return;
+    const previousMax = this.maxHealth;
+    this.allyUpgradeLevelValue = next;
+    this.maxHealth = Math.max(
+      1,
+      Math.round(this.def.maxHealth * this.healthMultiplier * allyUpgradeMultiplier(next)),
+    );
+    // An upgrade grants its new HP immediately without erasing existing damage.
+    this.health = Math.min(this.maxHealth, this.health + Math.max(0, this.maxHealth - previousMax));
   }
 
   setPosition(x: number, z: number): void {

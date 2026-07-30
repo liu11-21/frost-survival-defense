@@ -23,6 +23,7 @@ export interface GameEventMap {
   allWavesCleared: Record<string, never>;
 
   squadRecruited: { defId: string; name: string };
+  squadUpgraded: { defId: string; name: string; level: number };
   squadLimitReached: Record<string, never>;
 
   heroDown: Record<string, never>;

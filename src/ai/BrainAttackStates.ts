@@ -30,8 +30,7 @@ export function tickRecover(brain: FriendlyBrain, dt: number): void {
     return;
   }
   if (b.isEngineer) {
-    // A repair target stays a repair target; a self-defence swing at a
-    // hostile continues the fight instead of re-checking repair mid-combat.
+    // A damaged facility stays reserved through the repair recovery.
     if (b.target && validateTarget(b.unit, b.target) === "ok") {
       b.go(b.target.faction === b.unit.faction ? "moveToRepairRange" : "moveToTarget", "recovered");
     } else {

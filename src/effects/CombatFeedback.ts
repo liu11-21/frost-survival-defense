@@ -10,6 +10,17 @@ import type { AudioManager, SfxName } from "./AudioManager";
 import type { VFXManager } from "./VFXManager";
 
 const TAUNT_RINGS = 6;
+const SKILL_RINGS = 8;
+
+type HeroSkillKind = "frostNova" | "barrage" | "rally";
+
+interface SkillRing {
+  mesh: Mesh;
+  life: number;
+  duration: number;
+  radius: number;
+  delay: number;
+}
 
 /**
  * Turns combat events into particles, sound and camera shake. Combat code only
@@ -20,6 +31,10 @@ export class CombatFeedback implements CombatVfx {
   private readonly rings: Mesh[] = [];
   private readonly ringLife: number[] = [];
   private ringCursor = 0;
+  private readonly skillRings: SkillRing[] = [];
+  private skillRingCursor = 0;
+  private readonly skillMaterials: Record<HeroSkillKind, ReturnType<MaterialFactory["unlit"]>>;
+  private readonly skillCasts: Record<HeroSkillKind, number> = { frostNova: 0, barrage: 0, rally: 0 };
 
   constructor(
     scene: Scene,
@@ -39,6 +54,23 @@ export class CombatFeedback implements CombatVfx {
       ring.setEnabled(false);
       this.rings.push(ring);
       this.ringLife.push(0);
+    }
+    this.skillMaterials = {
+      frostNova: materials.unlit("mat.skill.frostNova", [0.35, 0.85, 1.0], 0.9),
+      barrage: materials.unlit("mat.skill.barrage", [1.0, 0.72, 0.22], 0.95),
+      rally: materials.unlit("mat.skill.rally", [0.35, 1.0, 0.62], 0.9),
+    };
+    for (let i = 0; i < SKILL_RINGS; i++) {
+      const mesh = MeshBuilder.CreateTorus(
+        `heroSkillRing${i}`,
+        { diameter: 2, thickness: 0.13, tessellation: 40 },
+        scene,
+      );
+      mesh.isPickable = false;
+      mesh.position.y = 0.12;
+      mesh.renderingGroupId = 1;
+      mesh.setEnabled(false);
+      this.skillRings.push({ mesh, life: 0, duration: 0.8, radius: 1, delay: 0 });
     }
   }
 
@@ -71,6 +103,39 @@ export class CombatFeedback implements CombatVfx {
   burstAt(key: string, x: number, z: number, count: number): void {
     this.point.set(x, 0.8, z);
     this.vfx.burst(key, this.point, count);
+  }
+
+  /** Two expanding rings plus a dense colour-coded burst make casts unmistakable. */
+  heroSkill(kind: HeroSkillKind, x: number, z: number, radius: number): void {
+    this.skillCasts[kind]++;
+    this.launchSkillRing(kind, x, z, radius, 0);
+    this.launchSkillRing(kind, x, z, radius, 0.12);
+    this.point.set(x, 0.9, z);
+    if (kind === "frostNova") this.vfx.burst("freezeZone", this.point, 60);
+    else if (kind === "barrage") this.vfx.burst("pierce", this.point, 32);
+    else this.vfx.burst("healPuff", this.point, 42);
+    this.camera.shake(kind === "barrage" ? 0.055 : 0.04);
+  }
+
+  skillEffectSnapshot(): { casts: Record<HeroSkillKind, number>; activeRings: number } {
+    return {
+      casts: { ...this.skillCasts },
+      activeRings: this.skillRings.filter((ring) => ring.mesh.isEnabled()).length,
+    };
+  }
+
+  private launchSkillRing(kind: HeroSkillKind, x: number, z: number, radius: number, delay: number): void {
+    const ring = this.skillRings[this.skillRingCursor];
+    this.skillRingCursor = (this.skillRingCursor + 1) % this.skillRings.length;
+    ring.mesh.material = this.skillMaterials[kind];
+    ring.mesh.position.set(x, 0.12, z);
+    ring.mesh.scaling.setAll(0.15);
+    ring.mesh.visibility = 1;
+    ring.life = 0;
+    ring.duration = kind === "rally" ? 1.0 : 0.75;
+    ring.radius = Math.max(1.5, radius);
+    ring.delay = delay;
+    ring.mesh.setEnabled(true);
   }
 
   /** A short-lived ground ring so the taunt radius is readable at a glance. */
@@ -132,6 +197,19 @@ export class CombatFeedback implements CombatVfx {
       const ring = this.rings[i];
       ring.visibility = Math.max(0, this.ringLife[i] / 0.55);
       if (this.ringLife[i] <= 0) ring.setEnabled(false);
+    }
+    for (const ring of this.skillRings) {
+      if (!ring.mesh.isEnabled()) continue;
+      ring.life += dt;
+      if (ring.life < ring.delay) {
+        ring.mesh.visibility = 0;
+        continue;
+      }
+      const t = Math.min(1, (ring.life - ring.delay) / ring.duration);
+      const scale = 0.15 + ring.radius * (1 - Math.pow(1 - t, 3));
+      ring.mesh.scaling.set(scale, scale, scale);
+      ring.mesh.visibility = Math.max(0, 1 - t);
+      if (t >= 1) ring.mesh.setEnabled(false);
     }
   }
 }

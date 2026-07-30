@@ -6,7 +6,7 @@
  */
 
 export async function runV9Checks(ctx) {
-  const { check, call, step, page } = ctx;
+  const { check, call, step, page, shot } = ctx;
 
   // -------------------------------------------------------------- minimap --
   console.log("\n> minimap snapshot and full-map toggle");
@@ -60,6 +60,59 @@ export async function runV9Checks(ctx) {
       Math.abs(bottomPanelLayout.squadBottom - bottomPanelLayout.furnaceBottom) <= 2,
     bottomPanelLayout,
   );
+  const labelFacing = await call("healthLabelFacing");
+  check(
+    "all visible overhead names are turned toward the camera instead of mirrored",
+    labelFacing.length > 0 && labelFacing.every((rotation) => Math.abs(Math.abs(rotation) - Math.PI) < 0.01),
+    labelFacing,
+  );
+
+  // -------------------------------------------------- ally progression ----
+  console.log("\n> recruit-panel ally progression applies 10% health/attack/speed per class level");
+  await call("grant", 9000, 9000, 9000);
+  await call("build", "northBack", "recruitHall");
+  await step(0.016, 340);
+  const warriorUpgradeBase = await call("allyUpgradeInfo", "warrior");
+  const mageUpgradeBase = await call("allyUpgradeInfo", "mage");
+  check(
+    "starting upgrade price varies with each class's recruit price",
+    warriorUpgradeBase.cost === 8 && mageUpgradeBase.cost === 35,
+    { warriorUpgradeBase, mageUpgradeBase },
+  );
+  const warriorBeforeUpgrade = await call("unitInfo", "warrior");
+  check("Warrior class upgrade succeeds", (await call("upgradeAlly", "warrior")) === null);
+  const warriorAfterUpgrade = await call("unitInfo", "warrior");
+  check(
+    "an existing Warrior immediately gains 10% health and attack",
+    warriorAfterUpgrade.max === Math.round(warriorBeforeUpgrade.max * 1.1) &&
+      Math.abs(warriorAfterUpgrade.attackPower / warriorBeforeUpgrade.attackPower - 1.1) < 0.001,
+    { warriorBeforeUpgrade, warriorAfterUpgrade },
+  );
+  check(
+    "the same upgrade grants 10% attack speed by reducing the effective interval",
+    Math.abs(warriorAfterUpgrade.effectiveInterval - warriorBeforeUpgrade.effectiveInterval / 1.1) < 0.002,
+    { warriorBeforeUpgrade, warriorAfterUpgrade },
+  );
+  check("a new Warrior squad can be recruited after the upgrade", (await call("recruit", "warrior")) === null);
+  const upgradedWarriors = await call("allUnitsOf", "warrior");
+  check(
+    "future Warrior recruits inherit the same class upgrade",
+    upgradedWarriors.length === 6 && upgradedWarriors.every((unit) => unit.max === 440 && unit.upgradeLevel === 1),
+    upgradedWarriors,
+  );
+  await page.keyboard.press("KeyG");
+  await step(0.016, 5);
+  const progressionUi = await page.evaluate(() => ({
+    warriorUpgrade: document.querySelector("[data-upgrade='warrior']")?.textContent ?? "",
+    engineerDisabled: document.querySelector("[data-upgrade='engineer']")?.disabled ?? false,
+  }));
+  check(
+    "the recruit panel exposes class upgrading and keeps Engineers non-upgradeable",
+    /升級/.test(progressionUi.warriorUpgrade) && progressionUi.engineerDisabled,
+    progressionUi,
+  );
+  await page.keyboard.press("KeyG");
+  await step(0.016, 5);
 
   // -------------------------------------------------------- attack range --
   console.log("\n> attack-range display reflects a built tower's real data");
@@ -264,6 +317,7 @@ export async function runV9Checks(ctx) {
   );
   check("skill HUD shows the 1/2/3 keys", skillUi.map((s) => s.key).join("") === "123", skillUi);
   check("every skill button has a short explanation", skillUi.every((s) => (s.description?.length ?? 0) >= 4), skillUi);
+  const skillFxBefore = await call("skillEffectSnapshot");
 
   // Frost Nova (1): damages + slows nearby enemies.
   await call("teleport", 0, -20);
@@ -278,6 +332,13 @@ export async function runV9Checks(ctx) {
   check("frostNova damaged every enemy in its radius", afterHp.every((e, i) => e.hp < beforeHp[i].hp), { beforeHp, afterHp });
   const qState = (await call("heroSkillState")).find((s) => s.id === "frostNova");
   check("frostNova is now on cooldown", qState.remaining > 0 && !qState.ready, qState);
+  let skillFx = await call("skillEffectSnapshot");
+  check(
+    "frostNova creates a visible expanding cast effect",
+    skillFx.casts.frostNova === skillFxBefore.casts.frostNova + 1 && skillFx.activeRings > 0,
+    skillFx,
+  );
+  await shot("v9-hero-skill-vfx");
   check("frostNova refuses a re-cast while on cooldown", (await call("useHeroSkill", "frostNova")) === "技能冷卻中");
   await call("killAllEnemies");
   await step(0.016, 30);
@@ -304,6 +365,12 @@ export async function runV9Checks(ctx) {
     afterJugg.hp < beforeJugg.hp - 50,
     { beforeJugg, afterJugg },
   );
+  skillFx = await call("skillEffectSnapshot");
+  check(
+    "barrage creates its own visible cast effect",
+    skillFx.casts.barrage === skillFxBefore.casts.barrage + 1 && skillFx.activeRings > 0,
+    skillFx,
+  );
   await call("killAllEnemies");
   await step(0.016, 30);
 
@@ -322,6 +389,12 @@ export async function runV9Checks(ctx) {
   check("Digit3 casts rally and starts its cooldown", rallyState.remaining > 0 && !rallyState.ready, rallyState);
   check("rally heals the hero", afterHero > beforeHero, { beforeHero, afterHero });
   check("rally heals nearby allies", afterAllyHp > beforeAllyHp, { beforeAllyHp, afterAllyHp });
+  skillFx = await call("skillEffectSnapshot");
+  check(
+    "rally creates its own visible cast effect",
+    skillFx.casts.rally === skillFxBefore.casts.rally + 1 && skillFx.activeRings > 0,
+    skillFx,
+  );
   await call("killAllAllies");
 
   // The HUD's cooldown text reads the same state `tryUse` checks.
@@ -335,6 +408,7 @@ export async function runV9Checks(ctx) {
   await call("startStage", "stage-1");
   await step(0.016, 5);
   check("starting a new run resets all hero skill cooldowns", (await call("heroSkillState")).every((s) => s.ready));
+  check("starting a new run also resets run-local ally upgrades", (await call("allyUpgradeInfo", "warrior")).level === 0);
 
   return {};
 }

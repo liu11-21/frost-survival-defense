@@ -71,7 +71,7 @@ export function tickFormation(brain: FriendlyBrain, dt: number): void {
 
   if (b.retargetReady) {
     b.setRetarget(RETARGET_INTERVAL.idle);
-    const found = b.isHealer ? null : b.unit.findHostileTarget();
+    const found = b.isHealer || b.isEngineer ? null : b.unit.findHostileTarget();
     if (found) {
       b.setTarget(found);
       b.stuck.reset(b.unit.position.x, b.unit.position.z, b.clock);
@@ -80,6 +80,10 @@ export function tickFormation(brain: FriendlyBrain, dt: number): void {
     }
     if (b.isHealer && b.deps.hasHealTarget?.(b.unit)) {
       b.go("moveToHealRange", "healNeeded");
+      return;
+    }
+    if (b.isEngineer) {
+      b.go("acquireRepairTarget", "engineerScan");
       return;
     }
   }
@@ -114,6 +118,6 @@ export function tickHold(brain: FriendlyBrain, dt: number): void {
   }
   if (b.retargetReady) {
     b.setRetarget(RETARGET_INTERVAL.idle);
-    b.go(b.isHealer ? "acquireHealTarget" : "acquireTarget", "holdRetry");
+    b.go(b.isHealer ? "acquireHealTarget" : b.isEngineer ? "acquireRepairTarget" : "acquireTarget", "holdRetry");
   }
 }

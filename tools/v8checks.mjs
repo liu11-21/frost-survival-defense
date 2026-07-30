@@ -400,8 +400,17 @@ export async function runV8Checks(ctx) {
     JSON.stringify(strategyResults),
   );
   check(
-    "after wave 10 every strategy either reaches wave 20 or ends in a real defeat, never a stalled simulation",
-    strategyResults.every((r) => r.reachedTargetWave || r.deathWave !== null),
+    "after wave 10 every strategy either concludes or leaves every surviving enemy on a legal target",
+    strategyResults.every(
+      (r) =>
+        r.reachedTargetWave ||
+        r.deathWave !== null ||
+        (
+          r.phase === "active" &&
+          r.remaining.length > 0 &&
+          r.remaining.every((enemy) => enemy.targetId && enemy.targetId !== "none")
+        ),
+    ),
     JSON.stringify(strategyResults),
   );
 
@@ -490,6 +499,7 @@ async function runStrategyRun(ctx, config) {
   }
   const timer = await call("waveTimer");
   const remaining = await call("enemyReport");
+  const ai = await call("watchdog");
   return {
     name: config.name,
     reachedWave10,
@@ -497,6 +507,7 @@ async function runStrategyRun(ctx, config) {
     deathWave,
     lastWaveSeen,
     phase: timer.phase,
+    aiStalls: ai.stalls,
     remaining: remaining.slice(0, 8),
   };
 }

@@ -90,12 +90,19 @@ export class CombatWorld {
     return result;
   }
 
-  nearestUnit(faction: Faction, x: number, z: number, maxRange: number): CombatUnit | null {
+  nearestUnit(
+    faction: Faction,
+    x: number,
+    z: number,
+    maxRange: number,
+    include: (unit: CombatUnit) => boolean = () => true,
+  ): CombatUnit | null {
     const found = this.queryUnits(faction, x, z, maxRange);
     let best: CombatUnit | null = null;
     let bestDist = Infinity;
     for (let i = 0; i < found.length; i++) {
       const u = found[i];
+      if (!include(u)) continue;
       const dx = u.position.x - x;
       const dz = u.position.z - z;
       const d = dx * dx + dz * dz;
@@ -128,12 +135,19 @@ export class CombatWorld {
   }
 
   /** Most dangerous living unit in range, used by enemy ranged attackers. */
-  highestThreatUnit(faction: Faction, x: number, z: number, maxRange: number): CombatUnit | null {
+  highestThreatUnit(
+    faction: Faction,
+    x: number,
+    z: number,
+    maxRange: number,
+    include: (unit: CombatUnit) => boolean = () => true,
+  ): CombatUnit | null {
     const found = this.queryUnits(faction, x, z, maxRange);
     let best: CombatUnit | null = null;
     let bestThreat = -1;
     for (let i = 0; i < found.length; i++) {
       const u = found[i];
+      if (!include(u)) continue;
       if (u.threat > bestThreat) {
         bestThreat = u.threat;
         best = u;

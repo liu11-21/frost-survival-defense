@@ -5,6 +5,8 @@ import { MEDIC_RULES } from "../data/UnitDefinitions";
 import type { Building } from "../buildings/Building";
 import type { CombatContext } from "./CombatContext";
 import type { CombatUnit } from "./CombatUnit";
+import { allyUpgradeMultiplier } from "../data/AllyProgressionConfig";
+import { ENGINEER_RULES } from "../data/EngineerConfig";
 
 let nextSquadId = 1;
 
@@ -29,12 +31,16 @@ export class Squad {
   private healCooldown = MEDIC_RULES.interval * Math.random();
   private armedTarget: Squad | null = null;
   private armedRepairTarget: Building | null = null;
+  private repairWaitTarget: Building | null = null;
+  private repairWaitElapsed = 0;
+  private repairWaiting = false;
   private readonly scratch = new Vector3();
   private readonly slot = new Vector3();
 
   constructor(
     readonly def: UnitDefinition,
     readonly faction: Faction,
+    private upgradeLevelValue = 0,
   ) {}
 
   add(unit: CombatUnit): void {
@@ -54,6 +60,16 @@ export class Squad {
 
   get isMedic(): boolean {
     return this.def.attackType === "heal";
+  }
+
+  get upgradeLevel(): number {
+    return this.upgradeLevelValue;
+  }
+
+  applyUpgradeLevel(level: number): void {
+    if (this.def.canRepair) return;
+    this.upgradeLevelValue = Math.max(0, Math.floor(level));
+    for (const member of this.members) member.applyAllyUpgradeLevel(this.upgradeLevelValue);
   }
 
   /** Total current health over total max health across living members. */
@@ -123,6 +139,7 @@ export class Squad {
    */
   update(dt: number): void {
     if (this.healCooldown > 0) this.healCooldown -= dt;
+    if (this.repairWaiting && this.repairWaitTarget?.alive) this.repairWaitElapsed += dt;
     for (let i = this.members.length - 1; i >= 0; i--) {
       const member = this.members[i];
       if (member.readyToRemove) {
@@ -176,7 +193,7 @@ export class Squad {
     healStats.events += 1;
     for (const m of target.members) {
       if (!m.alive) continue;
-      m.heal(MEDIC_RULES.healPerMember);
+      m.heal(MEDIC_RULES.healPerMember * allyUpgradeMultiplier(this.upgradeLevelValue));
       healStats.healedUnits += 1;
     }
     target.centre(this.scratch);
@@ -196,22 +213,41 @@ export class Squad {
     return this.def.canRepair === true;
   }
 
-  /** One repair slot per squad at a time, so three engineers cannot triple the rate. */
-  canRepairNow(): boolean {
-    return this.isEngineerSquad && this.armedRepairTarget === null;
-  }
-
-  armRepair(target: Building): void {
+  /**
+   * Begins the 3s/6s countdown on arrival, then arms exactly one 10% pulse.
+   * Returning false means the Engineer is still visibly working and counting.
+   */
+  requestRepair(target: Building): boolean {
+    if (!this.isEngineerSquad || this.armedRepairTarget !== null) return false;
+    if (this.repairWaitTarget !== target) {
+      this.repairWaitTarget = target;
+      this.repairWaitElapsed = 0;
+      this.repairWaiting = false;
+    }
+    if (!this.repairWaiting) {
+      this.repairWaiting = true;
+      this.repairWaitElapsed = 0;
+      return false;
+    }
+    const underAttack = target.secondsSinceDamaged < ENGINEER_RULES.underAttackWindow;
+    const required = underAttack
+      ? ENGINEER_RULES.underAttackRepairInterval
+      : ENGINEER_RULES.safeRepairInterval;
+    if (this.repairWaitElapsed < required) return false;
     this.armedRepairTarget = target;
+    this.repairWaiting = false;
+    return true;
   }
 
-  /** Applies the armed repair, scaled by how many engineers are still alive. */
+  /** Applies one 10%-of-maximum-HP repair pulse. */
   releaseRepair(ctx: CombatContext): boolean {
     const target = this.armedRepairTarget;
     this.armedRepairTarget = null;
+    this.repairWaitElapsed = 0;
+    this.repairWaiting = true;
     if (!target || !target.alive) return false;
 
-    const amount = (this.def.repairPower ?? 0) * this.aliveCount;
+    const amount = target.maxHealth * ENGINEER_RULES.repairFraction;
     if (amount <= 0) return false;
     target.repair(amount);
     repairStats.events += 1;
@@ -224,10 +260,30 @@ export class Squad {
     this.armedRepairTarget = null;
   }
 
+  get assignedRepairTarget(): Building | null {
+    return this.repairWaitTarget;
+  }
+
+  reserveRepairTarget(target: Building): void {
+    if (this.repairWaitTarget === target) return;
+    this.repairWaitTarget = target;
+    this.repairWaitElapsed = 0;
+    this.repairWaiting = false;
+  }
+
+  clearRepairTarget(): void {
+    this.armedRepairTarget = null;
+    this.repairWaitTarget = null;
+    this.repairWaitElapsed = 0;
+    this.repairWaiting = false;
+  }
+
   dispose(): void {
     for (const m of this.members) m.dispose();
     this.members.length = 0;
     this.armedTarget = null;
     this.armedRepairTarget = null;
+    this.repairWaitTarget = null;
+    this.repairWaiting = false;
   }
 }

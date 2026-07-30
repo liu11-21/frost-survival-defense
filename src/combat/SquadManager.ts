@@ -5,7 +5,6 @@ import { validateTarget } from "../ai/TargetValidator";
 import type { Faction, UnitDefinition } from "../data/CombatTypes";
 import { ALLY_BY_ID } from "../data/UnitDefinitions";
 import { ENEMY_BY_ID } from "../data/EnemyDefinitions";
-import { ALLY_ENGAGE_RANGE } from "./UnitTargeting";
 import { registerClaim, resetClaims } from "../ai/ThreatTracker";
 import type { Building } from "../buildings/Building";
 import type { BuildingManager } from "../buildings/BuildingManager";
@@ -14,6 +13,7 @@ import { CombatUnit } from "./CombatUnit";
 import type { Damageable } from "./Damageable";
 import type { HumanoidTemplateCache } from "./LiteHumanoid";
 import { Squad } from "./Squad";
+import { ENGINEER_RULES } from "../data/EngineerConfig";
 
 /**
  * Owns every squad on the field, runs their updates, and keeps ally squads in a
@@ -36,6 +36,7 @@ export class SquadManager {
   private readonly member = new Vector3();
   private readonly fallbackRally = new Vector3();
   private claimTimer = 0;
+  private readonly repairClaims = new Map<number, number>();
 
   constructor(
     private readonly templates: HumanoidTemplateCache,
@@ -48,7 +49,13 @@ export class SquadManager {
    */
   get allySquadSlotsUsed(): number {
     let n = 0;
-    for (const s of this.allySquads) if (s.alive) n++;
+    for (const s of this.allySquads) if (s.alive && !s.isEngineerSquad) n++;
+    return n;
+  }
+
+  get engineerSquadsUsed(): number {
+    let n = 0;
+    for (const s of this.allySquads) if (s.alive && s.isEngineerSquad) n++;
     return n;
   }
 
@@ -71,10 +78,18 @@ export class SquadManager {
     }
   }
 
-  recruit(defId: string, x: number, z: number): Squad | null {
+  recruit(defId: string, x: number, z: number, upgradeLevel = 0): Squad | null {
     const def = ALLY_BY_ID.get(defId);
     if (!def) return null;
-    const squad = this.spawnSquad(def, "ally", x, z, this.ctx.scaling.allyHealth, this.ctx.scaling.allyAttack);
+    const squad = this.spawnSquad(
+      def,
+      "ally",
+      x,
+      z,
+      this.ctx.scaling.allyHealth,
+      this.ctx.scaling.allyAttack,
+      def.canRepair ? 0 : upgradeLevel,
+    );
     this.allySquads.push(squad);
     for (const m of squad.members) {
       m.attachBrain(
@@ -123,12 +138,14 @@ export class SquadManager {
     z: number,
     healthMul: number,
     attackMul: number,
+    upgradeLevel = 0,
   ): Squad {
-    const squad = new Squad(def, faction);
+    const squad = new Squad(def, faction, upgradeLevel);
     const template = this.templates.get(def.visual);
     for (let i = 0; i < def.squadSize; i++) {
       const rig = template.spawn(def.scale);
       const unit = new CombatUnit(def, faction, rig, this.ctx, healthMul, attackMul, squad.id);
+      unit.applyAllyUpgradeLevel(upgradeLevel);
       this.formation.memberSlot(i, def.squadSize, x, z, this.member);
       unit.setPosition(this.member.x, this.member.z);
       unit.setYaw(Math.atan2(-x, -z));
@@ -197,14 +214,26 @@ export class SquadManager {
    */
   update(dt: number, rally: Vector3 | null): void {
     this.formation.beginFrame();
+    this.cleanupRepairClaims();
 
     const point = rally ?? this.fallbackRally;
     let index = 0;
+    let engineerIndex = 0;
     for (const squad of this.allySquads) {
       if (squad.alive) {
-        this.formation.rallySlot(index, point.x, point.z, this.anchor);
+        if (squad.isEngineerSquad) {
+          const angle = engineerIndex * (Math.PI * 2 / 5);
+          this.anchor.set(
+            Math.sin(angle) * ENGINEER_RULES.furnaceIdleRadius,
+            0,
+            Math.cos(angle) * ENGINEER_RULES.furnaceIdleRadius,
+          );
+          engineerIndex++;
+        } else {
+          this.formation.rallySlot(index, point.x, point.z, this.anchor);
+          index++;
+        }
         squad.assignRally(this.anchor, this.formation);
-        index++;
       } else if (!squad.wipeReported) {
         squad.wipeReported = true;
         this.onSquadWiped?.(squad);
@@ -291,51 +320,45 @@ export class SquadManager {
 
   // ------------------------------------------------------------- repair ----
 
-  /**
-   * The single weakest attackable, complete, non-demolishing structure in
-   * range — never the furnace, never a building that cannot be attacked at
-   * all, which rules it out as damaged in the first place.
-   *
-   * The search radius is the same generous engagement range every other ally
-   * uses to spot a fight, not the engineer's melee `attackRange` — otherwise
-   * it could only ever notice a building it was already standing next to.
-   */
+  /** The nearest complete, living, damaged facility not claimed by another
+   * Engineer — never the furnace and never an untargetable economy building. */
   private findRepairTarget(engineer: CombatUnit): Damageable | null {
     const buildings = this.buildings;
     if (!buildings) return null;
+    const squad = this.allySquads.find((candidate) => candidate.id === engineer.squadId);
+    if (!squad) return null;
     let best: Building | null = null;
-    let bestPct = Infinity;
     let bestDist = Infinity;
-    const range = ALLY_ENGAGE_RANGE;
 
     for (const slot of buildings.slots) {
       const b = slot.building;
       if (!b || !b.alive || !b.def.canBeAttacked || !b.isComplete || b.isDemolishing) continue;
       if (b.health >= b.maxHealth) continue;
+      const claimedBy = this.repairClaims.get(b.damageId);
+      if (claimedBy !== undefined && claimedBy !== squad.id) continue;
       const dx = b.position.x - engineer.position.x;
       const dz = b.position.z - engineer.position.z;
       const dist = dx * dx + dz * dz;
-      if (dist > range * range) continue;
-      const pct = b.health / b.maxHealth;
-      if (pct < bestPct - 0.0001 || (Math.abs(pct - bestPct) <= 0.0001 && dist < bestDist)) {
-        bestPct = pct;
+      if (dist < bestDist) {
         bestDist = dist;
         best = b;
       }
     }
+    for (const [damageId, squadId] of this.repairClaims) {
+      if (squadId === squad.id && damageId !== best?.damageId) this.repairClaims.delete(damageId);
+    }
+    if (best) {
+      this.repairClaims.set(best.damageId, squad.id);
+      squad.reserveRepairTarget(best);
+    }
+    else squad.clearRepairTarget();
     return best;
   }
 
-  /**
-   * Arms one squad-wide repair. Mirrors `beginHeal`: only one engineer per
-   * squad can be armed at a time, so three engineers repair at one rate
-   * rather than three times the rate.
-   */
+  /** Advances the selected Engineer's 3s/6s repair countdown. */
   private beginRepair(engineer: CombatUnit, target: Damageable): boolean {
     const squad = this.allySquads.find((s) => s.id === engineer.squadId);
-    if (!squad || !squad.canRepairNow()) return false;
-    squad.armRepair(target as Building);
-    return true;
+    return squad ? squad.requestRepair(target as Building) : false;
   }
 
   private releaseRepair(engineer: CombatUnit): boolean {
@@ -348,6 +371,7 @@ export class SquadManager {
     for (const s of this.enemySquads) s.dispose();
     this.allySquads.length = 0;
     this.enemySquads.length = 0;
+    this.repairClaims.clear();
   }
 
   clearEnemies(): void {
@@ -361,6 +385,24 @@ export class SquadManager {
       const t = unit.currentTarget;
       if (t && validateTarget(unit, t) !== "ok") unit.setTarget(null);
     });
+  }
+
+  /** Applies a class upgrade to every currently deployed squad of that type. */
+  setAllyUpgradeLevel(defId: string, level: number): void {
+    for (const squad of this.allySquads) {
+      if (squad.def.id === defId) squad.applyUpgradeLevel(level);
+    }
+  }
+
+  private cleanupRepairClaims(): void {
+    for (const [damageId, squadId] of this.repairClaims) {
+      const squad = this.allySquads.find((candidate) => candidate.id === squadId && candidate.alive);
+      const target = squad?.assignedRepairTarget;
+      if (!squad || !target || target.damageId !== damageId || !target.alive || target.health >= target.maxHealth) {
+        this.repairClaims.delete(damageId);
+        squad?.clearRepairTarget();
+      }
+    }
   }
 }
 

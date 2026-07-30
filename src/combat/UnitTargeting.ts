@@ -65,12 +65,14 @@ export function enemyTargetPriority(target: Damageable): number {
   if (target.kind === "wall") return 0;
   if (target.kind === "unit") {
     const defId = (target as Damageable & { def?: { id?: string } }).def?.id;
-    return defId === "shield" ? 1 : 2;
+    if (defId === "shield") return 1;
+    if (defId === "engineer") return 4;
+    return 2;
   }
   if (target.kind === "hero") return 3;
-  if (target.kind === "tower" || target.kind === "warehouse" || target.kind === "recruitHall") return 4;
-  if (target.kind === "furnace") return 5;
-  return 6;
+  if (target.kind === "tower" || target.kind === "warehouse" || target.kind === "recruitHall") return 5;
+  if (target.kind === "furnace") return 6;
+  return 7;
 }
 
 function nearestReachableAlly(
@@ -127,13 +129,15 @@ function acquireSpecialistEnemyTarget(unit: CombatUnit, ctx: CombatContext): Dam
   if (canReach(taunter)) return taunter;
 
   const ranged = isRanged(unit);
+  const engineerAllowed = (candidate: CombatUnit): boolean =>
+    candidate.def.id !== "engineer" || !world.hero?.alive;
   if (ranged) {
-    const threat = world.highestThreatUnit("ally", x, z, unit.def.attackRange);
+    const threat = world.highestThreatUnit("ally", x, z, unit.def.attackRange, engineerAllowed);
     if (canReach(threat)) return threat;
     const hero = world.hero;
     if (hero && hero.alive && withinRange(hero, x, z, unit.def.attackRange) && canReach(hero)) return hero;
   } else {
-    const nearAlly = world.nearestUnit("ally", x, z, ENEMY_AGGRO_RANGE);
+    const nearAlly = world.nearestUnit("ally", x, z, ENEMY_AGGRO_RANGE, engineerAllowed);
     const hero = world.hero;
     const heroClose = hero !== null && hero.alive && withinRange(hero, x, z, ENEMY_AGGRO_RANGE);
     if (canReach(nearAlly) && !heroClose) return nearAlly;
@@ -193,11 +197,20 @@ export function acquireEnemyTarget(unit: CombatUnit, ctx: CombatContext): Damage
   const shield = nearestReachableAlly(unit, ctx, (candidate) => candidate.def.id === "shield");
   if (shield) return shield;
 
-  const otherAlly = nearestReachableAlly(unit, ctx, (candidate) => candidate.def.id !== "shield");
+  const otherAlly = nearestReachableAlly(
+    unit,
+    ctx,
+    (candidate) => candidate.def.id !== "shield" && candidate.def.id !== "engineer",
+  );
   if (otherAlly) return otherAlly;
 
   const hero = world.hero;
   if (hero?.alive && unit.canReach(hero)) return hero;
+
+  if (!hero?.alive) {
+    const engineer = nearestReachableAlly(unit, ctx, (candidate) => candidate.def.id === "engineer");
+    if (engineer) return engineer;
+  }
 
   const structure = nearestReachableStructure(unit, ctx);
   if (structure) return structure;

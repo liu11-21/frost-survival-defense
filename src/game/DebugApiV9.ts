@@ -18,6 +18,11 @@ export function createV9DebugApi(s: GameSystems): Record<string, unknown> {
     furnaceLevel: () => s.furnace.currentLevel,
     structureRepairBurstAt: (level: number, maxHealthAtLevelEleven: number) =>
       structureRepairFixedBurst(level, maxHealthAtLevelEleven),
+    skillEffectSnapshot: () => s.feedback.skillEffectSnapshot(),
+    healthLabelFacing: () =>
+      s.scene.meshes
+        .filter((mesh) => mesh.name.startsWith("hpLabelPlane") && mesh.isEnabled())
+        .map((mesh) => Number(mesh.rotation.y.toFixed(3))),
     heroTargetId: () => s.hero.currentTarget?.def.id ?? null,
     heroTargetAlive: () => s.hero.currentTarget?.alive ?? null,
   };

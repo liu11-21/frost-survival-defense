@@ -18,6 +18,7 @@ interface Row {
   total: number;
   health: number;
   status: Status;
+  upgradeLevel: number;
 }
 
 const STATUS_TEXT: Record<Status, string> = {
@@ -123,6 +124,7 @@ export class SquadStatusHud {
           total: 0,
           health: 0,
           status: "normal",
+          upgradeLevel: squad.upgradeLevel,
         };
         byType.set(squad.def.id, row);
       }
@@ -144,14 +146,25 @@ export class SquadStatusHud {
       if (byType.has(defId)) continue;
       const def = ALLY_BY_ID.get(defId);
       if (!def) continue;
-      rows.push({ defId, name: def.name, squads: 0, alive: 0, total: 0, health: 0, status: "wiped" });
+      rows.push({
+        defId,
+        name: def.name,
+        squads: 0,
+        alive: 0,
+        total: 0,
+        health: 0,
+        status: "wiped",
+        upgradeLevel: this.run.allyUpgradeLevel(defId),
+      });
     }
     return rows;
   }
 
   private render(): void {
     const rows = this.collect();
-    this.header.textContent = `我方小隊　${this.squads.allySquadSlotsUsed} / ${this.run.squadLimit}`;
+    this.header.textContent =
+      `我方小隊 ${this.squads.allySquadSlotsUsed}/${this.run.squadLimit}` +
+      `　工程 ${this.squads.engineerSquadsUsed}/${this.run.engineerLimit}`;
     if (rows.length === 0) {
       this.list.innerHTML = '<div class="squad-empty">尚未招募任何小隊</div>';
       return;
@@ -166,7 +179,7 @@ export class SquadStatusHud {
         return `<button class="squad-row ${row.status}${on}" data-def="${row.defId}"
             title="${row.name}　${detail}">
             <span class="squad-thumb">${unitThumb(row.defId, 22)}</span>
-            <span class="squad-name">${row.name}</span>
+            <span class="squad-name">${row.name}${row.upgradeLevel > 0 ? ` +${row.upgradeLevel}` : ""}</span>
             <span class="squad-count">${row.status === "wiped" ? "—" : `×${row.squads}`}</span>
             <span class="squad-state">${STATUS_TEXT[row.status]}</span>
           </button>`;

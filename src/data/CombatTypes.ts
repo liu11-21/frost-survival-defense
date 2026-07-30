@@ -80,11 +80,8 @@ export interface UnitDefinition {
 
   // ----------------------------------------------------------- v5 units ----
 
-  /** Engineer: repairs the weakest attackable structure in range instead of
-   * fighting, falling back to its normal attack when nothing needs it. */
+  /** Engineer: independently seeks and repairs attackable structures. */
   canRepair?: boolean;
-  /** HP restored per repair event, before scaling by squad size. */
-  repairPower?: number;
 
   /** Musketeer-style bonus damage by the target's level tier. Ranges are
    * inclusive; multiple entries may apply to different tiers at once. */

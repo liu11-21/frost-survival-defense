@@ -25,6 +25,8 @@ export function createV6DebugApi(s: GameSystems): Record<string, unknown> {
         bomberCountdown: Number(u.bomberCountdown.toFixed(2)),
         effectiveMoveSpeed: Number(u.effectiveMoveSpeed.toFixed(2)),
         effectiveInterval: Number(u.effectiveInterval.toFixed(3)),
+        attackPower: Number(u.attackPower.toFixed(2)),
+        upgradeLevel: u.allyUpgradeLevel,
         aiState: u.aiState,
         targetKind: u.currentTarget?.kind ?? null,
       };
@@ -34,6 +36,9 @@ export function createV6DebugApi(s: GameSystems): Record<string, unknown> {
         .filter((u) => u.alive && u.def.id === defId)
         .map((u) => ({
           hp: Math.ceil(u.health),
+          max: u.maxHealth,
+          attackPower: Number(u.attackPower.toFixed(2)),
+          upgradeLevel: u.allyUpgradeLevel,
           x: Number(u.position.x.toFixed(1)),
           z: Number(u.position.z.toFixed(1)),
           slowFactor: Number(u.slowFactor.toFixed(3)),
@@ -42,9 +47,38 @@ export function createV6DebugApi(s: GameSystems): Record<string, unknown> {
           effectiveInterval: Number(u.effectiveInterval.toFixed(3)),
         })),
     repairStats: () => ({ ...repairStats }),
+    engineerReport: () =>
+      s.squads.allySquads
+        .filter((squad) => squad.alive && squad.isEngineerSquad)
+        .map((squad) => {
+          const unit = squad.members.find((member) => member.alive);
+          const target = squad.assignedRepairTarget;
+          return {
+            squadId: squad.id,
+            hp: unit ? Math.ceil(unit.health) : 0,
+            x: unit ? Number(unit.position.x.toFixed(2)) : 0,
+            z: unit ? Number(unit.position.z.toFixed(2)) : 0,
+            targetSlot: target?.slot.id ?? null,
+            state: unit?.aiState ?? "none",
+          };
+        }),
+    engineerCounts: () => ({
+      used: s.squads.engineerSquadsUsed,
+      limit: s.run.engineerLimit,
+      regularUsed: s.squads.allySquadSlotsUsed,
+    }),
+    allyUpgradeInfo: (defId: string) => ({
+      level: s.run.allyUpgradeLevel(defId),
+      cost: s.run.allyUpgradeCost(defId),
+      stats: s.run.allyUpgradeStats(defId),
+    }),
+    upgradeAlly: (defId: string) => s.run.tryUpgradeAlly(defId),
     allyTargetKind: (defId: string) => {
       const u = s.world.allies.find((a) => a.alive && a.def.id === defId);
-      const t = u?.currentTarget as { def?: { id?: string }; kind?: string } | null | undefined;
+      const t = (u?.aiBrain?.currentTarget ?? u?.currentTarget) as
+        | { def?: { id?: string }; kind?: string }
+        | null
+        | undefined;
       if (!t) return null;
       return (t as { def?: { id?: string } }).def?.id ?? t.kind ?? null;
     },

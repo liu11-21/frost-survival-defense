@@ -19,7 +19,6 @@ import { BuildSlot } from "./BuildSlot";
 import { collectProduction, handleDestroyed, scatter } from "./BuildingUpkeep";
 import { canDemolish, type DemolishCheck } from "./Demolition";
 import { completeDemolition } from "./DemolitionRunner";
-import { ENGINEER_BUILD_BOOST, engineerNearby } from "./EngineerSupport";
 import { buildVisualReport, revalidateAll, type VisualReportRow } from "./VisualReport";
 import { RebuildQueue } from "./RebuildQueue";
 
@@ -210,8 +209,7 @@ export class BuildingManager {
       }
 
       const wasComplete = b.isComplete;
-      const buildBonus = !b.isComplete && engineerNearby(this.world, slot.x, slot.z) ? ENGINEER_BUILD_BOOST.bonus : 0;
-      b.update(dt, ctx, productionRate, autoCollect, buildBonus, furnaceLevel);
+      b.update(dt, ctx, productionRate, autoCollect, 0, furnaceLevel);
       if (b.def.canBeAttacked && b.secondsSinceDamaged <= dt * 1.5) this.onStructureDamaged?.(b);
       if (b.isDemolishing) {
         // A warehouse still holds the cap open until it is actually gone, so the

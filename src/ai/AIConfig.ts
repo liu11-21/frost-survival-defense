@@ -8,6 +8,7 @@ export const RETARGET_INTERVAL = {
   melee: 0.2,
   ranged: 0.25,
   heal: 0.3,
+  engineer: 3,
   /** Nothing on the field at all — back off to save queries. */
   idle: 0.5,
 };

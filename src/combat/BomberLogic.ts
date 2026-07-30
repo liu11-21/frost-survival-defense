@@ -20,7 +20,12 @@ export function updateBomber(unit: CombatUnit, dt: number, ctx: CombatContext): 
   if (!unit.bomberArmed) {
     const target = unit.currentTarget;
     const inRange =
-      target !== null && target.alive && unit.distanceTo(target.position.x, target.position.z) <= cfg.triggerRange;
+      target !== null &&
+      target.alive &&
+      // The movement motor stops at the target's outer edge. Reuse that exact
+      // reach so a bomber beside a large facility does not wait forever for
+      // its centre point to enter the smaller unit-only trigger radius.
+      unit.distanceTo(target.position.x, target.position.z) <= unit.attackReach(target);
     if (inRange) {
       unit.bomberArmed = true;
       unit.bomberCountdown = cfg.armDelay;

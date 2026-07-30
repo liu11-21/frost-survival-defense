@@ -46,25 +46,45 @@ export async function runV6Checks(ctx) {
   await step(0.016, 340);
 
   // -------------------------------------------------------------- engineer --
-  console.log("\n> Engineer: repairs the weakest attackable structure, not the furnace");
+  console.log("\n> Engineer: independent nearest-facility repair role and furnace-scaled cap");
   await call("build", "southFrontA", "tower");
+  await call("build", "northFrontA", "crossbowTower");
   await step(0.016, 260);
   await call("damageSlot", "southFrontA", 400);
+  await call("damageSlot", "northFrontA", 1000);
   const towerHurt = await call("slotHealth", "southFrontA");
-  check("the tower actually took damage before the repair test", towerHurt.health < towerHurt.max, JSON.stringify(towerHurt));
+  const fartherTowerHurt = await call("slotHealth", "northFrontA");
+  check(
+    "both facilities took different amounts of damage before the repair test",
+    towerHurt.health < towerHurt.max && fartherTowerHurt.health < fartherTowerHurt.max,
+    JSON.stringify({ towerHurt, fartherTowerHurt }),
+  );
 
   await call("teleport", 0, -29); // clear of the hero's own auto-attack range
   const towerPos = await call("slotWorldPos", "southFrontA");
   await call("spawnAlly", "engineer", towerPos.x + 1, towerPos.z);
   await step(0.016, 5);
+  let engineerReport = await call("engineerReport");
+  check(
+    "a newly spawned Engineer scans immediately and chooses the nearest damaged facility, not the lowest-HP one",
+    engineerReport.length === 1 && engineerReport[0].targetSlot === "southFrontA",
+    JSON.stringify(engineerReport),
+  );
   await call("resetHealStats");
   const repairBefore = await call("repairStats");
-  await step(0.016, 400);
+  await step(0.016, 155);
+  const beforeThreeSecondPulse = await call("slotHealth", "southFrontA");
+  check(
+    "safe-facility repair waits for a complete three-second countdown",
+    beforeThreeSecondPulse.health === towerHurt.health,
+    JSON.stringify({ towerHurt, beforeThreeSecondPulse }),
+  );
+  await step(0.016, 90);
   const towerAfter = await call("slotHealth", "southFrontA");
   const repairAfter = await call("repairStats");
   check(
-    "an engineer squad repairs a damaged attackable structure over time",
-    towerAfter.health > towerHurt.health,
+    "the completed Engineer pulse restores exactly 10% of facility maximum HP",
+    Math.abs(towerAfter.health - towerHurt.health - towerAfter.max * 0.1) < 0.01,
     `before=${towerHurt.health} after=${towerAfter.health}`,
   );
   check(
@@ -72,9 +92,74 @@ export async function runV6Checks(ctx) {
     repairAfter.events > repairBefore.events,
     `before=${repairBefore.events} after=${repairAfter.events}`,
   );
+  const attackedCycleStart = await call("slotHealth", "southFrontA");
+  for (let i = 0; i < 5; i++) {
+    await call("damageSlot", "southFrontA", 1);
+    await step(0.016, 60);
+  }
+  const beforeSixSecondPulse = await call("slotHealth", "southFrontA");
+  check(
+    "repeated incoming hits prevent the slower repair pulse before six seconds",
+    Math.abs(beforeSixSecondPulse.health - (attackedCycleStart.health - 5)) < 0.01,
+    JSON.stringify({ attackedCycleStart, beforeSixSecondPulse }),
+  );
+  await call("damageSlot", "southFrontA", 1);
+  await step(0.016, 75);
+  const afterSixSecondPulse = await call("slotHealth", "southFrontA");
+  check(
+    "an actively attacked facility receives one 10% pulse after six seconds",
+    Math.abs(afterSixSecondPulse.health - (beforeSixSecondPulse.health - 1 + afterSixSecondPulse.max * 0.1)) < 0.01,
+    JSON.stringify({ beforeSixSecondPulse, afterSixSecondPulse }),
+  );
+
+  const northTowerPos = await call("slotWorldPos", "northFrontA");
+  await call("spawnAlly", "engineer", northTowerPos.x + 1, northTowerPos.z);
+  await step(0.016, 10);
+  engineerReport = await call("engineerReport");
+  check(
+    "two Engineers reserve different damaged facilities instead of double-repairing one",
+    new Set(engineerReport.map((entry) => entry.targetSlot).filter(Boolean)).size === engineerReport.length,
+    JSON.stringify(engineerReport),
+  );
+  const engineerCapacity = await call("engineerCounts");
+  check(
+    "two Engineer squads consume no ordinary squad slots",
+    engineerCapacity.used === 2 && engineerCapacity.regularUsed === 0,
+    JSON.stringify(engineerCapacity),
+  );
+  check("the base Engineer cap refuses a third squad", (await call("recruit", "engineer")) === "工程兵已達上限");
+  check("Engineer limit stays 2 through furnace Lv.19", (await call("setFurnaceLevel", 19)) === 19 && (await call("engineerCounts")).limit === 2);
+  check("Engineer limit becomes 3 at furnace Lv.20", (await call("setFurnaceLevel", 20)) === 20 && (await call("engineerCounts")).limit === 3);
+  check("a third Engineer can then be recruited", (await call("recruit", "engineer")) === null);
+  check("Engineer limit becomes 4 at Lv.50", (await call("setFurnaceLevel", 50)) === 50 && (await call("engineerCounts")).limit === 4);
+  check("Engineer limit is still 4 at Lv.79", (await call("setFurnaceLevel", 79)) === 79 && (await call("engineerCounts")).limit === 4);
+  check("Engineer limit becomes 5 only at Lv.80", (await call("setFurnaceLevel", 80)) === 80 && (await call("engineerCounts")).limit === 5);
   await call("killAllAllies");
   await step(0.016, 200);
   await shot("v6-engineer-repair");
+
+  await call("startStage", "stage-1");
+  await step(0.016, 10);
+  await call("spawnAlly", "engineer", 0, 3);
+  await call("spawnEnemy", "grunt", 0, 7);
+  await step(0.016, 30);
+  let enemyTarget = (await call("enemyReport"))[0];
+  check(
+    "an enemy cannot target an Engineer while the hero is standing",
+    enemyTarget?.targetId === "hero",
+    JSON.stringify(enemyTarget),
+  );
+  await call("hurtHero", 999999);
+  await step(0.016, 30);
+  enemyTarget = (await call("enemyReport"))[0];
+  check(
+    "after the hero falls, the Engineer becomes the next legal target",
+    enemyTarget?.targetId === "engineer",
+    JSON.stringify(enemyTarget),
+  );
+  await call("killAllEnemies");
+  await call("killAllAllies");
+  await step(0.016, 100);
 
   // ------------------------------------------------------------ musketeer --
   console.log("\n> Musketeer: bonus damage vs high tiers and a stacking on-hit slow");
