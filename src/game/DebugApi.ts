@@ -337,7 +337,7 @@ export function createDebugApi(s: GameSystems, controls: DebugControls): Record<
       ...createV7DebugApi(s),
       // --- v8: universal slots, layout validation, early-wave reward, boss pacing ---
       ...createV8DebugApi(s),
-      // --- v9: hero active skills (1/2/3) -----------------------------------
+      // --- v9: hero active skills (1/2/3/4) ---------------------------------
       ...createV9DebugApi(s),
   };
 }

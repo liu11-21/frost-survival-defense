@@ -213,6 +213,31 @@ export class Squad {
     return this.def.canRepair === true;
   }
 
+  get isGroundSupportSquad(): boolean {
+    return this.def.temporaryGroundSupport === true;
+  }
+
+  /** Ground Support stays in a tight triangle immediately around the hero
+   * instead of consuming a normal formation ring slot. */
+  assignTightRally(anchor: Vector3, formation: FormationSlotManager): void {
+    let index = 0;
+    for (const member of this.members) {
+      if (!member.alive) continue;
+      formation.memberSlot(index, Math.max(1, this.aliveCount), anchor.x, anchor.z, this.slot);
+      const dx = this.slot.x - anchor.x;
+      const dz = this.slot.z - anchor.z;
+      const len = Math.hypot(dx, dz) || 1;
+      this.slot.x = anchor.x + (dx / len) * Math.min(1.6, len);
+      this.slot.z = anchor.z + (dz / len) * Math.min(1.6, len);
+      const brain = member.aiBrain;
+      if (brain) {
+        brain.rally.copyFrom(this.slot);
+        brain.hasRally = true;
+      }
+      index++;
+    }
+  }
+
   /**
    * Begins the 3s/6s countdown on arrival, then arms exactly one 10% pulse.
    * Returning false means the Engineer is still visibly working and counting.

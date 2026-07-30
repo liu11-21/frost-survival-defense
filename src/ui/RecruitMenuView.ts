@@ -3,6 +3,38 @@ import { resourceIcon } from "./ResourceIcons";
 import { describeSpecial, roleTag, speedWord } from "./PanelText";
 import type { PanelDeps, PanelResult } from "./ActionPanels";
 
+export type RecruitMenuTab = "melee" | "ranged" | "support" | "engineer" | "upgrade";
+
+export const RECRUIT_MENU_TABS: readonly RecruitMenuTab[] = [
+  "melee",
+  "ranged",
+  "support",
+  "engineer",
+  "upgrade",
+];
+
+const RECRUIT_TAB_LABELS: Record<RecruitMenuTab, string> = {
+  melee: "近戰",
+  ranged: "遠程",
+  support: "支援",
+  engineer: "工程",
+  upgrade: "升級",
+};
+
+function recruitCategory(defId: string): Exclude<RecruitMenuTab, "upgrade"> {
+  if (defId === "engineer") return "engineer";
+  if (defId === "medic") return "support";
+  if (defId === "warrior" || defId === "shield" || defId === "assault") return "melee";
+  return "ranged";
+}
+
+export function renderRecruitTabsHtml(active: RecruitMenuTab): string {
+  return `<div class="build-tabs recruit-tabs" role="tablist" tabindex="0">${RECRUIT_MENU_TABS.map(
+    (tab) =>
+      `<button type="button" class="build-tab recruit-tab${tab === active ? " on" : ""}" role="tab" aria-selected="${tab === active}" data-recruit-tab="${tab}">${RECRUIT_TAB_LABELS[tab]}</button>`,
+  ).join("")}</div>`;
+}
+
 function attackTypeName(kind: string): string {
   switch (kind) {
     case "meleeArea":
@@ -29,7 +61,11 @@ export interface RecruitMenuCallbacks {
 
 /** The recruit-hall roster: one card per ally type, cost, per-member stats,
  * and — when unavailable — exactly why (hall unbuilt, squad cap, gold short). */
-export function renderRecruitList(d: PanelDeps, callbacks: RecruitMenuCallbacks): void {
+export function renderRecruitList(
+  d: PanelDeps,
+  callbacks: RecruitMenuCallbacks,
+  activeTab: RecruitMenuTab,
+): void {
   const { buildings, squads, run, store, refs } = d;
   const hasHall = buildings.hasRecruitHall;
   const count = squads.allySquadSlotsUsed;
@@ -41,7 +77,11 @@ export function renderRecruitList(d: PanelDeps, callbacks: RecruitMenuCallbacks)
   const list = refs.recruitList;
   list.innerHTML = hasHall ? "" : '<div class="panel-note">先在內圈槽位建造招募所，才能招募小隊。</div>';
 
-  for (const def of ALLY_UNITS) {
+  const visible = activeTab === "upgrade"
+    ? ALLY_UNITS.filter((def) => !def.canRepair)
+    : ALLY_UNITS.filter((def) => recruitCategory(def.id) === activeTab);
+
+  for (const def of visible) {
     const cost = run.recruitCost(def.id);
     const engineer = def.canRepair === true;
     let reason = "";
@@ -60,27 +100,27 @@ export function renderRecruitList(d: PanelDeps, callbacks: RecruitMenuCallbacks)
       store.gold < upgradeCost ? `金幣不足 ${Math.ceil(upgradeCost - store.gold)}` : "";
     const power = engineer ? "無攻擊" : isHeal ? `治療 ${stats?.power ?? def.attackPower}` : `攻擊 ${stats?.power ?? def.attackPower}`;
     const entry = document.createElement("div");
-    entry.className = "entry static recruit-card";
+    entry.className = `entry static recruit-card${activeTab === "upgrade" ? " upgrade-card" : ""}`;
     entry.innerHTML = `
       <div class="entry-main">
-        <div class="entry-name">${def.name}
+        <div class="entry-name recruit-name">${def.name}
           <span class="tag">${roleTag(def.id)}</span>
           <span class="tag">${def.squadSize} 人小隊</span>
           ${engineer ? '<span class="tag warn">獨立額度</span>' : `<span class="tag ok">強化 +${level}</span>`}</div>
-        <div class="entry-desc">每名成員 生命 ${stats?.health ?? def.maxHealth} · ${power}</div>
+        <div class="entry-desc compact-stat">生命 ${stats?.health ?? def.maxHealth} · ${power} · ${attackTypeName(def.attackType)}</div>
         <div class="entry-desc">攻速 ${speedWord(stats?.interval ?? def.attackInterval)}（${(stats?.interval ?? def.attackInterval).toFixed(2)} 秒）
-          · 距離 ${def.attackRange} · ${attackTypeName(def.attackType)}</div>
-        <div class="entry-desc special">${describeSpecial(def.id)}</div>
+          · 距離 ${def.attackRange}</div>
+        ${activeTab === "upgrade" ? "" : `<div class="entry-desc special">${describeSpecial(def.id)}</div>`}
       </div>
       <div class="recruit-actions">
-        <button class="mini-btn recruit-action" data-recruit="${def.id}" ${reason ? "disabled" : ""}>
-          招募 ${resourceIcon("gold", 16)} ${cost}
+        ${activeTab === "upgrade" ? "" : `<button class="mini-btn recruit-action recruit-buy" data-recruit="${def.id}" ${reason ? "disabled" : ""}>
+          <span>招募</span> <strong>${resourceIcon("gold", 18)} ${cost}</strong>
           ${reason ? `<span class="bad">${reason}</span>` : ""}
-        </button>
-        <button class="mini-btn recruit-action upgrade" data-upgrade="${def.id}" ${upgradeReason ? "disabled" : ""}>
+        </button>`}
+        ${activeTab !== "upgrade" ? "" : `<button class="mini-btn recruit-action upgrade" data-upgrade="${def.id}" ${upgradeReason ? "disabled" : ""}>
           ${engineer ? "不可升級" : `升級 +10%／+10%／+10%　${resourceIcon("gold", 16)} ${upgradeCost}`}
           ${upgradeReason && !engineer ? `<span class="bad">${upgradeReason}</span>` : ""}
-        </button>
+        </button>`}
       </div>`;
     const recruitButton = entry.querySelector<HTMLButtonElement>("[data-recruit]");
     const upgradeButton = entry.querySelector<HTMLButtonElement>("[data-upgrade]");

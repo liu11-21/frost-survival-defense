@@ -100,7 +100,7 @@ export function renderEntryHtml(entry: ClassifiedEntry, rangeContext?: { slot: B
     <div class="entry-expand">
       ${def.canBeAttacked ? `<div class="entry-desc">最大生命 ${def.maxHealth}</div>` : `<div class="entry-desc">不可被攻擊</div>`}
       <div class="entry-desc">建造時間 ${def.buildTime.toFixed(1)} 秒 · ${def.canBeRebuilt ? "可自動重建" : "不可自動重建"}</div>
-      ${def.produces ? `<div class="entry-desc">產出：${def.produces === "wood" ? "木材" : "石頭"}，每 ${def.produceInterval?.toFixed(2)} 秒 1 單位，緩衝上限 ${def.bufferCap}</div>` : ""}
+      ${def.produces ? `<div class="entry-desc">產出：${def.produces === "wood" ? "木材" : def.produces === "stone" ? "石頭" : "金幣"}，每 ${def.produceInterval?.toFixed(2)} 秒 1 單位，緩衝上限 ${def.bufferCap}</div>` : ""}
       ${def.attackRange ? `<div class="entry-desc">最小距離 ${def.minAttackRange ?? 0} · 最大距離 ${def.attackRange}</div>` : ""}
       ${coverageLine}
     </div>`;

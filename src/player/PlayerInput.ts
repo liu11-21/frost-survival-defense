@@ -15,7 +15,8 @@ export type ActionKey =
   | "map"
   | "skill1"
   | "skill2"
-  | "skill3";
+  | "skill3"
+  | "skill4";
 
 const MOVE_KEYS = new Set([
   "KeyW",
@@ -39,7 +40,7 @@ const ACTION_KEYS: Record<string, ActionKey> = {
   F8: "stressPanel",
   F9: "balancePanel",
   KeyB: "build",
-  // Recruit stays on G while the hero's three active skills use the number row.
+  // Recruit stays on G while the hero's four active skills use the number row.
   KeyG: "recruit",
   KeyU: "upgrade",
   KeyN: "callWave",
@@ -48,6 +49,7 @@ const ACTION_KEYS: Record<string, ActionKey> = {
   Digit1: "skill1",
   Digit2: "skill2",
   Digit3: "skill3",
+  Digit4: "skill4",
   Escape: "pause",
 };
 

@@ -65,6 +65,7 @@ export function enemyTargetPriority(target: Damageable): number {
   if (target.kind === "wall") return 0;
   if (target.kind === "unit") {
     const defId = (target as Damageable & { def?: { id?: string } }).def?.id;
+    if (defId === "groundSupport") return 0;
     if (defId === "shield") return 1;
     if (defId === "engineer") return 4;
     return 2;
@@ -130,7 +131,8 @@ function acquireSpecialistEnemyTarget(unit: CombatUnit, ctx: CombatContext): Dam
 
   const ranged = isRanged(unit);
   const engineerAllowed = (candidate: CombatUnit): boolean =>
-    candidate.def.id !== "engineer" || !world.hero?.alive;
+    !candidate.def.temporaryGroundSupport &&
+    (candidate.def.id !== "engineer" || !world.hero?.alive);
   if (ranged) {
     const threat = world.highestThreatUnit("ally", x, z, unit.def.attackRange, engineerAllowed);
     if (canReach(threat)) return threat;
@@ -200,7 +202,10 @@ export function acquireEnemyTarget(unit: CombatUnit, ctx: CombatContext): Damage
   const otherAlly = nearestReachableAlly(
     unit,
     ctx,
-    (candidate) => candidate.def.id !== "shield" && candidate.def.id !== "engineer",
+    (candidate) =>
+      candidate.def.id !== "shield" &&
+      candidate.def.id !== "engineer" &&
+      !candidate.def.temporaryGroundSupport,
   );
   if (otherAlly) return otherAlly;
 

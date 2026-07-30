@@ -1,78 +1,92 @@
-import { RANGE } from "../data/CombatTypes";
-
-export type HeroSkillId = "frostNova" | "barrage" | "rally";
+export type HeroSkillId =
+  | "airSupport"
+  | "infiniteFirepower"
+  | "groundSupport"
+  | "seismicWave";
 
 export interface HeroSkillDefinition {
   readonly id: HeroSkillId;
-  readonly key: "Digit1" | "Digit2" | "Digit3";
-  readonly keyLabel: "1" | "2" | "3";
+  readonly key: "Digit1" | "Digit2" | "Digit3" | "Digit4";
+  readonly keyLabel: "1" | "2" | "3" | "4";
   readonly name: string;
   readonly description: string;
   readonly shortDescription: string;
   readonly cooldown: number;
+  readonly initialCooldown: number;
 }
 
-/**
- * The hero's three active abilities. Purely cooldown-gated — like the hero's
- * own auto-attack, none of them spend a resource, so this adds no new economy.
- */
 export const HERO_SKILLS: readonly HeroSkillDefinition[] = [
   {
-    id: "frostNova",
+    id: "airSupport",
     key: "Digit1",
     keyLabel: "1",
-    name: "冰霜震擊",
-    description: "以自身為中心震擊，對周圍敵人造成傷害並使其減速。",
-    shortDescription: "範圍傷害並緩速",
-    cooldown: 9,
+    name: "空中火力支援",
+    description: "中央火爐周圍承受 3 次 1000 傷害轟炸，隨後每秒受到 500 火焰傷害，持續 10 秒。",
+    shortDescription: "3 次轟炸＋10 秒火海",
+    cooldown: 80,
+    initialCooldown: 40,
   },
   {
-    id: "barrage",
+    id: "infiniteFirepower",
     key: "Digit2",
     keyLabel: "2",
-    name: "火力齊射",
-    description: "對目前鎖定的敵人連射數箭，總傷害遠超一次普通攻擊。",
-    shortDescription: "快速連射鎖定目標",
-    cooldown: 11,
+    name: "無限火力",
+    description: "所有我方攻擊設施攻速提高為 2 倍，持續 5 秒；施放時立即進入冷卻。",
+    shortDescription: "攻擊設施攻速 ×2，5 秒",
+    cooldown: 20,
+    initialCooldown: 10,
   },
   {
-    id: "rally",
+    id: "groundSupport",
     key: "Digit3",
     keyLabel: "3",
-    name: "緊急集結",
-    description: "治療自身與周圍友軍小隊，並賦予短暫傷害減免。",
-    shortDescription: "治療並保護附近我方",
-    cooldown: 18,
+    name: "地面支援",
+    description: "召喚 3 人特殊護駕 10 秒，共用 5000 生命、攻擊 300；敵人開始攻擊主角時才會參戰並嘲諷全場。",
+    shortDescription: "召喚護駕 10 秒",
+    cooldown: 30,
+    initialCooldown: 15,
+  },
+  {
+    id: "seismicWave",
+    key: "Digit4",
+    keyLabel: "4",
+    name: "震地波",
+    description: "向前方扇形區域造成 300 傷害並震退敵人，使其接下來 3 秒承受傷害增加 10%。",
+    shortDescription: "前方 300 傷害＋易傷",
+    cooldown: 10,
+    initialCooldown: 0,
   },
 ];
 
-export const HERO_SKILL_BY_ID = new Map(HERO_SKILLS.map((s) => [s.id, s]));
+export const HERO_SKILL_BY_ID = new Map(HERO_SKILLS.map((skill) => [skill.id, skill]));
 
-/** Frost Nova (1): an instant AoE burst centred on the hero. */
-export const FROST_NOVA = {
-  radius: 6.5,
-  /** Multiplier against `HeroStats.rangedAttack`. */
-  damageMul: 2.2,
-  maxTargets: 8,
-  slowAmount: 0.5,
-  slowDuration: 2.5,
-  bossSlowAmount: 0.3,
-  bossSlowDuration: 1.5,
-};
+export const AIR_SUPPORT = {
+  radius: 12,
+  strikes: 3,
+  strikeInterval: 0.75,
+  strikeDamage: 1000,
+  flameDps: 500,
+  flameDuration: 10,
+  flameTickInterval: 1,
+  flameParticles: 100,
+} as const;
 
-/** Focused Barrage (2): several rapid shots at the hero's current target. */
-export const BARRAGE = {
-  shots: 4,
-  /** Multiplier against `HeroStats.rangedAttack`, applied per shot. */
-  damageMulPerShot: 0.7,
-  /** Small origin jitter so the volley visibly fans out from one point. */
-  spread: 0.4,
-};
+export const INFINITE_FIREPOWER = {
+  duration: 5,
+  attackSpeedMultiplier: 2,
+} as const;
 
-/** Emergency Rally (3): heals and briefly shields the hero and nearby allies. */
-export const RALLY = {
-  radius: RANGE.mid,
-  healFlat: 60,
-  shieldFactor: 0.35,
-  shieldDuration: 4,
-};
+export const GROUND_SUPPORT = {
+  duration: 10,
+  sharedHealth: 5000,
+  attack: 300,
+} as const;
+
+export const SEISMIC_WAVE = {
+  radius: 8,
+  halfAngleRadians: Math.PI / 3,
+  damage: 300,
+  knockbackDistance: 1.8,
+  vulnerability: 0.1,
+  vulnerabilityDuration: 3,
+} as const;

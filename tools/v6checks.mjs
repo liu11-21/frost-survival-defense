@@ -249,10 +249,10 @@ export async function runV6Checks(ctx) {
     JSON.stringify({ wallCodex, healthbarCodex }),
   );
   check(
-    "Codex includes current upgrade, enemy-priority, and 1/2/3 skill pages",
+    "Codex includes current upgrade, enemy-priority, and 1/2/3/4 skill pages",
     upgradeCodex.fields.some((f) => f.value.includes("+10%")) &&
       priorityCodex.fields.some((f) => f.value.includes("城牆 → 盾兵")) &&
-      skillsCodex.fields.map((f) => f.label).join(",") === "按鍵 1,按鍵 2,按鍵 3",
+      skillsCodex.fields.map((f) => f.label).join(",") === "按鍵 1,按鍵 2,按鍵 3,按鍵 4",
     JSON.stringify({ upgradeCodex, priorityCodex, skillsCodex }),
   );
   await call("killAllAllies");

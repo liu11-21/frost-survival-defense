@@ -57,7 +57,7 @@ with the numbers the game actually runs on.
 | `Esc` | Unwinds one layer: dialog → codex → highlight → panel → pause |
 | `B` | Build menu · `G` recruit menu · `U` furnace · `N` call next wave · `T` auto-rebuild toggle |
 | `M` | Toggle the full tactical map (an always-on minimap sits in the HUD corner) |
-| **`1` / `2` / `3`** | **Hero active skills** — 冰霜震擊 Frost Nova / 火力齊射 Focused Barrage / 緊急集結 Emergency Rally |
+| **`1` / `2` / `3` / `4`** | **Hero active skills** — 空中火力支援 / 無限火力 / 地面支援 / 震地波 |
 | Mouse wheel | Zoom (limited range) |
 | Mouse | Click panels and menus |
 
@@ -66,7 +66,7 @@ action, and the cost or status. The hero attacks entirely on its own: it picks t
 enemy in range, shoots from distance, and switches to a wider melee swing inside 2.2 units. Gathering
 is the same — stand next to a tree or rock and the axe swings automatically.
 
-Recruiting uses `G`; the three hero skills use the number row so they stay easy to reach and read.
+Recruiting uses `G`; the four hero skills use the number row so they stay easy to reach and read.
 
 ### Hero active skills
 
@@ -74,13 +74,14 @@ Each is purely cooldown-gated — like the hero's own auto-attack, none of them 
 
 | Key | Skill | Effect | Cooldown |
 | --- | --- | --- | --- |
-| `1` | 冰霜震擊 Frost Nova | Instant AoE burst centred on the hero: damages and slows every enemy within 6.5 units (halved slow, shorter duration vs. the boss tier) | 9 s |
-| `2` | 火力齊射 Focused Barrage | Four rapid shots at the hero's current target, for roughly triple a single normal ranged hit | 11 s |
-| `3` | 緊急集結 Emergency Rally | Heals the hero and every ally within 8 units, and grants them a brief 35% damage-reduction shield | 18 s |
+| `1` | 空中火力支援 | Three 1000-damage strikes around the furnace, then 500 damage per second for 10 seconds | 80 s (40 s initial) |
+| `2` | 無限火力 | Doubles every attack building's fire rate for 5 seconds; duration and cooldown begin together | 20 s (10 s initial) |
+| `3` | 地面支援 | Summons a three-person escort for 10 seconds: shared 5000 HP, 300 attack, engages and taunts only once enemies target the hero | 30 s after withdrawal (15 s initial) |
+| `4` | 震地波 | One forward cone hit for 300, short knockback, and +10% damage taken for 3 seconds | 10 s |
 
 A small skill row sits under the hero's HP bar in the HUD, showing each key, name, and a cooldown fill
-that reaches "ready" at exactly the moment `1`/`2`/`3` would actually work — same source of truth, so
-the HUD can never lie about readiness. All three reset to ready at the start of a new run.
+that reaches "ready" at exactly the moment `1`/`2`/`3`/`4` would actually work — same source of truth,
+so the HUD can never lie about readiness. A new run applies each skill's documented initial cooldown.
 
 ### Developer keys
 
@@ -100,11 +101,12 @@ applies to the tutorial.
 
 1. **Hand-gather** from finite nodes — one wood per **0.55 s**, one stone per **0.70 s**. Each strike
    lands on the tool's hit frame; walking away stops production within 0.15 s.
-2. **Mine (20 wood)** and **lumberyard (30 stone)** produce 1 per 0.25 s, about **4.7×** your hand
-   rate (measured, not estimated).
+2. **Mine (20 wood)** and **lumberyard (30 stone)** produce 1 per 0.25 s. The indestructible
+   **gold mine (100 wood / 100 stone)** produces 1 gold per 0.75 s.
 3. **Warehouse (100/100/20)** — until one stands, *every* resource is capped at 100. This is the real
    early gate: walls (250 stone) and the auto-collector (300) are unaffordable without it.
-4. **Recruit hall (80/80/15)** unlocks all six squad types. Gold comes only from kills.
+4. **Recruit hall (80/80/15)** unlocks all nine recruitable squad types. Gold comes from kills,
+   early-wave rewards, and gold mines.
 5. **Walls and towers** close the perimeter and cover the lanes.
 6. **Auto-collector** removes the walk-over step; **auto-rebuilder** repairs losses in destruction
    order.
@@ -483,8 +485,9 @@ Per-building consequences, all spelled out in the dialog before you agree:
 
 ## Units
 
-Every squad member is an independent fighter with its own health, position, attack and death.
-A three-person warrior squad is 3 × 400 HP and 3 × 10 attack, never one pooled body.
+Every ordinary squad member is an independent fighter with its own health, position, attack and
+death. The skill-only Ground Support escort is the explicit exception: its three members share one
+5000 HP pool.
 
 | Ally | Squad | HP each | Power | Interval | Range | Cost | Notes |
 | --- | --- | --- | --- | --- | --- | --- | --- |
@@ -1145,7 +1148,7 @@ Verifies the built bundle boots, renders, accepts input, and that the dev-only d
   `spawnEnemy()`). Every file newly touched or created *this* pass stays under the limit, including
   five that briefly grew past it during the work and were split back down:
   `src/buildings/BuildingManager.ts` (wall-collision work, 371→346, `WallObstacles.ts`),
-  `src/data/BuildingDefinitions.ts` (all 12 building defs in one file, 414→238,
+  `src/data/BuildingDefinitions.ts` (all 13 building defs in one file, 414→238,
   `DefenseBuildingDefinitions.ts` + `BuildingPresentation.ts`), `src/ui/DebugPanels.ts` (the F9 panel's
   own render logic, 420→296, `BalancePanelView.ts`), `src/buildings/BuildingMeshFactory.ts` (4 new
   tower meshes, 367→342, `WallMeshHelpers.ts`), and `src/modes/RunController.ts` (the early-wave

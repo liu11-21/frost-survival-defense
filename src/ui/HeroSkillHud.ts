@@ -10,7 +10,7 @@ interface SkillSlotRefs {
 }
 
 /**
- * Renders the 1/2/3 labels, short descriptions and cooldowns. Reads straight from
+ * Renders the 1/2/3/4 labels, short descriptions and cooldowns. Reads straight from
  * `HeroSkills.states()` — the same source `tryUse` checks — so the HUD can
  * never show "ready" while a cast would actually still fail.
  */
@@ -38,8 +38,13 @@ export class HeroSkillHud {
       description.textContent = state.shortDescription;
       const frac = state.cooldown > 0 ? 1 - state.remaining / state.cooldown : 1;
       fill.style.width = `${Math.max(0, Math.min(100, frac * 100))}%`;
-      cdText.textContent = state.ready ? "" : state.remaining.toFixed(1);
+      cdText.textContent = state.activeRemaining > 0
+        ? `持續 ${state.activeRemaining.toFixed(1)}`
+        : state.ready
+          ? ""
+          : state.remaining.toFixed(1);
       el.classList.toggle("ready", state.ready);
+      el.classList.toggle("active", state.activeRemaining > 0);
     }
   }
 }

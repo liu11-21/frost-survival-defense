@@ -13,6 +13,7 @@ import type { BuildSlot } from "./BuildSlot";
 
 const KIND_BY_TYPE: Record<BuildingType, TargetKind> = {
   mine: "warehouse",
+  goldMine: "warehouse",
   lumberyard: "warehouse",
   warehouse: "warehouse",
   recruitHall: "recruitHall",
@@ -127,7 +128,7 @@ export class Building implements Damageable {
   get storedAmount(): number {
     return this.buffer;
   }
-  get produces(): "wood" | "stone" | undefined {
+  get produces(): "wood" | "stone" | "gold" | undefined {
     return this.def.produces;
   }
   /** Seconds since the last hit; the demolition rule reads this. */
@@ -196,6 +197,7 @@ export class Building implements Damageable {
     autoCollect: boolean,
     buildSpeedBonus = 0,
     furnaceLevel = 1,
+    attackSpeedMultiplier = 1,
   ): void {
     if (!this._alive) {
       // Reuses the same take-apart animation the player's own demolish order
@@ -247,7 +249,7 @@ export class Building implements Damageable {
 
     if (this.def.attackKind) {
       tickBuildingCombat(this, dt, ctx);
-      this.attackTimer -= dt;
+      this.attackTimer -= dt * Math.max(1, attackSpeedMultiplier);
       if (this.attackTimer <= 0 && fireBuilding(this, ctx)) {
         this.attackTimer = this.def.attackInterval ?? 1.5;
       }

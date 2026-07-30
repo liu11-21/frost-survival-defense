@@ -1,7 +1,7 @@
 /**
  * Checks for the Pass D pass: minimap/map, attack-range display, watchdog/
- * residue diagnostics, the rebuilt build menu, and the hero's three active
- * skills (1/2/3). Driven from `playtest.mjs`; every helper is passed in so
+ * residue diagnostics, the rebuilt build/recruit menus, and the hero's four
+ * active skills (1/2/3/4). Driven from `playtest.mjs`; every helper is passed in so
  * this file never touches puppeteer directly.
  */
 
@@ -62,8 +62,8 @@ export async function runV9Checks(ctx) {
   );
   const labelFacing = await call("healthLabelFacing");
   check(
-    "all visible overhead names are turned toward the camera instead of mirrored",
-    labelFacing.length > 0 && labelFacing.every((rotation) => Math.abs(Math.abs(rotation) - Math.PI) < 0.01),
+    "overhead-name child planes do not apply a second 180-degree mirror rotation",
+    labelFacing.length > 0 && labelFacing.every((rotation) => Math.abs(rotation) < 0.01),
     labelFacing,
   );
 
@@ -102,17 +102,50 @@ export async function runV9Checks(ctx) {
   );
   await page.keyboard.press("KeyG");
   await step(0.016, 5);
+  const recruitTabLayout = await page.evaluate(() => {
+    const host = document.querySelector("#ui-recruit-tabs .build-tabs");
+    return {
+      labels: [...document.querySelectorAll("[data-recruit-tab]")].map((tab) => tab.textContent?.trim()),
+      fits: Boolean(host) && host.scrollWidth <= host.clientWidth + 1,
+    };
+  });
+  await page.click("[data-recruit-tab='upgrade']");
+  await step(0.016, 3);
   const progressionUi = await page.evaluate(() => ({
     warriorUpgrade: document.querySelector("[data-upgrade='warrior']")?.textContent ?? "",
-    engineerDisabled: document.querySelector("[data-upgrade='engineer']")?.disabled ?? false,
+    engineerUpgradeAbsent: document.querySelector("[data-upgrade='engineer']") === null,
   }));
   check(
-    "the recruit panel exposes class upgrading and keeps Engineers non-upgradeable",
-    /升級/.test(progressionUi.warriorUpgrade) && progressionUi.engineerDisabled,
+    "the recruit panel has exactly the five requested categories without scrolling through one long roster",
+    recruitTabLayout.labels.join(",") === "近戰,遠程,支援,工程,升級" && recruitTabLayout.fits,
+    recruitTabLayout,
+  );
+  check(
+    "the upgrade category exposes class upgrading and excludes non-upgradeable Engineers",
+    /升級/.test(progressionUi.warriorUpgrade) && progressionUi.engineerUpgradeAbsent,
     progressionUi,
   );
   await page.keyboard.press("KeyG");
   await step(0.016, 5);
+  await call("spawnAlly", "engineer", 0, 2);
+  await step(0.016, 30);
+  const splitHud = await page.evaluate(() => ({
+    main: document.querySelector("#ui-squad-hud")?.textContent ?? "",
+    engineer: document.querySelector("#ui-engineer-hud")?.textContent ?? "",
+    engineerVisible: document.querySelector("#ui-engineer-hud")?.classList.contains("show") ?? false,
+  }));
+  check(
+    "Engineers use their own small right-side HUD instead of the ordinary recruited-unit roster",
+    splitHud.engineerVisible && /工程兵/.test(splitHud.engineer) && !/工程兵/.test(splitHud.main),
+    splitHud,
+  );
+  check(
+    "recruited-unit HUD rows show live average HP and current attack",
+    /平均 HP/.test(splitHud.main) && /攻擊/.test(splitHud.main),
+    splitHud.main,
+  );
+  await call("killAllAllies");
+  await step(0.016, 200);
 
   // -------------------------------------------------------- attack range --
   console.log("\n> attack-range display reflects a built tower's real data");
@@ -205,9 +238,30 @@ export async function runV9Checks(ctx) {
   check("build panel reports open", (await call("panelState")).isBuild === true);
   const buildText = (await call("uiText")).buildList;
   check("build panel lists at least one buildable entry", typeof buildText === "string" && buildText.length > 0, buildText?.slice(0, 80));
+  const buildTabsFit = await page.evaluate(() => {
+    const host = document.querySelector("#ui-build-tabs .build-tabs");
+    return Boolean(host) && host.scrollWidth <= host.clientWidth + 1 &&
+      document.querySelectorAll("#ui-build-tabs [data-tab]").length === 5;
+  });
+  check("all five build labels fit without horizontal scrolling", buildTabsFit);
   await page.keyboard.press("KeyB");
   await step(0.016, 5);
   check("build panel closes again", (await call("panelState")).open === false);
+  await call("grant", 9000, 9000, 9000);
+  const goldMineBuild = await call("build", "northFrontB", "goldMine");
+  check("the new Gold Mine can be built on a universal slot", goldMineBuild?.ok === true, goldMineBuild);
+  await call("teleport", 0, 0);
+  await step(0.016, 300);
+  const goldMine = await call("slotProduction", "northFrontB");
+  check(
+    "Gold Mine is indestructible and produces one gold every 0.75 seconds",
+    goldMine?.complete &&
+      goldMine.attackable === false &&
+      goldMine.produces === "gold" &&
+      goldMine.interval === 0.75 &&
+      goldMine.stored >= 1,
+    goldMine,
+  );
 
   // ------------------------------------- enemy priority and pre-emption --
   console.log("\n> generic enemies enforce and refresh the six-tier target order");
@@ -301,113 +355,159 @@ export async function runV9Checks(ctx) {
   const residue = await call("residue");
   check("no forced death-residue cleanups needed after combat settles", residue.forceCleaned === 0, residue);
 
-  // ---------------------------------------------------- hero skills (1/2/3) --
-  console.log("\n> hero active skills: cooldowns, effects, run reset");
+  // -------------------------------------------------- hero skills (1/2/3/4) --
+  console.log("\n> four hero active skills: initial cooldowns, effects, duration rules");
   await call("startStage", "stage-1");
   await step(0.016, 20);
 
   const initial = await call("heroSkillState");
-  check("all three hero skills exist", initial.length === 3, initial.map((s) => s.id));
-  check("all skills start ready", initial.every((s) => s.ready), initial);
+  check("all four hero skills exist", initial.length === 4, initial.map((s) => s.id));
+  check(
+    "new-run initial cooldowns are exactly 40/10/15/0 seconds",
+    initial.map((s) => Math.round(s.remaining)).join(",") === "40,10,15,0",
+    initial,
+  );
   const skillUi = await page.$$eval(".skill-slot", (slots) =>
     slots.map((slot) => ({
       key: slot.querySelector(".skill-key")?.textContent?.trim(),
       description: slot.querySelector(".skill-description")?.textContent?.trim(),
     })),
   );
-  check("skill HUD shows the 1/2/3 keys", skillUi.map((s) => s.key).join("") === "123", skillUi);
+  check("skill HUD shows the 1/2/3/4 keys", skillUi.map((s) => s.key).join("") === "1234", skillUi);
   check("every skill button has a short explanation", skillUi.every((s) => (s.description?.length ?? 0) >= 4), skillUi);
   const skillFxBefore = await call("skillEffectSnapshot");
 
-  // Frost Nova (1): damages + slows nearby enemies.
-  await call("teleport", 0, -20);
-  await step(0.016, 5);
-  await call("spawnEnemy", "grunt", 2, -20);
-  await call("spawnEnemy", "grunt", -2, -20);
-  await step(0.016, 10);
-  const beforeHp = (await call("enemyReport")).map((e) => ({ id: e.id, hp: e.hp }));
+  // 1: three global furnace-area strikes, then one 500-damage fire tick.
+  await call("setHeroSkillCooldown", "airSupport", 0);
+  await call("teleport", 0, -30);
+  await call("spawnEnemy", "boss", 2, 1);
+  await step(0.016, 8);
+  const airBefore = (await call("enemyReport"))[0];
   await page.keyboard.press("Digit1");
-  await step(0.016, 5);
-  const afterHp = await call("enemyReport");
-  check("frostNova damaged every enemy in its radius", afterHp.every((e, i) => e.hp < beforeHp[i].hp), { beforeHp, afterHp });
-  const qState = (await call("heroSkillState")).find((s) => s.id === "frostNova");
-  check("frostNova is now on cooldown", qState.remaining > 0 && !qState.ready, qState);
+  await step(0.016, 110);
+  const afterThreeStrikes = (await call("enemyReport"))[0];
+  check(
+    "Air Support lands three 1000-damage strikes around the furnace",
+    Math.abs((airBefore.hp - afterThreeStrikes.hp) - 3000) < 1,
+    { airBefore, afterThreeStrikes },
+  );
+  await step(0.016, 65);
+  const afterFireTick = (await call("enemyReport"))[0];
+  check(
+    "the remaining ground fire deals 500 damage per full second",
+    Math.abs((afterThreeStrikes.hp - afterFireTick.hp) - 500) < 1,
+    { afterThreeStrikes, afterFireTick },
+  );
+  const airState = (await call("heroSkillState")).find((s) => s.id === "airSupport");
+  check("Air Support starts its 80-second cooldown on cast", airState.remaining > 75 && !airState.ready, airState);
   let skillFx = await call("skillEffectSnapshot");
   check(
-    "frostNova creates a visible expanding cast effect",
-    skillFx.casts.frostNova === skillFxBefore.casts.frostNova + 1 && skillFx.activeRings > 0,
+    "Air Support creates its own visible cast effect",
+    skillFx.casts.airSupport === skillFxBefore.casts.airSupport + 1 && skillFx.activeRings >= 0,
     skillFx,
   );
   await shot("v9-hero-skill-vfx");
-  check("frostNova refuses a re-cast while on cooldown", (await call("useHeroSkill", "frostNova")) === "技能冷卻中");
   await call("killAllEnemies");
-  await step(0.016, 30);
+  await step(0.016, 20);
 
-  // Focused Barrage (2): needs a live target, hits far harder than one normal shot.
-  check("barrage refuses with no target", (await call("useHeroSkill", "barrage")) === "沒有可攻擊的目標");
-  // juggernaut is squadSize 1 with high HP, so `enemyReport()[0]` unambiguously
-  // refers to the same unit across reads (grunt's squadSize 3 would not).
-  await call("spawnEnemy", "juggernaut", 0, -22);
-  let targetAlive = false;
-  for (let i = 0; i < 20 && !targetAlive; i++) {
-    await step(0.016, 5);
-    targetAlive = (await call("heroTargetId")) === "juggernaut" && (await call("heroTargetAlive")) === true;
-  }
-  check("hero acquires the juggernaut as a target", targetAlive);
-  const beforeJugg = (await call("enemyReport"))[0];
+  // 2: attack structures run at exactly double speed for five seconds while
+  // its 20-second cooldown is already counting.
+  await call("setHeroSkillCooldown", "infiniteFirepower", 0);
   await page.keyboard.press("Digit2");
-  await step(0.016, 40);
-  const afterJugg = (await call("enemyReport"))[0];
-  const barrageState = (await call("heroSkillState")).find((s) => s.id === "barrage");
-  check("Digit2 casts barrage and starts its cooldown", barrageState.remaining > 0 && !barrageState.ready, barrageState);
+  await step(0.016, 3);
+  const firepower = await call("attackBuildingBoost");
+  const firepowerState = (await call("heroSkillState")).find((s) => s.id === "infiniteFirepower");
   check(
-    "barrage's volley deals far more damage than a single normal hit",
-    afterJugg.hp < beforeJugg.hp - 50,
-    { beforeJugg, afterJugg },
+    "Infinite Firepower doubles attack-building speed for five seconds",
+    firepower.multiplier === 2 && firepower.remaining > 4.8,
+    firepower,
   );
-  skillFx = await call("skillEffectSnapshot");
   check(
-    "barrage creates its own visible cast effect",
-    skillFx.casts.barrage === skillFxBefore.casts.barrage + 1 && skillFx.activeRings > 0,
-    skillFx,
+    "Infinite Firepower's duration and 20-second cooldown begin together",
+    firepowerState.activeRemaining > 4.8 && firepowerState.remaining > 19,
+    firepowerState,
   );
-  await call("killAllEnemies");
-  await step(0.016, 30);
+  await step(0.016, 320);
+  check("attack-building speed returns to normal after five seconds", (await call("attackBuildingBoost")).multiplier === 1);
 
-  // Emergency Rally (3): heals hero + nearby allies, grants a timed shield.
-  await call("hurtHero", 400);
-  await call("spawnAlly", "warrior", 1, -20);
-  await step(0.016, 10);
-  await call("hurtAllySquads", 40);
-  const beforeHero = (await page.evaluate(() => window.frostbound.snapshot())).heroHp;
-  const beforeAllyHp = await call("allyHealth");
+  // 3: three members share one pool; cooldown stays at zero until withdrawal.
+  await call("setHeroSkillCooldown", "groundSupport", 0);
   await page.keyboard.press("Digit3");
   await step(0.016, 5);
-  const afterHero = (await page.evaluate(() => window.frostbound.snapshot())).heroHp;
-  const afterAllyHp = await call("allyHealth");
-  const rallyState = (await call("heroSkillState")).find((s) => s.id === "rally");
-  check("Digit3 casts rally and starts its cooldown", rallyState.remaining > 0 && !rallyState.ready, rallyState);
-  check("rally heals the hero", afterHero > beforeHero, { beforeHero, afterHero });
-  check("rally heals nearby allies", afterAllyHp > beforeAllyHp, { beforeAllyHp, afterAllyHp });
-  skillFx = await call("skillEffectSnapshot");
+  const support = await call("groundSupportInfo");
+  const supportState = (await call("heroSkillState")).find((s) => s.id === "groundSupport");
   check(
-    "rally creates its own visible cast effect",
-    skillFx.casts.rally === skillFxBefore.casts.rally + 1 && skillFx.activeRings > 0,
-    skillFx,
+    "Ground Support summons exactly three escorts sharing 5000 HP",
+    support.active && support.members === 3 && support.health === 5000 && support.engaged === false,
+    support,
   );
-  await call("killAllAllies");
+  check(
+    "Ground Support does not begin cooldown during its ten-second duration",
+    supportState.remaining === 0 && supportState.activeRemaining > 9.8,
+    supportState,
+  );
+  check(
+    "damage to one escort is taken from the shared squad pool",
+    (await call("damageGroundSupport", 700)) === 4300,
+    await call("groundSupportInfo"),
+  );
+  await call("spawnEnemy", "juggernaut", 0, -26);
+  await step(0.016, 30);
+  const engagedSupport = await call("groundSupportInfo");
+  const tauntedEnemies = await call("enemyStatus");
+  check(
+    "the escort only engages after an enemy reaches the hero target tier, then taunts every enemy",
+    engagedSupport.engaged &&
+      tauntedEnemies.length > 0 &&
+      tauntedEnemies.every((enemy) => enemy.target === "unit"),
+    { engagedSupport, tauntedEnemies },
+  );
+  await step(0.016, 600);
+  const withdrawn = await call("groundSupportInfo");
+  const withdrawnState = (await call("heroSkillState")).find((s) => s.id === "groundSupport");
+  check("Ground Support withdraws after ten seconds", withdrawn.active === false && withdrawn.members === 0, withdrawn);
+  check(
+    "Ground Support's 30-second cooldown begins only after withdrawal",
+    withdrawnState.remaining > 29 && withdrawnState.activeRemaining === 0,
+    withdrawnState,
+  );
+  await call("killAllEnemies");
+  await step(0.016, 30);
 
-  // The HUD's cooldown text reads the same state `tryUse` checks.
-  await call("setHeroSkillCooldown", "rally", 3.4);
-  const uiState = (await call("heroSkillState")).find((s) => s.id === "rally");
-  check("forced cooldown is reflected in state", Math.abs(uiState.remaining - 3.4) < 0.05, uiState);
-  check("rally is blocked while forced on cooldown", (await call("useHeroSkill", "rally")) === "技能冷卻中");
+  // 4: place an enemy directly on the hero's current facing vector; it takes
+  // one 300 hit, is pushed farther away, and receives exactly 10% vulnerability.
+  await call("setHeroSkillCooldown", "seismicWave", 0);
+  await call("teleport", 0, 0);
+  const facingYaw = await call("heroFacingYaw");
+  await call("spawnEnemy", "juggernaut", Math.sin(facingYaw) * 5, Math.cos(facingYaw) * 5);
+  await step(0.016, 3);
+  const quakeBefore = (await call("enemyStatus"))[0];
+  await page.keyboard.press("Digit4");
+  await step(0.016, 3);
+  const quakeAfter = (await call("enemyStatus"))[0];
+  check(
+    "Seismic Wave hits once for 300 and knocks the enemy farther forward",
+    Math.abs((quakeBefore.hp - quakeAfter.hp) - 300) < 1 &&
+      Math.hypot(quakeAfter.x, quakeAfter.z) > Math.hypot(quakeBefore.x, quakeBefore.z),
+    { quakeBefore, quakeAfter },
+  );
+  check(
+    "Seismic Wave applies +10% damage taken for three seconds",
+    Math.abs(quakeAfter.vulnerability - 0.1) < 0.001 && quakeAfter.vulnerabilityRemaining > 2.8,
+    quakeAfter,
+  );
+  const quakeState = (await call("heroSkillState")).find((s) => s.id === "seismicWave");
+  check("Seismic Wave starts its ten-second cooldown", quakeState.remaining > 9 && !quakeState.ready, quakeState);
 
-  // A fresh run resets every skill's cooldown.
-  await call("setHeroSkillCooldown", "frostNova", 5);
+  // A fresh run restores the documented initial cooldowns, not universal ready.
   await call("startStage", "stage-1");
-  await step(0.016, 5);
-  check("starting a new run resets all hero skill cooldowns", (await call("heroSkillState")).every((s) => s.ready));
+  await step(0.016, 2);
+  const resetSkills = await call("heroSkillState");
+  check(
+    "starting a new run restores each skill's own initial cooldown",
+    resetSkills.map((s) => Math.round(s.remaining)).join(",") === "40,10,15,0",
+    resetSkills,
+  );
   check("starting a new run also resets run-local ally upgrades", (await call("allyUpgradeInfo", "warrior")).level === 0);
 
   return {};

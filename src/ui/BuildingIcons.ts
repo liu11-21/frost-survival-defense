@@ -16,6 +16,15 @@ export function buildingIcon(type: BuildingType, size = 26): string {
         <rect x="14.6" y="7" width="2.8" height="5" fill="#8a5e33"/>
         <circle cx="16" cy="6" r="2.4" fill="#f0bc3f"/>
       </svg>`;
+    case "goldMine":
+      return `<svg ${head}>
+        <rect x="3" y="24" width="26" height="5" rx="1" fill="#6a727c" stroke="#3f454d" stroke-width="1.2"/>
+        <path d="M8 24 L8 12 L24 12 L24 24" fill="none" stroke="#6d451f" stroke-width="2.4"/>
+        <path d="M10 24 L10 16 Q16 12 22 16 L22 24 Z" fill="#2b2f36"/>
+        <circle cx="11" cy="22" r="2.4" fill="#f0bc3f" stroke="#8a5f11"/>
+        <circle cx="16" cy="20" r="2.8" fill="#ffd964" stroke="#8a5f11"/>
+        <circle cx="21" cy="22" r="2.3" fill="#f0bc3f" stroke="#8a5f11"/>
+      </svg>`;
     case "lumberyard":
       return `<svg ${head}>
         <rect x="4" y="25" width="24" height="4" rx="1" fill="#8a5e33" stroke="#4a2f18" stroke-width="1.1"/>

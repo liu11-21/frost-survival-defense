@@ -207,6 +207,28 @@ export const ALLY_UNITS: UnitDefinition[] = [
 
 export const ALLY_BY_ID = new Map(ALLY_UNITS.map((u) => [u.id, u]));
 
+/** Skill-only escort. It is deliberately absent from `ALLY_UNITS`, so it
+ * never appears in recruiting, upgrades, ordinary capacity or the codex
+ * roster. Its three members share one 5,000 HP pool at runtime. */
+export const GROUND_SUPPORT_UNIT: UnitDefinition = {
+  id: "groundSupport",
+  name: "特殊護駕",
+  maxHealth: 5000,
+  attackPower: 300,
+  attackInterval: ATTACK_SPEED.medium,
+  attackRange: RANGE.mid,
+  attackType: "rangedSingle",
+  squadSize: 3,
+  moveSpeed: 4.8,
+  scale: 1.0,
+  visual: "musketeer",
+  projectileKind: "musketBall",
+  attackSoundOverride: "musketFire",
+  temporaryGroundSupport: true,
+  tauntRadius: 100,
+  tauntAffectsBuildings: true,
+};
+
 /** Medic behaviour lives here so the healing rule is readable in one place. */
 export const MEDIC_RULES = {
   /** One squad-wide heal event per interval, no matter how many medics survive. */

@@ -91,6 +91,9 @@ export class HeroController implements Damageable {
   get currentTarget(): CombatUnit | null {
     return this.target;
   }
+  get facingYaw(): number {
+    return this.avatar.rig.root.rotation.y;
+  }
   /** True while the hero is close enough to a target to be swinging. */
   get inMelee(): boolean {
     if (!this.target) return false;

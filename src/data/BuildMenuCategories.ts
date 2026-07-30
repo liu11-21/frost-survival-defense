@@ -17,6 +17,7 @@ export const BUILD_MENU_CATEGORY_NAMES: Record<BuildMenuCategory, string> = {
 
 const CATEGORY_BY_TYPE: Record<BuildingType, BuildMenuCategory> = {
   mine: "production",
+  goldMine: "production",
   lumberyard: "production",
   warehouse: "support",
   recruitHall: "support",

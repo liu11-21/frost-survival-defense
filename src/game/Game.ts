@@ -245,17 +245,22 @@ export class Game {
         s.hud.toast(s.buildings.autoRebuildEnabled ? "自動重建已啟用" : "自動重建已停用");
         break;
       case "skill1": {
-        const failure = s.heroSkills.tryUse("frostNova");
+        const failure = s.heroSkills.tryUse("airSupport");
         if (failure) s.hud.toast(failure);
         break;
       }
       case "skill2": {
-        const failure = s.heroSkills.tryUse("barrage");
+        const failure = s.heroSkills.tryUse("infiniteFirepower");
         if (failure) s.hud.toast(failure);
         break;
       }
       case "skill3": {
-        const failure = s.heroSkills.tryUse("rally");
+        const failure = s.heroSkills.tryUse("groundSupport");
+        if (failure) s.hud.toast(failure);
+        break;
+      }
+      case "skill4": {
+        const failure = s.heroSkills.tryUse("seismicWave");
         if (failure) s.hud.toast(failure);
         break;
       }

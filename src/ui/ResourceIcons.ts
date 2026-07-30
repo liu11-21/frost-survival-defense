@@ -62,5 +62,5 @@ export function resourceIcon(kind: IconKind, size = 18): string {
 export const RESOURCE_TOOLTIP: Record<IconKind, string> = {
   wood: "由天然樹木或伐木場取得，用於建造多數設施。",
   stone: "由天然礦點或礦場取得，用於城牆與防禦設施。",
-  gold: "由擊殺敵人取得，用於招募、建築與火爐升級。",
+  gold: "由擊殺敵人或金礦取得，用於招募、建築與火爐升級。",
 };

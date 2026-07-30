@@ -14,7 +14,12 @@ import { costText } from "./CostLine";
 import { renderBuildingInfo } from "./BuildingInfoPanel";
 import { renderFurnacePanel } from "./FurnacePanel";
 import { countsForSlot, entriesForTab, renderEntryHtml, renderTabsHtml, tabsForSlot, type BuildMenuTab } from "./BuildMenuView";
-import { renderRecruitList } from "./RecruitMenuView";
+import {
+  RECRUIT_MENU_TABS,
+  renderRecruitList,
+  renderRecruitTabsHtml,
+  type RecruitMenuTab,
+} from "./RecruitMenuView";
 import type { UIRefs } from "./UIRoot";
 
 /** What a panel action produced, ready for the notification layer. */
@@ -64,6 +69,7 @@ export class ActionPanels {
    * panel is never more than one interaction stale. */
   private pendingRefresh = false;
   private activeTab: BuildMenuTab = "all";
+  private activeRecruitTab: RecruitMenuTab = "melee";
 
   onToast: ((text: string) => void) | null = null;
   onResult: ((result: PanelResult) => void) | null = null;
@@ -72,7 +78,7 @@ export class ActionPanels {
 
   constructor(private readonly d: PanelDeps) {
     d.refs.recruitToggle.addEventListener("click", () => this.closeAll());
-    for (const host of [d.refs.buildList, d.refs.recruitList, d.refs.buildTabs]) {
+    for (const host of [d.refs.buildList, d.refs.recruitList, d.refs.buildTabs, d.refs.recruitTabs]) {
       host.addEventListener("pointerdown", () => {
         this.pointerDownInList = true;
       });
@@ -105,11 +111,29 @@ export class ActionPanels {
       this.activeTab = tabs[(idx + (e.key === "ArrowRight" ? 1 : -1) + tabs.length) % tabs.length];
       this.renderBuild();
     });
+    d.refs.recruitTabs.addEventListener("click", (event) => {
+      const button = (event.target as HTMLElement).closest<HTMLButtonElement>("button[data-recruit-tab]");
+      if (!button?.dataset.recruitTab) return;
+      this.activeRecruitTab = button.dataset.recruitTab as RecruitMenuTab;
+      this.renderRecruit();
+    });
+    d.refs.recruitTabs.addEventListener("keydown", (event) => {
+      if (event.key !== "ArrowLeft" && event.key !== "ArrowRight") return;
+      event.preventDefault();
+      event.stopPropagation();
+      const index = RECRUIT_MENU_TABS.indexOf(this.activeRecruitTab);
+      this.activeRecruitTab = RECRUIT_MENU_TABS[
+        (index + (event.key === "ArrowRight" ? 1 : -1) + RECRUIT_MENU_TABS.length) %
+          RECRUIT_MENU_TABS.length
+      ];
+      this.renderRecruit();
+    });
   }
 
   private hostsFor(panel: OpenPanel): HTMLElement[] {
     if (panel === "build") return [this.d.refs.buildList, this.d.refs.buildTabs];
-    if (panel === "recruit" || panel === "furnace") return [this.d.refs.recruitList];
+    if (panel === "recruit") return [this.d.refs.recruitList, this.d.refs.recruitTabs];
+    if (panel === "furnace") return [this.d.refs.recruitList];
     return [];
   }
 
@@ -173,6 +197,7 @@ export class ActionPanels {
   }
 
   openRecruit(): void {
+    if (this.open !== "recruit") this.activeRecruitTab = "melee";
     this.show("recruit");
     this.renderRecruit();
   }
@@ -323,18 +348,20 @@ export class ActionPanels {
   // ------------------------------------------------------------ recruit ----
 
   private renderRecruit(): void {
+    this.d.refs.recruitTabs.innerHTML = renderRecruitTabsHtml(this.activeRecruitTab);
     renderRecruitList(this.d, {
       onResult: (result) => this.onResult?.(result),
       onFocus: (button) => {
         this.focused = button;
       },
       onRerender: () => this.renderRecruit(),
-    });
+    }, this.activeRecruitTab);
   }
 
   // ------------------------------------------------------------ furnace ----
 
   private renderFurnace(): void {
+    this.d.refs.recruitTabs.innerHTML = "";
     const button = renderFurnacePanel(this.d, (result) => {
       this.onResult?.(result);
       this.renderFurnace();

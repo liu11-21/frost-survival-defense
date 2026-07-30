@@ -84,6 +84,10 @@ export interface UnitDefinition {
 
   /** Engineer: independently seeks and repairs attackable structures. */
   canRepair?: boolean;
+  /** Temporary three-person escort summoned by the hero's Ground Support.
+   * It never consumes recruitment capacity and only fights after enemies have
+   * reached the hero target tier. */
+  temporaryGroundSupport?: boolean;
 
   /** Musketeer-style bonus damage by the target's level tier. Ranges are
    * inclusive; multiple entries may apply to different tiers at once. */

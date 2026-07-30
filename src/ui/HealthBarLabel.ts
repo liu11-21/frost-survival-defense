@@ -94,10 +94,9 @@ export class HealthBarLabel {
     plane.material = mat;
     plane.parent = this.parent;
     plane.position.set(0, 0.28, -0.01);
-    // The parent health-bar plane billboards from its back face. Geometry is
-    // symmetrical, but text is not: turn the caption around once so every
-    // unit and structure name reads normally instead of mirror-reversed.
-    plane.rotation.y = Math.PI;
+    // The parent plane already billboards its front face toward the camera.
+    // A second 180-degree child rotation mirrors every name in actual play.
+    plane.rotation.y = 0;
     plane.isPickable = false;
     plane.renderingGroupId = 1;
     plane.setEnabled(false);

@@ -82,21 +82,24 @@ export function createBuildingVisual(
   };
 
   switch (type) {
-    case "mine": {
-      stage("base", [box(c, "m.base", 2.4, 0.3, 2.4, 0, 0.15, 0, "stone")]);
+    case "mine":
+    case "goldMine": {
+      const prefix = type === "goldMine" ? "gm" : "m";
+      const oreMaterial = type === "goldMine" ? "glow" : "stone";
+      stage("base", [box(c, `${prefix}.base`, 2.4, 0.3, 2.4, 0, 0.15, 0, "stone")]);
       stage("frame", [
-        box(c, "m.p1", 0.2, 1.5, 0.2, -0.9, 0.9, -0.9, "beam"),
-        box(c, "m.p2", 0.2, 1.5, 0.2, 0.9, 0.9, -0.9, "beam"),
-        box(c, "m.lintel", 2.1, 0.24, 0.24, 0, 1.7, -0.9, "beam"),
+        box(c, `${prefix}.p1`, 0.2, 1.5, 0.2, -0.9, 0.9, -0.9, "beam"),
+        box(c, `${prefix}.p2`, 0.2, 1.5, 0.2, 0.9, 0.9, -0.9, "beam"),
+        box(c, `${prefix}.lintel`, 2.1, 0.24, 0.24, 0, 1.7, -0.9, "beam"),
       ]);
       stage("shaft", [
-        box(c, "m.mouth", 1.5, 1.3, 0.5, 0, 0.85, -1.0, "dark"),
-        cyl(c, "m.pile", 0.7, 0.5, 1.4, 0.8, 0.4, 0.7, "stone"),
+        box(c, `${prefix}.mouth`, 1.5, 1.3, 0.5, 0, 0.85, -1.0, "dark"),
+        cyl(c, `${prefix}.pile`, 0.7, 0.5, 1.4, 0.8, 0.4, 0.7, oreMaterial),
       ]);
       stage("cart", [
-        box(c, "m.cart", 0.9, 0.5, 0.7, -0.7, 0.55, 0.7, "plank"),
-        cyl(c, "m.wheel", 0.12, 0.42, 0.42, -0.7, 0.3, 0.7, "dark"),
-        box(c, "m.lamp", 0.2, 0.24, 0.2, 0, 1.95, -0.9, "glow"),
+        box(c, `${prefix}.cart`, 0.9, 0.5, 0.7, -0.7, 0.55, 0.7, "plank"),
+        cyl(c, `${prefix}.wheel`, 0.12, 0.42, 0.42, -0.7, 0.3, 0.7, "dark"),
+        box(c, `${prefix}.lamp`, 0.2, 0.24, 0.2, 0, 1.95, -0.9, "glow"),
       ], true);
       break;
     }

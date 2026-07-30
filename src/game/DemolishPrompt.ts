@@ -52,7 +52,7 @@ export function buildDemolishMessage(s: GameSystems, type: BuildingType): string
     case "recruitHall":
       return "拆除後既有小隊會保留，但無法再招募新小隊。\n重新建造招募所即可恢復。";
     case "autoCollector":
-      return "拆除後礦場與伐木場會回到本地暫存，需要玩家自行收取。\n已在庫存中的資源不受影響。";
+      return "拆除後礦場、金礦與伐木場會回到本地暫存，需要玩家自行收取。\n已在庫存中的資源不受影響。";
     case "autoRebuilder":
       return "拆除後自動重建會停止，但重建佇列會保留。\n重新建造後會從原本的順序繼續。";
     case "wall":

@@ -12,7 +12,7 @@ import type { VFXManager } from "./VFXManager";
 const TAUNT_RINGS = 6;
 const SKILL_RINGS = 8;
 
-type HeroSkillKind = "frostNova" | "barrage" | "rally";
+type HeroSkillKind = "airSupport" | "infiniteFirepower" | "groundSupport" | "seismicWave";
 
 interface SkillRing {
   mesh: Mesh;
@@ -34,7 +34,12 @@ export class CombatFeedback implements CombatVfx {
   private readonly skillRings: SkillRing[] = [];
   private skillRingCursor = 0;
   private readonly skillMaterials: Record<HeroSkillKind, ReturnType<MaterialFactory["unlit"]>>;
-  private readonly skillCasts: Record<HeroSkillKind, number> = { frostNova: 0, barrage: 0, rally: 0 };
+  private readonly skillCasts: Record<HeroSkillKind, number> = {
+    airSupport: 0,
+    infiniteFirepower: 0,
+    groundSupport: 0,
+    seismicWave: 0,
+  };
 
   constructor(
     scene: Scene,
@@ -56,9 +61,10 @@ export class CombatFeedback implements CombatVfx {
       this.ringLife.push(0);
     }
     this.skillMaterials = {
-      frostNova: materials.unlit("mat.skill.frostNova", [0.35, 0.85, 1.0], 0.9),
-      barrage: materials.unlit("mat.skill.barrage", [1.0, 0.72, 0.22], 0.95),
-      rally: materials.unlit("mat.skill.rally", [0.35, 1.0, 0.62], 0.9),
+      airSupport: materials.unlit("mat.skill.airSupport", [1.0, 0.35, 0.12], 0.95),
+      infiniteFirepower: materials.unlit("mat.skill.infiniteFirepower", [1.0, 0.72, 0.22], 0.95),
+      groundSupport: materials.unlit("mat.skill.groundSupport", [0.35, 1.0, 0.62], 0.9),
+      seismicWave: materials.unlit("mat.skill.seismicWave", [0.72, 0.55, 0.32], 0.95),
     };
     for (let i = 0; i < SKILL_RINGS; i++) {
       const mesh = MeshBuilder.CreateTorus(
@@ -111,10 +117,11 @@ export class CombatFeedback implements CombatVfx {
     this.launchSkillRing(kind, x, z, radius, 0);
     this.launchSkillRing(kind, x, z, radius, 0.12);
     this.point.set(x, 0.9, z);
-    if (kind === "frostNova") this.vfx.burst("freezeZone", this.point, 60);
-    else if (kind === "barrage") this.vfx.burst("pierce", this.point, 32);
-    else this.vfx.burst("healPuff", this.point, 42);
-    this.camera.shake(kind === "barrage" ? 0.055 : 0.04);
+    if (kind === "airSupport") this.vfx.burst("blast", this.point, 72);
+    else if (kind === "infiniteFirepower") this.vfx.burst("pierce", this.point, 42);
+    else if (kind === "groundSupport") this.vfx.burst("auraPulse", this.point, 50);
+    else this.vfx.burst("shock", this.point, 54);
+    this.camera.shake(kind === "airSupport" || kind === "seismicWave" ? 0.09 : 0.045);
   }
 
   skillEffectSnapshot(): { casts: Record<HeroSkillKind, number>; activeRings: number } {
@@ -132,7 +139,7 @@ export class CombatFeedback implements CombatVfx {
     ring.mesh.scaling.setAll(0.15);
     ring.mesh.visibility = 1;
     ring.life = 0;
-    ring.duration = kind === "rally" ? 1.0 : 0.75;
+    ring.duration = kind === "groundSupport" ? 1.0 : 0.75;
     ring.radius = Math.max(1.5, radius);
     ring.delay = delay;
     ring.mesh.setEnabled(true);

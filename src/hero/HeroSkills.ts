@@ -1,9 +1,17 @@
+import type { BuildingManager } from "../buildings/BuildingManager";
 import type { CombatContext } from "../combat/CombatContext";
 import type { CombatUnit } from "../combat/CombatUnit";
-import { BOSS_TIER_LEVEL } from "../data/CombatTypes";
-import { BARRAGE, FROST_NOVA, HERO_SKILL_BY_ID, HERO_SKILLS, RALLY, type HeroSkillId } from "./HeroSkillDefinitions";
+import type { SquadManager } from "../combat/SquadManager";
+import {
+  AIR_SUPPORT,
+  GROUND_SUPPORT,
+  HERO_SKILL_BY_ID,
+  HERO_SKILLS,
+  INFINITE_FIREPOWER,
+  SEISMIC_WAVE,
+  type HeroSkillId,
+} from "./HeroSkillDefinitions";
 import type { HeroController } from "./HeroController";
-import type { HeroStats } from "./HeroStats";
 
 export interface HeroSkillStateView {
   id: HeroSkillId;
@@ -14,74 +22,105 @@ export interface HeroSkillStateView {
   shortDescription: string;
   cooldown: number;
   remaining: number;
+  activeRemaining: number;
   ready: boolean;
 }
 
-/**
- * Cooldowns and effects for the hero's 1/2/3 active skills. Kept out of
- * `HeroController` so that file stays about movement/auto-attack; this owns
- * nothing the controller doesn't already expose (position, target, heal).
- */
+interface AirSupportState {
+  strikesRemaining: number;
+  strikeTimer: number;
+  flameRemaining: number;
+  flameTickTimer: number;
+}
+
+/** Owns the hero's four active skills and every duration/cooldown transition. */
 export class HeroSkills {
-  private readonly remaining = new Map<HeroSkillId, number>(HERO_SKILLS.map((s) => [s.id, 0]));
+  private readonly remaining = new Map<HeroSkillId, number>();
+  private airSupport: AirSupportState | null = null;
+  private groundSupportRemaining = 0;
 
   constructor(
     private readonly hero: HeroController,
-    private readonly stats: HeroStats,
     private readonly ctx: CombatContext,
-  ) {}
+    private readonly buildings: BuildingManager,
+    private readonly squads: SquadManager,
+  ) {
+    this.reset();
+  }
 
   update(dt: number): void {
     for (const skill of HERO_SKILLS) {
       const left = this.remaining.get(skill.id) ?? 0;
       if (left > 0) this.remaining.set(skill.id, Math.max(0, left - dt));
     }
+    this.updateAirSupport(dt);
+    if (this.groundSupportRemaining > 0) {
+      this.groundSupportRemaining = Math.max(0, this.groundSupportRemaining - dt);
+      if (this.groundSupportRemaining <= 0 || !this.squads.groundSupportActive) {
+        this.squads.dismissGroundSupport();
+        this.groundSupportRemaining = 0;
+        this.remaining.set("groundSupport", GROUND_SUPPORT.duration > 0
+          ? HERO_SKILL_BY_ID.get("groundSupport")?.cooldown ?? 30
+          : 30);
+      }
+    }
   }
 
   reset(): void {
-    for (const skill of HERO_SKILLS) this.remaining.set(skill.id, 0);
+    this.airSupport = null;
+    this.groundSupportRemaining = 0;
+    this.squads.dismissGroundSupport();
+    for (const skill of HERO_SKILLS) this.remaining.set(skill.id, skill.initialCooldown);
   }
 
   cooldownRemaining(id: HeroSkillId): number {
     return this.remaining.get(id) ?? 0;
   }
 
-  /** Test-only: forces a specific cooldown remaining, bypassing `tryUse`. */
   setCooldownForTest(id: HeroSkillId, seconds: number): void {
     this.remaining.set(id, Math.max(0, seconds));
   }
 
   states(): HeroSkillStateView[] {
-    return HERO_SKILLS.map((s) => {
-      const remaining = this.cooldownRemaining(s.id);
+    return HERO_SKILLS.map((skill) => {
+      const remaining = this.cooldownRemaining(skill.id);
+      const activeRemaining = skill.id === "groundSupport"
+        ? this.groundSupportRemaining
+        : skill.id === "infiniteFirepower"
+          ? this.buildings.attackSpeedBoostRemaining
+          : 0;
       return {
-        id: s.id,
-        key: s.key,
-        keyLabel: s.keyLabel,
-        name: s.name,
-        description: s.description,
-        shortDescription: s.shortDescription,
-        cooldown: s.cooldown,
+        id: skill.id,
+        key: skill.key,
+        keyLabel: skill.keyLabel,
+        name: skill.name,
+        description: skill.description,
+        shortDescription: skill.shortDescription,
+        cooldown: skill.cooldown,
         remaining,
-        ready: remaining <= 0,
+        activeRemaining,
+        ready: remaining <= 0 && activeRemaining <= 0,
       };
     });
   }
 
-  /** Attempts to cast. Returns a toast-ready failure reason, or null on success. */
   tryUse(id: HeroSkillId): string | null {
     if (!this.hero.alive) return "主角無法行動";
+    if (id === "groundSupport" && this.groundSupportRemaining > 0) return "地面支援尚未撤退";
     if ((this.remaining.get(id) ?? 0) > 0) return "技能冷卻中";
 
     switch (id) {
-      case "frostNova":
-        this.castFrostNova();
+      case "airSupport":
+        this.castAirSupport();
         break;
-      case "barrage":
-        if (!this.castBarrage()) return "沒有可攻擊的目標";
+      case "infiniteFirepower":
+        this.castInfiniteFirepower();
         break;
-      case "rally":
-        this.castRally();
+      case "groundSupport":
+        if (!this.castGroundSupport()) return "特殊護駕已在場上";
+        return null;
+      case "seismicWave":
+        this.castSeismicWave();
         break;
     }
 
@@ -89,54 +128,98 @@ export class HeroSkills {
     return null;
   }
 
-  private castFrostNova(): void {
-    const { x, z } = this.hero.position;
-    const damage = this.stats.rangedAttack * FROST_NOVA.damageMul;
-    this.ctx.areaDamage("ally", x, z, FROST_NOVA.radius, damage, FROST_NOVA.maxTargets, (hit) => {
-      const applicable = hit as Partial<CombatUnit>;
-      if (typeof applicable.applySlowRefresh !== "function") return;
-      const isBoss = hit.level >= BOSS_TIER_LEVEL;
-      applicable.applySlowRefresh(
-        isBoss ? FROST_NOVA.bossSlowAmount : FROST_NOVA.slowAmount,
-        isBoss ? FROST_NOVA.bossSlowDuration : FROST_NOVA.slowDuration,
-      );
-    });
-    this.ctx.vfx.burstAt("freezeZone", x, z, 40);
-    this.ctx.vfx.heroSkill("frostNova", x, z, FROST_NOVA.radius);
-    this.ctx.vfx.sound("heroSkillFrost", 0.8);
+  private castAirSupport(): void {
+    this.airSupport = {
+      strikesRemaining: AIR_SUPPORT.strikes,
+      strikeTimer: 0,
+      flameRemaining: 0,
+      flameTickTimer: AIR_SUPPORT.flameTickInterval,
+    };
+    this.ctx.vfx.heroSkill("airSupport", 0, 0, AIR_SUPPORT.radius);
+    this.ctx.vfx.sound("heroSkillFrost", 1, 0.75);
   }
 
-  /** Returns false (no cooldown spent) when there is nothing to fire at. */
-  private castBarrage(): boolean {
-    const target = this.hero.currentTarget;
-    if (!target || !target.alive) return false;
-    const { x, z } = this.hero.position;
-    const damage = this.stats.rangedAttack * BARRAGE.damageMulPerShot;
-    for (let i = 0; i < BARRAGE.shots; i++) {
-      const jitterX = (Math.random() - 0.5) * BARRAGE.spread;
-      const jitterZ = (Math.random() - 0.5) * BARRAGE.spread;
-      this.ctx.vfx.burstAt("sniperAim", x + jitterX, z + jitterZ, 1);
-      this.ctx.projectiles.fire("arrow", x + jitterX, 1.0, z + jitterZ, target, (hx, hz) => {
-        if (target.alive) this.ctx.damage(target, damage, hx, hz);
-        this.ctx.vfx.rangedHit(hx, hz);
-      });
+  private updateAirSupport(dt: number): void {
+    const state = this.airSupport;
+    if (!state) return;
+    if (state.strikesRemaining > 0) {
+      state.strikeTimer -= dt;
+      while (state.strikesRemaining > 0 && state.strikeTimer <= 0) {
+        this.ctx.areaDamage(
+          "ally",
+          0,
+          0,
+          AIR_SUPPORT.radius,
+          AIR_SUPPORT.strikeDamage,
+          Number.MAX_SAFE_INTEGER,
+        );
+        this.ctx.vfx.areaBlast(0, 0, AIR_SUPPORT.radius);
+        this.ctx.vfx.burstAt("blast", 0, 0, AIR_SUPPORT.flameParticles);
+        state.strikesRemaining--;
+        state.strikeTimer += AIR_SUPPORT.strikeInterval;
+      }
+      if (state.strikesRemaining === 0) {
+        state.flameRemaining = AIR_SUPPORT.flameDuration;
+        state.flameTickTimer = AIR_SUPPORT.flameTickInterval;
+      }
+      return;
     }
-    this.ctx.vfx.heroSkill("barrage", x, z, 2.8);
-    this.ctx.vfx.sound("heroSkillBarrage", 0.8);
+
+    state.flameRemaining -= dt;
+    state.flameTickTimer -= dt;
+    while (state.flameRemaining > 0 && state.flameTickTimer <= 0) {
+      this.ctx.areaDamage(
+        "ally",
+        0,
+        0,
+        AIR_SUPPORT.radius,
+        AIR_SUPPORT.flameDps * AIR_SUPPORT.flameTickInterval,
+        Number.MAX_SAFE_INTEGER,
+      );
+      this.ctx.vfx.burstAt("blast", 0, 0, 48);
+      state.flameTickTimer += AIR_SUPPORT.flameTickInterval;
+    }
+    if (state.flameRemaining <= 0) this.airSupport = null;
+  }
+
+  private castInfiniteFirepower(): void {
+    this.buildings.activateAttackSpeedBoost(
+      INFINITE_FIREPOWER.duration,
+      INFINITE_FIREPOWER.attackSpeedMultiplier,
+    );
+    this.ctx.vfx.heroSkill("infiniteFirepower", 0, 0, 8);
+    this.ctx.vfx.sound("heroSkillBarrage", 0.9, 1.2);
+  }
+
+  private castGroundSupport(): boolean {
+    const spawned = this.squads.spawnGroundSupport(this.hero.position.x, this.hero.position.z);
+    if (!spawned) return false;
+    this.groundSupportRemaining = GROUND_SUPPORT.duration;
+    this.remaining.set("groundSupport", 0);
+    this.ctx.vfx.heroSkill("groundSupport", this.hero.position.x, this.hero.position.z, 4);
+    this.ctx.vfx.sound("heroSkillRally", 1);
     return true;
   }
 
-  private castRally(): void {
+  private castSeismicWave(): void {
     const { x, z } = this.hero.position;
-    this.hero.heal(RALLY.healFlat);
-    this.ctx.vfx.heal(x, z);
-    const nearby = this.ctx.world.queryUnits("ally", x, z, RALLY.radius);
-    for (const unit of nearby) {
-      unit.heal(RALLY.healFlat);
-      unit.grantDamageReduction(RALLY.shieldFactor, RALLY.shieldDuration);
-      this.ctx.vfx.heal(unit.position.x, unit.position.z);
+    const yaw = this.hero.facingYaw;
+    const forwardX = Math.sin(yaw);
+    const forwardZ = Math.cos(yaw);
+    const minDot = Math.cos(SEISMIC_WAVE.halfAngleRadians);
+    const candidates = [...this.ctx.world.queryUnits("enemy", x, z, SEISMIC_WAVE.radius)];
+    for (const enemy of candidates) {
+      const dx = enemy.position.x - x;
+      const dz = enemy.position.z - z;
+      const len = Math.hypot(dx, dz);
+      if (len < 0.001 || (dx / len) * forwardX + (dz / len) * forwardZ < minDot) continue;
+      this.ctx.damage(enemy, SEISMIC_WAVE.damage, x, z);
+      if (!enemy.alive) continue;
+      const affected = enemy as CombatUnit;
+      affected.applyKnockback(x, z, SEISMIC_WAVE.knockbackDistance);
+      affected.applyVulnerability(SEISMIC_WAVE.vulnerability, SEISMIC_WAVE.vulnerabilityDuration);
     }
-    this.ctx.vfx.heroSkill("rally", x, z, RALLY.radius);
-    this.ctx.vfx.sound("heroSkillRally", 0.8);
+    this.ctx.vfx.heroSkill("seismicWave", x + forwardX * 3, z + forwardZ * 3, SEISMIC_WAVE.radius);
+    this.ctx.vfx.sound("heroSkillBarrage", 1, 0.65);
   }
 }

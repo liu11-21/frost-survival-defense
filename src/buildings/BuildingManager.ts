@@ -42,6 +42,8 @@ export class BuildingManager {
   private clock = 0;
   private collectTimer = 0;
   private validationTimer = 30;
+  private attackSpeedBuffRemaining = 0;
+  private attackSpeedBuffMultiplier = 1;
   /** Counts how many times the safety net had to step in; the tests read it. */
   visualRepairs = 0;
   /**
@@ -84,6 +86,15 @@ export class BuildingManager {
   get hasAutoCollector(): boolean { return this.hasComplete("autoCollector"); }
   get hasAutoRebuilder(): boolean { return this.hasComplete("autoRebuilder"); }
   get rebuildCooldownRemaining(): number { return Math.max(0, this.rebuildCooldown); }
+  get attackSpeedBoostRemaining(): number { return Math.max(0, this.attackSpeedBuffRemaining); }
+  get attackSpeedMultiplier(): number {
+    return this.attackSpeedBuffRemaining > 0 ? this.attackSpeedBuffMultiplier : 1;
+  }
+
+  activateAttackSpeedBoost(seconds: number, multiplier: number): void {
+    this.attackSpeedBuffRemaining = Math.max(this.attackSpeedBuffRemaining, Math.max(0, seconds));
+    this.attackSpeedBuffMultiplier = Math.max(this.attackSpeedBuffMultiplier, Math.max(1, multiplier));
+  }
 
   /** Wall slots with nothing standing on them — the gaps enemies aim for. */
   openWallSlots(): BuildSlot[] {
@@ -167,6 +178,13 @@ export class BuildingManager {
   update(dt: number, ctx: CombatContext, heroPos: Vector3, productionRate: number, furnaceLevel = 1): void {
     this.clock += dt;
     if (this.rebuildCooldown > 0) this.rebuildCooldown -= dt;
+    if (this.attackSpeedBuffRemaining > 0) {
+      this.attackSpeedBuffRemaining -= dt;
+      if (this.attackSpeedBuffRemaining <= 0) {
+        this.attackSpeedBuffRemaining = 0;
+        this.attackSpeedBuffMultiplier = 1;
+      }
+    }
 
     const autoCollect = this.hasAutoCollector;
     let warehouses = 0;
@@ -181,7 +199,7 @@ export class BuildingManager {
         // is not actually freed (and the model not actually removed) until
         // that animation has finished playing — never the same frame health
         // hit zero.
-        b.update(dt, ctx, productionRate, autoCollect, 0, furnaceLevel);
+        b.update(dt, ctx, productionRate, autoCollect, 0, furnaceLevel, this.attackSpeedMultiplier);
         if (!b.readyForRemoval) {
           // Mirrors the demolish path just below: a warehouse still holds the
           // cap open for as long as its collapse animation is playing. Drop
@@ -209,7 +227,7 @@ export class BuildingManager {
       }
 
       const wasComplete = b.isComplete;
-      b.update(dt, ctx, productionRate, autoCollect, 0, furnaceLevel);
+      b.update(dt, ctx, productionRate, autoCollect, 0, furnaceLevel, this.attackSpeedMultiplier);
       if (b.def.canBeAttacked && b.secondsSinceDamaged <= dt * 1.5) this.onStructureDamaged?.(b);
       if (b.isDemolishing) {
         // A warehouse still holds the cap open until it is actually gone, so the
@@ -347,6 +365,8 @@ export class BuildingManager {
     this.rebuildQueue.clear();
     this.wallRebuildsThisWave.clear();
     this.rebuildCooldown = 0;
+    this.attackSpeedBuffRemaining = 0;
+    this.attackSpeedBuffMultiplier = 1;
     this.clock = 0;
     this.autoRebuildEnabled = true;
   }

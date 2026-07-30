@@ -13,8 +13,13 @@ export interface CombatVfx {
   repair(x: number, z: number): void;
   /** Generic passthrough to any registered particle burst, for one-off abilities. */
   burstAt(key: string, x: number, z: number, count: number): void;
-  /** Large, readable cast marker for the hero's three active skills. */
-  heroSkill(kind: "frostNova" | "barrage" | "rally", x: number, z: number, radius: number): void;
+  /** Large, readable cast marker for the hero's four active skills. */
+  heroSkill(
+    kind: "airSupport" | "infiniteFirepower" | "groundSupport" | "seismicWave",
+    x: number,
+    z: number,
+    radius: number,
+  ): void;
   taunt(x: number, z: number, radius: number): void;
   teleport(x: number, z: number): void;
   unitDeath(x: number, z: number, level: number): void;

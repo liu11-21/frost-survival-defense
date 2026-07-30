@@ -43,7 +43,7 @@ export async function runCodexChecks(ctx) {
   // (breacher, icearmor, commander, bomber): hero + 9 allies, 11 enemies.
   check("every ally including the hero is listed", counts["友方兵種"] === 10, JSON.stringify(counts));
   check("all ten enemy tiers plus the boss are listed", counts["敵方單位"] === 11, JSON.stringify(counts));
-  check("all twelve buildings are listed", counts["建築設施"] === 12, JSON.stringify(counts));
+  check("all thirteen buildings including the Gold Mine are listed", counts["建築設施"] === 13, JSON.stringify(counts));
   check("all three resources are listed", counts["資源"] === 3, JSON.stringify(counts));
   check("the combat mechanics are documented", counts["戰鬥機制"] >= 8, JSON.stringify(counts));
 

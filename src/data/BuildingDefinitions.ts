@@ -11,6 +11,7 @@ export type BuildSlotCategory = "universal" | "wall" | "special";
 
 export type BuildingType =
   | "mine"
+  | "goldMine"
   | "lumberyard"
   | "warehouse"
   | "recruitHall"
@@ -58,7 +59,7 @@ export interface BuildingDefinition {
   /** Seconds the staged assembly takes. */
   buildTime: number;
   /** Production buildings. */
-  produces?: "wood" | "stone";
+  produces?: "wood" | "stone" | "gold";
   produceInterval?: number;
   bufferCap?: number;
   /** Attack-building combat. */
@@ -108,6 +109,26 @@ const ECONOMY_BUILDINGS: BuildingDefinition[] = [
     buildTime: 2.0,
     produces: "stone",
     produceInterval: 0.25,
+    bufferCap: 100,
+    radius: 1.5,
+    visualBoundsRadius: 1.8,
+    interactionRadius: 3.2,
+  },
+  {
+    id: "goldMine",
+    name: "金礦",
+    description: "每 0.75 秒產出 1 金幣",
+    role: "生產",
+    maxHealth: 0,
+    attackPower: 0,
+    cost: { wood: 100, stone: 100 },
+    slotCategory: "universal",
+    canBeAttacked: false,
+    canBeDemolished: true,
+    canBeRebuilt: false,
+    buildTime: 3.5,
+    produces: "gold",
+    produceInterval: 0.75,
     bufferCap: 100,
     radius: 1.5,
     visualBoundsRadius: 1.8,
@@ -170,7 +191,7 @@ const ECONOMY_BUILDINGS: BuildingDefinition[] = [
   {
     id: "autoCollector",
     name: "自動收取設施",
-    description: "礦場與伐木場產出直接進入庫存",
+    description: "礦場、金礦與伐木場產出直接進入庫存",
     role: "經濟與支援",
     maxHealth: 0,
     attackPower: 0,

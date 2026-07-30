@@ -12,6 +12,13 @@ import { GATHER, RESPAWN, STONE_CAPACITY, TREE_CAPACITY } from "./ResourceNodeCo
 import { WAREHOUSE_LOSS } from "./BuildingDefinitions";
 import { ENDLESS_ECONOMY } from "./EndlessEconomyConfig";
 import { HERO_REVIVE } from "./UnitDefinitions";
+import {
+  AIR_SUPPORT,
+  GROUND_SUPPORT,
+  HERO_SKILLS,
+  INFINITE_FIREPOWER,
+  SEISMIC_WAVE,
+} from "../hero/HeroSkillDefinitions";
 
 export type CodexCategory = "ally" | "enemy" | "building" | "resource" | "mechanic";
 
@@ -102,6 +109,7 @@ const ENEMY_ADVICE: Record<string, string> = {
 
 const BUILDING_ADVICE: Record<string, string> = {
   mine: "每 0.25 秒產出 1 石頭；越早建造，越早脫離有限的天然礦點。",
+  goldMine: "不可被敵人摧毀，每 0.75 秒產出 1 金幣；沒有自動收取設施時需靠近收取。",
   lumberyard: "每 0.25 秒產出 1 木材；木材是多數設施的主要成本。",
   warehouse: "沒有倉庫時三種資源都卡在 100，城牆與自動收取都買不起。",
   recruitHall: "解鎖全部兵種，開局金幣剛好夠蓋一座。",
@@ -285,7 +293,7 @@ const RESOURCE_ENTRIES: CodexEntry[] = [
     visual: "",
     icon: "gold",
     fields: [
-      { label: "取得方式", value: `擊殺敵人；無限模式提早叫波可依剩餘秒數取得金幣（基礎每秒 ${ENDLESS_ECONOMY.goldPerSecond}）` },
+      { label: "取得方式", value: `擊殺敵人、金礦每 0.75 秒產出 1；無限模式提早叫波可依剩餘秒數取得金幣（基礎每秒 ${ENDLESS_ECONOMY.goldPerSecond}）` },
       { label: "主要用途", value: "招募小隊、升級兵種、建造設施與火爐升級" },
       { label: "容量", value: "沒有倉庫時上限 100" },
       { label: "倉庫被摧毀", value: `木材與石頭損失 ${Math.round(WAREHOUSE_LOSS.wood * 100)}%，金幣損失 ${Math.round(WAREHOUSE_LOSS.gold * 100)}%，其餘散落在地面` },
@@ -335,7 +343,26 @@ const HERO_ENTRY: CodexEntry = {
     { label: "攻擊間隔", value: `${HERO.attackInterval.toFixed(2)} 秒` },
     { label: "射程", value: String(HERO.attackRange) },
     { label: "倒地", value: `${HERO_REVIVE.downTime} 秒後在火爐旁以 ${Math.round(HERO_REVIVE.healthFraction * 100)}% 生命復活` },
-    { label: "主動技能", value: "1 冰霜震擊／2 火力齊射／3 緊急集結" },
+    {
+      label: "主動技能",
+      value: HERO_SKILLS.map((skill) => `${skill.keyLabel} ${skill.name}`).join("／"),
+    },
+    {
+      label: "空中火力支援",
+      value: `${AIR_SUPPORT.strikes} 次 × ${AIR_SUPPORT.strikeDamage}，火焰 ${AIR_SUPPORT.flameDps}/秒、${AIR_SUPPORT.flameDuration} 秒`,
+    },
+    {
+      label: "無限火力",
+      value: `攻擊設施攻速 ×${INFINITE_FIREPOWER.attackSpeedMultiplier}，${INFINITE_FIREPOWER.duration} 秒`,
+    },
+    {
+      label: "地面支援",
+      value: `3 人共用 ${GROUND_SUPPORT.sharedHealth} HP，攻擊 ${GROUND_SUPPORT.attack}，持續 ${GROUND_SUPPORT.duration} 秒`,
+    },
+    {
+      label: "震地波",
+      value: `${SEISMIC_WAVE.damage} 傷害、震退，易傷 ${Math.round(SEISMIC_WAVE.vulnerability * 100)}% 持續 ${SEISMIC_WAVE.vulnerabilityDuration} 秒`,
+    },
   ],
   advice: `距離大於 ${HERO_MELEE.threshold} 時射擊，靠近後自動改為範圍揮擊，全程自動選擇場上等級最高的敵人。`,
   unlocked: true,

@@ -21,6 +21,14 @@ import { ALLY_PROGRESSION, allyUpgradeMultiplier } from "../data/AllyProgression
 
 const TAUNT_CHECK_INTERVAL = 0.4;
 
+/** One logical HP pool displayed by several escort members. */
+export interface SharedHealthPool {
+  health: number;
+  maxHealth: number;
+  members: CombatUnit[];
+  resolvingDeath: boolean;
+}
+
 /**
  * One individual fighter.
  *
@@ -35,8 +43,9 @@ export class CombatUnit implements Damageable {
   /** Bumped whenever this instance is reused, so stale references are detectable. */
   generation = 1;
 
-  health: number;
-  maxHealth: number;
+  private healthValue: number;
+  private maxHealthValue: number;
+  private sharedHealth: SharedHealthPool | null = null;
   private _alive = true;
   private readonly corpse = newCorpseState();
 
@@ -59,6 +68,9 @@ export class CombatUnit implements Damageable {
   private attackSpeedBonus = 0;
   private moveSpeedBonus = 0;
   private allyUpgradeLevelValue = 0;
+  private vulnerability = 0;
+  private vulnerabilityTimer = 0;
+  private groundSupportEngagedValue = false;
 
   /** Slows and the Freeze Zone stun/immunity window — see `UnitStatusEffects`. */
   private readonly status = new UnitStatusEffects();
@@ -94,8 +106,8 @@ export class CombatUnit implements Damageable {
     private readonly attackMultiplier: number,
     readonly squadId: number,
   ) {
-    this.maxHealth = Math.max(1, Math.round(def.maxHealth * healthMultiplier));
-    this.health = this.maxHealth;
+    this.maxHealthValue = Math.max(1, Math.round(def.maxHealth * healthMultiplier));
+    this.healthValue = this.maxHealthValue;
     this.animator = new CombatAnimator(rig);
     this.animator.onHitFrame = () => this.resolveAttack();
     this.abilities = new CombatUnitAbilities(this, ctx);
@@ -106,6 +118,16 @@ export class CombatUnit implements Damageable {
   }
 
   get alive(): boolean { return this._alive; }
+  get health(): number { return this.sharedHealth?.health ?? this.healthValue; }
+  private set health(value: number) {
+    if (this.sharedHealth) this.sharedHealth.health = value;
+    else this.healthValue = value;
+  }
+  get maxHealth(): number { return this.sharedHealth?.maxHealth ?? this.maxHealthValue; }
+  private set maxHealth(value: number) {
+    if (this.sharedHealth) this.sharedHealth.maxHealth = value;
+    else this.maxHealthValue = value;
+  }
   get readyToRemove(): boolean { return !this._alive && corpseExpired(this.corpse); }
   /** Seconds since death, for the tests and the squad HUD. */
   get corpseAge(): number { return this._alive ? 0 : this.corpse.elapsed; }
@@ -122,7 +144,10 @@ export class CombatUnit implements Damageable {
   }
   get allyUpgradeLevel(): number { return this.allyUpgradeLevelValue; }
   get supportPowerMultiplier(): number { return allyUpgradeMultiplier(this.allyUpgradeLevelValue); }
-  get tauntRadius(): number { return this.def.tauntRadius ?? 0; }
+  get tauntRadius(): number {
+    if (this.def.temporaryGroundSupport && !this.groundSupportEngagedValue) return 0;
+    return this.def.tauntRadius ?? 0;
+  }
   get tauntAffectsBuildings(): boolean { return this.def.tauntAffectsBuildings === true; }
   get currentTarget(): Damageable | null { return this.target; }
   get aiState(): string { return this.brain ? this.brain.state : "enemy"; }
@@ -157,6 +182,34 @@ export class CombatUnit implements Damageable {
   }
   get phasedProtectionRemaining(): number {
     return Math.max(0, this.phasedDamageReductionTimer) + this.nextPhasedDamageReductionDuration;
+  }
+  get vulnerabilityRemaining(): number { return Math.max(0, this.vulnerabilityTimer); }
+  get vulnerabilityFactor(): number { return this.vulnerability; }
+  get groundSupportEngaged(): boolean { return this.groundSupportEngagedValue; }
+
+  attachSharedHealth(pool: SharedHealthPool): void {
+    this.sharedHealth = pool;
+    if (!pool.members.includes(this)) pool.members.push(this);
+  }
+
+  setGroundSupportEngaged(engaged: boolean): void {
+    this.groundSupportEngagedValue = this.def.temporaryGroundSupport === true && engaged;
+  }
+
+  applyVulnerability(factor: number, seconds: number): void {
+    this.vulnerability = Math.max(this.vulnerability, Math.max(0, factor));
+    this.vulnerabilityTimer = Math.max(this.vulnerabilityTimer, Math.max(0, seconds));
+  }
+
+  applyKnockback(fromX: number, fromZ: number, distance: number): void {
+    const dx = this.position.x - fromX;
+    const dz = this.position.z - fromZ;
+    const len = Math.hypot(dx, dz);
+    if (len < 0.001 || distance <= 0) return;
+    this.position.x += (dx / len) * distance;
+    this.position.z += (dz / len) * distance;
+    this.ctx.collision.resolve(this.position, this.hitRadius, Infinity, this.faction);
+    this.rig.root.position.copyFrom(this.position);
   }
 
   applySlowStack(amount: number, duration: number, maxStacks: number): void {
@@ -227,13 +280,18 @@ export class CombatUnit implements Damageable {
   applyDamage(amount: number, _fromX: number, _fromZ: number): void {
     if (!this._alive) return;
     const raw = mitigate(this.def.armor, this.armorBroken, amount);
-    const taken = raw * (1 - this.activeDamageReduction);
+    const taken = raw * (1 + this.vulnerability) * (1 - this.activeDamageReduction);
     this.health -= taken;
     this.animator.flashHit();
     reportDamage(this, this.ctx, taken, "damage");
     if (this.health <= 0) {
       this.health = 0;
-      this.die();
+      if (this.sharedHealth && !this.sharedHealth.resolvingDeath) {
+        this.sharedHealth.resolvingDeath = true;
+        for (const member of this.sharedHealth.members) member.die();
+      } else if (!this.sharedHealth) {
+        this.die();
+      }
       return;
     }
     if (crossesBreakPoint(this.def.armor, this.armorBroken, this.health, this.maxHealth)) {
@@ -257,7 +315,7 @@ export class CombatUnit implements Damageable {
    * released here — target, taunt, animation lock, formation slot and any armed
    * attack — and the guard makes sure none of it can run twice.
    */
-  private die(): void {
+  private die(reportKill = true): void {
     if (!this._alive || this.corpse.resolved) return;
     // Ice Bomber, killed mid-countdown: a smaller explosion still goes off.
     // The full-countdown detonation clears `bomberArmed` itself before it
@@ -279,7 +337,12 @@ export class CombatUnit implements Damageable {
     this.animator.setState("death");
     this.ctx.vfx.unitDeath(this.position.x, this.position.z, this.level);
     this.brain?.onDeath();
-    this.ctx.reportKill(this);
+    if (reportKill) this.ctx.reportKill(this);
+  }
+
+  /** Skill summons leave the field without counting as a combat death. */
+  withdraw(): void {
+    this.die(false);
   }
 
   update(dt: number): void {
@@ -303,6 +366,13 @@ export class CombatUnit implements Damageable {
     if (this.damageReductionTimer > 0) {
       this.damageReductionTimer -= dt;
       if (this.damageReductionTimer <= 0) this.damageReduction = 0;
+    }
+    if (this.vulnerabilityTimer > 0) {
+      this.vulnerabilityTimer -= dt;
+      if (this.vulnerabilityTimer <= 0) {
+        this.vulnerability = 0;
+        this.vulnerabilityTimer = 0;
+      }
     }
     if (this.phasedDamageReductionTimer > 0) {
       this.phasedDamageReductionTimer -= dt;
@@ -350,6 +420,10 @@ export class CombatUnit implements Damageable {
 
   /** Nearest legal hostile, honouring an active taunt first. */
   findHostileTarget(): Damageable | null {
+    if (this.def.temporaryGroundSupport && !this.groundSupportEngagedValue) {
+      this.target = null;
+      return null;
+    }
     // General enemies enforce their wall/shield/... tier order inside
     // `acquireEnemyTarget`; an old taunt reference must not jump ahead of it.
     if (

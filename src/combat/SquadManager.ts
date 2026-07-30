@@ -3,13 +3,13 @@ import { FormationSlotManager } from "../ai/FormationSlotManager";
 import { FriendlyBrain } from "../ai/FriendlyStateMachine";
 import { validateTarget } from "../ai/TargetValidator";
 import type { Faction, UnitDefinition } from "../data/CombatTypes";
-import { ALLY_BY_ID } from "../data/UnitDefinitions";
+import { ALLY_BY_ID, GROUND_SUPPORT_UNIT } from "../data/UnitDefinitions";
 import { ENEMY_BY_ID } from "../data/EnemyDefinitions";
 import { registerClaim, resetClaims } from "../ai/ThreatTracker";
 import type { Building } from "../buildings/Building";
 import type { BuildingManager } from "../buildings/BuildingManager";
 import type { CombatContext } from "./CombatContext";
-import { CombatUnit } from "./CombatUnit";
+import { CombatUnit, type SharedHealthPool } from "./CombatUnit";
 import type { Damageable } from "./Damageable";
 import type { HumanoidTemplateCache } from "./LiteHumanoid";
 import { Squad } from "./Squad";
@@ -37,6 +37,9 @@ export class SquadManager {
   private readonly fallbackRally = new Vector3();
   private claimTimer = 0;
   private readonly repairClaims = new Map<number, number>();
+  private groundSupportSquad: Squad | null = null;
+  private groundSupportTriggered = false;
+  private groundSupportTauntFxTimer = 0;
 
   constructor(
     private readonly templates: HumanoidTemplateCache,
@@ -49,7 +52,9 @@ export class SquadManager {
    */
   get allySquadSlotsUsed(): number {
     let n = 0;
-    for (const s of this.allySquads) if (s.alive && !s.isEngineerSquad) n++;
+    for (const s of this.allySquads) {
+      if (s.alive && !s.isEngineerSquad && !s.isGroundSupportSquad) n++;
+    }
     return n;
   }
 
@@ -91,6 +96,12 @@ export class SquadManager {
       def.canRepair ? 0 : upgradeLevel,
     );
     this.allySquads.push(squad);
+    this.attachAllySquad(squad);
+    if (def.ambushOnSpawn) this.performAmbush(squad);
+    return squad;
+  }
+
+  private attachAllySquad(squad: Squad): void {
     for (const m of squad.members) {
       m.attachBrain(
         new FriendlyBrain(m, {
@@ -107,8 +118,46 @@ export class SquadManager {
       );
       this.ctx.world.allies.push(m);
     }
-    if (def.ambushOnSpawn) this.performAmbush(squad);
-    return squad;
+  }
+
+  /** Summons the skill-only three-person escort. Returns false if one is
+   * already active; its members share one exact 5,000 HP pool. */
+  spawnGroundSupport(x: number, z: number): boolean {
+    if (this.groundSupportSquad?.alive) return false;
+    const squad = this.spawnSquad(GROUND_SUPPORT_UNIT, "ally", x, z, 1, 1);
+    const pool: SharedHealthPool = {
+      health: GROUND_SUPPORT_UNIT.maxHealth,
+      maxHealth: GROUND_SUPPORT_UNIT.maxHealth,
+      members: [],
+      resolvingDeath: false,
+    };
+    for (const member of squad.members) member.attachSharedHealth(pool);
+    this.allySquads.push(squad);
+    this.attachAllySquad(squad);
+    this.groundSupportSquad = squad;
+    this.groundSupportTriggered = false;
+    this.groundSupportTauntFxTimer = 0;
+    return true;
+  }
+
+  dismissGroundSupport(): void {
+    const squad = this.groundSupportSquad;
+    if (!squad) return;
+    for (const member of squad.members) if (member.alive) member.withdraw();
+    for (const enemy of this.ctx.world.enemies) {
+      if (enemy.tauntSourceRef?.def.temporaryGroundSupport) enemy.clearTaunt();
+    }
+    this.groundSupportSquad = null;
+    this.groundSupportTriggered = false;
+    this.groundSupportTauntFxTimer = 0;
+  }
+
+  get groundSupportActive(): boolean {
+    return this.groundSupportSquad?.alive === true;
+  }
+
+  get groundSupportHealth(): number {
+    return this.groundSupportSquad?.members.find((member) => member.alive)?.health ?? 0;
   }
 
   spawnEnemy(defId: string, x: number, z: number, laneIndex: number, extraHealthMul = 1, extraAttackMul = 1): Squad | null {
@@ -226,25 +275,31 @@ export class SquadManager {
     let engineerIndex = 0;
     for (const squad of this.allySquads) {
       if (squad.alive) {
-        if (squad.isEngineerSquad) {
-          const angle = engineerIndex * (Math.PI * 2 / 5);
-          this.anchor.set(
-            Math.sin(angle) * ENGINEER_RULES.furnaceIdleRadius,
-            0,
-            Math.cos(angle) * ENGINEER_RULES.furnaceIdleRadius,
-          );
-          engineerIndex++;
+        if (squad.isGroundSupportSquad) {
+          squad.assignTightRally(point, this.formation);
         } else {
-          this.formation.rallySlot(index, point.x, point.z, this.anchor);
-          index++;
+          if (squad.isEngineerSquad) {
+            const angle = engineerIndex * (Math.PI * 2 / 5);
+            this.anchor.set(
+              Math.sin(angle) * ENGINEER_RULES.furnaceIdleRadius,
+              0,
+              Math.cos(angle) * ENGINEER_RULES.furnaceIdleRadius,
+            );
+            engineerIndex++;
+          } else {
+            this.formation.rallySlot(index, point.x, point.z, this.anchor);
+            index++;
+          }
+          squad.assignRally(this.anchor, this.formation);
         }
-        squad.assignRally(this.anchor, this.formation);
       } else if (!squad.wipeReported) {
         squad.wipeReported = true;
         this.onSquadWiped?.(squad);
       }
       squad.update(dt);
     }
+
+    this.updateGroundSupportTaunt(dt);
 
     for (const squad of this.enemySquads) squad.update(dt);
 
@@ -260,6 +315,48 @@ export class SquadManager {
 
     prune(this.allySquads);
     prune(this.enemySquads);
+  }
+
+  private updateGroundSupportTaunt(dt: number): void {
+    const squad = this.groundSupportSquad;
+    if (!squad?.alive) {
+      this.groundSupportSquad = null;
+      this.groundSupportTriggered = false;
+      this.groundSupportTauntFxTimer = 0;
+      return;
+    }
+    const hero = this.ctx.world.hero;
+    if (!this.groundSupportTriggered && hero?.alive) {
+      this.groundSupportTriggered = this.ctx.world.enemies.some(
+        (enemy) => enemy.alive && enemy.currentTarget === hero,
+      );
+    }
+    for (const member of squad.members) {
+      if (member.alive) member.setGroundSupportEngaged(this.groundSupportTriggered);
+    }
+    if (!this.groundSupportTriggered) return;
+
+    const guards = squad.members.filter((member) => member.alive);
+    if (guards.length === 0) return;
+    for (const enemy of this.ctx.world.enemies) {
+      if (!enemy.alive) continue;
+      let closest = guards[0];
+      let best = enemy.distanceTo(closest.position.x, closest.position.z);
+      for (let i = 1; i < guards.length; i++) {
+        const distance = enemy.distanceTo(guards[i].position.x, guards[i].position.z);
+        if (distance < best) {
+          best = distance;
+          closest = guards[i];
+        }
+      }
+      enemy.applyTaunt(closest);
+    }
+    this.groundSupportTauntFxTimer -= dt;
+    if (this.groundSupportTauntFxTimer <= 0) {
+      this.groundSupportTauntFxTimer = 0.6;
+      const centre = squad.centre(this.member);
+      this.ctx.vfx.taunt(centre.x, centre.z, 6);
+    }
   }
 
   /** Notifies every friendly that the wave changed so nothing holds old state. */
@@ -372,6 +469,9 @@ export class SquadManager {
   }
 
   clearAll(): void {
+    this.groundSupportSquad = null;
+    this.groundSupportTriggered = false;
+    this.groundSupportTauntFxTimer = 0;
     for (const s of this.allySquads) s.dispose();
     for (const s of this.enemySquads) s.dispose();
     this.allySquads.length = 0;

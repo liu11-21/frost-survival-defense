@@ -3,9 +3,7 @@ import type { RunController } from "../modes/RunController";
 import { ALLY_BY_ID } from "../data/UnitDefinitions";
 import { unitThumb } from "./UnitThumbs";
 
-/** Seconds a wiped type stays listed so the player sees that it went. */
 const WIPE_NOTICE = 3;
-/** The list is a summary, not a per-frame readout. */
 const REFRESH_INTERVAL = 0.35;
 
 type Status = "normal" | "hurt" | "danger" | "wiped";
@@ -17,6 +15,9 @@ interface Row {
   alive: number;
   total: number;
   health: number;
+  maxHealth: number;
+  attackPower: number;
+  samples: number;
   status: Status;
   upgradeLevel: number;
 }
@@ -28,13 +29,8 @@ const STATUS_TEXT: Record<Status, string> = {
   wiped: "全滅",
 };
 
-/**
- * The friendly roster at a glance: which types are on the field, how many
- * squads of each, and how badly they are hurt.
- *
- * Rebuilt on a timer and on squad events rather than every frame, because the
- * numbers only change when someone is recruited, healed or killed.
- */
+/** Renders ordinary squads in the bottom-centre roster and Engineers in their
+ * own compact right-side HUD. Both show live average HP and current power. */
 export class SquadStatusHud {
   private timer = 0;
   private dirty = true;
@@ -46,6 +42,9 @@ export class SquadStatusHud {
     private readonly host: HTMLElement,
     private readonly header: HTMLElement,
     private readonly list: HTMLElement,
+    private readonly engineerHost: HTMLElement,
+    private readonly engineerHeader: HTMLElement,
+    private readonly engineerList: HTMLElement,
     private readonly squads: SquadManager,
     private readonly run: RunController,
   ) {
@@ -71,13 +70,12 @@ export class SquadStatusHud {
     if (this.highlighted !== null) this.setHighlight(null);
   }
 
-  /** Called from squad events so a kill shows up without waiting on the timer. */
   markDirty(): void {
     this.dirty = true;
   }
 
-  /** Records a wipe so the row can linger briefly with a 全滅 tag. */
   reportWipe(defId: string): void {
+    if (defId === "groundSupport") return;
     this.wiped.set(defId, WIPE_NOTICE);
     this.dirty = true;
   }
@@ -91,6 +89,7 @@ export class SquadStatusHud {
 
   setVisible(visible: boolean): void {
     this.host.classList.toggle("show", visible);
+    this.engineerHost.classList.toggle("show", visible);
   }
 
   update(dt: number): void {
@@ -110,10 +109,10 @@ export class SquadStatusHud {
     this.render();
   }
 
-  private collect(): Row[] {
+  private collect(engineers: boolean): Row[] {
     const byType = new Map<string, Row>();
     for (const squad of this.squads.allySquads) {
-      if (!squad.alive) continue;
+      if (!squad.alive || squad.isGroundSupportSquad || squad.isEngineerSquad !== engineers) continue;
       let row = byType.get(squad.def.id);
       if (!row) {
         row = {
@@ -123,29 +122,35 @@ export class SquadStatusHud {
           alive: 0,
           total: 0,
           health: 0,
+          maxHealth: 0,
+          attackPower: 0,
+          samples: 0,
           status: "normal",
           upgradeLevel: squad.upgradeLevel,
         };
         byType.set(squad.def.id, row);
       }
-      // A three-person squad with one survivor is still one living squad.
       row.squads++;
       row.alive += squad.aliveCount;
       row.total += squad.def.squadSize;
-      row.health += squad.averageHealthPercent;
+      for (const member of squad.members) {
+        if (!member.alive) continue;
+        row.health += member.health;
+        row.maxHealth += member.maxHealth;
+        row.attackPower += member.attackPower;
+        row.samples++;
+      }
     }
 
-    const rows: Row[] = [];
-    for (const row of byType.values()) {
-      const avg = row.squads > 0 ? row.health / row.squads : 1;
-      row.health = avg;
-      row.status = avg >= 0.6 ? "normal" : avg >= 0.3 ? "hurt" : "danger";
-      rows.push(row);
+    const rows = [...byType.values()];
+    for (const row of rows) {
+      const ratio = row.maxHealth > 0 ? row.health / row.maxHealth : 1;
+      row.status = ratio >= 0.6 ? "normal" : ratio >= 0.3 ? "hurt" : "danger";
     }
     for (const [defId] of this.wiped) {
       if (byType.has(defId)) continue;
       const def = ALLY_BY_ID.get(defId);
-      if (!def) continue;
+      if (!def || Boolean(def.canRepair) !== engineers) continue;
       rows.push({
         defId,
         name: def.name,
@@ -153,6 +158,9 @@ export class SquadStatusHud {
         alive: 0,
         total: 0,
         health: 0,
+        maxHealth: 0,
+        attackPower: 0,
+        samples: 0,
         status: "wiped",
         upgradeLevel: this.run.allyUpgradeLevel(defId),
       });
@@ -161,29 +169,36 @@ export class SquadStatusHud {
   }
 
   private render(): void {
-    const rows = this.collect();
-    this.header.textContent =
-      `我方小隊 ${this.squads.allySquadSlotsUsed}/${this.run.squadLimit}` +
-      `　工程 ${this.squads.engineerSquadsUsed}/${this.run.engineerLimit}`;
-    if (rows.length === 0) {
-      this.list.innerHTML = '<div class="squad-empty">尚未招募任何小隊</div>';
-      return;
-    }
-    this.list.innerHTML = rows
-      .map((row) => {
-        const on = row.defId === this.highlighted ? " on" : "";
-        const detail =
-          row.status === "wiped"
-            ? "全滅"
-            : `${row.squads} 隊 / ${row.alive} 人存活 · ${Math.round(row.health * 100)}%`;
-        return `<button class="squad-row ${row.status}${on}" data-def="${row.defId}"
-            title="${row.name}　${detail}">
-            <span class="squad-thumb">${unitThumb(row.defId, 22)}</span>
-            <span class="squad-name">${row.name}${row.upgradeLevel > 0 ? ` +${row.upgradeLevel}` : ""}</span>
-            <span class="squad-count">${row.status === "wiped" ? "—" : `×${row.squads}`}</span>
-            <span class="squad-state">${STATUS_TEXT[row.status]}</span>
-          </button>`;
-      })
-      .join("");
+    const combatRows = this.collect(false);
+    const engineerRows = this.collect(true);
+    this.header.textContent = `我方小隊 ${this.squads.allySquadSlotsUsed}/${this.run.squadLimit}`;
+    this.engineerHeader.textContent =
+      `工程兵 ${this.squads.engineerSquadsUsed}/${this.run.engineerLimit}`;
+    this.list.innerHTML = combatRows.length > 0
+      ? this.rowsHtml(combatRows, true)
+      : '<div class="squad-empty">尚未招募任何小隊</div>';
+    this.engineerList.innerHTML = engineerRows.length > 0
+      ? this.rowsHtml(engineerRows, false)
+      : '<div class="squad-empty">尚無工程兵</div>';
+  }
+
+  private rowsHtml(rows: Row[], allowHighlight: boolean): string {
+    return rows.map((row) => {
+      const on = allowHighlight && row.defId === this.highlighted ? " on" : "";
+      const avgHealth = row.samples > 0 ? row.health / row.samples : 0;
+      const avgMax = row.samples > 0 ? row.maxHealth / row.samples : 0;
+      const currentPower = row.samples > 0 ? row.attackPower / row.samples : 0;
+      const healthText = row.status === "wiped"
+        ? "全滅"
+        : `平均 HP ${Math.round(avgHealth)}/${Math.round(avgMax)} · 攻擊 ${Math.round(currentPower)}`;
+      return `<button class="squad-row ${row.status}${on}" data-def="${row.defId}"
+          ${allowHighlight ? "" : "disabled"} title="${row.name}　${healthText}">
+          <span class="squad-thumb">${unitThumb(row.defId, 22)}</span>
+          <span class="squad-name">${row.name}${row.upgradeLevel > 0 ? ` +${row.upgradeLevel}` : ""}</span>
+          <span class="squad-count">${row.status === "wiped" ? "—" : `×${row.squads}`}</span>
+          <span class="squad-state">${STATUS_TEXT[row.status]}</span>
+          <small class="squad-live-stats">${healthText}</small>
+        </button>`;
+    }).join("");
   }
 }

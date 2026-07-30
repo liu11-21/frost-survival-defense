@@ -284,6 +284,7 @@ export class GameHud {
 
 const NAMES: Record<string, string> = {
   mine: "礦場",
+  goldMine: "金礦",
   lumberyard: "伐木場",
   warehouse: "倉庫",
   recruitHall: "招募所",

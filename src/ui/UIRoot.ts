@@ -32,6 +32,7 @@ export interface UIRefs {
   buildTabs: HTMLElement;
   recruitPanel: HTMLElement;
   recruitList: HTMLElement;
+  recruitTabs: HTMLElement;
   recruitHeader: HTMLElement;
   recruitToggle: HTMLButtonElement;
   banner: HTMLElement;
@@ -42,6 +43,9 @@ export interface UIRefs {
   squadHud: HTMLElement;
   squadHudHeader: HTMLElement;
   squadHudList: HTMLElement;
+  engineerHud: HTMLElement;
+  engineerHudHeader: HTMLElement;
+  engineerHudList: HTMLElement;
   laneHud: HTMLElement;
   laneHudList: HTMLElement;
   edgeLayer: HTMLElement;
@@ -102,21 +106,27 @@ const HTML = `
     <div class="bar"><i id="ui-hero-bar"></i></div>
     <div class="stat-line" id="ui-hero-stats">遠程 50 · 近戰 80 · 攻速 0.70s</div>
     <div class="skill-row" id="ui-hero-skills">
-      <div class="skill-slot ready" data-skill="frostNova">
-        <div class="skill-top"><span class="skill-key">1</span><span class="skill-name">冰霜震擊</span></div>
-        <div class="skill-description">範圍傷害並緩速</div>
+      <div class="skill-slot" data-skill="airSupport">
+        <div class="skill-top"><span class="skill-key">1</span><span class="skill-name">空中火力支援</span></div>
+        <div class="skill-description">3 次轟炸＋10 秒火海</div>
         <div class="bar skill-bar"><i></i></div>
         <div class="skill-cd-text"></div>
       </div>
-      <div class="skill-slot ready" data-skill="barrage">
-        <div class="skill-top"><span class="skill-key">2</span><span class="skill-name">火力齊射</span></div>
-        <div class="skill-description">快速連射鎖定目標</div>
+      <div class="skill-slot" data-skill="infiniteFirepower">
+        <div class="skill-top"><span class="skill-key">2</span><span class="skill-name">無限火力</span></div>
+        <div class="skill-description">攻擊設施攻速 ×2</div>
         <div class="bar skill-bar"><i></i></div>
         <div class="skill-cd-text"></div>
       </div>
-      <div class="skill-slot ready" data-skill="rally">
-        <div class="skill-top"><span class="skill-key">3</span><span class="skill-name">緊急集結</span></div>
-        <div class="skill-description">治療並保護附近我方</div>
+      <div class="skill-slot" data-skill="groundSupport">
+        <div class="skill-top"><span class="skill-key">3</span><span class="skill-name">地面支援</span></div>
+        <div class="skill-description">特殊護駕 10 秒</div>
+        <div class="bar skill-bar"><i></i></div>
+        <div class="skill-cd-text"></div>
+      </div>
+      <div class="skill-slot ready" data-skill="seismicWave">
+        <div class="skill-top"><span class="skill-key">4</span><span class="skill-name">震地波</span></div>
+        <div class="skill-description">前方震退＋易傷</div>
         <div class="bar skill-bar"><i></i></div>
         <div class="skill-cd-text"></div>
       </div>
@@ -142,6 +152,11 @@ const HTML = `
     <div class="bar-label">自動重建站</div>
     <button class="mini-btn" id="ui-rebuild-toggle">啟用中 (T)</button>
     <div class="stat-line" id="ui-rebuild-info">佇列 0</div>
+  </div>
+
+  <div class="engineer-hud" id="ui-engineer-hud">
+    <div class="squad-title" id="ui-engineer-header">工程兵 0 / 2</div>
+    <div class="squad-list" id="ui-engineer-list"></div>
   </div>
 
   <div class="panel-box minimap" id="ui-minimap">
@@ -170,6 +185,7 @@ const HTML = `
     <span id="ui-recruit-header">招募所</span>
     <button class="mini-btn tight" id="ui-recruit-toggle">關閉 (G)</button>
   </div>
+  <div id="ui-recruit-tabs"></div>
   <div class="side-list" id="ui-recruit-list"></div>
 </div>
 
@@ -192,7 +208,7 @@ const HTML = `
 
 <div class="confirm" id="ui-confirm"><div class="confirm-inner" id="ui-confirm-body"></div></div>
 
-<div class="hint" id="ui-hint">WASD 移動 · Shift 加速 · E 互動 · B 建造 · G 招募 · U 升級火爐 · N 催波 · M 地圖 · 1/2/3 技能 · Esc 暫停</div>
+<div class="hint" id="ui-hint">WASD 移動 · Shift 加速 · E 互動 · B 建造 · G 招募 · U 升級火爐 · N 催波 · M 地圖 · 1/2/3/4 技能 · Esc 暫停</div>
 
 <div class="screen" id="ui-screen"><div class="screen-inner" id="ui-screen-body"></div></div>
 `;
@@ -236,6 +252,7 @@ export function buildUI(): UIRefs {
     buildTabs: need(root, "ui-build-tabs"),
     recruitPanel: need(root, "ui-recruit-panel"),
     recruitList: need(root, "ui-recruit-list"),
+    recruitTabs: need(root, "ui-recruit-tabs"),
     recruitHeader: need(root, "ui-recruit-header"),
     recruitToggle: need<HTMLButtonElement>(root, "ui-recruit-toggle"),
     banner: need(root, "ui-banner"),
@@ -246,6 +263,9 @@ export function buildUI(): UIRefs {
     squadHud: need(root, "ui-squad-hud"),
     squadHudHeader: need(root, "ui-squad-header"),
     squadHudList: need(root, "ui-squad-list"),
+    engineerHud: need(root, "ui-engineer-hud"),
+    engineerHudHeader: need(root, "ui-engineer-header"),
+    engineerHudList: need(root, "ui-engineer-list"),
     laneHud: need(root, "ui-lane-hud"),
     laneHudList: need(root, "ui-lane-list"),
     edgeLayer: need(root, "ui-edge-layer"),

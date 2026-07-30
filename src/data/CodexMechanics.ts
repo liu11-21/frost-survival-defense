@@ -87,9 +87,9 @@ export const MECHANIC_ENTRIES: CodexEntry[] = [
   mechanic("hero-skills", "主角主動技能", [
     ...HERO_SKILLS.map((skill) => [
       `按鍵 ${skill.keyLabel}`,
-      `${skill.name}：${skill.shortDescription}，冷卻 ${skill.cooldown} 秒`,
+      `${skill.name}：${skill.shortDescription}，初始冷卻 ${skill.initialCooldown} 秒、施放冷卻 ${skill.cooldown} 秒`,
     ] as [string, string]),
-  ], "技能不消耗資源；按 1／2／3 或點擊畫面按鈕施放，每招都有獨立特效與冷卻。"),
+  ], "技能不消耗資源；按 1／2／3／4 施放。地面支援在護駕撤退後才開始計算 30 秒冷卻。"),
 ];
 
 function mechanic(id: string, name: string, rows: Array<[string, string]>, advice: string): CodexEntry {

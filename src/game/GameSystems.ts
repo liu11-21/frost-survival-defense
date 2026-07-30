@@ -227,7 +227,7 @@ export class GameSystems {
     this.heroStats = new HeroStats(this.upgrades);
     this.hero = new HeroController(this.scene, this.materials, this.heroStats, this.ctx, this.collision);
     this.world.hero = this.hero;
-    this.heroSkills = new HeroSkills(this.hero, this.heroStats, this.ctx);
+    this.heroSkills = new HeroSkills(this.hero, this.ctx, this.buildings, this.squads);
 
     this.waves = new WaveManager(this.squads, this.events);
     this.gates = new LaneGateManager(this.buildings);
@@ -302,6 +302,9 @@ export class GameSystems {
       this.refs.squadHud,
       this.refs.squadHudHeader,
       this.refs.squadHudList,
+      this.refs.engineerHud,
+      this.refs.engineerHudHeader,
+      this.refs.engineerHudList,
       this.squads,
       this.run,
     );
@@ -420,5 +423,3 @@ export class GameSystems {
     this.engine.dispose();
   }
 }
-
-

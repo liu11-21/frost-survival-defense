@@ -90,6 +90,15 @@
 }
 .squad-thumb { line-height: 0; }
 .squad-name { font-weight: 600; }
+.squad-live-stats {
+  grid-column: 2 / -1;
+  display: block;
+  margin-top: 1px;
+  font-size: 9px;
+  line-height: 1.15;
+  font-weight: 500;
+  opacity: 0.68;
+}
 .squad-count { opacity: 0.85; }
 .squad-state { font-size: 10px; opacity: 0.75; }
 .squad-row.hurt   .squad-state { color: #ffd08a; opacity: 1; }
@@ -98,6 +107,32 @@
 .squad-row.wiped  .squad-state { color: #ff7f6a; }
 .squad-empty { font-size: 11px; opacity: 0.55; padding: 3px 4px; }
 .squad-foot { font-size: 10px; opacity: 0.45; margin-top: 5px; }
+
+.engineer-hud {
+  position: absolute;
+  right: 14px;
+  bottom: 218px;
+  z-index: 25;
+  width: 205px;
+  display: none;
+  flex-direction: column;
+  pointer-events: none;
+  background: rgba(10, 16, 28, 0.78);
+  border: 1px solid rgba(255, 178, 87, 0.28);
+  border-radius: 9px;
+  padding: 6px 7px;
+  box-shadow: 0 6px 22px rgba(0, 0, 0, 0.35);
+}
+.engineer-hud.show { display: flex; }
+.engineer-hud .squad-row {
+  grid-template-columns: 24px 1fr auto;
+}
+.engineer-hud .squad-state { display: none; }
+.engineer-hud .squad-live-stats { grid-column: 2 / -1; }
+.engineer-hud .squad-row:disabled {
+  opacity: 1;
+  cursor: default;
+}
 
 /* ------------------------------------------------------------- lane HUD -- */
 
