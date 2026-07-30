@@ -1,5 +1,6 @@
 import type { ResourceCost } from "../data/CombatTypes";
 import type { ResourceStore } from "../economy/ResourceStore";
+import { ASSAULT_RULES } from "../data/AssaultConfig";
 
 const SPEED_WORDS: Array<[number, string]> = [
   [0.4, "極高"],
@@ -75,9 +76,9 @@ const SPECIALS: Record<string, string> = {
   archer: "三人高速遠程小隊，擅長單體輸出，會與敵人保持距離。",
   medic: "每 1 秒為生命比例最低的一支友方小隊全員各補 20 HP。",
   mage: "生命較低，但每次施法造成半徑 2.5 的高額範圍傷害。",
-  assault: "招募後立刻瞬移到最高等級敵人身旁，並獲得 2 秒 50% 減傷。",
+  assault: `瞬移到最高等級敵人身旁；前 ${ASSAULT_RULES.invulnerableSeconds} 秒無敵，接著 ${ASSAULT_RULES.reducedDamageSeconds} 秒減傷 ${Math.round(ASSAULT_RULES.damageReduction * 100)}%，對 Lv.${ASSAULT_RULES.highTierMinLevel}+ 傷害 ×${ASSAULT_RULES.highTierDamageMultiplier}。`,
   engineer: "每 3 秒尋找最近的受損設施；抵達後非受擊狀態每 3 秒、受擊狀態每 6 秒一次回復該設施最大生命 10%。",
-  musketeer: "對高階敵人與 Boss 有額外傷害，命中會疊加減速。",
+  musketeer: "高價遠程兵；對高階敵人與 Boss 有額外傷害，命中會疊加減速。",
   frostmage: "攻擊自帶範圍減速，每 10 秒額外施放凍結領域控場。",
 };
 

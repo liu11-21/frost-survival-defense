@@ -68,7 +68,9 @@ export interface UnitDefinition {
   maxAreaTargets?: number;
   /** Assault trooper: blink to the highest-level enemy the moment it spawns. */
   ambushOnSpawn?: boolean;
-  /** Seconds of damage reduction granted right after the ambush blink. */
+  /** Seconds of complete immunity granted right after the ambush blink. */
+  ambushInvulnerableTime?: number;
+  /** Second protection phase after immunity expires. */
   ambushShieldTime?: number;
   ambushShieldFactor?: number;
   /** Extra damage this unit deals to walls, towers and other structures. */
@@ -85,7 +87,7 @@ export interface UnitDefinition {
 
   /** Musketeer-style bonus damage by the target's level tier. Ranges are
    * inclusive; multiple entries may apply to different tiers at once. */
-  bonusVsTier?: ReadonlyArray<{ minLevel: number; maxLevel: number; multiplier: number }>;
+  bonusVsTier?: ReadonlyArray<{ minLevel: number; maxLevel?: number; multiplier: number }>;
 
   /** Musketeer-style on-hit slow, stacking up to `maxStacks`. `bossAmount`
    * overrides `amount` when the target is the top-tier boss unit. */

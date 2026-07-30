@@ -47,6 +47,10 @@ export class CombatUnit implements Damageable {
   private reachCheck = Math.random() * 0.35;
   private damageReduction = 0;
   private damageReductionTimer = 0;
+  private phasedDamageReduction = 0;
+  private phasedDamageReductionTimer = 0;
+  private nextPhasedDamageReduction = 0;
+  private nextPhasedDamageReductionDuration = 0;
   private target: Damageable | null = null;
   private tauntSource: CombatUnit | null = null;
   private brain: FriendlyBrain | null = null;
@@ -148,6 +152,12 @@ export class CombatUnit implements Damageable {
   get isStunned(): boolean {
     return this.status.isStunned;
   }
+  get activeDamageReduction(): number {
+    return Math.max(this.damageReduction, this.phasedDamageReduction);
+  }
+  get phasedProtectionRemaining(): number {
+    return Math.max(0, this.phasedDamageReductionTimer) + this.nextPhasedDamageReductionDuration;
+  }
 
   applySlowStack(amount: number, duration: number, maxStacks: number): void {
     this.status.applySlowStack(amount, duration, maxStacks);
@@ -197,10 +207,27 @@ export class CombatUnit implements Damageable {
     this.damageReductionTimer = seconds;
   }
 
+  /**
+   * Two consecutive protection stages. Assault uses 3s at 100% reduction,
+   * followed by 3s at 50%; a large simulation step may cross both safely.
+   */
+  grantPhasedDamageReduction(
+    firstFactor: number,
+    firstSeconds: number,
+    secondFactor: number,
+    secondSeconds: number,
+  ): void {
+    this.phasedDamageReduction = Math.max(0, Math.min(1, firstFactor));
+    this.phasedDamageReductionTimer = Math.max(0, firstSeconds);
+    this.nextPhasedDamageReduction = Math.max(0, Math.min(1, secondFactor));
+    this.nextPhasedDamageReductionDuration = Math.max(0, secondSeconds);
+    if (this.phasedDamageReductionTimer <= 0) this.advancePhasedDamageReduction(0);
+  }
+
   applyDamage(amount: number, _fromX: number, _fromZ: number): void {
     if (!this._alive) return;
     const raw = mitigate(this.def.armor, this.armorBroken, amount);
-    const taken = raw * (1 - this.damageReduction);
+    const taken = raw * (1 - this.activeDamageReduction);
     this.health -= taken;
     this.animator.flashHit();
     reportDamage(this, this.ctx, taken, "damage");
@@ -271,9 +298,21 @@ export class CombatUnit implements Damageable {
       return;
     }
 
-    // Fully frozen while stunned: no movement, no targeting, no
-    // attack-cooldown progress. `UnitStatusEffects` opens the post-stun
-    // immunity window itself the instant the stun ends.
+    // Protection durations are real combat time and must not become longer
+    // just because the unit was stunned during the ambush window.
+    if (this.damageReductionTimer > 0) {
+      this.damageReductionTimer -= dt;
+      if (this.damageReductionTimer <= 0) this.damageReduction = 0;
+    }
+    if (this.phasedDamageReductionTimer > 0) {
+      this.phasedDamageReductionTimer -= dt;
+      if (this.phasedDamageReductionTimer <= 0) {
+        this.advancePhasedDamageReduction(-this.phasedDamageReductionTimer);
+      }
+    }
+
+    // Fully frozen while stunned: no movement, targeting or attack-cooldown
+    // progress. `UnitStatusEffects` opens its own post-stun immunity window.
     if (this.status.tick(dt) === "stunned") {
       this.speed = 0;
       if (!this.animator.isBusy) this.animator.setState("idle");
@@ -282,10 +321,6 @@ export class CombatUnit implements Damageable {
       return;
     }
 
-    if (this.damageReductionTimer > 0) {
-      this.damageReductionTimer -= dt;
-      if (this.damageReductionTimer <= 0) this.damageReduction = 0;
-    }
     if (this.attackTimer > 0) this.attackTimer -= dt;
     this.tauntTimer = refreshTaunt(this, this.ctx, dt, this.tauntTimer);
 
@@ -298,6 +333,17 @@ export class CombatUnit implements Damageable {
     }
     this.animator.update(dt, this.speed);
     this.rig.root.position.copyFrom(this.position);
+  }
+
+  private advancePhasedDamageReduction(overflow: number): void {
+    this.phasedDamageReduction = this.nextPhasedDamageReduction;
+    this.phasedDamageReductionTimer = this.nextPhasedDamageReductionDuration - overflow;
+    this.nextPhasedDamageReduction = 0;
+    this.nextPhasedDamageReductionDuration = 0;
+    if (this.phasedDamageReductionTimer <= 0) {
+      this.phasedDamageReduction = 0;
+      this.phasedDamageReductionTimer = 0;
+    }
   }
 
   // -------------------------------------------------------- brain motor ----

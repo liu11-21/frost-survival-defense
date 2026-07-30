@@ -4,6 +4,14 @@ import { ENEMY_UNITS } from "./EnemyDefinitions";
 import { ALLY_UNITS, HERO, HERO_MELEE, MEDIC_RULES } from "./UnitDefinitions";
 import { WALL_REBUILD_DECAY } from "./BuildingDefinitions";
 import { MECHANIC_ENTRIES } from "./CodexMechanics";
+import { ASSAULT_RULES } from "./AssaultConfig";
+import { STANDOFF } from "../ai/AIConfig";
+import { ALLY_PROGRESSION } from "./AllyProgressionConfig";
+import { ENGINEER_RULES } from "./EngineerConfig";
+import { GATHER, RESPAWN, STONE_CAPACITY, TREE_CAPACITY } from "./ResourceNodeConfig";
+import { WAREHOUSE_LOSS } from "./BuildingDefinitions";
+import { ENDLESS_ECONOMY } from "./EndlessEconomyConfig";
+import { HERO_REVIVE } from "./UnitDefinitions";
 
 export type CodexCategory = "ally" | "enemy" | "building" | "resource" | "mechanic";
 
@@ -48,22 +56,22 @@ const ALLY_ROLE: Record<string, string> = {
   archer: "後排持續輸出",
   medic: "全隊治療",
   mage: "高爆發範圍法術",
-  assault: "切入高階目標",
+  assault: "Lv.4+ 爆發刺客",
   engineer: "建築維修",
-  musketeer: "高階剋制輸出",
+  musketeer: "高價遠程剋制輸出",
   frostmage: "範圍控場",
 };
 
 const ALLY_SPECIAL: Record<string, string> = {
-  warrior: `一次揮擊可命中範圍內最多 5 名敵人。`,
-  shield: `半徑 8 內的敵人會轉而攻擊它，並且能替建築吸引火力。`,
-  archer: `會自動維持 4 至 11 的射擊距離，不會貼到前線。`,
+  warrior: `一次揮擊可命中範圍內最多 ${ALLY_UNITS.find((u) => u.id === "warrior")?.maxAreaTargets ?? 5} 名敵人。`,
+  shield: `半徑 ${ALLY_UNITS.find((u) => u.id === "shield")?.tauntRadius ?? 0} 內的敵人會轉而攻擊它，並且能替建築吸引火力。`,
+  archer: `會自動維持 ${STANDOFF.archer.min} 至 ${STANDOFF.archer.max} 的射擊距離，不會貼到前線。`,
   medic: `每 ${MEDIC_RULES.interval.toFixed(2)} 秒替最虛弱的小隊治療 ${MEDIC_RULES.healPerMember}，整隊只觸發一次。`,
-  mage: `半徑 2.5 的爆炸，一次最多命中 8 名敵人。`,
-  assault: `登場時瞬移到場上等級最高的敵人旁，並獲得 2 秒 50% 減傷。`,
-  engineer: `1 人獨立小隊、100 生命、沒有攻擊。每 3 秒尋找最近且未被其他工程兵預約的受損設施；非受擊狀態完整倒數 3 秒、受擊狀態完整倒數 6 秒後，一次回復該設施最大生命 10%。不能修復中央火爐或已被擊破的設施。`,
+  mage: `半徑 ${ALLY_UNITS.find((u) => u.id === "mage")?.areaRadius ?? 0} 的爆炸，一次最多命中 ${ALLY_UNITS.find((u) => u.id === "mage")?.maxAreaTargets ?? 0} 名敵人。`,
+  assault: `登場時瞬移到場上等級最高的敵人旁。前 ${ASSAULT_RULES.invulnerableSeconds} 秒完全無敵，接著 ${ASSAULT_RULES.reducedDamageSeconds} 秒減傷 ${Math.round(ASSAULT_RULES.damageReduction * 100)}%，之後歸零；對 Lv.${ASSAULT_RULES.highTierMinLevel}+ 傷害 ×${ASSAULT_RULES.highTierDamageMultiplier}。`,
+  engineer: `1 人獨立小隊、100 生命、沒有攻擊。每 ${ENGINEER_RULES.scanInterval} 秒尋找最近且未被其他工程兵預約的受損設施；非受擊狀態完整倒數 ${ENGINEER_RULES.safeRepairInterval} 秒、受擊狀態完整倒數 ${ENGINEER_RULES.underAttackRepairInterval} 秒後，一次回復該設施最大生命 ${Math.round(ENGINEER_RULES.repairFraction * 100)}%。不能修復中央火爐或已被擊破的設施。`,
   musketeer: `對 Lv.4-5 敵人 +40% 傷害、對 Boss +20% 傷害；每次命中疊加 5% 減速（Boss 2%），最多 3 層。`,
-  frostmage: `攻擊附帶範圍減速，每 10 秒額外施放凍結領域造成暈眩後減速，對 Boss 效果減半且絕不暈眩。`,
+  frostmage: `攻擊附帶 25% 範圍減速；每 10 秒施放凍結領域。Boss 只承受較弱減速且不會被暈眩。`,
 };
 
 const ALLY_ADVICE: Record<string, string> = {
@@ -72,15 +80,15 @@ const ALLY_ADVICE: Record<string, string> = {
   archer: "輸出高但很脆，一定要有前排擋在前面。",
   medic: "本身不會攻擊，價值完全來自延長其他小隊的存活時間。",
   mage: "對成群的小兵效率極高，對單一高血量目標則不划算。",
-  assault: "用來點掉重裝壁壘或轟擊者，不要拿來清小兵。",
-  engineer: "不占一般小隊額度且不跟隨主角；主角倒下前敵人不會攻擊工程兵。",
-  musketeer: "專門克制重裝壁壘、轟擊者與 Boss 等高階目標，清小兵效率普通。",
+  assault: "基礎攻擊很低，專門切入重裝壁壘、破城者、轟擊者與 Boss；面對 Lv.1–3 不划算。",
+  engineer: `不占一般小隊額度且不跟隨主角；主角倒下前敵人不會攻擊工程兵。上限為 2 隊，火爐 Lv.20／50／80 時依序提高到 3／4／5 隊。`,
+  musketeer: "招募價格較高，專門以遠程射擊克制重裝壁壘、轟擊者與 Boss，命中還會累積減速。",
   frostmage: "面對密集敵潮或破城者這類重裝單位時，減速能替其他小隊爭取輸出時間。",
 };
 
 const ENEMY_ADVICE: Record<string, string> = {
   grunt: "數量取勝，交給戰士與砲塔的範圍傷害處理。",
-  slinger: "會在遠處點名脆皮，優先用突擊手或弓箭手清掉。",
+  slinger: "會在遠處點名脆皮，優先用弓箭手或弩箭塔清掉；突擊手對 Lv.1 傷害很低。",
   bruiser: "血厚傷害低，可以放著讓盾兵拖住。",
   marksman: "傷害不低且射程遠，不要讓它自由射擊。",
   juggernaut: "對建築有 1.5 倍傷害且會嘲諷建築，必須集火。",
@@ -93,8 +101,8 @@ const ENEMY_ADVICE: Record<string, string> = {
 };
 
 const BUILDING_ADVICE: Record<string, string> = {
-  mine: "越早蓋越好，產量約為手採的 4.7 倍。",
-  lumberyard: "與礦場成對建造，木材是多數設施的主要成本。",
+  mine: "每 0.25 秒產出 1 石頭；越早建造，越早脫離有限的天然礦點。",
+  lumberyard: "每 0.25 秒產出 1 木材；木材是多數設施的主要成本。",
   warehouse: "沒有倉庫時三種資源都卡在 100，城牆與自動收取都買不起。",
   recruitHall: "解鎖全部兵種，開局金幣剛好夠蓋一座。",
   autoCollector: "省下來回跑動的時間，中期以後幾乎必備。",
@@ -124,6 +132,12 @@ function allyEntry(index: number): CodexEntry {
       { label: "攻擊間隔", value: `${def.attackInterval.toFixed(2)} 秒` },
       { label: "攻擊範圍", value: String(def.attackRange) },
       { label: "招募成本", value: `${def.recruitCost ?? 0} 金幣` },
+      {
+        label: "兵種升級",
+        value: def.canRepair
+          ? "不可升級"
+          : `每級生命、攻擊、攻速各 +${Math.round(ALLY_PROGRESSION.statPerLevel * 100)}%`,
+      },
     ],
     advice: `${ALLY_SPECIAL[def.id] ?? ""}${ALLY_ADVICE[def.id] ?? ""}`,
     unlocked: true,
@@ -206,6 +220,12 @@ function buildingEntry(index: number): CodexEntry {
       { label: "剋制對象", value: effectiveAgainst(def.id) },
     );
   }
+  if (def.canBeAttacked) {
+    fields.push({
+      label: "自動修復",
+      value: "依火爐等級套用 15 秒後百分比自修；工程兵也可在受損時修復（中央火爐除外）",
+    });
+  }
   return {
     id: `building.${def.id}`,
     category: "building",
@@ -229,13 +249,13 @@ const RESOURCE_ENTRIES: CodexEntry[] = [
     visual: "",
     icon: "wood",
     fields: [
-      { label: "手動取得", value: "靠近樹木自動採集，每 0.55 秒 1 個" },
+      { label: "手動取得", value: `靠近樹木自動採集，每 ${GATHER.woodInterval.toFixed(2)} 秒 1 個` },
       { label: "自動取得", value: "伐木場每 0.25 秒 1 個" },
-      { label: "天然存量", value: "小樹 6、中樹 10、大樹 16，採完變成樹樁" },
+      { label: "天然存量", value: `小樹 ${TREE_CAPACITY.small}、中樹 ${TREE_CAPACITY.medium}、大樹 ${TREE_CAPACITY.large}，採完變成樹樁` },
       { label: "主要用途", value: "礦場、倉庫、招募所、砲塔、城牆" },
       { label: "容量", value: "沒有倉庫時上限 100" },
     ],
-    advice: "闖關模式的樹木不會重生，無限模式 90 秒後長回。",
+    advice: `闖關模式的樹木不會重生，無限模式 ${RESPAWN.treeSeconds} 秒後開始長回。`,
     unlocked: true,
     search: "木材 wood",
   },
@@ -247,13 +267,13 @@ const RESOURCE_ENTRIES: CodexEntry[] = [
     visual: "",
     icon: "stone",
     fields: [
-      { label: "手動取得", value: "靠近礦點自動採集，每 0.70 秒 1 個" },
+      { label: "手動取得", value: `靠近礦點自動採集，每 ${GATHER.stoneInterval.toFixed(2)} 秒 1 個` },
       { label: "自動取得", value: "礦場每 0.25 秒 1 個" },
-      { label: "天然存量", value: "小礦 8、中礦 14、大礦 22，採完變成碎石" },
+      { label: "天然存量", value: `小礦 ${STONE_CAPACITY.small}、中礦 ${STONE_CAPACITY.medium}、大礦 ${STONE_CAPACITY.large}，採完變成碎石` },
       { label: "主要用途", value: "城牆 250、伐木場、砲塔、自動設施" },
       { label: "容量", value: "沒有倉庫時上限 100" },
     ],
-    advice: "無限模式的礦點 120 秒後重生，闖關模式不會。",
+    advice: `無限模式的礦點 ${RESPAWN.stoneSeconds} 秒後開始重生，闖關模式不會。`,
     unlocked: true,
     search: "石頭 石材 stone",
   },
@@ -265,12 +285,12 @@ const RESOURCE_ENTRIES: CodexEntry[] = [
     visual: "",
     icon: "gold",
     fields: [
-      { label: "取得方式", value: "只能由擊殺敵人取得，沒有任何建築會產金" },
-      { label: "主要用途", value: "招募小隊、倉庫與招募所、火爐升級" },
+      { label: "取得方式", value: `擊殺敵人；無限模式提早叫波可依剩餘秒數取得金幣（基礎每秒 ${ENDLESS_ECONOMY.goldPerSecond}）` },
+      { label: "主要用途", value: "招募小隊、升級兵種、建造設施與火爐升級" },
       { label: "容量", value: "沒有倉庫時上限 100" },
-      { label: "倉庫被摧毀", value: "損失 70%，其餘散落在地面" },
+      { label: "倉庫被摧毀", value: `木材與石頭損失 ${Math.round(WAREHOUSE_LOSS.wood * 100)}%，金幣損失 ${Math.round(WAREHOUSE_LOSS.gold * 100)}%，其餘散落在地面` },
     ],
-    advice: "闖關 1 開局給 15 金，剛好等於招募所，第一個決策是先招募還是先蓋塔。",
+    advice: "闖關 1 開局給 15 金，剛好只夠蓋招募所；完成後才能花後續金幣招募或升級兵種。",
     unlocked: true,
     search: "金幣 gold",
   },
@@ -314,7 +334,8 @@ const HERO_ENTRY: CodexEntry = {
     { label: "近戰攻擊", value: `${HERO_MELEE.power}，半徑 ${HERO_MELEE.radius}` },
     { label: "攻擊間隔", value: `${HERO.attackInterval.toFixed(2)} 秒` },
     { label: "射程", value: String(HERO.attackRange) },
-    { label: "倒地", value: "8 秒後在火爐旁復活" },
+    { label: "倒地", value: `${HERO_REVIVE.downTime} 秒後在火爐旁以 ${Math.round(HERO_REVIVE.healthFraction * 100)}% 生命復活` },
+    { label: "主動技能", value: "1 冰霜震擊／2 火力齊射／3 緊急集結" },
   ],
   advice: `距離大於 ${HERO_MELEE.threshold} 時射擊，靠近後自動改為範圍揮擊，全程自動選擇場上等級最高的敵人。`,
   unlocked: true,

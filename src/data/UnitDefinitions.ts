@@ -1,4 +1,5 @@
 import { ATTACK_SPEED, RANGE, type UnitDefinition } from "./CombatTypes";
+import { ASSAULT_RULES } from "./AssaultConfig";
 
 /** The hero. Switches between ranged and melee purely by distance. */
 export const HERO: UnitDefinition = {
@@ -116,20 +117,27 @@ export const ALLY_UNITS: UnitDefinition[] = [
     id: "assault",
     name: "突擊手",
     maxHealth: 120,
-    attackPower: 100,
+    attackPower: ASSAULT_RULES.baseAttack,
     attackInterval: ATTACK_SPEED.mediumFast,
     attackRange: RANGE.melee,
     attackType: "meleeArea",
     areaRadius: RANGE.meleeArea,
     squadSize: 3,
-    recruitCost: 80,
+    recruitCost: 45,
     moveSpeed: 4.2,
     scale: 0.88,
     visual: "assault",
     maxAreaTargets: 5,
     ambushOnSpawn: true,
-    ambushShieldTime: 2,
-    ambushShieldFactor: 0.5,
+    ambushInvulnerableTime: ASSAULT_RULES.invulnerableSeconds,
+    ambushShieldTime: ASSAULT_RULES.reducedDamageSeconds,
+    ambushShieldFactor: ASSAULT_RULES.damageReduction,
+    bonusVsTier: [
+      {
+        minLevel: ASSAULT_RULES.highTierMinLevel,
+        multiplier: ASSAULT_RULES.highTierDamageMultiplier,
+      },
+    ],
   },
   {
     id: "engineer",
@@ -155,7 +163,7 @@ export const ALLY_UNITS: UnitDefinition[] = [
     attackRange: 12,
     attackType: "rangedSingle",
     squadSize: 3,
-    recruitCost: 45,
+    recruitCost: 80,
     moveSpeed: 3.3,
     scale: 0.94,
     visual: "musketeer",

@@ -161,6 +161,103 @@ export async function runV6Checks(ctx) {
   await call("killAllAllies");
   await step(0.016, 100);
 
+  // --------------------------------------------------------------- assault --
+  console.log("\n> Assault: low base damage, Lv.4+ burst, and 3s/3s staged protection");
+  const assaultLow = await call("allyCombatPreview", "assault", 1);
+  const assaultTier4 = await call("allyCombatPreview", "assault", 4);
+  const assaultBoss = await call("allyCombatPreview", "assault", 6);
+  const musketeerPrice = await call("allyCombatPreview", "musketeer", 4);
+  check(
+    "Assault and Musketeer recruitment prices are exchanged",
+    assaultLow.recruitCost === 45 && musketeerPrice.recruitCost === 80,
+    JSON.stringify({ assaultLow, musketeerPrice }),
+  );
+  check(
+    "Assault has 20 base damage against Lv.1-3",
+    assaultLow.attackPower === 20 && assaultLow.damage === 20 && assaultLow.tierMultiplier === 1,
+    JSON.stringify(assaultLow),
+  );
+  check(
+    "Assault deals five times its base damage against every Lv.4+ target",
+    assaultTier4.damage === 100 &&
+      assaultTier4.tierMultiplier === 5 &&
+      assaultBoss.damage === 100 &&
+      assaultBoss.tierMultiplier === 5,
+    JSON.stringify({ assaultTier4, assaultBoss }),
+  );
+
+  await call("startStage", "stage-1");
+  await step(0.016, 20);
+  await call("teleport", 0, -29);
+  await call("spawnEnemy", "juggernaut", 0, 9);
+  await call("spawnAlly", "assault", 0, 4);
+  await step(0.016, 1);
+  await call("killAllEnemies");
+  let assaultProtection = await call("unitInfo", "assault");
+  const assaultStartHp = assaultProtection.hp;
+  await call("damageUnit", "assault", 100);
+  assaultProtection = await call("unitInfo", "assault");
+  check(
+    "Assault is completely invulnerable for the first three seconds after its blink",
+    assaultProtection.hp === assaultStartHp && assaultProtection.damageReduction === 1,
+    JSON.stringify(assaultProtection),
+  );
+  await step(0.016, 190);
+  await call("damageUnit", "assault", 100);
+  assaultProtection = await call("unitInfo", "assault");
+  check(
+    "the next three seconds reduce incoming damage by exactly 50%",
+    assaultProtection.hp === assaultStartHp - 50 && assaultProtection.damageReduction === 0.5,
+    JSON.stringify(assaultProtection),
+  );
+  await step(0.016, 190);
+  const beforeUnprotectedHit = await call("unitInfo", "assault");
+  await call("damageUnit", "assault", 40);
+  assaultProtection = await call("unitInfo", "assault");
+  check(
+    "after six total seconds Assault has no remaining damage reduction",
+    assaultProtection.hp === beforeUnprotectedHit.hp - 40 && assaultProtection.damageReduction === 0,
+    JSON.stringify({ beforeUnprotectedHit, assaultProtection }),
+  );
+
+  const assaultCodex = await call("codexEntry", "ally.assault");
+  const musketeerCodex = await call("codexEntry", "ally.musketeer");
+  const wallCodex = await call("codexEntry", "mechanic.wall");
+  const healthbarCodex = await call("codexEntry", "mechanic.healthbar");
+  const upgradeCodex = await call("codexEntry", "mechanic.ally-upgrade");
+  const priorityCodex = await call("codexEntry", "mechanic.enemy-priority");
+  const skillsCodex = await call("codexEntry", "mechanic.hero-skills");
+  check(
+    "Codex shows the new Assault stats, price, tier multiplier, and staged protection",
+    assaultCodex.fields.some((f) => f.label === "攻擊力" && f.value === "20") &&
+      assaultCodex.fields.some((f) => f.label === "招募成本" && f.value === "45 金幣") &&
+      assaultCodex.advice.includes("前 3 秒完全無敵") &&
+      assaultCodex.advice.includes("對 Lv.4+ 傷害 ×5"),
+    JSON.stringify(assaultCodex),
+  );
+  check(
+    "Codex shows Musketeer as the 80-gold high-price ranged unit",
+    musketeerCodex.fields.some((f) => f.label === "招募成本" && f.value === "80 金幣") &&
+      musketeerCodex.role.includes("高價"),
+    JSON.stringify(musketeerCodex),
+  );
+  check(
+    "Codex no longer retains the old segmented-wall or conditional-health-bar rules",
+    wallCodex.fields.some((f) => f.value.includes("共 4 面固定城牆")) &&
+      !JSON.stringify(wallCodex).includes("8 個點位") &&
+      healthbarCodex.fields.some((f) => f.value.includes("常駐顯示")),
+    JSON.stringify({ wallCodex, healthbarCodex }),
+  );
+  check(
+    "Codex includes current upgrade, enemy-priority, and 1/2/3 skill pages",
+    upgradeCodex.fields.some((f) => f.value.includes("+10%")) &&
+      priorityCodex.fields.some((f) => f.value.includes("城牆 → 盾兵")) &&
+      skillsCodex.fields.map((f) => f.label).join(",") === "按鍵 1,按鍵 2,按鍵 3",
+    JSON.stringify({ upgradeCodex, priorityCodex, skillsCodex }),
+  );
+  await call("killAllAllies");
+  await step(0.016, 200);
+
   // ------------------------------------------------------------ musketeer --
   console.log("\n> Musketeer: bonus damage vs high tiers and a stacking on-hit slow");
   // A clean stage first: no standing tower or wall left from the engineer

@@ -493,9 +493,9 @@ A three-person warrior squad is 3 × 400 HP and 3 × 10 attack, never one pooled
 | 弓箭手 Archer | 3 | 200 | 20 | 0.35 s | 11 | 20 | keeps a 4–11 standoff band |
 | 醫療兵 Medic | 3 | 500 | 20 heal | 1.00 s | 14 | 30 | **one** squad-wide event per tick |
 | 魔法師 Mage | 1 | 150 | 100 | 1.40 s | 8 | 70 | blast radius 2.5 |
-| 突擊手 Assault | 3 | 120 | 100 | 0.70 s | 2.2 | 80 | blinks onto the top-tier enemy, 2 s / 50% DR |
+| 突擊手 Assault | 3 | 120 | 20 | 0.70 s | 2.2 | 45 | blinks onto the top-tier enemy; 3 s invulnerable, then 3 s / 50% DR; ×5 vs Lv4+ |
 | 工程兵 Engineer | 1 | 100 | 0 | — | 2.2 | 35 | independently repairs the nearest damaged non-furnace facility |
-| 火槍手 Musketeer | 3 | 250 | 45 | 1.40 s | 12 | 45 | +40%/+20% vs Lv4-5/Boss, stacking on-hit slow |
+| 火槍手 Musketeer | 3 | 250 | 45 | 1.40 s | 12 | 80 | +40%/+20% vs Lv4-5/Boss, stacking on-hit slow |
 | 冰霜術士 Frost Sorcerer | 1 | 180 | 35 | 1.60 s | 9 | 55 | AoE slow + a Freeze Zone every 10 s |
 
 Every non-Engineer ally class can be strengthened from the recruit panel. Each run-local level adds

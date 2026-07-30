@@ -9,11 +9,18 @@ import type { Damageable } from "./Damageable";
  */
 const STRUCTURE_KINDS = new Set(["wall", "tower", "warehouse", "recruitHall", "furnace"]);
 
-/** Musketeer-style bonus damage, keyed off the target's level tier — never its id. */
-function tierBonus(unit: CombatUnit, target: Damageable): number {
-  const rules = unit.def.bonusVsTier;
+/** Tier bonus keyed off the target's level — never a hard-coded enemy id. */
+export function tierBonusMultiplier(
+  def: CombatUnit["def"],
+  targetLevel: number,
+): number {
+  const rules = def.bonusVsTier;
   if (!rules) return 1;
-  for (const r of rules) if (target.level >= r.minLevel && target.level <= r.maxLevel) return r.multiplier;
+  for (const r of rules) {
+    if (targetLevel >= r.minLevel && (r.maxLevel === undefined || targetLevel <= r.maxLevel)) {
+      return r.multiplier;
+    }
+  }
   return 1;
 }
 
@@ -40,7 +47,7 @@ function applyAoeSlow(unit: CombatUnit, target: Damageable): void {
 export function resolveUnitAttack(unit: CombatUnit, target: Damageable, ctx: CombatContext): void {
   // Higher enemy tiers hit fortifications harder than they hit people.
   const siege = STRUCTURE_KINDS.has(target.kind) ? unit.siegeMultiplier : 1;
-  const power = unit.attackPower * siege * tierBonus(unit, target);
+  const power = unit.attackPower * siege * tierBonusMultiplier(unit.def, target.level);
   const def = unit.def;
 
   switch (def.attackType) {

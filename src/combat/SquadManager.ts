@@ -188,7 +188,12 @@ export class SquadManager {
         if (Math.hypot(px, pz) > 40) continue;
         m.setPosition(px, pz);
         m.setYaw(Math.atan2(best.position.x - px, best.position.z - pz));
-        m.grantDamageReduction(def.ambushShieldFactor ?? 0.5, def.ambushShieldTime ?? 2);
+        m.grantPhasedDamageReduction(
+          1,
+          def.ambushInvulnerableTime ?? 0,
+          def.ambushShieldFactor ?? 0.5,
+          def.ambushShieldTime ?? 0,
+        );
         this.ctx.vfx.teleport(px, pz);
         landed = true;
         placed++;

@@ -1,4 +1,7 @@
 import { repairStats } from "../combat/Squad";
+import { tierBonusMultiplier } from "../combat/UnitAttacks";
+import { CODEX_ENTRIES } from "../data/CodexData";
+import { ALLY_BY_ID } from "../data/UnitDefinitions";
 import type { GameSystems } from "./GameSystems";
 
 /**
@@ -27,6 +30,8 @@ export function createV6DebugApi(s: GameSystems): Record<string, unknown> {
         effectiveInterval: Number(u.effectiveInterval.toFixed(3)),
         attackPower: Number(u.attackPower.toFixed(2)),
         upgradeLevel: u.allyUpgradeLevel,
+        damageReduction: Number(u.activeDamageReduction.toFixed(2)),
+        protectionRemaining: Number(u.phasedProtectionRemaining.toFixed(2)),
         aiState: u.aiState,
         targetKind: u.currentTarget?.kind ?? null,
       };
@@ -72,6 +77,21 @@ export function createV6DebugApi(s: GameSystems): Record<string, unknown> {
       cost: s.run.allyUpgradeCost(defId),
       stats: s.run.allyUpgradeStats(defId),
     }),
+    allyCombatPreview: (defId: string, targetLevel: number) => {
+      const def = ALLY_BY_ID.get(defId);
+      if (!def) return null;
+      const tierMultiplier = tierBonusMultiplier(def, targetLevel);
+      return {
+        attackPower: def.attackPower,
+        recruitCost: def.recruitCost ?? 0,
+        tierMultiplier,
+        damage: def.attackPower * tierMultiplier,
+      };
+    },
+    codexEntry: (id: string) => {
+      const entry = CODEX_ENTRIES.find((candidate) => candidate.id === id);
+      return entry ? { name: entry.name, role: entry.role, fields: entry.fields, advice: entry.advice } : null;
+    },
     upgradeAlly: (defId: string) => s.run.tryUpgradeAlly(defId),
     allyTargetKind: (defId: string) => {
       const u = s.world.allies.find((a) => a.alive && a.def.id === defId);
