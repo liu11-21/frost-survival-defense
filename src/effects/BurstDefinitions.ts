@@ -1,0 +1,348 @@
+import { Color4 } from "@babylonjs/core";
+import type { SpriteKind } from "./ParticleSprites";
+
+export interface BurstOptions {
+  color1: Color4;
+  color2: Color4;
+  minSize: number;
+  maxSize: number;
+  minLifeTime: number;
+  maxLifeTime: number;
+  power: [number, number];
+  gravity: number;
+  spread: number;
+  additive?: boolean;
+}
+
+export interface BurstSpec {
+  key: string;
+  sprite: SpriteKind;
+  capacity: number;
+  options: BurstOptions;
+}
+
+/**
+ * Every one-shot particle burst in the game. Each entry uses a different
+ * sprite, colour ramp and blend mode so no two effects read the same.
+ */
+export const BURSTS: BurstSpec[] = [
+  {
+    key: "chips",
+    sprite: "chip",
+    capacity: 26,
+    options: {
+      color1: new Color4(0.72, 0.53, 0.3, 1),
+      color2: new Color4(0.45, 0.31, 0.18, 1),
+      minSize: 0.07,
+      maxSize: 0.19,
+      minLifeTime: 0.35,
+      maxLifeTime: 0.75,
+      power: [2.4, 5.2],
+      gravity: -16,
+      spread: 0.55,
+    },
+  },
+  {
+    key: "treeSnow",
+    sprite: "flake",
+    capacity: 24,
+    options: {
+      color1: new Color4(0.95, 0.98, 1, 0.95),
+      color2: new Color4(0.72, 0.82, 0.95, 0.7),
+      minSize: 0.08,
+      maxSize: 0.22,
+      minLifeTime: 0.9,
+      maxLifeTime: 1.7,
+      power: [0.3, 1.1],
+      gravity: -3.2,
+      spread: 1.4,
+    },
+  },
+  {
+    key: "buildDust",
+    sprite: "soft",
+    capacity: 30,
+    options: {
+      color1: new Color4(0.72, 0.68, 0.6, 0.55),
+      color2: new Color4(0.5, 0.47, 0.43, 0),
+      minSize: 0.35,
+      maxSize: 1.15,
+      minLifeTime: 0.5,
+      maxLifeTime: 1.2,
+      power: [0.6, 2.0],
+      gravity: -1.4,
+      spread: 1.1,
+    },
+  },
+  {
+    key: "sniperAim",
+    sprite: "spark",
+    capacity: 10,
+    options: {
+      // A bright, brief glint at the muzzle — the windup telegraph the sniper
+      // tower fired every shot without ever actually having (see
+      // `BuildingCombat.ts`): this key was referenced but never registered,
+      // so `VFXManager.burst()`'s `if (!ps) return;` silently swallowed it.
+      color1: new Color4(0.85, 0.95, 1, 1),
+      color2: new Color4(0.55, 0.75, 1, 0.9),
+      minSize: 0.05,
+      maxSize: 0.13,
+      minLifeTime: 0.12,
+      maxLifeTime: 0.22,
+      power: [0.4, 1.1],
+      gravity: 0,
+      spread: 0.25,
+      additive: true,
+    },
+  },
+  {
+    key: "iceShards",
+    sprite: "shard",
+    capacity: 28,
+    options: {
+      color1: new Color4(0.78, 0.92, 1, 0.95),
+      color2: new Color4(0.5, 0.72, 0.92, 0.4),
+      minSize: 0.07,
+      maxSize: 0.24,
+      minLifeTime: 0.5,
+      maxLifeTime: 1.1,
+      power: [1.4, 3.6],
+      gravity: -12,
+      spread: 0.9,
+    },
+  },
+  {
+    key: "complete",
+    sprite: "spark",
+    capacity: 60,
+    options: {
+      color1: new Color4(1, 0.86, 0.5, 1),
+      color2: new Color4(1, 0.5, 0.16, 0.6),
+      minSize: 0.12,
+      maxSize: 0.4,
+      minLifeTime: 0.6,
+      maxLifeTime: 1.4,
+      power: [3.2, 7.5],
+      gravity: -6,
+      spread: 1.2,
+      additive: true,
+    },
+  },
+  {
+    key: "shock",
+    sprite: "soft",
+    capacity: 90,
+    options: {
+      color1: new Color4(1, 0.72, 0.32, 0.9),
+      color2: new Color4(1, 0.34, 0.08, 0),
+      minSize: 0.6,
+      maxSize: 2.4,
+      minLifeTime: 0.7,
+      maxLifeTime: 1.5,
+      power: [7, 16],
+      gravity: 0.6,
+      spread: 0.25,
+      additive: true,
+    },
+  },
+  {
+    key: "slash",
+    sprite: "chip",
+    capacity: 40,
+    options: {
+      color1: new Color4(1, 0.95, 0.8, 1),
+      color2: new Color4(1, 0.6, 0.25, 0.7),
+      minSize: 0.1,
+      maxSize: 0.34,
+      minLifeTime: 0.16,
+      maxLifeTime: 0.36,
+      power: [3.5, 7.5],
+      gravity: -8,
+      spread: 1.1,
+      additive: true,
+    },
+  },
+  {
+    key: "pierce",
+    sprite: "spark",
+    capacity: 40,
+    options: {
+      color1: new Color4(1, 0.98, 0.85, 1),
+      color2: new Color4(0.9, 0.8, 0.5, 0.5),
+      minSize: 0.07,
+      maxSize: 0.2,
+      minLifeTime: 0.12,
+      maxLifeTime: 0.3,
+      power: [2.2, 5],
+      gravity: -6,
+      spread: 1.2,
+      additive: true,
+    },
+  },
+  {
+    key: "blast",
+    sprite: "soft",
+    capacity: 70,
+    options: {
+      color1: new Color4(1, 0.72, 0.32, 0.85),
+      color2: new Color4(1, 0.34, 0.08, 0),
+      minSize: 0.4,
+      maxSize: 1.6,
+      minLifeTime: 0.3,
+      maxLifeTime: 0.7,
+      power: [4, 10],
+      gravity: 0.4,
+      spread: 0.6,
+      additive: true,
+    },
+  },
+  {
+    key: "healPuff",
+    sprite: "soft",
+    capacity: 40,
+    options: {
+      color1: new Color4(0.55, 1, 0.7, 0.9),
+      color2: new Color4(0.3, 0.9, 0.6, 0),
+      minSize: 0.25,
+      maxSize: 0.8,
+      minLifeTime: 0.5,
+      maxLifeTime: 1.0,
+      power: [1.2, 2.6],
+      gravity: 2.2,
+      spread: 0.5,
+      additive: true,
+    },
+  },
+  {
+    key: "blink",
+    sprite: "spark",
+    capacity: 50,
+    options: {
+      color1: new Color4(1, 0.5, 0.9, 1),
+      color2: new Color4(0.6, 0.3, 1, 0.4),
+      minSize: 0.12,
+      maxSize: 0.42,
+      minLifeTime: 0.25,
+      maxLifeTime: 0.6,
+      power: [3, 8],
+      gravity: 1.2,
+      spread: 1.0,
+      additive: true,
+    },
+  },
+  {
+    key: "repairSpark",
+    sprite: "spark",
+    capacity: 30,
+    options: {
+      color1: new Color4(1, 0.75, 0.25, 1),
+      color2: new Color4(0.6, 0.9, 1, 0.6),
+      minSize: 0.08,
+      maxSize: 0.22,
+      minLifeTime: 0.3,
+      maxLifeTime: 0.7,
+      power: [2, 5],
+      gravity: -4,
+      spread: 0.7,
+      additive: true,
+    },
+  },
+  {
+    key: "frostMist",
+    sprite: "flake",
+    capacity: 30,
+    options: {
+      color1: new Color4(0.65, 0.88, 1, 0.85),
+      color2: new Color4(0.4, 0.7, 0.98, 0.3),
+      minSize: 0.12,
+      maxSize: 0.3,
+      minLifeTime: 0.4,
+      maxLifeTime: 0.9,
+      power: [0.5, 1.6],
+      gravity: -0.6,
+      spread: 1.0,
+    },
+  },
+  {
+    key: "freezeZone",
+    sprite: "shard",
+    capacity: 60,
+    options: {
+      color1: new Color4(0.7, 0.92, 1, 0.95),
+      color2: new Color4(0.4, 0.75, 1, 0.4),
+      minSize: 0.1,
+      maxSize: 0.32,
+      minLifeTime: 0.5,
+      maxLifeTime: 1.1,
+      power: [1.5, 4.5],
+      gravity: -6,
+      spread: 1.4,
+      additive: true,
+    },
+  },
+  {
+    key: "armorShatter",
+    sprite: "shard",
+    capacity: 40,
+    options: {
+      color1: new Color4(0.8, 0.94, 1, 1),
+      color2: new Color4(0.55, 0.78, 0.95, 0.5),
+      minSize: 0.1,
+      maxSize: 0.3,
+      minLifeTime: 0.4,
+      maxLifeTime: 0.9,
+      power: [3, 7],
+      gravity: -14,
+      spread: 1.2,
+    },
+  },
+  {
+    key: "auraPulse",
+    sprite: "soft",
+    capacity: 30,
+    options: {
+      color1: new Color4(1, 0.85, 0.4, 0.6),
+      color2: new Color4(1, 0.6, 0.2, 0),
+      minSize: 0.5,
+      maxSize: 1.4,
+      minLifeTime: 0.4,
+      maxLifeTime: 0.8,
+      power: [0.4, 1.2],
+      gravity: 0,
+      spread: 1.6,
+    },
+  },
+  {
+    key: "bomberWarn",
+    sprite: "spark",
+    capacity: 20,
+    options: {
+      color1: new Color4(1, 0.3, 0.25, 1),
+      color2: new Color4(1, 0.6, 0.2, 0.4),
+      minSize: 0.08,
+      maxSize: 0.2,
+      minLifeTime: 0.2,
+      maxLifeTime: 0.4,
+      power: [1, 2.5],
+      gravity: 0.5,
+      spread: 0.5,
+      additive: true,
+    },
+  },
+  {
+    key: "debris",
+    sprite: "chip",
+    capacity: 40,
+    options: {
+      color1: new Color4(0.68, 0.66, 0.62, 1),
+      color2: new Color4(0.35, 0.33, 0.3, 0.6),
+      minSize: 0.09,
+      maxSize: 0.26,
+      minLifeTime: 0.35,
+      maxLifeTime: 0.8,
+      power: [2, 5],
+      gravity: -14,
+      spread: 0.9,
+    },
+  },
+];

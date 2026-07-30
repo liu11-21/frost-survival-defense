@@ -1,0 +1,62 @@
+import { costLine, costText } from "./CostLine";
+import { costBreakdown } from "./PanelText";
+import type { PanelDeps, PanelResult } from "./ActionPanels";
+
+/**
+ * The furnace upgrade panel: exact before/after numbers, the full cost, and —
+ * when it is unaffordable — precisely which resources are short.
+ */
+export function renderFurnacePanel(
+  d: PanelDeps,
+  onResult: (result: PanelResult) => void,
+): HTMLButtonElement | null {
+  const { run, furnace, heroStats, refs, store } = d;
+  refs.recruitHeader.textContent = `中央火爐 · Lv.${furnace.currentLevel}`;
+  const list = refs.recruitList;
+
+  if (!run.allowFurnaceUpgrade) {
+    list.innerHTML =
+      '<div class="panel-note">本關卡禁止升級火爐。</div>' +
+      `<div class="entry static"><div class="entry-main">
+        <div class="entry-desc">火爐生命 ${Math.ceil(furnace.health)} / ${furnace.maxHealth}</div>
+      </div></div>`;
+    return null;
+  }
+
+  const cost = run.furnaceUpgradeCost;
+  const missing = costBreakdown(store, cost);
+  const preview = run.previewNextLevel();
+
+  list.innerHTML = `
+    <div class="entry static"><div class="entry-main">
+      <div class="entry-name">升級效果（Lv.${furnace.currentLevel} → Lv.${furnace.currentLevel + 1}）</div>
+      <div class="entry-desc">主角最大生命：${heroStats.maxHealth} → ${preview.heroHealth}</div>
+      <div class="entry-desc">遠程攻擊：${Math.round(heroStats.rangedAttack)} → ${preview.ranged}</div>
+      <div class="entry-desc">近戰攻擊：${Math.round(heroStats.meleeAttack)} → ${preview.melee}</div>
+      <div class="entry-desc">攻擊間隔：${heroStats.attackInterval.toFixed(2)} 秒 → ${preview.interval.toFixed(2)} 秒</div>
+      <div class="entry-desc">火爐最大生命：${furnace.maxHealth} → ${preview.furnaceHealth}</div>
+      <div class="entry-desc">${preview.squadLimitNote}</div>
+    </div></div>`;
+
+  const button = document.createElement("button");
+  button.className = "entry";
+  button.disabled = missing !== "";
+  button.innerHTML = `
+    <div class="entry-main"><div class="entry-name">升級火爐</div>
+      <div class="entry-desc">目前生命 ${Math.ceil(furnace.health)} / ${furnace.maxHealth}</div></div>
+    <div class="entry-cost">${costLine(cost)}${missing ? `<span class="bad">${missing}</span>` : ""}</div>`;
+  button.addEventListener("click", () => {
+    const failure = run.tryUpgradeFurnace();
+    if (failure) onResult({ ok: false, title: "無法升級火爐", message: failure, iconId: "gold" });
+    else {
+      onResult({
+        ok: true,
+        title: `火爐升級至 Lv.${furnace.currentLevel}`,
+        message: `消耗 ${costText(cost)}。主角能力與火爐生命提升${run.squadLimitPerLevel > 0 ? "，小隊上限 +2" : ""}。`,
+        iconId: "gold",
+      });
+    }
+  });
+  list.appendChild(button);
+  return button;
+}

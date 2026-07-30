@@ -1,0 +1,5 @@
+# Keep source-history diffs stable across Windows and Unix contributors.
+* text=auto eol=lf
+
+# Binary playtest captures remain untracked, but preserve their type if added later.
+*.png binary

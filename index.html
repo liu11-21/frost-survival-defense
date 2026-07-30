@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Frostbound Expanse — 寒霜領地</title>
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'><text y='14' font-size='14'>🔥</text></svg>" />
+  </head>
+  <body>
+    <div id="stage">
+      <canvas id="renderCanvas" touch-action="none"></canvas>
+      <div id="uiRoot"></div>
+      <div id="loadingScreen">
+        <div class="loading-inner">
+          <div class="loading-flame">🔥</div>
+          <h1>FROSTBOUND EXPANSE</h1>
+          <p class="loading-sub">寒霜領地</p>
+          <div class="loading-bar"><div class="loading-fill"></div></div>
+          <p class="loading-hint" id="loadingHint">正在點燃火爐…</p>
+        </div>
+      </div>
+    </div>
+    <script type="module" src="/src/main.ts"></script>
+  </body>
+</html>

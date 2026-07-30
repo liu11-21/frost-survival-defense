@@ -1,0 +1,979 @@
+/* ========================================================= game UI overlay = */
+
+#uiRoot {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  font-size: 14px;
+  color: #e6eefb;
+}
+
+#uiRoot button {
+  font: inherit;
+  color: inherit;
+  cursor: pointer;
+}
+
+.hud {
+  position: absolute;
+  inset: 0;
+  padding: 14px;
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  grid-template-rows: auto 1fr auto;
+  gap: 10px;
+  align-items: start;
+}
+
+.panel-box {
+  pointer-events: auto;
+  background: rgba(10, 16, 28, 0.72);
+  border: 1px solid rgba(140, 178, 230, 0.22);
+  border-radius: 10px;
+  padding: 8px 11px;
+  box-shadow: 0 6px 22px rgba(0, 0, 0, 0.35);
+}
+
+.panel-box.hidden {
+  display: none;
+}
+
+.res-box {
+  grid-column: 1;
+  grid-row: 1;
+  display: flex;
+  gap: 14px;
+  align-items: center;
+}
+.wave-box {
+  grid-column: 2;
+  grid-row: 1;
+  justify-self: center;
+  text-align: center;
+  min-width: 210px;
+}
+.hero-box {
+  grid-column: 1;
+  grid-row: 3;
+  align-self: end;
+  min-width: 240px;
+}
+.furnace-box {
+  grid-column: 2;
+  grid-row: 3;
+  align-self: end;
+  justify-self: center;
+  min-width: 300px;
+}
+.rebuild-box {
+  grid-column: 3;
+  grid-row: 3;
+  align-self: end;
+  min-width: 190px;
+}
+
+.res {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 17px;
+  font-weight: 600;
+}
+.ico {
+  width: 14px;
+  height: 14px;
+  border-radius: 3px;
+  display: inline-block;
+}
+.ico-wood {
+  background: linear-gradient(140deg, #b07a44, #6d4423);
+}
+.ico-stone {
+  background: linear-gradient(140deg, #b9c1cc, #6c7480);
+}
+.ico-gold {
+  background: linear-gradient(140deg, #ffd964, #c8912a);
+  border-radius: 50%;
+}
+.cap-note {
+  font-size: 11px;
+  opacity: 0.6;
+  margin-left: 4px;
+}
+.cap-note.good {
+  color: #8ff0b4;
+  opacity: 0.9;
+}
+
+.wave-line {
+  font-size: 17px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+}
+.wave-sub {
+  font-size: 12px;
+  opacity: 0.78;
+  margin-top: 2px;
+}
+
+.bar-label {
+  font-size: 12px;
+  display: flex;
+  justify-content: space-between;
+  gap: 8px;
+  opacity: 0.9;
+}
+.bar {
+  height: 9px;
+  margin: 4px 0 5px;
+  background: rgba(255, 255, 255, 0.12);
+  border-radius: 5px;
+  overflow: hidden;
+}
+.bar > i {
+  display: block;
+  height: 100%;
+  width: 100%;
+  background: linear-gradient(90deg, #4fd08a, #8ff0b4);
+}
+.bar > i.low {
+  background: linear-gradient(90deg, #e05555, #ff9d6b);
+}
+.bar-warm > i {
+  background: linear-gradient(90deg, #ff9436, #ffd07a);
+}
+.stat-line {
+  font-size: 11px;
+  opacity: 0.72;
+}
+.squad-line {
+  font-size: 12px;
+  margin-top: 5px;
+  opacity: 0.85;
+}
+
+.skill-row {
+  display: flex;
+  gap: 6px;
+  margin-top: 7px;
+}
+.skill-slot {
+  position: relative;
+  flex: 1 1 0;
+  min-width: 0;
+  background: rgba(120, 170, 230, 0.1);
+  border: 1px solid rgba(140, 178, 230, 0.28);
+  border-radius: 7px;
+  padding: 4px 6px 5px;
+  opacity: 0.62;
+  transition: opacity 0.15s ease;
+}
+.skill-slot.ready {
+  opacity: 1;
+}
+.skill-top {
+  display: flex;
+  align-items: baseline;
+  gap: 5px;
+  min-width: 0;
+}
+.skill-key {
+  font-size: 13px;
+  font-weight: 700;
+  color: #bcd8ff;
+}
+.skill-name {
+  font-size: 10px;
+  opacity: 0.82;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.skill-bar {
+  height: 5px;
+  margin: 4px 0 2px;
+}
+.skill-bar > i {
+  background: linear-gradient(90deg, #4fa8ff, #8fd6ff);
+}
+.skill-cd-text {
+  font-size: 10px;
+  text-align: center;
+  opacity: 0.85;
+  min-height: 12px;
+}
+
+.mini-btn {
+  margin-top: 5px;
+  width: 100%;
+  min-height: 40px;
+  background: rgba(255, 178, 87, 0.16);
+  border: 1px solid rgba(255, 178, 87, 0.42);
+  border-radius: 7px;
+  padding: 5px 8px;
+  font-size: 12px;
+  transition: background 0.09s ease, transform 0.06s ease, opacity 0.09s ease;
+}
+.mini-btn:hover:not(:disabled) {
+  background: rgba(255, 178, 87, 0.3);
+}
+.mini-btn:active:not(:disabled) {
+  transform: scale(0.97);
+  background: rgba(255, 178, 87, 0.4);
+}
+.mini-btn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+.mini-btn.loading {
+  opacity: 0.65;
+  cursor: wait;
+}
+.mini-btn.off {
+  background: rgba(140, 150, 170, 0.14);
+  border-color: rgba(140, 150, 170, 0.4);
+}
+.mini-btn.hidden {
+  visibility: hidden;
+}
+.mini-btn.tight {
+  width: auto;
+  min-height: 30px;
+  margin: 0;
+  padding: 3px 8px;
+}
+
+/* ------------------------------------------------------------ side panels - */
+
+.side-panel {
+  position: absolute;
+  top: 78px;
+  width: 310px;
+  max-height: 62vh;
+  display: none;
+  flex-direction: column;
+  pointer-events: auto;
+  background: rgba(9, 14, 25, 0.9);
+  border: 1px solid rgba(140, 178, 230, 0.26);
+  border-radius: 11px;
+  overflow: hidden;
+  box-shadow: 0 12px 34px rgba(0, 0, 0, 0.5);
+}
+.side-panel.show {
+  display: flex;
+}
+.build-panel {
+  left: 14px;
+}
+.recruit-panel {
+  right: 14px;
+}
+.side-title {
+  padding: 9px 12px;
+  font-weight: 700;
+  font-size: 14px;
+  background: rgba(255, 178, 87, 0.12);
+  border-bottom: 1px solid rgba(140, 178, 230, 0.2);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 8px;
+}
+.side-list {
+  overflow-y: auto;
+  padding: 7px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.entry {
+  display: flex;
+  /* `.side-list` is itself a column flex container; without this, once the
+   * cards' combined natural height exceeds the panel's visible area, flexbox
+   * shrinks every card down to its `min-height` floor while their actual text
+   * content stays full-size — the boxes get thin, the text spills past them
+   * and overlaps the next card. `overflow-y: auto` on the list is what's
+   * supposed to handle "too many cards", not shrinking. */
+  flex-shrink: 0;
+  justify-content: space-between;
+  gap: 10px;
+  text-align: left;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 8px;
+  padding: 8px 10px;
+  min-height: 44px;
+  width: 100%;
+  transition: background 0.09s ease, transform 0.06s ease;
+}
+.entry:hover:not(:disabled) {
+  background: rgba(255, 178, 87, 0.16);
+  border-color: rgba(255, 178, 87, 0.4);
+}
+.entry:active:not(:disabled) {
+  transform: scale(0.985);
+  background: rgba(255, 178, 87, 0.24);
+}
+.entry:disabled {
+  opacity: 0.48;
+  cursor: not-allowed;
+}
+.entry.static {
+  cursor: default;
+}
+.entry-main {
+  /* Without an explicit flex-basis, this column shrink-wraps to its content's
+   * min-content width (a single long word), forcing every description line
+   * to wrap character-by-character into a tall stack that overflows past the
+   * card's own box and onto the next card below it. */
+  flex: 1 1 auto;
+  min-width: 0;
+}
+.entry-icon,
+.entry-cost {
+  flex: none;
+}
+.entry-name {
+  font-weight: 700;
+  font-size: 13px;
+}
+.entry-desc {
+  font-size: 11px;
+  opacity: 0.72;
+  margin-top: 2px;
+  line-height: 1.35;
+}
+.entry-desc.special {
+  color: #ffd08a;
+  opacity: 0.95;
+}
+.entry-cost {
+  font-size: 12px;
+  text-align: right;
+  white-space: nowrap;
+  color: #ffd08a;
+  max-width: 108px;
+}
+.entry-cost .bad {
+  /* Overrides the ancestor's `nowrap` — a 3-resource shortfall or an illegal-
+   * reason sentence is exactly the long, variable-length text that used to
+   * force this column wide enough to crush `.entry-main` into a sliver. */
+  display: block;
+  white-space: normal;
+  color: #ff9b8a;
+  font-size: 10px;
+  margin-top: 3px;
+}
+.tag {
+  font-size: 10px;
+  padding: 1px 5px;
+  border-radius: 6px;
+  background: rgba(255, 255, 255, 0.14);
+  opacity: 0.85;
+  margin-left: 4px;
+}
+.tag.ok { background: rgba(120, 220, 160, 0.22); color: #8ff0b4; opacity: 1; }
+.tag.warn { background: rgba(255, 178, 87, 0.22); color: #ffd08a; opacity: 1; }
+.tag.bad { background: rgba(255, 110, 90, 0.22); color: #ff9b8a; opacity: 1; }
+
+/* ------------------------------------------------------ build-menu tabs -- */
+
+.build-tabs {
+  display: flex;
+  gap: 5px;
+  padding: 7px 7px 0;
+  overflow-x: auto;
+  scrollbar-width: thin;
+}
+.build-tab {
+  flex: none;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  padding: 6px 11px;
+  min-height: 32px;
+  border-radius: 999px;
+  border: 1px solid rgba(140, 178, 230, 0.28);
+  background: rgba(255, 255, 255, 0.05);
+  font-size: 12px;
+  white-space: nowrap;
+  transition: background 0.09s ease, border-color 0.09s ease;
+}
+.build-tab:hover:not(.on) {
+  background: rgba(255, 255, 255, 0.1);
+}
+.build-tab.on {
+  background: rgba(255, 178, 87, 0.24);
+  border-color: rgba(255, 178, 87, 0.65);
+  font-weight: 700;
+}
+.build-tab b {
+  font-size: 10.5px;
+  opacity: 0.75;
+  font-weight: 700;
+  padding: 0 5px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.12);
+}
+
+/* Hover/expanded layer: the compact card always shows icon/name/role/cost/
+ * state/core stat; the fuller numeric spread only appears on hover or focus,
+ * so the list stays scannable at a glance. */
+.entry-expand {
+  max-height: 0;
+  overflow: hidden;
+  opacity: 0;
+  transition: max-height 0.14s ease, opacity 0.14s ease;
+}
+.entry:hover .entry-expand,
+.entry:focus-visible .entry-expand,
+.entry:focus-within .entry-expand {
+  max-height: 120px;
+  opacity: 1;
+  margin-top: 3px;
+}
+
+/* -------------------------------------------------------- banner / toast -- */
+
+.banner {
+  position: absolute;
+  top: 84px;
+  left: 50%;
+  transform: translate(-50%, -12px);
+  text-align: center;
+  opacity: 0;
+  transition:
+    opacity 0.25s ease,
+    transform 0.25s ease;
+  background: rgba(9, 14, 25, 0.76);
+  border-radius: 12px;
+  padding: 10px 26px;
+  border: 1px solid rgba(255, 178, 87, 0.28);
+}
+.banner.show {
+  opacity: 1;
+  transform: translate(-50%, 0);
+}
+.banner-title {
+  font-size: 25px;
+  font-weight: 800;
+  color: #ffd08a;
+  letter-spacing: 0.05em;
+}
+.banner-body {
+  font-size: 13px;
+  opacity: 0.85;
+  margin-top: 2px;
+}
+
+.toast {
+  position: absolute;
+  bottom: 132px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: rgba(9, 14, 25, 0.86);
+  border-radius: 8px;
+  padding: 6px 16px;
+  font-size: 13px;
+  opacity: 0;
+  transition: opacity 0.2s ease;
+  border: 1px solid rgba(140, 178, 230, 0.24);
+}
+.toast.show {
+  opacity: 1;
+}
+
+.hint {
+  position: absolute;
+  bottom: 8px;
+  left: 50%;
+  transform: translateX(-50%);
+  font-size: 12px;
+  opacity: 0.6;
+  transition: opacity 0.8s ease;
+  white-space: nowrap;
+}
+.hint.faded {
+  opacity: 0;
+}
+
+/* --------------------------------------------------------------- screens -- */
+
+.screen {
+  position: absolute;
+  inset: 0;
+  display: none;
+  place-items: center;
+  background: radial-gradient(circle at 50% 40%, rgba(16, 26, 44, 0.94), rgba(4, 7, 14, 0.97));
+  pointer-events: auto;
+  overflow-y: auto;
+}
+.screen.show {
+  display: grid;
+}
+.screen-inner {
+  max-width: 960px;
+  padding: 32px 24px;
+  text-align: center;
+}
+.screen h1 {
+  font-size: 40px;
+  letter-spacing: 0.12em;
+  margin-bottom: 6px;
+}
+.screen h1 small {
+  display: block;
+  font-size: 13px;
+  letter-spacing: 0.4em;
+  opacity: 0.5;
+  margin-top: 6px;
+}
+.screen h1.win {
+  color: #8ff0b4;
+}
+.screen h1.lose {
+  color: #ff8f7a;
+}
+.screen h2 {
+  font-size: 19px;
+  margin-bottom: 6px;
+  color: #ffd08a;
+}
+.lede {
+  font-size: 15px;
+  opacity: 0.86;
+  margin-bottom: 18px;
+}
+.muted {
+  font-size: 12px;
+  opacity: 0.6;
+  margin: 8px 0;
+  line-height: 1.5;
+}
+.foot {
+  font-size: 12px;
+  opacity: 0.55;
+  margin-top: 24px;
+}
+
+.menu-cols {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 22px;
+  text-align: left;
+}
+.menu-cols.upgrade {
+  grid-template-columns: repeat(3, 1fr);
+  text-align: center;
+}
+.menu-col {
+  background: rgba(255, 255, 255, 0.04);
+  border-radius: 12px;
+  padding: 16px;
+  border: 1px solid rgba(140, 178, 230, 0.16);
+}
+.menu-buttons {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.menu-buttons.center {
+  align-items: center;
+}
+
+.big-btn {
+  background: rgba(255, 178, 87, 0.14);
+  border: 1px solid rgba(255, 178, 87, 0.44);
+  border-radius: 10px;
+  padding: 11px 18px;
+  font-size: 15px;
+  font-weight: 700;
+  text-align: left;
+  min-width: 220px;
+  transition: background 0.15s ease;
+}
+.big-btn:hover {
+  background: rgba(255, 178, 87, 0.3);
+}
+.big-btn.ghost {
+  background: rgba(255, 255, 255, 0.05);
+  border-color: rgba(255, 255, 255, 0.2);
+}
+.big-btn .sub {
+  display: block;
+  font-size: 11px;
+  font-weight: 400;
+  opacity: 0.72;
+  margin-top: 4px;
+  line-height: 1.4;
+}
+.big-btn.upgrade-card {
+  text-align: center;
+  min-width: 0;
+}
+.big-btn.tight {
+  min-width: 0;
+  padding: 8px 14px;
+}
+
+.name-row {
+  display: flex;
+  gap: 8px;
+  justify-content: center;
+  margin: 10px 0;
+}
+.name-row input {
+  background: rgba(255, 255, 255, 0.07);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 8px;
+  padding: 8px 12px;
+  color: inherit;
+  font: inherit;
+}
+
+.board {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 10px;
+  font-size: 12px;
+}
+.board th,
+.board td {
+  padding: 4px 6px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  text-align: left;
+}
+.board th {
+  opacity: 0.6;
+  font-weight: 600;
+}
+
+/* ================================================= v3 additions =========== */
+
+.ricon {
+  vertical-align: -3px;
+  flex: none;
+}
+.res {
+  gap: 5px;
+}
+.res-name {
+  font-size: 11px;
+  opacity: 0.65;
+  font-weight: 500;
+}
+
+/* ------------------------------------------------- context E prompt ------ */
+
+.ctx-prompt {
+  position: absolute;
+  left: 50%;
+  bottom: 168px;
+  transform: translate(-50%, 8px);
+  background: rgba(9, 14, 25, 0.88);
+  border: 1px solid rgba(255, 200, 130, 0.5);
+  border-radius: 10px;
+  padding: 8px 18px;
+  text-align: center;
+  opacity: 0;
+  pointer-events: none;
+  transition:
+    opacity 0.16s ease,
+    transform 0.16s ease;
+}
+.ctx-prompt.show {
+  opacity: 1;
+  transform: translate(-50%, 0);
+}
+.ctx-prompt.blocked {
+  border-color: rgba(150, 160, 180, 0.4);
+}
+.prompt-label {
+  font-size: 16px;
+  font-weight: 700;
+  color: #ffd08a;
+}
+.ctx-prompt.blocked .prompt-label {
+  color: #cfd8e6;
+}
+.prompt-detail {
+  font-size: 12px;
+  opacity: 0.8;
+  margin-top: 2px;
+}
+
+/* ------------------------------------------------------- boss bar -------- */
+
+.boss-bar {
+  position: absolute;
+  top: 96px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: min(620px, 60vw);
+  background: rgba(9, 12, 22, 0.86);
+  border: 1px solid rgba(255, 90, 70, 0.45);
+  border-radius: 10px;
+  padding: 7px 14px 9px;
+  display: none;
+}
+.boss-bar.show {
+  display: block;
+}
+.boss-top,
+.boss-bottom {
+  display: flex;
+  justify-content: space-between;
+  font-size: 12px;
+}
+.boss-top {
+  font-weight: 700;
+  color: #ff9b7d;
+  font-size: 14px;
+}
+.boss-track {
+  height: 12px;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 6px;
+  overflow: hidden;
+  margin: 5px 0 3px;
+}
+.boss-track > i {
+  display: block;
+  height: 100%;
+  background: linear-gradient(90deg, #d63b2c, #ff8a5c);
+}
+.boss-bottom {
+  opacity: 0.8;
+}
+.boss-bottom .danger {
+  color: #ff6b52;
+  font-weight: 700;
+}
+
+/* ------------------------------------------------------ tutorial --------- */
+
+.tutorial-card {
+  position: absolute;
+  left: 14px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 250px;
+  background: rgba(9, 14, 25, 0.9);
+  border: 1px solid rgba(120, 220, 160, 0.4);
+  border-radius: 11px;
+  padding: 12px 14px;
+  pointer-events: auto;
+  display: none;
+}
+.tutorial-card.show {
+  display: block;
+}
+.tut-step {
+  font-size: 11px;
+  opacity: 0.6;
+}
+.tut-title {
+  font-size: 17px;
+  font-weight: 700;
+  color: #8ff0b4;
+  margin: 3px 0 5px;
+}
+.tut-body {
+  font-size: 12px;
+  line-height: 1.55;
+  opacity: 0.88;
+  margin-bottom: 8px;
+}
+
+/* --------------------------------------------------- debug panels -------- */
+
+.debug-panel {
+  position: absolute;
+  top: 70px;
+  width: 320px;
+  max-height: 78vh;
+  overflow-y: auto;
+  background: rgba(6, 9, 16, 0.94);
+  border: 1px solid rgba(120, 180, 255, 0.35);
+  border-radius: 9px;
+  padding: 10px 12px;
+  font-size: 11px;
+  font-family: Consolas, "Courier New", monospace;
+  pointer-events: auto;
+  display: none;
+}
+.debug-panel.show {
+  display: block;
+}
+.debug-panel.left {
+  left: 14px;
+}
+#debug-ai {
+  width: 620px;
+  max-width: 92vw;
+}
+.dbg-ai-tabs {
+  display: flex;
+  gap: 4px;
+  flex-wrap: wrap;
+  margin: 6px 0;
+}
+.dbg-tab {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 3px 8px;
+  border-radius: 999px;
+  border: 1px solid rgba(120, 180, 255, 0.35);
+  background: rgba(255, 255, 255, 0.04);
+  font-size: 10.5px;
+  font-family: inherit;
+  color: inherit;
+  cursor: pointer;
+}
+.dbg-tab.on {
+  background: rgba(255, 178, 87, 0.28);
+  border-color: rgba(255, 178, 87, 0.6);
+}
+.dbg-tab b {
+  opacity: 0.7;
+  font-weight: 700;
+}
+.dbg-table-wrap {
+  overflow-x: auto;
+  max-width: 100%;
+}
+.dbg-warn-row td {
+  background: rgba(255, 120, 90, 0.14);
+  color: #ffb49b;
+}
+.debug-panel.right {
+  right: 14px;
+}
+.dbg-title {
+  font-weight: 700;
+  color: #7fc4ff;
+  margin: 8px 0 4px;
+  font-size: 12px;
+}
+.dbg-title:first-child {
+  margin-top: 0;
+}
+.dbg-grid {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 1px 10px;
+}
+.dbg-grid span {
+  opacity: 0.6;
+}
+.dbg-grid b {
+  text-align: right;
+}
+.dbg-note {
+  opacity: 0.65;
+  line-height: 1.4;
+  word-break: break-all;
+}
+.dbg-warn {
+  color: #ffb95c;
+  margin: 4px 0;
+  line-height: 1.4;
+}
+.dbg-row {
+  display: flex;
+  gap: 4px;
+  flex-wrap: wrap;
+  margin: 5px 0;
+}
+.dbg-row button,
+.dbg-knob input {
+  font-family: inherit;
+  font-size: 11px;
+}
+.dbg-row button {
+  background: rgba(120, 180, 255, 0.15);
+  border: 1px solid rgba(120, 180, 255, 0.4);
+  border-radius: 5px;
+  padding: 3px 8px;
+  color: inherit;
+  cursor: pointer;
+}
+.dbg-row button:hover {
+  background: rgba(120, 180, 255, 0.3);
+}
+.dbg-row button.on {
+  background: rgba(255, 178, 87, 0.3);
+  border-color: rgba(255, 178, 87, 0.6);
+}
+.dbg-knob {
+  display: grid;
+  grid-template-columns: 96px 1fr 42px;
+  align-items: center;
+  gap: 6px;
+  margin: 2px 0;
+}
+.dbg-knob input {
+  width: 100%;
+}
+.dbg-knob b {
+  text-align: right;
+}
+.dbg-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 10px;
+}
+.dbg-table th,
+.dbg-table td {
+  padding: 2px 3px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  text-align: left;
+}
+.dbg-table th {
+  opacity: 0.55;
+}
+.dbg-out {
+  white-space: pre-wrap;
+  font-size: 10px;
+  opacity: 0.8;
+  margin-top: 6px;
+  max-height: 220px;
+  overflow-y: auto;
+}
+
+/* ------------------------------------------------- panel extras ---------- */
+
+.entry-icon {
+  flex: none;
+  display: flex;
+  align-items: center;
+}
+.panel-note {
+  flex-shrink: 0;
+  font-size: 11px;
+  opacity: 0.72;
+  padding: 6px 8px;
+  line-height: 1.5;
+  background: rgba(255, 255, 255, 0.04);
+  border-radius: 6px;
+}
+.menu-cols.help {
+  grid-template-columns: 1fr 1fr;
+}
+.menu-cols.help h2 {
+  margin-top: 14px;
+}
+.menu-cols.help h2:first-child {
+  margin-top: 0;
+}
+.big-btn.on {
+  background: rgba(255, 178, 87, 0.34);
+}
+.big-btn:focus-visible,
+.entry:focus-visible,
+.mini-btn:focus-visible {
+  outline: 2px solid #8fd0ff;
+  outline-offset: 2px;
+}
