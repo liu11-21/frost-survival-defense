@@ -229,7 +229,7 @@ export class GameHud {
     refs.callWaveButton.textContent = reward > 0 ? `立刻開始下一波 (N)　+${reward}金幣` : "立刻開始下一波 (N)";
 
     // squads + furnace upgrade
-    refs.squadCount.textContent = `${squads.allySquadCount} / ${run.squadLimit}`;
+    refs.squadCount.textContent = `${squads.allySquadSlotsUsed} / ${run.squadLimit}`;
     const cost = run.furnaceUpgradeCost;
     refs.upgradeButton.disabled = !run.canUpgradeFurnace;
     refs.upgradeButton.textContent = run.allowFurnaceUpgrade

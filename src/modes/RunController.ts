@@ -87,7 +87,7 @@ export class RunController {
   }
   /** "3 / 8" for the recruit prompt. */
   get squadLimitUsageText(): string {
-    return this.deps.squads.allySquadCount + " / " + this.squadLimit;
+    return this.deps.squads.allySquadSlotsUsed + " / " + this.squadLimit;
   }
 
   get squadLimit(): number {
@@ -254,7 +254,9 @@ export class RunController {
     const def = ALLY_BY_ID.get(defId);
     if (!def) return "未知兵種";
     if (!d.buildings.hasRecruitHall) return "招募所未完成";
-    if (d.squads.allySquadCount >= this.squadLimit) return "小隊已達上限";
+    // Every recruit action creates one squad slot, regardless of whether that
+    // squad definition contains one member or three.
+    if (d.squads.allySquadSlotsUsed >= this.squadLimit) return "小隊已達上限";
     const cost = this.recruitCost(defId);
     if (d.store.gold < cost) return "金幣不足";
     if (!d.store.spend({ gold: cost })) return "金幣不足";

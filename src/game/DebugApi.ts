@@ -346,7 +346,7 @@ export function buildSnapshot(s: GameSystems, inMenu: boolean): Record<string, n
       wave: s.waves.currentWave,
       phase: s.waves.currentPhase,
       enemies: s.squads.livingEnemyUnits,
-      allySquads: s.squads.allySquadCount,
+      allySquads: s.squads.allySquadSlotsUsed,
       squadLimit: s.run.squadLimit,
       wood: Math.floor(s.store.wood),
       stone: Math.floor(s.store.stone),

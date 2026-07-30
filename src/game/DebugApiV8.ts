@@ -22,7 +22,11 @@ export function createV8DebugApi(s: GameSystems): Record<string, unknown> {
     resetSniperShots: () => resetSniperShotCounter(),
     sniperShotsFired: () => sniperShotCount(),
     runOver: () => s.run.isOver,
-    squadInfo: () => ({ count: s.squads.allySquadCount, limit: s.run.squadLimit }),
+    squadInfo: () => ({
+      count: s.squads.allySquadSlotsUsed,
+      units: s.squads.livingAllyUnits,
+      limit: s.run.squadLimit,
+    }),
     earlyWaveReward: () => s.run.previewEarlyWaveReward(),
     claimEarlyWaveNow: () => s.run.callNextWaveEarly(),
     setPrepCountdown: (seconds: number) => s.waves.setPrepCountdown(seconds),

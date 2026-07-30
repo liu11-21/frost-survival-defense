@@ -5,6 +5,7 @@ import { updateFrameUi } from "./GameLoopUi";
 import { computeLaneCoverage } from "../buildings/AttackRangeGeometry";
 import { LANES } from "../data/BuildSlotDefinitions";
 import { BUILDING_BY_ID } from "../data/BuildingDefinitions";
+import { updateHaltedDeathLifecycle } from "../combat/HaltedDeathLifecycle";
 
 /**
  * One simulation frame, in dependency order.
@@ -127,6 +128,7 @@ export function renderFrame(s: GameSystems, halted: boolean, simulate: (dt: numb
 
   s.monitor.beginSimulation();
   if (!halted && dt > 0) simulate(dt);
+  else if (dt > 0) updateHaltedDeathLifecycle(s.squads, s.world, dt);
   s.monitor.endSimulation();
 
   s.monitor.beginRender();

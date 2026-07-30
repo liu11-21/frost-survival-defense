@@ -42,7 +42,11 @@ export class SquadManager {
     private readonly ctx: CombatContext,
   ) {}
 
-  get allySquadCount(): number {
+  /**
+   * Recruitment capacity is measured in squads, never individual members.
+   * A living three-person squad therefore consumes exactly one slot.
+   */
+  get allySquadSlotsUsed(): number {
     let n = 0;
     for (const s of this.allySquads) if (s.alive) n++;
     return n;

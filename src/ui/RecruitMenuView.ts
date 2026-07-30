@@ -32,7 +32,7 @@ export interface RecruitMenuCallbacks {
 export function renderRecruitList(d: PanelDeps, callbacks: RecruitMenuCallbacks): void {
   const { buildings, squads, run, store, refs } = d;
   const hasHall = buildings.hasRecruitHall;
-  const count = squads.allySquadCount;
+  const count = squads.allySquadSlotsUsed;
   const limit = run.squadLimit;
   refs.recruitHeader.textContent = hasHall
     ? `招募所 · 小隊 ${count} / ${limit} · 金幣 ${Math.floor(store.gold)}`
@@ -73,7 +73,7 @@ export function renderRecruitList(d: PanelDeps, callbacks: RecruitMenuCallbacks)
         callbacks.onResult({
           ok: true,
           title: `已招募：${def.name}`,
-          message: `${def.squadSize} 人小隊，消耗 ${cost} 金幣。目前小隊 ${squads.allySquadCount} / ${run.squadLimit}。`,
+          message: `${def.squadSize} 人小隊，消耗 ${cost} 金幣。目前小隊 ${squads.allySquadSlotsUsed} / ${run.squadLimit}。`,
           iconId: "gold",
         });
       }

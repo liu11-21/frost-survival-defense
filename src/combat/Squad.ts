@@ -133,6 +133,17 @@ export class Squad {
     }
   }
 
+  /**
+   * Drops expired corpse references without advancing combat or cooldowns.
+   * The halted-frame cleanup uses this while result, upgrade and pause menus
+   * have stopped the rest of the simulation.
+   */
+  pruneExpiredMembers(): void {
+    for (let i = this.members.length - 1; i >= 0; i--) {
+      if (this.members[i].readyToRemove) this.members.splice(i, 1);
+    }
+  }
+
   /** Average health of the living members, for the squad HUD's status word. */
   get averageHealthPercent(): number {
     return this.healthPercent();

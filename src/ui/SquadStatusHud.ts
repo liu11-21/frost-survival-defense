@@ -151,7 +151,7 @@ export class SquadStatusHud {
 
   private render(): void {
     const rows = this.collect();
-    this.header.textContent = `我方小隊　${this.squads.allySquadCount} / ${this.run.squadLimit}`;
+    this.header.textContent = `我方小隊　${this.squads.allySquadSlotsUsed} / ${this.run.squadLimit}`;
     if (rows.length === 0) {
       this.list.innerHTML = '<div class="squad-empty">尚未招募任何小隊</div>';
       return;

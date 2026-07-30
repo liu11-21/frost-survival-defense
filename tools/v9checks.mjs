@@ -24,6 +24,23 @@ export async function runV9Checks(ctx) {
   await step(0.016, 5);
   check("toggleMap closes it again", (await call("mapOpen")) === false);
 
+  // ------------------------------------------------------ squad capacity --
+  console.log("\n> squad capacity counts squads, not their members");
+  await call("spawnAlly", "warrior", -2, 4);
+  let capacity = await call("squadInfo");
+  check(
+    "one three-person Warrior squad consumes exactly one squad slot",
+    capacity.count === 1 && capacity.units === 3,
+    capacity,
+  );
+  await call("spawnAlly", "shield", 2, 4);
+  capacity = await call("squadInfo");
+  check(
+    "adding a one-person Shield squad consumes one additional slot",
+    capacity.count === 2 && capacity.units === 4,
+    capacity,
+  );
+
   // -------------------------------------------------------- attack range --
   console.log("\n> attack-range display reflects a built tower's real data");
   await call("grant", 9000, 9000, 9000);
@@ -56,8 +73,26 @@ export async function runV9Checks(ctx) {
   await step(0.016, 5);
   check("build panel closes again", (await call("panelState")).open === false);
 
+  // ------------------------------------------ halted corpse lifecycle --
+  console.log("\n> allied corpses still clear after the result menu halts combat");
+  await call("startStage", "stage-1");
+  await step(0.016, 5);
+  await call("spawnAlly", "warrior", 0, 4);
+  const haltedBefore = await call("allyBodies");
+  await call("killAllAllies");
+  await call("damageFurnace", 999999);
+  await step(0.016, 320);
+  const haltedAfter = await call("allyBodies");
+  check(
+    "a wiped squad disappears even though defeat opened the result menu",
+    haltedBefore.living === 3 && haltedAfter.corpses === 0 && haltedAfter.squads === 0,
+    { haltedBefore, haltedAfter },
+  );
+
   // ---------------------------------------------------- watchdog / residue --
   console.log("\n> watchdog and death-residue guard stay quiet during normal play");
+  await call("startStage", "stage-1");
+  await step(0.016, 20);
   await call("resetWatchdog");
   for (let i = 0; i < 4; i++) await call("spawnAlly", "warrior", -3 + i, 4);
   await call("spawnEnemy", "grunt", 0, 20);

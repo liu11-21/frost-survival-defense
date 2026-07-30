@@ -12,6 +12,7 @@ import { GameSystems } from "./GameSystems";
 import { SupportSystems } from "./SupportSystems";
 import { PointerRouter } from "../input/PointerRouter";
 import { InputDebugOverlay } from "../ui/InputDebugOverlay";
+import { updateHaltedDeathLifecycle } from "../combat/HaltedDeathLifecycle";
 
 /** Owns the engine loop and the glue between input, rules and presentation. */
 export class Game {
@@ -386,7 +387,9 @@ export class Game {
 
   stepManually(dt: number, render = true): void {
     if (this.disposed) return;
-    if (!this.paused && !this.inMenu) this.update(Math.min(0.05, dt));
+    const frameDt = Math.min(0.05, dt);
+    if (!this.paused && !this.inMenu) this.update(frameDt);
+    else updateHaltedDeathLifecycle(this.s.squads, this.s.world, frameDt);
     if (render) this.s.scene.render();
   }
 
