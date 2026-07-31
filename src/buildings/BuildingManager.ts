@@ -85,6 +85,15 @@ export class BuildingManager {
   get hasRecruitHall(): boolean { return this.hasComplete("recruitHall"); }
   get hasAutoCollector(): boolean { return this.hasComplete("autoCollector"); }
   get hasAutoRebuilder(): boolean { return this.hasComplete("autoRebuilder"); }
+  /** Completed attack emplacements currently able to benefit from Skill 2. */
+  get activeAttackBuildingCount(): number {
+    let count = 0;
+    for (const slot of this.slots) {
+      const building = slot.building;
+      if (building?.alive && building.isComplete && building.def.attackKind) count++;
+    }
+    return count;
+  }
   get rebuildCooldownRemaining(): number { return Math.max(0, this.rebuildCooldown); }
   get attackSpeedBoostRemaining(): number { return Math.max(0, this.attackSpeedBuffRemaining); }
   get attackSpeedMultiplier(): number {

@@ -15,7 +15,7 @@ import type { HeroController } from "./HeroController";
 
 export interface HeroSkillStateView {
   id: HeroSkillId;
-  key: string;
+  key: string | null;
   keyLabel: string;
   name: string;
   description: string;
@@ -23,6 +23,8 @@ export interface HeroSkillStateView {
   cooldown: number;
   remaining: number;
   activeRemaining: number;
+  /** Compact count shown on Infinite Firepower's card. */
+  activeAttackBuildings?: number;
   ready: boolean;
 }
 
@@ -33,7 +35,7 @@ interface AirSupportState {
   flameTickTimer: number;
 }
 
-/** Owns the hero's four active skills and every duration/cooldown transition. */
+/** Owns the hero's three manual skills, one automatic skill, and their timers. */
 export class HeroSkills {
   private readonly remaining = new Map<HeroSkillId, number>();
   private airSupport: AirSupportState | null = null;
@@ -54,6 +56,7 @@ export class HeroSkills {
       if (left > 0) this.remaining.set(skill.id, Math.max(0, left - dt));
     }
     this.updateAirSupport(dt);
+    this.tryAutoCastSeismicWave();
     if (this.groundSupportRemaining > 0) {
       this.groundSupportRemaining = Math.max(0, this.groundSupportRemaining - dt);
       if (this.groundSupportRemaining <= 0 || !this.squads.groundSupportActive) {
@@ -99,12 +102,16 @@ export class HeroSkills {
         cooldown: skill.cooldown,
         remaining,
         activeRemaining,
+        activeAttackBuildings: skill.id === "infiniteFirepower"
+          ? this.buildings.activeAttackBuildingCount
+          : undefined,
         ready: remaining <= 0 && activeRemaining <= 0,
       };
     });
   }
 
   tryUse(id: HeroSkillId): string | null {
+    if (id === "seismicWave") return "震地波會在主角戰鬥時自動施放";
     if (!this.hero.alive) return "主角無法行動";
     if (id === "groundSupport" && this.groundSupportRemaining > 0) return "地面支援尚未撤退";
     if ((this.remaining.get(id) ?? 0) > 0) return "技能冷卻中";
@@ -119,9 +126,6 @@ export class HeroSkills {
       case "groundSupport":
         if (!this.castGroundSupport()) return "特殊護駕已在場上";
         return null;
-      case "seismicWave":
-        this.castSeismicWave();
-        break;
     }
 
     this.remaining.set(id, HERO_SKILL_BY_ID.get(id)?.cooldown ?? 10);
@@ -145,6 +149,7 @@ export class HeroSkills {
     if (state.strikesRemaining > 0) {
       state.strikeTimer -= dt;
       while (state.strikesRemaining > 0 && state.strikeTimer <= 0) {
+        this.ctx.vfx.airStrike(0, 0, AIR_SUPPORT.radius);
         this.ctx.areaDamage(
           "ally",
           0,
@@ -161,6 +166,7 @@ export class HeroSkills {
       if (state.strikesRemaining === 0) {
         state.flameRemaining = AIR_SUPPORT.flameDuration;
         state.flameTickTimer = AIR_SUPPORT.flameTickInterval;
+        this.ctx.vfx.groundFire(0, 0, AIR_SUPPORT.radius, AIR_SUPPORT.flameDuration);
       }
       return;
     }
@@ -221,5 +227,25 @@ export class HeroSkills {
     }
     this.ctx.vfx.heroSkill("seismicWave", x + forwardX * 3, z + forwardZ * 3, SEISMIC_WAVE.radius);
     this.ctx.vfx.sound("heroSkillBarrage", 1, 0.65);
+  }
+
+  /** Skill 4 fires itself only while the hero is actively engaging an enemy. */
+  private tryAutoCastSeismicWave(): void {
+    if (!this.hero.isAttacking || this.cooldownRemaining("seismicWave") > 0) return;
+    const { x, z } = this.hero.position;
+    const yaw = this.hero.facingYaw;
+    const forwardX = Math.sin(yaw);
+    const forwardZ = Math.cos(yaw);
+    const minDot = Math.cos(SEISMIC_WAVE.halfAngleRadians);
+    const targets = this.ctx.world.queryUnits("enemy", x, z, SEISMIC_WAVE.radius);
+    const hasTargetInCone = targets.some((enemy) => {
+      const dx = enemy.position.x - x;
+      const dz = enemy.position.z - z;
+      const length = Math.hypot(dx, dz);
+      return length > 0.001 && (dx / length) * forwardX + (dz / length) * forwardZ >= minDot;
+    });
+    if (!hasTargetInCone) return;
+    this.castSeismicWave();
+    this.remaining.set("seismicWave", SEISMIC_WAVE.cooldown);
   }
 }

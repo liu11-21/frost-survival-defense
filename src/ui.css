@@ -200,6 +200,19 @@
   text-overflow: ellipsis;
   white-space: nowrap;
 }
+.skill-count {
+  display: none;
+  margin-left: auto;
+  min-width: 14px;
+  padding: 0 3px;
+  border-radius: 8px;
+  background: rgba(255, 205, 100, 0.2);
+  color: #ffe0a0;
+  font-size: 10px;
+  font-weight: 700;
+  text-align: center;
+}
+.skill-count.show { display: inline-block; }
 .skill-description {
   min-height: 12px;
   margin-top: 2px;

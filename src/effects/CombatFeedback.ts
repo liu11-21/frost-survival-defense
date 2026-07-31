@@ -22,6 +22,20 @@ interface SkillRing {
   delay: number;
 }
 
+interface FallingStrike {
+  beam: Mesh;
+  impact: Mesh;
+  life: number;
+  x: number;
+  z: number;
+}
+
+interface FirePatch {
+  ground: Mesh;
+  flame: Mesh;
+  phase: number;
+}
+
 /**
  * Turns combat events into particles, sound and camera shake. Combat code only
  * ever calls this interface — it never reaches for a particle system directly.
@@ -40,6 +54,11 @@ export class CombatFeedback implements CombatVfx {
     groundSupport: 0,
     seismicWave: 0,
   };
+  private readonly fallingStrikes: FallingStrike[] = [];
+  private strikeCursor = 0;
+  private readonly firePatches: FirePatch[] = [];
+  private groundFireRemaining = 0;
+  private groundFireElapsed = 0;
 
   constructor(
     scene: Scene,
@@ -77,6 +96,44 @@ export class CombatFeedback implements CombatVfx {
       mesh.renderingGroupId = 1;
       mesh.setEnabled(false);
       this.skillRings.push({ mesh, life: 0, duration: 0.8, radius: 1, delay: 0 });
+    }
+
+    const strikeMat = materials.unlit("mat.airStrike.beam", [1.0, 0.78, 0.26], 1);
+    const impactMat = materials.unlit("mat.airStrike.impact", [1.0, 0.22, 0.06], 1);
+    for (let i = 0; i < 6; i++) {
+      const beam = MeshBuilder.CreateCylinder(`airStrikeBeam${i}`, { height: 2.4, diameterTop: 0.13, diameterBottom: 0.38, tessellation: 6 }, scene);
+      beam.material = strikeMat;
+      beam.isPickable = false;
+      beam.renderingGroupId = 1;
+      beam.setEnabled(false);
+      const impact = MeshBuilder.CreateTorus(`airStrikeImpact${i}`, { diameter: 1.6, thickness: 0.13, tessellation: 32 }, scene);
+      impact.material = impactMat;
+      impact.position.y = 0.16;
+      impact.isPickable = false;
+      impact.renderingGroupId = 1;
+      impact.setEnabled(false);
+      this.fallingStrikes.push({ beam, impact, life: -1, x: 0, z: 0 });
+    }
+
+    const fireGround = materials.unlit("mat.groundFire.ground", [1.0, 0.16, 0.03], 0.9);
+    const fireFlame = materials.unlit("mat.groundFire.flame", [1.0, 0.68, 0.08], 1);
+    fireGround.backFaceCulling = false;
+    fireFlame.backFaceCulling = false;
+    for (let i = 0; i < 9; i++) {
+      const ground = MeshBuilder.CreateDisc(`groundFirePatch${i}`, { radius: 1, tessellation: 18 }, scene);
+      ground.material = fireGround;
+      ground.rotation.x = Math.PI * 0.5;
+      ground.position.y = 0.17;
+      ground.isPickable = false;
+      ground.renderingGroupId = 1;
+      ground.setEnabled(false);
+      const flame = MeshBuilder.CreateCylinder(`groundFireFlame${i}`, { height: 1.3, diameterTop: 0.03, diameterBottom: 0.62, tessellation: 6 }, scene);
+      flame.material = fireFlame;
+      flame.position.y = 0.74;
+      flame.isPickable = false;
+      flame.renderingGroupId = 1;
+      flame.setEnabled(false);
+      this.firePatches.push({ ground, flame, phase: i * 1.7 });
     }
   }
 
@@ -124,10 +181,47 @@ export class CombatFeedback implements CombatVfx {
     this.camera.shake(kind === "airSupport" || kind === "seismicWave" ? 0.09 : 0.045);
   }
 
-  skillEffectSnapshot(): { casts: Record<HeroSkillKind, number>; activeRings: number } {
+  /** A bright descending beam followed by a blast ring: distinct from a normal shell. */
+  airStrike(x: number, z: number, radius: number): void {
+    const strike = this.fallingStrikes[this.strikeCursor];
+    this.strikeCursor = (this.strikeCursor + 1) % this.fallingStrikes.length;
+    const phase = this.strikeCursor * 2.399963229728653;
+    const offset = radius * (0.18 + (this.strikeCursor % 3) * 0.16);
+    strike.x = x + Math.sin(phase) * offset;
+    strike.z = z + Math.cos(phase) * offset;
+    strike.life = 0;
+    strike.beam.position.set(strike.x, 11.5, strike.z);
+    strike.beam.scaling.setAll(1);
+    strike.beam.setEnabled(true);
+    strike.impact.setEnabled(false);
+  }
+
+  /** Starts or refreshes an obvious ring of ground flames. */
+  groundFire(x: number, z: number, radius: number, duration: number): void {
+    this.groundFireRemaining = Math.max(this.groundFireRemaining, duration);
+    this.groundFireElapsed = 0;
+    for (let i = 0; i < this.firePatches.length; i++) {
+      const patch = this.firePatches[i];
+      const angle = i * 2.399963229728653;
+      const distance = i === 0 ? 0 : radius * (0.18 + (i % 3) * 0.16);
+      const px = x + Math.sin(angle) * distance;
+      const pz = z + Math.cos(angle) * distance;
+      const size = Math.max(0.7, radius * (i === 0 ? 0.17 : 0.105));
+      patch.ground.position.set(px, 0.17, pz);
+      patch.ground.scaling.set(size, size, size);
+      patch.flame.position.set(px, 0.72, pz);
+      patch.flame.scaling.set(size * 0.7, 1, size * 0.7);
+      patch.ground.setEnabled(true);
+      patch.flame.setEnabled(true);
+    }
+  }
+
+  skillEffectSnapshot(): { casts: Record<HeroSkillKind, number>; activeRings: number; fallingStrikes: number; groundFirePatches: number } {
     return {
       casts: { ...this.skillCasts },
       activeRings: this.skillRings.filter((ring) => ring.mesh.isEnabled()).length,
+      fallingStrikes: this.fallingStrikes.filter((strike) => strike.life >= 0).length,
+      groundFirePatches: this.firePatches.filter((patch) => patch.ground.isEnabled() && patch.flame.isEnabled()).length,
     };
   }
 
@@ -217,6 +311,47 @@ export class CombatFeedback implements CombatVfx {
       ring.mesh.scaling.set(scale, scale, scale);
       ring.mesh.visibility = Math.max(0, 1 - t);
       if (t >= 1) ring.mesh.setEnabled(false);
+    }
+    for (const strike of this.fallingStrikes) {
+      if (strike.life < 0) continue;
+      strike.life += dt;
+      const progress = Math.min(1, strike.life / 0.34);
+      strike.beam.position.y = 11.5 - progress * 10.4;
+      strike.beam.scaling.set(1 + progress * 0.8, 1, 1 + progress * 0.8);
+      if (progress < 1) continue;
+      if (strike.beam.isEnabled()) {
+        strike.beam.setEnabled(false);
+        strike.impact.position.set(strike.x, 0.16, strike.z);
+        strike.impact.scaling.setAll(0.35);
+        strike.impact.visibility = 1;
+        strike.impact.setEnabled(true);
+        this.point.set(strike.x, 0.7, strike.z);
+        this.vfx.burst("blast", this.point, 64);
+      }
+      const impactProgress = Math.min(1, (strike.life - 0.34) / 0.38);
+      strike.impact.scaling.setAll(0.35 + impactProgress * 3.2);
+      strike.impact.visibility = Math.max(0, 1 - impactProgress);
+      if (impactProgress >= 1) {
+        strike.impact.setEnabled(false);
+        strike.life = -1;
+      }
+    }
+    if (this.groundFireRemaining > 0) {
+      this.groundFireRemaining -= dt;
+      this.groundFireElapsed += dt;
+      const fade = Math.max(0, Math.min(1, this.groundFireRemaining / 1.2));
+      for (const patch of this.firePatches) {
+        const flicker = 0.78 + Math.sin(this.groundFireElapsed * 9 + patch.phase) * 0.22;
+        patch.ground.visibility = fade * (0.55 + flicker * 0.25);
+        patch.flame.visibility = fade * flicker;
+        patch.flame.scaling.y = 0.72 + flicker * 0.48;
+      }
+      if (this.groundFireRemaining <= 0) {
+        for (const patch of this.firePatches) {
+          patch.ground.setEnabled(false);
+          patch.flame.setEnabled(false);
+        }
+      }
     }
   }
 }

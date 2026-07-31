@@ -237,7 +237,15 @@ export function createHumanoid(
 
   const head = joint(`${name}.head`, chest, new Vector3(0, 0.58, 0), scene);
   box(ctx, "neck", head, new Vector3(0.13, 0.09, 0.13), new Vector3(0, -0.03, 0), "skin", palette.skin, undefined, 0.78);
-  box(ctx, "skull", head, new Vector3(0.27, 0.29, 0.26), new Vector3(0, 0.16, 0), "skin", palette.skin, undefined, 0.78);
+  // A faceted sphere gives the hero and workers a readable low-poly face
+  // instead of the old featureless cube, matching the upgraded unit rigs.
+  const skull = MeshBuilder.CreateSphere(`${name}.skull`, { diameterX: 0.27, diameterY: 0.29, diameterZ: 0.26, segments: 6 }, scene);
+  skull.parent = head;
+  skull.position.set(0, 0.16, 0);
+  skull.material = materials.pbr(`mat.${palette.id}.skin`, { color: palette.skin, roughness: 0.78 });
+  skull.isPickable = false;
+  skull.receiveShadows = true;
+  ctx.meshes.push(skull);
   box(ctx, "face", head, new Vector3(0.2, 0.11, 0.03), new Vector3(0, 0.14, 0.14), "faceDark", [0.12, 0.11, 0.13], undefined, 0.9);
   const hood = MeshBuilder.CreateCylinder(
     `${name}.hood`,

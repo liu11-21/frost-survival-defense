@@ -90,18 +90,25 @@ export function resolveUnitAttack(unit: CombatUnit, target: Damageable, ctx: Com
 
     case "rangedArea": {
       const radius = def.areaRadius ?? 2.5;
+      const meteor = def.id === "mage";
+      const frost = def.aoeSlow !== undefined;
+      if (meteor) ctx.vfx.burstAt("arcaneCast", unit.position.x, unit.position.z, 24);
+      if (frost) ctx.vfx.burstAt("frostCast", unit.position.x, unit.position.z, 18);
       ctx.projectiles.fire(
-        unit.faction === "ally" ? "orb" : "shell",
-        unit.position.x,
-        1.1 * def.scale,
-        unit.position.z,
+        def.projectileKind ?? (unit.faction === "ally" ? "orb" : "shell"),
+        meteor ? target.position.x : unit.position.x,
+        meteor ? 11 : 1.1 * def.scale,
+        meteor ? target.position.z : unit.position.z,
         target,
         (hx, hz) => {
           ctx.areaDamage(unit.faction, hx, hz, radius, power, def.maxAreaTargets ?? 6, (hit) =>
             applyAoeSlow(unit, hit),
           );
-          ctx.vfx.areaBlast(hx, hz, radius);
-          if (def.aoeSlow) ctx.vfx.burstAt("frostMist", hx, hz, 16);
+          if (meteor) ctx.vfx.burstAt("arcaneImpact", hx, hz, 54);
+          else if (frost) {
+            ctx.vfx.burstAt("frostImpact", hx, hz, 42);
+            ctx.vfx.burstAt("frostMist", hx, hz, 26);
+          } else ctx.vfx.areaBlast(hx, hz, radius);
         },
       );
       break;

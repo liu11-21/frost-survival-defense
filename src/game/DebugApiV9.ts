@@ -2,7 +2,7 @@ import type { HeroSkillId } from "../hero/HeroSkillDefinitions";
 import { structureRepairFixedBurst } from "../combat/StructureSelfRepair";
 import type { GameSystems } from "./GameSystems";
 
-/** Hero active-skill (1/2/3/4) inspection and control for the test harness. */
+/** Hero-skill (1/2/3 plus automatic 4) inspection and control for the test harness. */
 export function createV9DebugApi(s: GameSystems): Record<string, unknown> {
   return {
     heroSkillState: () => s.heroSkills.states(),
@@ -67,7 +67,10 @@ export function createV9DebugApi(s: GameSystems): Record<string, unknown> {
     healthLabelFacing: () =>
       s.scene.meshes
         .filter((mesh) => mesh.name.startsWith("hpLabelPlane") && mesh.isEnabled())
-        .map((mesh) => Number(mesh.rotation.y.toFixed(3))),
+        .map((mesh) => ({
+          billboard: mesh.billboardMode,
+          hasParent: mesh.parent !== null,
+        })),
     heroTargetId: () => s.hero.currentTarget?.def.id ?? null,
     heroTargetAlive: () => s.hero.currentTarget?.alive ?? null,
     heroFacingYaw: () => s.hero.facingYaw,

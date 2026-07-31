@@ -70,6 +70,7 @@ export interface UIRefs {
   mapCanvas: HTMLCanvasElement;
   mapTimeLabel: HTMLElement;
   heroSkillBar: HTMLElement;
+  furnaceAlert: HTMLElement;
 }
 
 const HTML = `
@@ -78,6 +79,8 @@ const HTML = `
   <div class="boss-track"><i id="ui-boss-fill"></i></div>
   <div class="boss-bottom"><span id="ui-boss-text">0 / 0</span><span id="ui-boss-warn"></span></div>
 </div>
+
+<div class="furnace-alert" id="ui-furnace-alert" aria-hidden="true"></div>
 
 <div class="ctx-prompt" id="ui-prompt"></div>
 
@@ -107,25 +110,25 @@ const HTML = `
     <div class="stat-line" id="ui-hero-stats">遠程 50 · 近戰 80 · 攻速 0.70s</div>
     <div class="skill-row" id="ui-hero-skills">
       <div class="skill-slot" data-skill="airSupport">
-        <div class="skill-top"><span class="skill-key">1</span><span class="skill-name">空中火力支援</span></div>
+        <div class="skill-top"><span class="skill-key">1</span><span class="skill-name">空中火力支援</span><span class="skill-count"></span></div>
         <div class="skill-description">3 次轟炸＋10 秒火海</div>
         <div class="bar skill-bar"><i></i></div>
         <div class="skill-cd-text"></div>
       </div>
       <div class="skill-slot" data-skill="infiniteFirepower">
-        <div class="skill-top"><span class="skill-key">2</span><span class="skill-name">無限火力</span></div>
+        <div class="skill-top"><span class="skill-key">2</span><span class="skill-name">無限火力</span><span class="skill-count"></span></div>
         <div class="skill-description">攻擊設施攻速 ×2</div>
         <div class="bar skill-bar"><i></i></div>
         <div class="skill-cd-text"></div>
       </div>
       <div class="skill-slot" data-skill="groundSupport">
-        <div class="skill-top"><span class="skill-key">3</span><span class="skill-name">地面支援</span></div>
+        <div class="skill-top"><span class="skill-key">3</span><span class="skill-name">地面支援</span><span class="skill-count"></span></div>
         <div class="skill-description">特殊護駕 10 秒</div>
         <div class="bar skill-bar"><i></i></div>
         <div class="skill-cd-text"></div>
       </div>
       <div class="skill-slot ready" data-skill="seismicWave">
-        <div class="skill-top"><span class="skill-key">4</span><span class="skill-name">震地波</span></div>
+        <div class="skill-top"><span class="skill-key">AUTO</span><span class="skill-name">震地波</span><span class="skill-count"></span></div>
         <div class="skill-description">前方震退＋易傷</div>
         <div class="bar skill-bar"><i></i></div>
         <div class="skill-cd-text"></div>
@@ -208,7 +211,7 @@ const HTML = `
 
 <div class="confirm" id="ui-confirm"><div class="confirm-inner" id="ui-confirm-body"></div></div>
 
-<div class="hint" id="ui-hint">WASD 移動 · Shift 加速 · E 互動 · B 建造 · G 招募 · U 升級火爐 · N 催波 · M 地圖 · 1/2/3/4 技能 · Esc 暫停</div>
+<div class="hint" id="ui-hint">WASD 移動 · Shift 加速 · E 互動 · B 建造 · G 招募 · U 升級火爐 · N 催波 · M 地圖 · 1/2/3 技能 · 震地波自動施放 · Esc 暫停</div>
 
 <div class="screen" id="ui-screen"><div class="screen-inner" id="ui-screen-body"></div></div>
 `;
@@ -290,5 +293,6 @@ export function buildUI(): UIRefs {
     mapCanvas: need<HTMLCanvasElement>(root, "ui-map-canvas"),
     mapTimeLabel: need(root, "ui-map-time"),
     heroSkillBar: need(root, "ui-hero-skills"),
+    furnaceAlert: need(root, "ui-furnace-alert"),
   };
 }

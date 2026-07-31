@@ -94,6 +94,10 @@ export class HeroController implements Damageable {
   get facingYaw(): number {
     return this.avatar.rig.root.rotation.y;
   }
+  /** A live combat lock, rather than merely facing a recently-dead target. */
+  get isAttacking(): boolean {
+    return this._alive && this.target?.alive === true && !this.outOfRange(this.target);
+  }
   /** True while the hero is close enough to a target to be swinging. */
   get inMelee(): boolean {
     if (!this.target) return false;

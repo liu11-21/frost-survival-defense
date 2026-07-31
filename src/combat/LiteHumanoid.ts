@@ -99,6 +99,8 @@ export class HumanoidTemplate {
   private readonly head: Mesh;
   private readonly arm: Mesh;
   private readonly leg: Mesh;
+  private readonly belt: Mesh;
+  private readonly boot: Mesh;
   private readonly crest: Mesh;
   private readonly weapon: Mesh | null;
   private readonly offhand: Mesh | null;
@@ -127,13 +129,19 @@ export class HumanoidTemplate {
     this.torso = MeshBuilder.CreateBox(`${key}.torso`, { width: tw, height: th, depth: td }, scene);
     this.torso.material = bodyMat;
     const [hw, hh, hd] = v.headSize ?? [0.3, 0.3, 0.29];
-    this.head = MeshBuilder.CreateBox(`${key}.head`, { width: hw, height: hh, depth: hd }, scene);
+    // A faceted rounded head reads far better than the previous cube while
+    // keeping the same low-poly, instanced performance budget.
+    this.head = MeshBuilder.CreateSphere(`${key}.head`, { diameterX: hw, diameterY: hh, diameterZ: hd, segments: 6 }, scene);
     this.head.material = headMat;
     const [aw, ah, ad] = v.limbSize ?? [0.14, 0.46, 0.16];
     this.arm = MeshBuilder.CreateBox(`${key}.arm`, { width: aw, height: ah, depth: ad }, scene);
     this.arm.material = limbMat;
     this.leg = MeshBuilder.CreateBox(`${key}.leg`, { width: aw + 0.02, height: 0.5, depth: ad + 0.02 }, scene);
     this.leg.material = limbMat;
+    this.belt = MeshBuilder.CreateBox(`${key}.belt`, { width: tw * 1.08, height: 0.065, depth: td * 1.12 }, scene);
+    this.belt.material = crestMat;
+    this.boot = MeshBuilder.CreateBox(`${key}.boot`, { width: aw + 0.04, height: 0.11, depth: ad + 0.13 }, scene);
+    this.boot.material = weaponMat;
     this.crest = MeshBuilder.CreateCylinder(
       `${key}.crest`,
       { height: 0.22, diameterTop: 0.3, diameterBottom: 0.36, tessellation: 6 },
@@ -150,7 +158,7 @@ export class HumanoidTemplate {
       : null;
     if (this.cape) this.cape.material = accentMat;
 
-    for (const m of [this.torso, this.head, this.arm, this.leg, this.crest, this.weapon, this.offhand, this.cape]) {
+    for (const m of [this.torso, this.head, this.arm, this.leg, this.belt, this.boot, this.crest, this.weapon, this.offhand, this.cape]) {
       if (!m) continue;
       m.isPickable = false;
       m.receiveShadows = false;
@@ -210,6 +218,7 @@ export class HumanoidTemplate {
     body.parent = root;
 
     attach(this.torso, body, 0, 0.86, 0);
+    attach(this.belt, body, 0, 0.61, 0);
     if (this.cape) {
       const cape = attach(this.cape, body, 0, 0.84, -0.19);
       if (cape) cape.rotation.x = 0.12;
@@ -249,11 +258,13 @@ export class HumanoidTemplate {
     hipL.parent = body;
     hipL.position.set(-0.13, 0.6, 0);
     attach(this.leg, hipL, 0, -0.25, 0);
+    attach(this.boot, hipL, 0, -0.53, 0.05);
 
     const hipR = new TransformNode(`${id}.hipR`, this.scene);
     hipR.parent = body;
     hipR.position.set(0.13, 0.6, 0);
     attach(this.leg, hipR, 0, -0.25, 0);
+    attach(this.boot, hipR, 0, -0.53, 0.05);
 
     const jointByName: Record<AttachmentSpec["parent"], TransformNode> = {
       head,

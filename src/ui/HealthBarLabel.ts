@@ -60,6 +60,19 @@ export class HealthBarLabel {
     if (!plane.isEnabled()) plane.setEnabled(true);
   }
 
+  /**
+   * Keeps the caption in world space instead of parenting it below the
+   * billboarded health bar. A plane below another billboard can be rendered
+   * from either side as the camera crosses an axis, which is why only some
+   * names looked mirrored in play. Its own billboard has one unambiguous
+   * camera-facing front face.
+   */
+  syncPosition(): void {
+    if (!this.plane || !this.plane.isEnabled()) return;
+    const p = this.parent.getAbsolutePosition();
+    this.plane.position.set(p.x, p.y + 0.28, p.z);
+  }
+
   hide(): void {
     if (this.plane?.isEnabled()) this.plane.setEnabled(false);
   }
@@ -92,11 +105,10 @@ export class HealthBarLabel {
       this.scene,
     );
     plane.material = mat;
-    plane.parent = this.parent;
-    plane.position.set(0, 0.28, -0.01);
-    // The parent plane already billboards its front face toward the camera.
-    // A second 180-degree child rotation mirrors every name in actual play.
-    plane.rotation.y = 0;
+    // Deliberately no parent: see `syncPosition()` above. The label owns its
+    // own billboard so it is never a mirrored back-face of the bar plane.
+    plane.billboardMode = Mesh.BILLBOARDMODE_ALL;
+    plane.position.set(0, 0, 0);
     plane.isPickable = false;
     plane.renderingGroupId = 1;
     plane.setEnabled(false);

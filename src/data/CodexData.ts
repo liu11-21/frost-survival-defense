@@ -113,7 +113,7 @@ const BUILDING_ADVICE: Record<string, string> = {
   lumberyard: "每 0.25 秒產出 1 木材；木材是多數設施的主要成本。",
   warehouse: "沒有倉庫時三種資源都卡在 100，城牆與自動收取都買不起。",
   recruitHall: "解鎖全部兵種，開局金幣剛好夠蓋一座。",
-  autoCollector: "省下來回跑動的時間，中期以後幾乎必備。",
+  autoCollector: "自動收取所有生產設施的緩衝資源，也會自動收取敵人掉落的金幣。",
   autoRebuilder: "依摧毀順序自動重建，第 10 波前很值得投資。",
   tower: "範圍轟擊，放在敵人必經之地效益最高，任何一般建造槽位都能蓋。",
   crossbowTower: "低成本高速單體防禦，適合前期處理低階敵人。",
@@ -293,7 +293,7 @@ const RESOURCE_ENTRIES: CodexEntry[] = [
     visual: "",
     icon: "gold",
     fields: [
-      { label: "取得方式", value: `擊殺敵人、金礦每 0.75 秒產出 1；無限模式提早叫波可依剩餘秒數取得金幣（基礎每秒 ${ENDLESS_ECONOMY.goldPerSecond}）` },
+      { label: "取得方式", value: `擊殺敵人、金礦每 0.75 秒產出 1；無限模式提早叫波會依剩餘秒數給金幣（基礎每 10 波 +${ENDLESS_ECONOMY.goldPerSecondPerTenWaves}/秒，Lv.4+ 波次加倍）` },
       { label: "主要用途", value: "招募小隊、升級兵種、建造設施與火爐升級" },
       { label: "容量", value: "沒有倉庫時上限 100" },
       { label: "倉庫被摧毀", value: `木材與石頭損失 ${Math.round(WAREHOUSE_LOSS.wood * 100)}%，金幣損失 ${Math.round(WAREHOUSE_LOSS.gold * 100)}%，其餘散落在地面` },
@@ -361,7 +361,7 @@ const HERO_ENTRY: CodexEntry = {
     },
     {
       label: "震地波",
-      value: `${SEISMIC_WAVE.damage} 傷害、震退，易傷 ${Math.round(SEISMIC_WAVE.vulnerability * 100)}% 持續 ${SEISMIC_WAVE.vulnerabilityDuration} 秒`,
+      value: `自動施放：主角攻擊且前方有敵人時造成 ${SEISMIC_WAVE.damage} 傷害、震退，易傷 ${Math.round(SEISMIC_WAVE.vulnerability * 100)}% 持續 ${SEISMIC_WAVE.vulnerabilityDuration} 秒`,
     },
   ],
   advice: `距離大於 ${HERO_MELEE.threshold} 時射擊，靠近後自動改為範圍揮擊，全程自動選擇場上等級最高的敵人。`,

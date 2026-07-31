@@ -120,7 +120,7 @@ export const STAGE_ONE_WAVES: WaveDefinition[] = [
     name: "第 9 波",
     groups: [
       { enemyId: "juggernaut", squads: 1, lane: 1, delay: 0 },
-      { enemyId: "bombardier", squads: 1, lane: 0, delay: 3 },
+      { enemyId: "icearmor", squads: 1, lane: 0, delay: 3 },
       { enemyId: "bruiser", squads: 2, lane: 0, delay: 5 },
       { enemyId: "marksman", squads: 2, lane: 1, delay: 8 },
     ],
@@ -162,6 +162,12 @@ export const ENEMY_INTRO: Record<string, { title: string; body: string }> = {
   icearmor: { title: "冰甲重兵出現", body: "低傷害攻擊會被護甲減半，血量過半後護甲碎裂並加速。" },
 };
 
+/** Level-5 and level-6 enemies are milestone threats, never ordinary waves. */
+function allowedOnWave(enemyId: string, wave: number): boolean {
+  const level = ENEMY_BY_ID.get(enemyId)?.level ?? 1;
+  return level < 5 || wave % 5 === 0;
+}
+
 /**
  * Regular (non-milestone) waves are composed rather than authored: a soft
  * field-cap target sizes the wave, and a high-tier share caps how much of
@@ -172,7 +178,10 @@ export const ENEMY_INTRO: Record<string, { title: string; body: string }> = {
 function regularWaveGroups(wave: number, laneCount: number): SpawnGroup[] {
   const targetUnits = endlessFieldCapTarget(wave);
   const highShare = endlessHighTierShare(wave);
-  const pool = ENDLESS_POOL.filter((p) => p.fromWave <= wave);
+  // Level 5/6 appearances are milestone-only. Keeping the gate at wave
+  // composition time makes it impossible for an ordinary random-ish wave to
+  // smuggle a bombardier or boss into a non-multiple-of-five round.
+  const pool = ENDLESS_POOL.filter((p) => p.fromWave <= wave && allowedOnWave(p.id, wave));
   const fodderPool = pool.filter((p) => (ENEMY_BY_ID.get(p.id)?.level ?? 1) <= 2);
 
   const groups: SpawnGroup[] = [];

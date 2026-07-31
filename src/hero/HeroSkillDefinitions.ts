@@ -6,8 +6,9 @@ export type HeroSkillId =
 
 export interface HeroSkillDefinition {
   readonly id: HeroSkillId;
-  readonly key: "Digit1" | "Digit2" | "Digit3" | "Digit4";
-  readonly keyLabel: "1" | "2" | "3" | "4";
+  /** Skill 4 is automatic and intentionally has no player key binding. */
+  readonly key: "Digit1" | "Digit2" | "Digit3" | null;
+  readonly keyLabel: "1" | "2" | "3" | "AUTO";
   readonly name: string;
   readonly description: string;
   readonly shortDescription: string;
@@ -48,11 +49,11 @@ export const HERO_SKILLS: readonly HeroSkillDefinition[] = [
   },
   {
     id: "seismicWave",
-    key: "Digit4",
-    keyLabel: "4",
+    key: null,
+    keyLabel: "AUTO",
     name: "震地波",
-    description: "向前方扇形區域造成 300 傷害並震退敵人，使其接下來 3 秒承受傷害增加 10%。",
-    shortDescription: "前方 300 傷害＋易傷",
+    description: "自動：主角進入攻擊狀態且前方扇形範圍有敵人時施放，造成 300 傷害、震退並使其 3 秒承受傷害增加 10%。",
+    shortDescription: "自動 300 傷害＋易傷",
     cooldown: 10,
     initialCooldown: 0,
   },
@@ -83,6 +84,7 @@ export const GROUND_SUPPORT = {
 } as const;
 
 export const SEISMIC_WAVE = {
+  cooldown: 10,
   radius: 8,
   halfAngleRadians: Math.PI / 3,
   damage: 300,

@@ -63,6 +63,7 @@ export const MECHANIC_ENTRIES: CodexEntry[] = [
     ["闖關", "三關各 10 波，難度來自路線數與敵人組成"],
     ["無限", `生命每波 +${Math.round(ENDLESS_SCALING.healthPerWave * 100)}%、攻擊每波 +${Math.round(ENDLESS_SCALING.attackPerWave * 100)}%，每 10 波增加一條路線；首隻 Boss 在第 20 波`],
     ["天然資源", "闖關不重生，無限會重生"],
+    ["Lv.5／Lv.6", "只會在 5 的倍數波次出現；有 Lv.4+ 的下一波會提高提早叫波金幣"],
     ["排行榜", "只有無限模式記錄，且僅存在這台瀏覽器"],
   ], "使用任何測試工具或教學關卡的該局都不會寫入排行榜。"),
   mechanic("ally-upgrade", "兵種升級", [
@@ -89,7 +90,7 @@ export const MECHANIC_ENTRIES: CodexEntry[] = [
       `按鍵 ${skill.keyLabel}`,
       `${skill.name}：${skill.shortDescription}，初始冷卻 ${skill.initialCooldown} 秒、施放冷卻 ${skill.cooldown} 秒`,
     ] as [string, string]),
-  ], "技能不消耗資源；按 1／2／3／4 施放。地面支援在護駕撤退後才開始計算 30 秒冷卻。"),
+  ], "技能不消耗資源；按 1／2／3 施放。震地波會在主角攻擊且前方扇形範圍內有敵人時自動施放。地面支援在護駕撤退後才開始計算 30 秒冷卻。"),
 ];
 
 function mechanic(id: string, name: string, rows: Array<[string, string]>, advice: string): CodexEntry {

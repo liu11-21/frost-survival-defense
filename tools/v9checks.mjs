@@ -1,12 +1,12 @@
 /**
  * Checks for the Pass D pass: minimap/map, attack-range display, watchdog/
  * residue diagnostics, the rebuilt build/recruit menus, and the hero's four
- * active skills (1/2/3/4). Driven from `playtest.mjs`; every helper is passed in so
+ * hero skills (1/2/3 plus automatic 4). Driven from `playtest.mjs`; every helper is passed in so
  * this file never touches puppeteer directly.
  */
 
 export async function runV9Checks(ctx) {
-  const { check, call, step, page, shot } = ctx;
+  const { check, call, step, page, shot, snapshot } = ctx;
 
   // -------------------------------------------------------------- minimap --
   console.log("\n> minimap snapshot and full-map toggle");
@@ -24,6 +24,22 @@ export async function runV9Checks(ctx) {
   await call("toggleMap");
   await step(0.016, 5);
   check("toggleMap closes it again", (await call("mapOpen")) === false);
+
+  // ------------------------------------------------ construction economy --
+  const buildingCosts = await call("buildingCosts");
+  const totalCost = buildingCosts.reduce((sum, building) => ({
+    wood: sum.wood + (building.cost.wood ?? 0),
+    stone: sum.stone + (building.cost.stone ?? 0),
+  }), { wood: 0, stone: 0 });
+  const costsById = Object.fromEntries(buildingCosts.map((building) => [building.id, building.cost]));
+  check(
+    "construction costs shift the global burden toward wood while retaining distinct wood- and stone-heavy choices",
+    totalCost.wood > totalCost.stone &&
+      (totalCost.wood - totalCost.stone) / Math.max(1, totalCost.wood + totalCost.stone) < 0.2 &&
+      costsById.crossbowTower.wood > costsById.crossbowTower.stone &&
+      costsById.wall.stone > costsById.wall.wood,
+    { totalCost, crossbowTower: costsById.crossbowTower, wall: costsById.wall },
+  );
 
   // ------------------------------------------------------ squad capacity --
   console.log("\n> squad capacity counts squads, not their members");
@@ -62,8 +78,8 @@ export async function runV9Checks(ctx) {
   );
   const labelFacing = await call("healthLabelFacing");
   check(
-    "overhead-name child planes do not apply a second 180-degree mirror rotation",
-    labelFacing.length > 0 && labelFacing.every((rotation) => Math.abs(rotation) < 0.01),
+    "overhead names are independent camera-facing planes, never a mirrored child face",
+    labelFacing.length > 0 && labelFacing.every((label) => label.billboard !== 0 && label.hasParent === false),
     labelFacing,
   );
 
@@ -146,6 +162,47 @@ export async function runV9Checks(ctx) {
   );
   await call("killAllAllies");
   await step(0.016, 200);
+
+  // ----------------------------------------------------- Auto Collector ----
+  console.log("\n> Auto Collector also gathers enemy gold drops");
+  await call("startStage", "stage-1");
+  await step(0.016, 20);
+  await call("setPrepCountdown", 9999);
+  await call("grant", 9000, 9000, 9000);
+  await call("build", "northMid", "warehouse");
+  await step(0.016, 220);
+  await call("grant", 9000, 9000, 9000);
+  await call("build", "eastFrontA", "autoCollector");
+  await step(0.016, 220);
+  const goldBeforeAutoCollect = (await snapshot()).gold;
+  await call("spawnPickup", "gold", 18, 18, 7);
+  await call("spawnPickup", "wood", 18, 18, 5);
+  await step(0.016, 8);
+  const goldAfterAutoCollect = (await snapshot()).gold;
+  const pickupCounts = await call("pickupCounts");
+  check(
+    "Auto Collector vacuums enemy gold drops while leaving non-gold ground loot alone",
+    goldAfterAutoCollect - goldBeforeAutoCollect === 7 && pickupCounts.gold === 0 && pickupCounts.wood === 1,
+    JSON.stringify({ goldBeforeAutoCollect, goldAfterAutoCollect, pickupCounts }),
+  );
+
+  // ------------------------------------------------ furnace-hit warning ----
+  console.log("\n> furnace hit has a sustained red perimeter warning");
+  await call("damageFurnace", 200);
+  await step(0.016, 3);
+  const alertOnHit = await page.$eval("#ui-furnace-alert", (el) => el.classList.contains("show"));
+  await step(0.016, 70);
+  const alertAfterQuiet = await page.$eval("#ui-furnace-alert", (el) => el.classList.contains("show"));
+  check("furnace damage raises a red edge warning that clears after attacks stop", alertOnHit && !alertAfterQuiet, { alertOnHit, alertAfterQuiet });
+
+  // ------------------------------------------------ elite warning ----------
+  console.log("\n> level-4 enemies announce their arrival");
+  await call("jumpToWave", 8);
+  await step(0.016, 3);
+  const eliteWarning = await page.$eval("#ui-banner-title", (el) => el.textContent?.trim() ?? "");
+  check("a level-4 enemy group raises a high-threat warning", eliteWarning.includes("高威脅接觸"), eliteWarning);
+  await call("killAllEnemies");
+  await step(0.016, 12);
 
   // -------------------------------------------------------- attack range --
   console.log("\n> attack-range display reflects a built tower's real data");
@@ -250,17 +307,19 @@ export async function runV9Checks(ctx) {
   await call("grant", 9000, 9000, 9000);
   const goldMineBuild = await call("build", "northFrontB", "goldMine");
   check("the new Gold Mine can be built on a universal slot", goldMineBuild?.ok === true, goldMineBuild);
+  const goldBeforeMineProduction = (await snapshot()).gold;
   await call("teleport", 0, 0);
   await step(0.016, 300);
   const goldMine = await call("slotProduction", "northFrontB");
+  const goldAfterMineProduction = (await snapshot()).gold;
   check(
     "Gold Mine is indestructible and produces one gold every 0.75 seconds",
     goldMine?.complete &&
       goldMine.attackable === false &&
       goldMine.produces === "gold" &&
       goldMine.interval === 0.75 &&
-      goldMine.stored >= 1,
-    goldMine,
+      (goldMine.stored >= 1 || goldAfterMineProduction > goldBeforeMineProduction),
+    { goldMine, goldBeforeMineProduction, goldAfterMineProduction },
   );
 
   // ------------------------------------- enemy priority and pre-emption --
@@ -355,8 +414,8 @@ export async function runV9Checks(ctx) {
   const residue = await call("residue");
   check("no forced death-residue cleanups needed after combat settles", residue.forceCleaned === 0, residue);
 
-  // -------------------------------------------------- hero skills (1/2/3/4) --
-  console.log("\n> four hero active skills: initial cooldowns, effects, duration rules");
+  // ------------------------------------------- hero skills (1/2/3 + AUTO) --
+  console.log("\n> three hero active skills plus one automatic combat skill");
   await call("startStage", "stage-1");
   await step(0.016, 20);
 
@@ -373,7 +432,7 @@ export async function runV9Checks(ctx) {
       description: slot.querySelector(".skill-description")?.textContent?.trim(),
     })),
   );
-  check("skill HUD shows the 1/2/3/4 keys", skillUi.map((s) => s.key).join("") === "1234", skillUi);
+  check("skill HUD shows 1/2/3 and an AUTO label for the automatic fourth skill", skillUi.map((s) => s.key).join("") === "123AUTO", skillUi);
   check("every skill button has a short explanation", skillUi.every((s) => (s.description?.length ?? 0) >= 4), skillUi);
   const skillFxBefore = await call("skillEffectSnapshot");
 
@@ -402,8 +461,8 @@ export async function runV9Checks(ctx) {
   check("Air Support starts its 80-second cooldown on cast", airState.remaining > 75 && !airState.ready, airState);
   let skillFx = await call("skillEffectSnapshot");
   check(
-    "Air Support creates its own visible cast effect",
-    skillFx.casts.airSupport === skillFxBefore.casts.airSupport + 1 && skillFx.activeRings >= 0,
+    "Air Support creates descending bombardment and persistent ground-fire effects",
+    skillFx.casts.airSupport === skillFxBefore.casts.airSupport + 1 && skillFx.groundFirePatches > 0,
     skillFx,
   );
   await shot("v9-hero-skill-vfx");
@@ -412,6 +471,9 @@ export async function runV9Checks(ctx) {
 
   // 2: attack structures run at exactly double speed for five seconds while
   // its 20-second cooldown is already counting.
+  await call("grant", 9000, 9000, 9000);
+  await call("build", "northFrontA", "tower");
+  await step(0.016, 220);
   await call("setHeroSkillCooldown", "infiniteFirepower", 0);
   await page.keyboard.press("Digit2");
   await step(0.016, 3);
@@ -427,6 +489,8 @@ export async function runV9Checks(ctx) {
     firepowerState.activeRemaining > 4.8 && firepowerState.remaining > 19,
     firepowerState,
   );
+  const firepowerBadge = await page.$eval('[data-skill="infiniteFirepower"] .skill-count', (el) => el.textContent?.trim());
+  check("Infinite Firepower displays the live count of completed attack facilities", firepowerBadge === "1", firepowerBadge);
   await step(0.016, 320);
   check("attack-building speed returns to normal after five seconds", (await call("attackBuildingBoost")).multiplier === 1);
 
@@ -474,19 +538,18 @@ export async function runV9Checks(ctx) {
   await call("killAllEnemies");
   await step(0.016, 30);
 
-  // 4: place an enemy directly on the hero's current facing vector; it takes
-  // one 300 hit, is pushed farther away, and receives exactly 10% vulnerability.
-  await call("setHeroSkillCooldown", "seismicWave", 0);
+  // 4: the automatic quake waits for a real hero attack lock and an enemy in
+  // the forward cone, then applies its hit without a keypress.
+  await call("setHeroSkillCooldown", "seismicWave", 10);
   await call("teleport", 0, 0);
-  const facingYaw = await call("heroFacingYaw");
-  await call("spawnEnemy", "juggernaut", Math.sin(facingYaw) * 5, Math.cos(facingYaw) * 5);
-  await step(0.016, 3);
+  await call("spawnEnemy", "juggernaut", 0, 5);
+  await step(0.016, 30);
   const quakeBefore = (await call("enemyStatus"))[0];
-  await page.keyboard.press("Digit4");
+  await call("setHeroSkillCooldown", "seismicWave", 0);
   await step(0.016, 3);
   const quakeAfter = (await call("enemyStatus"))[0];
   check(
-    "Seismic Wave hits once for 300 and knocks the enemy farther forward",
+    "automatic Seismic Wave hits once for 300 and knocks the enemy farther forward",
     Math.abs((quakeBefore.hp - quakeAfter.hp) - 300) < 1 &&
       Math.hypot(quakeAfter.x, quakeAfter.z) > Math.hypot(quakeBefore.x, quakeBefore.z),
     { quakeBefore, quakeAfter },

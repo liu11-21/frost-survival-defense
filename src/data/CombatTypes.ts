@@ -76,7 +76,7 @@ export interface UnitDefinition {
   /** Extra damage this unit deals to walls, towers and other structures. */
   siegeMultiplier?: number;
   /** Overrides the faction-default projectile mesh, e.g. Musketeer's ball vs the Archer's arrow. */
-  projectileKind?: "arrow" | "bolt" | "orb" | "shell" | "musketBall";
+  projectileKind?: "arrow" | "bolt" | "orb" | "shell" | "musketBall" | "arcaneMeteor";
   /** Overrides the generic attack swoosh with a unit-specific sound. */
   attackSoundOverride?: string;
 

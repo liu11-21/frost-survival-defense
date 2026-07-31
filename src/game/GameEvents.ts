@@ -19,6 +19,8 @@ export interface GameEventMap {
   /** Fires a few seconds before a wave, naming the lanes it will come down. */
   wavePreview: { wave: number; name: string; boss: boolean; lanes: LaneWarning[]; seconds: number };
   waveStarted: { wave: number; name: string; boss: boolean; total: number };
+  /** A level-4+ enemy group has actually entered the field. */
+  eliteEnemySpawned: { wave: number; enemyId: string; name: string; level: number };
   waveCleared: { wave: number };
   allWavesCleared: Record<string, never>;
 

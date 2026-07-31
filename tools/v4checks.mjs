@@ -367,14 +367,17 @@ export async function runV4Checks(ctx) {
 
   const mineCheck = await call("demolishCheck", "northMid");
   check("a finished building can be demolished", mineCheck.ok === true, mineCheck.reason ?? "");
-  check("the refund is half the wood, floored", mineCheck.refund.wood === 10, JSON.stringify(mineCheck.refund));
+  const buildingCosts = await call("buildingCosts");
+  const mineCost = buildingCosts.find((building) => building.id === "mine")?.cost;
+  const expectedWoodRefund = Math.floor((mineCost?.wood ?? 0) / 2);
+  check("the refund is half the current wood cost, floored", mineCheck.refund.wood === expectedWoodRefund, JSON.stringify(mineCheck.refund));
   check("gold is never refunded", !mineCheck.refund.gold, JSON.stringify(mineCheck.refund));
 
   const woodBefore = (await page.evaluate(() => window.frostbound?.snapshot())).wood;
   await call("demolish", "northMid");
   await step(0.016, 140);
   const woodAfter = (await page.evaluate(() => window.frostbound?.snapshot())).wood;
-  check("demolishing returns the refund", woodAfter - woodBefore === 10, `${woodBefore} -> ${woodAfter}`);
+  check("demolishing returns the refund", woodAfter - woodBefore === expectedWoodRefund, `${woodBefore} -> ${woodAfter}`);
   const freedSlot = (await call("slots")).find((s) => s.id === "northMid");
   check("the plot is free again", freedSlot.occupied === false, JSON.stringify(freedSlot));
   check("a manual demolition never enters the rebuild queue", (await call("rebuildQueue")).length === 0);

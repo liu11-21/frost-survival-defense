@@ -57,7 +57,7 @@ with the numbers the game actually runs on.
 | `Esc` | Unwinds one layer: dialog → codex → highlight → panel → pause |
 | `B` | Build menu · `G` recruit menu · `U` furnace · `N` call next wave · `T` auto-rebuild toggle |
 | `M` | Toggle the full tactical map (an always-on minimap sits in the HUD corner) |
-| **`1` / `2` / `3` / `4`** | **Hero active skills** — 空中火力支援 / 無限火力 / 地面支援 / 震地波 |
+| **`1` / `2` / `3`** + AUTO | **Hero skills** — 空中火力支援 / 無限火力 / 地面支援；震地波在戰鬥中自動施放 |
 | Mouse wheel | Zoom (limited range) |
 | Mouse | Click panels and menus |
 
@@ -66,7 +66,7 @@ action, and the cost or status. The hero attacks entirely on its own: it picks t
 enemy in range, shoots from distance, and switches to a wider melee swing inside 2.2 units. Gathering
 is the same — stand next to a tree or rock and the axe swings automatically.
 
-Recruiting uses `G`; the four hero skills use the number row so they stay easy to reach and read.
+Recruiting uses `G`; skills 1–3 use the number row, while 震地波 stays automatic so it never steals an input during combat.
 
 ### Hero active skills
 
@@ -77,10 +77,10 @@ Each is purely cooldown-gated — like the hero's own auto-attack, none of them 
 | `1` | 空中火力支援 | Three 1000-damage strikes around the furnace, then 500 damage per second for 10 seconds | 80 s (40 s initial) |
 | `2` | 無限火力 | Doubles every attack building's fire rate for 5 seconds; duration and cooldown begin together | 20 s (10 s initial) |
 | `3` | 地面支援 | Summons a three-person escort for 10 seconds: shared 5000 HP, 300 attack, engages and taunts only once enemies target the hero | 30 s after withdrawal (15 s initial) |
-| `4` | 震地波 | One forward cone hit for 300, short knockback, and +10% damage taken for 3 seconds | 10 s |
+| AUTO | 震地波 | When the hero is attacking and an enemy is inside the forward cone, automatically hits for 300, knocks back, and applies +10% damage taken for 3 seconds | 10 s |
 
 A small skill row sits under the hero's HP bar in the HUD, showing each key, name, and a cooldown fill
-that reaches "ready" at exactly the moment `1`/`2`/`3`/`4` would actually work — same source of truth,
+that reaches "ready" at exactly the moment `1`/`2`/`3` would actually work; the fourth card shows AUTO and only fires from a real combat lock — same source of truth,
 so the HUD can never lie about readiness. A new run applies each skill's documented initial cooldown.
 
 ### Developer keys
@@ -411,9 +411,9 @@ counter (`sniperShotsFired`) shows exactly one commit, not two.
 ## Immediate-next-wave gold reward (endless only)
 
 "立即下一波" used to just forfeit whatever prep time was left, for nothing. In endless mode it now pays
-`floor(remainingSeconds × 1 × waveMultiplier(wave))` gold, where the multiplier steps down at higher
-waves (1.0 through wave 10, 0.8 through 20, 0.6 through 40, 0.5 after) so the reward can never
-outgrow the run's own economy — `EndlessEconomyConfig.ts`. Below 2 remaining seconds it pays nothing,
+`floor(remainingSeconds × baseGoldPerSecond(wave) × eliteMultiplier)` gold. The baseline starts at 1
+gold/second and rises by 1 every ten waves; when the upcoming wave includes a level-4+ enemy, the
+reward doubles as a clear risk premium — `EndlessEconomyConfig.ts`. Below 2 remaining seconds it pays nothing,
 avoiding a trivial tap-to-farm at the very end of a countdown. The claim is guarded by remembering
 which *upcoming wave number* was last paid for rather than a timer-based lock — wave numbers only ever
 increase, so a double-click or a hotkey-plus-mouse race within the same prep phase resolves to "already
@@ -436,6 +436,9 @@ before most runs have a real economy, army or perimeter. Endless now runs three 
 - **Wave 15** — a strengthened elite: bombardier (level 5) at +30% HP/+15% damage, alongside icearmor
   and marksman. Still no full level-6 Boss.
 - **Wave 20 and every 10 after** — the first, and every subsequent, real Boss wave.
+
+Level-5 and level-6 enemies are additionally restricted to waves divisible by five in both stage and
+endless play; a multiple-of-five wave may still choose not to include one.
   `isLevel6BossWave(wave)` is the single hard gate every other boss-related check reads from. The very
   first Boss encounter gets one escort instead of the usual two; each recurring Boss cycle (20, 30, 40…)
   compounds `+20%` health and `+10%` damage over the last, via `extraHealthMul`/`extraAttackMul` fields
@@ -477,7 +480,7 @@ Per-building consequences, all spelled out in the dialog before you agree:
 | --- | --- |
 | 倉庫 Warehouse | **No** destruction penalty, but the 100 cap returns and the overflow drops on the ground for 20 s |
 | 招募所 Recruit hall | Existing squads survive; no new recruiting until one stands again |
-| 自動收取設施 Auto-collector | Production returns to each building's local buffer; banked resources untouched |
+| 自動收取設施 Auto-collector | Production returns to each building's local buffer; enemy gold drops are also collected automatically, while non-gold ground loot remains available |
 | 自動重建站 Auto-rebuilder | The queue is kept and resumes when rebuilt; cannot be removed mid-job |
 | 城牆 Wall | That side opens fully — the other three stay sealed and their gates keep filtering by faction |
 

@@ -111,6 +111,7 @@ export const ALLY_UNITS: UnitDefinition[] = [
     moveSpeed: 3.2,
     scale: 0.95,
     visual: "mage",
+    projectileKind: "arcaneMeteor",
     maxAreaTargets: 8,
   },
   {

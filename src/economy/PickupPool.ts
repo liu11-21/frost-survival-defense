@@ -96,6 +96,9 @@ export class PickupPool {
     heroX: number,
     heroZ: number,
     collect: (kind: ResourceKind, amount: number) => void,
+    /** The Auto Collector also vacuums enemy coin drops, but deliberately
+     * leaves spilled wood and stone for the player to recover. */
+    autoCollectGold = false,
   ): void {
     this.target.set(heroX, 0.5, heroZ);
     for (const kind of ["gold", "wood", "stone"] as ResourceKind[]) {
@@ -106,6 +109,12 @@ export class PickupPool {
 
         p.life -= dt;
         if (p.life <= 0) {
+          this.retire(p);
+          continue;
+        }
+
+        if (autoCollectGold && p.kind === "gold") {
+          collect(p.kind, p.amount);
           this.retire(p);
           continue;
         }
@@ -136,6 +145,13 @@ export class PickupPool {
         p.mesh.rotation.y += p.spin * dt;
       }
     }
+  }
+
+  /** Debug/read-only aid for verifying the Auto Collector only drains coins. */
+  activeByKind(kind: ResourceKind): number {
+    let count = 0;
+    for (const pickup of this.pools[kind]) if (pickup.active) count++;
+    return count;
   }
 
   private retire(p: Pickup): void {

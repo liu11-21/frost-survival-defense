@@ -48,7 +48,7 @@ export const ENDLESS_DIFFICULTY = {
 export function isLevel6BossWave(wave: number): boolean {
   const d = ENDLESS_DIFFICULTY;
   if (wave < d.firstBossWave) return false;
-  return (wave - d.firstBossWave) % d.bossCycleWaves === 0;
+  return wave % 5 === 0 && (wave - d.firstBossWave) % d.bossCycleWaves === 0;
 }
 
 /** 0 on the first boss wave, 1 on the next, and so on. */

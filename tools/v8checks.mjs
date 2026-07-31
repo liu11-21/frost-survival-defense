@@ -101,17 +101,23 @@ export async function runV8Checks(ctx) {
   await call("startEndless");
   await step(0.016, 20);
   const waveMultCases = [
-    { wave: 3, seconds: 30, expect: Math.floor(30 * 1.0) },
-    { wave: 3, seconds: 20, expect: Math.floor(20 * 1.0) },
-    { wave: 15, seconds: 10, expect: Math.floor(10 * 0.8) },
-    { wave: 25, seconds: 10, expect: Math.floor(10 * 0.6) },
-    { wave: 45, seconds: 10, expect: Math.floor(10 * 0.5) },
-    { wave: 3, seconds: 2, expect: Math.floor(2 * 1.0) },
-    { wave: 3, seconds: 1, expect: 0 },
-    { wave: 3, seconds: 0, expect: 0 },
+    { wave: 3, seconds: 30 },
+    { wave: 3, seconds: 20 },
+    { wave: 5, seconds: 10 },
+    { wave: 11, seconds: 10 },
+    { wave: 15, seconds: 10 },
+    { wave: 25, seconds: 10 },
+    { wave: 3, seconds: 2 },
+    { wave: 3, seconds: 1 },
+    { wave: 3, seconds: 0 },
   ];
   let formulaOk = true;
-  for (const { wave, seconds, expect } of waveMultCases) {
+  let premiumObserved = false;
+  for (const { wave, seconds } of waveMultCases) {
+    const composition = await call("endlessWavePreview", wave, 2);
+    const base = 1 + Math.floor((wave - 1) / 10);
+    const premium = composition.hasLevelFourOrHigher ? 2 : 1;
+    const expect = seconds < 2 ? 0 : Math.floor(seconds * base * premium);
     await advanceToIntermission(ctx, wave - 1);
     await call("setPrepCountdown", seconds + 0.05);
     await step(0.016, 2);
@@ -120,8 +126,9 @@ export async function runV8Checks(ctx) {
       formulaOk = false;
       console.log(`    wave ${wave} seconds ${seconds}: expected ${expect}, got ${preview}`);
     }
+    if (composition.hasLevelFourOrHigher && seconds >= 2) premiumObserved ||= preview === Math.floor(seconds * base * 2);
   }
-  check("the early-wave reward formula matches floor(seconds * goldPerSecond * waveMultiplier) at every tier and the 2s floor", formulaOk);
+  check("early-wave gold rises every 10 waves, doubles for a level-4+ incoming wave, and keeps the 2s floor", formulaOk && premiumObserved);
 
   await advanceToIntermission(ctx, 4);
   await call("setPrepCountdown", 24);
@@ -279,6 +286,19 @@ export async function runV8Checks(ctx) {
     }
   }
   check("no level-6 boss is composed for any wave before 20, and wave 20 is the first one", pacingOk);
+
+  let milestoneOnly = true;
+  for (let wave = 1; wave <= 50; wave++) {
+    const preview = await call("endlessWavePreview", wave, 2);
+    if (preview.groups.some((group) => ["bombardier", "boss"].includes(group.enemyId)) && wave % 5 !== 0) {
+      milestoneOnly = false;
+    }
+  }
+  for (let wave = 1; wave <= 10; wave++) {
+    const preview = await call("stageWavePreview", wave);
+    if (preview.some((group) => group.level >= 5) && wave % 5 !== 0) milestoneOnly = false;
+  }
+  check("level-5 and level-6 enemies appear only on multiple-of-five waves in endless and stage play", milestoneOnly);
 
   const wave10 = await call("endlessWavePreview", 10, 2);
   check("wave 10 is an elite wave: no boss, includes a level-4-tier unit", !wave10.boss && wave10.groups.some((g) => ["juggernaut", "breacher", "icearmor", "commander"].includes(g.enemyId)), JSON.stringify(wave10.groups));
@@ -529,7 +549,8 @@ async function unlockResourceCap(ctx, warehouseSlotId) {
  * actually transitioned into its intermission phase — `setPrepCountdown`
  * only takes effect during prep/intermission, never mid-wave. */
 async function advanceToIntermission(ctx, wave) {
-  const { call, step } = ctx;
+  const { call, step, page } = ctx;
+  await dismissUpgradeChoice(page, step);
   await call("jumpToWave", wave);
   // Groups spawn on their own delays within the wave (up to ~20s for a late
   // high-wave group), so killing once is not enough — keep clearing until
@@ -538,7 +559,19 @@ async function advanceToIntermission(ctx, wave) {
   for (let i = 0; i < 150; i++) {
     await call("killAllEnemies");
     await step(0.016, 20);
+    // Endless pauses after waves 10, 20, ... for the upgrade selection.
+    // This balance helper must take that real player choice before trying to
+    // advance toward a later test wave; otherwise manual stepping is halted
+    // behind the menu and every later reward preview is (correctly) zero.
+    await dismissUpgradeChoice(page, step);
     const timer = await call("waveTimer");
     if (timer.phase === "intermission" || timer.phase === "prep") return;
   }
+}
+
+async function dismissUpgradeChoice(page, step) {
+  const upgradeCard = await page.$(".upgrade-card");
+  if (!upgradeCard) return;
+  await upgradeCard.click();
+  await step(0.016, 5);
 }

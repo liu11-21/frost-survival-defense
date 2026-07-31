@@ -259,11 +259,6 @@ export class Game {
         if (failure) s.hud.toast(failure);
         break;
       }
-      case "skill4": {
-        const failure = s.heroSkills.tryUse("seismicWave");
-        if (failure) s.hud.toast(failure);
-        break;
-      }
     }
   }
 

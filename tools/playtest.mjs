@@ -103,7 +103,7 @@ await shot("main-menu");
 if (requestedSuite === "v6" || requestedSuite === "v8" || requestedSuite === "v9") {
   if (requestedSuite === "v6") await runV6Checks({ check, call, step, shot, page });
   else if (requestedSuite === "v8") await runV8Checks({ check, call, step, shot, page });
-  else await runV9Checks({ check, call, step, shot, page });
+  else await runV9Checks({ check, call, step, snapshot, shot, page });
   await browser.close();
   const failed = checks.filter((c) => !c.ok).length;
   console.log(`\nchecks: ${checks.length - failed}/${checks.length} passed`);
@@ -547,7 +547,7 @@ await runV7Checks({ check, call, step, shot, page });
 const v8 = await runV8Checks({ check, call, step, shot, page });
 
 // ============================================================ v9 checks ====
-await runV9Checks({ check, call, step, shot, page });
+await runV9Checks({ check, call, step, snapshot, shot, page });
 
 // ------------------------------------------------------------ resilience --
 console.log("\n> resize and delta spike");

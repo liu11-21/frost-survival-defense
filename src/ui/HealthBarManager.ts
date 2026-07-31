@@ -270,6 +270,7 @@ export class HealthBarManager {
       const dist = Vector3.Distance(this.scratch, cam);
       if (dist > CULL_DISTANCE) {
         if (slot.root.isEnabled()) slot.root.setEnabled(false);
+        slot.label.hide();
         continue;
       }
       if (!slot.root.isEnabled()) slot.root.setEnabled(true);
@@ -299,7 +300,10 @@ export class HealthBarManager {
     // A friendly badge is square, a hostile one is a narrow diamond-ish sliver.
     slot.badge.rotation.z = style === "enemy" ? Math.PI * 0.25 : 0;
 
-    if (dist <= TEXT_DISTANCE) slot.label.set(barLabel(owner), style);
+    if (dist <= TEXT_DISTANCE) {
+      slot.label.set(barLabel(owner), style);
+      slot.label.syncPosition();
+    }
     else slot.label.hide();
 
     // Re-evaluated every frame, so an icon disappears the instant the

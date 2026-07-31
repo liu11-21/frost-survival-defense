@@ -101,7 +101,9 @@ const ECONOMY_BUILDINGS: BuildingDefinition[] = [
     role: "生產",
     maxHealth: 0,
     attackPower: 0,
-    cost: { wood: 20 },
+    // Stone producer: a modest wood frame, so opening with both basic
+    // producers is still possible from the stage's 60 wood / 40 stone start.
+    cost: { wood: 35 },
     slotCategory: "universal",
     canBeAttacked: false,
     canBeDemolished: true,
@@ -121,7 +123,9 @@ const ECONOMY_BUILDINGS: BuildingDefinition[] = [
     role: "生產",
     maxHealth: 0,
     attackPower: 0,
-    cost: { wood: 100, stone: 100 },
+    // A gold vein needs reinforced timber framing, but should not deepen the
+    // old stone-only bottleneck.
+    cost: { wood: 110, stone: 90 },
     slotCategory: "universal",
     canBeAttacked: false,
     canBeDemolished: true,
@@ -141,7 +145,8 @@ const ECONOMY_BUILDINGS: BuildingDefinition[] = [
     role: "生產",
     maxHealth: 0,
     attackPower: 0,
-    cost: { stone: 30 },
+    // Lumber producer: the one early facility intentionally stone-forward.
+    cost: { stone: 40 },
     slotCategory: "universal",
     canBeAttacked: false,
     canBeDemolished: true,
@@ -161,7 +166,8 @@ const ECONOMY_BUILDINGS: BuildingDefinition[] = [
     role: "經濟與支援",
     maxHealth: 4000,
     attackPower: 0,
-    cost: { wood: 100, stone: 100, gold: 20 },
+    // Must remain affordable under the pre-warehouse 100-resource cap.
+    cost: { wood: 100, stone: 90, gold: 20 },
     slotCategory: "universal",
     canBeAttacked: true,
     canBeDemolished: true,
@@ -178,7 +184,7 @@ const ECONOMY_BUILDINGS: BuildingDefinition[] = [
     role: "經濟與支援",
     maxHealth: 3000,
     attackPower: 0,
-    cost: { wood: 80, stone: 80, gold: 15 },
+    cost: { wood: 95, stone: 65, gold: 15 },
     slotCategory: "universal",
     canBeAttacked: true,
     canBeDemolished: true,
@@ -191,11 +197,13 @@ const ECONOMY_BUILDINGS: BuildingDefinition[] = [
   {
     id: "autoCollector",
     name: "自動收取設施",
-    description: "礦場、金礦與伐木場產出直接進入庫存",
+    description: "生產設施產出與敵人掉落金幣直接進入庫存",
     role: "經濟與支援",
     maxHealth: 0,
     attackPower: 0,
-    cost: { wood: 100, stone: 300, gold: 50 },
+    // Automation is machinery-heavy (wood-forward) rather than another
+    // several-hundred-stone sink.
+    cost: { wood: 220, stone: 180, gold: 50 },
     slotCategory: "universal",
     canBeAttacked: false,
     canBeDemolished: true,
@@ -212,7 +220,7 @@ const ECONOMY_BUILDINGS: BuildingDefinition[] = [
     role: "經濟與支援",
     maxHealth: 0,
     attackPower: 0,
-    cost: { wood: 500, stone: 600, gold: 150 },
+    cost: { wood: 650, stone: 450, gold: 150 },
     slotCategory: "universal",
     canBeAttacked: false,
     canBeDemolished: true,

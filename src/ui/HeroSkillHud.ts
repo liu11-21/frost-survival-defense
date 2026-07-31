@@ -5,12 +5,13 @@ interface SkillSlotRefs {
   key: HTMLElement;
   name: HTMLElement;
   description: HTMLElement;
+  count: HTMLElement;
   fill: HTMLElement;
   cdText: HTMLElement;
 }
 
 /**
- * Renders the 1/2/3/4 labels, short descriptions and cooldowns. Reads straight from
+ * Renders the 1/2/3/AUTO labels, short descriptions and cooldowns. Reads straight from
  * `HeroSkills.states()` — the same source `tryUse` checks — so the HUD can
  * never show "ready" while a cast would actually still fail.
  */
@@ -23,6 +24,7 @@ export class HeroSkillHud {
       key: el.querySelector(".skill-key") as HTMLElement,
       name: el.querySelector(".skill-name") as HTMLElement,
       description: el.querySelector(".skill-description") as HTMLElement,
+      count: el.querySelector(".skill-count") as HTMLElement,
       fill: el.querySelector(".skill-bar > i") as HTMLElement,
       cdText: el.querySelector(".skill-cd-text") as HTMLElement,
     }));
@@ -32,10 +34,12 @@ export class HeroSkillHud {
     const states = this.skills.states();
     for (let i = 0; i < this.slots.length && i < states.length; i++) {
       const state = states[i];
-      const { el, key, name, description, fill, cdText } = this.slots[i];
+      const { el, key, name, description, count, fill, cdText } = this.slots[i];
       key.textContent = state.keyLabel;
       name.textContent = state.name;
       description.textContent = state.shortDescription;
+      count.textContent = state.activeAttackBuildings === undefined ? "" : String(state.activeAttackBuildings);
+      count.classList.toggle("show", state.activeAttackBuildings !== undefined);
       const frac = state.cooldown > 0 ? 1 - state.remaining / state.cooldown : 1;
       fill.style.width = `${Math.max(0, Math.min(100, frac * 100))}%`;
       cdText.textContent = state.activeRemaining > 0

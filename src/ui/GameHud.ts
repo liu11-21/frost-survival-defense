@@ -36,6 +36,7 @@ export class GameHud {
   private hintTimer = 14;
   private fpsTimer = 0;
   private fpsVisible = true;
+  private furnaceAlertRemaining = 0;
   private readonly unsubscribes: Array<() => void> = [];
   readonly notifications: Notifications;
 
@@ -77,6 +78,18 @@ export class GameHud {
           durationMs: p.boss ? 4200 : 2600,
         }),
       ),
+      events.on("eliteEnemySpawned", (p) =>
+        this.notifications.show({
+          title: `高威脅接觸：Lv.${p.level} ${p.name}`,
+          message: `第 ${p.wave} 波精英單位已進場`,
+          type: "danger",
+          durationMs: 2600,
+        }),
+      ),
+      events.on("furnaceDamaged", () => {
+        this.furnaceAlertRemaining = 0.9;
+        refs.furnaceAlert.classList.add("show");
+      }),
       events.on("squadRecruited", (p) => this.toast(`已招募 ${p.name}`)),
       events.on("furnaceUpgraded", (p) =>
         this.notifications.show({ title: "火爐升級", message: `等級 ${p.level}`, type: "success" }),
@@ -183,6 +196,11 @@ export class GameHud {
 
   update(dt: number): void {
     const { refs, hero, heroStats, furnace, waves, squads, buildings, run } = this.d;
+
+    if (this.furnaceAlertRemaining > 0) {
+      this.furnaceAlertRemaining -= dt;
+      if (this.furnaceAlertRemaining <= 0) refs.furnaceAlert.classList.remove("show");
+    }
 
     // hero
     const hp = Math.max(0, Math.ceil(hero.health));

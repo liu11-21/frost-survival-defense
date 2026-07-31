@@ -11,7 +11,8 @@ export type ProjectileKind =
   | "crossbowBolt"
   | "frostShard"
   | "sniperRound"
-  | "mortarShell";
+  | "mortarShell"
+  | "arcaneMeteor";
 
 interface Projectile {
   mesh: Mesh;
@@ -36,6 +37,7 @@ const SPEEDS: Record<ProjectileKind, number> = {
   frostShard: 20,
   sniperRound: 46,
   mortarShell: 14,
+  arcaneMeteor: 25,
 };
 
 /**
@@ -83,6 +85,12 @@ export class ProjectilePool {
           );
         case "mortarShell":
           return MeshBuilder.CreateSphere(`proj.mortarShell${index}`, { diameter: 0.44, segments: 4 }, scene);
+        case "arcaneMeteor":
+          return MeshBuilder.CreateCylinder(
+            `proj.arcaneMeteor${index}`,
+            { height: 0.85, diameterTop: 0.04, diameterBottom: 0.34, tessellation: 6 },
+            scene,
+          );
       }
     };
 
@@ -96,6 +104,7 @@ export class ProjectilePool {
       frostShard: [0.65, 0.9, 1.0],
       sniperRound: [0.85, 0.85, 0.9],
       mortarShell: [0.95, 0.4, 0.15],
+      arcaneMeteor: [0.88, 0.36, 1.0],
     };
 
     for (const kind of [
@@ -108,6 +117,7 @@ export class ProjectilePool {
       "frostShard",
       "sniperRound",
       "mortarShell",
+      "arcaneMeteor",
     ] as ProjectileKind[]) {
       const mat = materials.unlit(`mat.proj.${kind}`, colors[kind], 1);
       const list: Projectile[] = [];
@@ -203,7 +213,7 @@ export class ProjectilePool {
         p.mesh.position.x += this.dir.x * inv;
         p.mesh.position.y += this.dir.y * inv;
         p.mesh.position.z += this.dir.z * inv;
-        if (p.kind === "arrow" || p.kind === "bolt" || p.kind === "musketBall" || p.kind === "crossbowBolt" || p.kind === "sniperRound") {
+        if (p.kind === "arrow" || p.kind === "bolt" || p.kind === "musketBall" || p.kind === "crossbowBolt" || p.kind === "sniperRound" || p.kind === "arcaneMeteor") {
           p.mesh.rotation.y = Math.atan2(this.dir.x, this.dir.z);
           p.mesh.rotation.x = p.kind === "arrow" ? Math.PI / 2 - Math.asin(this.dir.y / dist) : 0;
         } else {

@@ -5,8 +5,9 @@ import {
   bossHealthMultiplier,
   isLevel6BossWave,
 } from "../data/EndlessDifficultyConfig";
-import { buildEndlessWave } from "../data/WaveDefinitions";
+import { buildEndlessWave, STAGE_ONE_WAVES } from "../data/WaveDefinitions";
 import { ENEMY_BY_ID } from "../data/EnemyDefinitions";
+import { BUILDINGS } from "../data/BuildingDefinitions";
 import { endlessAttackMultiplier, endlessHealthMultiplier } from "../data/GameModeRules";
 import type { GameSystems } from "./GameSystems";
 
@@ -64,7 +65,26 @@ export function createV8DebugApi(s: GameSystems): Record<string, unknown> {
         groups: built.groups.map((g) => ({ enemyId: g.enemyId, squads: g.squads })),
         individuals,
         highTierIndividuals,
+        hasLevelFourOrHigher: built.groups.some((g) => (ENEMY_BY_ID.get(g.enemyId)?.level ?? 0) >= 4),
       };
     },
+    stageWavePreview: (wave: number) => {
+      const built = STAGE_ONE_WAVES[wave - 1];
+      return built
+        ? built.groups.map((group) => ({
+            enemyId: group.enemyId,
+            level: ENEMY_BY_ID.get(group.enemyId)?.level ?? 0,
+          }))
+        : [];
+    },
+    pickupCounts: () => ({
+      wood: s.pickups.activeByKind("wood"),
+      stone: s.pickups.activeByKind("stone"),
+      gold: s.pickups.activeByKind("gold"),
+    }),
+    spawnPickup: (kind: "wood" | "stone" | "gold", x: number, z: number, amount = 1) => {
+      s.pickups.spawn(kind, x, z, amount);
+    },
+    buildingCosts: () => BUILDINGS.map((building) => ({ id: building.id, cost: building.cost })),
   };
 }

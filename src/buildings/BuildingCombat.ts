@@ -64,6 +64,7 @@ function fireSingleBolt(building: Building, ctx: CombatContext): boolean {
   }
 
   const power = (def.attackPower ?? 18) * ctx.scaling.towerAttack;
+  ctx.vfx.burstAt("muzzleFlash", building.position.x, building.position.z, 12);
   ctx.projectiles.fire("crossbowBolt", building.position.x, 1.0, building.position.z, best, (hx, hz) => {
     if (best.alive) ctx.damage(best, power, hx, hz);
     ctx.vfx.rangedHit(hx, hz);
@@ -100,9 +101,11 @@ function fireSlowBolt(building: Building, ctx: CombatContext): boolean {
 
   const radius = def.areaRadius ?? 2;
   const power = (def.attackPower ?? 10) * ctx.scaling.towerAttack;
+  ctx.vfx.burstAt("frostCast", building.position.x, building.position.z, 20);
   ctx.projectiles.fire("frostShard", building.position.x, 1.0, building.position.z, target, (hx, hz) => {
     ctx.areaDamage("ally", hx, hz, radius, power, def.maxAreaTargets ?? 5, (hit) => applySlow(building, hit));
-    ctx.vfx.burstAt("frostMist", hx, hz, 10);
+    ctx.vfx.burstAt("frostImpact", hx, hz, 38);
+    ctx.vfx.burstAt("frostMist", hx, hz, 22);
   });
   return true;
 }
@@ -222,10 +225,14 @@ function fireBurstMortar(building: Building, ctx: CombatContext): boolean {
 
   const power = (def.attackPower ?? 80) * ctx.scaling.towerAttack;
   const burn = def.burnEffect;
+  ctx.vfx.burstAt("muzzleFlash", building.position.x, building.position.z, 24);
   ctx.projectiles.fire("mortarShell", building.position.x, 3.0, building.position.z, groundAim(bestX, bestZ), (hx, hz) => {
     ctx.areaDamage("ally", hx, hz, radius, power, def.maxAreaTargets ?? 8);
     ctx.vfx.areaBlast(hx, hz, radius);
-    if (burn) igniteZone(building, hx, hz, radius * 0.7, burn.duration, burn.dps, burn.maxZones, burn.bossFactor);
+    if (burn) {
+      igniteZone(building, hx, hz, radius * 0.7, burn.duration, burn.dps, burn.maxZones, burn.bossFactor);
+      ctx.vfx.groundFire(hx, hz, radius * 0.7, burn.duration);
+    }
   });
   return true;
 }

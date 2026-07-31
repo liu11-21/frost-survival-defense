@@ -27,7 +27,7 @@ export function runFrame(s: GameSystems, dt: number, support: SupportSystems): v
   s.pickups.update(dt, s.hero.position.x, s.hero.position.z, (kind, amount) => {
     const stored = s.store.add(kind, amount);
     if (stored > 0 && kind === "gold") s.audio.play("coinPickup", 0.3, 1 + Math.random() * 0.2);
-  });
+  }, s.buildings.hasAutoCollector);
   updateFrameUi(s, support.workingNode);
 
   s.waves.update(dt);

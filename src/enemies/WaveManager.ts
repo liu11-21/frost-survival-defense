@@ -1,5 +1,6 @@
 import type { SquadManager } from "../combat/SquadManager";
 import { LANES, laneSpawnPoint } from "../data/BuildSlotDefinitions";
+import { ENEMY_BY_ID } from "../data/EnemyDefinitions";
 import type { GameEvents } from "../game/GameEvents";
 import { buildEndlessWave, ENEMY_INTRO, type SpawnGroup, type WaveDefinition } from "../data/WaveDefinitions";
 import { previewWave, type LaneWarning } from "./WavePreview";
@@ -112,6 +113,12 @@ export class WaveManager {
     return this.preview;
   }
 
+  /** Read-only composition check used by the early-call gold preview. */
+  upcomingHasEnemyLevelAtLeast(level: number): boolean {
+    const next = this.lookAhead(this.waveIndex + 1);
+    return next?.wave.groups.some((group) => (ENEMY_BY_ID.get(group.enemyId)?.level ?? 0) >= level) ?? false;
+  }
+
   update(dt: number): void {
     if (!this.schedule || this.phase === "finished") return;
 
@@ -214,6 +221,15 @@ export class WaveManager {
     if (intro && !this.introduced.has(group.enemyId)) {
       this.introduced.add(group.enemyId);
       this.events.emit("notify", { title: intro.title, body: intro.body });
+    }
+    const def = ENEMY_BY_ID.get(group.enemyId);
+    if ((def?.level ?? 0) >= 4) {
+      this.events.emit("eliteEnemySpawned", {
+        wave: this.waveIndex,
+        enemyId: group.enemyId,
+        name: def?.name ?? group.enemyId,
+        level: def?.level ?? 4,
+      });
     }
     const laneIndex = group.lane % Math.max(1, this.laneCount);
     const lane = LANES[laneIndex] ?? LANES[0];

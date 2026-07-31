@@ -85,7 +85,7 @@ export class GameMenus {
           </div>
         </div>
       </div>
-      <p class="foot">WASD 移動 · Shift 加速 · B 建造 · G 招募 · U 升級火爐 · N 催下一波 · T 自動重建開關 · 1/2/3/4 技能 · Esc 暫停</p>
+      <p class="foot">WASD 移動 · Shift 加速 · B 建造 · G 招募 · U 升級火爐 · N 催下一波 · T 自動重建開關 · 1/2/3 技能 · 震地波自動施放 · Esc 暫停</p>
     `);
 
     const stageBox = this.refs.screenBody.querySelector("#menu-stages");
@@ -205,7 +205,7 @@ export class GameMenus {
           <h2>戰鬥</h2>
           <p class="muted">主角會自動攻擊：距離大於 2.2 使用遠程，靠近後自動切換近戰。<br><b>火爐被摧毀即失敗。</b></p>
           <h2>主角技能</h2>
-          <p class="muted">1 空中火力支援：轟炸中央火爐周圍並留下火海。<br>2 無限火力：攻擊設施攻速 ×2，持續 5 秒。<br>3 地面支援：召喚特殊護駕 10 秒。<br>4 震地波：向前方造成傷害、震退與易傷。<br>四者皆不消耗資源。</p>
+          <p class="muted">1 空中火力支援：轟炸中央火爐周圍並留下火海。<br>2 無限火力：攻擊設施攻速 ×2，持續 5 秒。<br>3 地面支援：召喚特殊護駕 10 秒。<br>震地波（自動）：主角戰鬥且前方有敵人時自動造成傷害、震退與易傷。<br>四者皆不消耗資源。</p>
         </div>
         <div class="menu-col">
           <h2>建造</h2>

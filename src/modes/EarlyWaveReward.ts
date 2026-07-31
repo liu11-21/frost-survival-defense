@@ -30,7 +30,11 @@ export class EarlyWaveRewardTracker {
     if (this.waves.currentPhase !== "prep" && this.waves.currentPhase !== "intermission") return 0;
     const upcomingWave = this.waves.currentWave + 1;
     if (this.claimedForWave === upcomingWave) return 0;
-    return endlessEarlyWaveReward(upcomingWave, this.waves.timeToNextWave);
+    return endlessEarlyWaveReward(
+      upcomingWave,
+      this.waves.timeToNextWave,
+      this.waves.upcomingHasEnemyLevelAtLeast(4),
+    );
   }
 
   claim(mode: GameMode): number {

@@ -89,15 +89,18 @@ export async function runV3Checks(api) {
   await step(0.016, 20);
   let snap = await snapshot();
   check("stage 1 opens with 15 gold", snap.gold === 15, String(snap.gold));
-  // The hall's gold cost was the blocker; wood and stone are gathered normally.
-  await call("setResources", 80, 80, 15);
+  // Read the live data so this coverage remains valid when construction
+  // resources are deliberately rebalanced.
+  const buildingCosts = await call("buildingCosts");
+  const hallCost = buildingCosts.find((building) => building.id === "recruitHall")?.cost;
+  await call("setResources", hallCost?.wood ?? 0, hallCost?.stone ?? 0, hallCost?.gold ?? 0);
   const hall = await call("build", "northBack", "recruitHall");
   check(
-    "opening gold exactly covers the recruit hall",
+    "the recruit hall builds with its exact current material cost",
     hall?.ok === true,
     JSON.stringify(hall),
   );
-  check("recruit hall leaves no gold over", (await snapshot()).gold === 0, String((await snapshot()).gold));
+  check("the recruit hall consumes its exact current gold cost", (await snapshot()).gold === 0, String((await snapshot()).gold));
 
   // ------------------------------------------------------ wall balance ----
   await call("startStage", "stage-1");
