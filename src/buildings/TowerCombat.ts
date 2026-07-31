@@ -40,7 +40,7 @@ export function fireTower(tower: Building, ctx: CombatContext): boolean {
     }
   }
 
-  const power = (def.attackPower ?? 100) * ctx.scaling.towerAttack;
+  const power = tower.attackPower * ctx.scaling.towerAttack;
   ctx.vfx.burstAt("muzzleFlash", tower.position.x, tower.position.z, 22);
   aimPoint.set(bestX, 0, bestZ);
   const aim: Damageable = {

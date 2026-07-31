@@ -17,7 +17,11 @@ import { earlyDetonate } from "./BomberLogic";
 import { CombatUnitAbilities } from "./CombatUnitAbilities";
 import { UnitStatusEffects } from "./UnitStatusEffects";
 import { crossesBreakPoint, mitigate } from "./ArmorLogic";
-import { ALLY_PROGRESSION, allyUpgradeMultiplier } from "../data/AllyProgressionConfig";
+import {
+  furnaceAllyAttackMultiplier,
+  furnaceAllyAttackSpeedMultiplier,
+  furnaceAllyHealthMultiplier,
+} from "../data/FurnaceUpgradeConfig";
 
 const TAUNT_CHECK_INTERVAL = 0.4;
 
@@ -67,7 +71,7 @@ export class CombatUnit implements Damageable {
   siegeMultiplier = 1;
   private attackSpeedBonus = 0;
   private moveSpeedBonus = 0;
-  private allyUpgradeLevelValue = 0;
+  private furnaceLevelValue = 1;
   private vulnerability = 0;
   private vulnerabilityTimer = 0;
   private groundSupportEngagedValue = false;
@@ -132,18 +136,25 @@ export class CombatUnit implements Damageable {
   /** Seconds since death, for the tests and the squad HUD. */
   get corpseAge(): number { return this._alive ? 0 : this.corpse.elapsed; }
   get displayName(): string {
-    return this.faction === "ally" && !this.def.canRepair && this.allyUpgradeLevelValue > 0
-      ? `${this.def.name} +${this.allyUpgradeLevelValue}`
+    return this.faction === "ally" && !this.def.temporaryGroundSupport
+      ? `${this.def.name} Lv.${this.furnaceLevelValue}`
       : this.def.name;
   }
   get hitRadius(): number { return 0.42 * this.def.scale; }
   get level(): number { return this.def.level ?? 0; }
   get threat(): number { return this.attackPower; }
   get attackPower(): number {
-    return this.def.attackPower * this.attackMultiplier * allyUpgradeMultiplier(this.allyUpgradeLevelValue);
+    const furnaceMultiplier = this.faction === "ally" && !this.def.temporaryGroundSupport
+      ? furnaceAllyAttackMultiplier(this.furnaceLevelValue)
+      : 1;
+    return this.def.attackPower * this.attackMultiplier * furnaceMultiplier * (1 + this.abilities.bannerAttackBonus);
   }
-  get allyUpgradeLevel(): number { return this.allyUpgradeLevelValue; }
-  get supportPowerMultiplier(): number { return allyUpgradeMultiplier(this.allyUpgradeLevelValue); }
+  get furnaceLevel(): number { return this.furnaceLevelValue; }
+  get supportPowerMultiplier(): number {
+    return this.faction === "ally" && !this.def.temporaryGroundSupport
+      ? furnaceAllyAttackMultiplier(this.furnaceLevelValue)
+      : 1;
+  }
   get tauntRadius(): number {
     if (this.def.temporaryGroundSupport && !this.groundSupportEngagedValue) return 0;
     return this.def.tauntRadius ?? 0;
@@ -160,10 +171,12 @@ export class CombatUnit implements Damageable {
   }
   /** Effective interval and speed, including any boss-phase bonuses. */
   get effectiveInterval(): number {
-    const upgradeSpeed = this.faction === "ally"
-      ? this.allyUpgradeLevelValue * ALLY_PROGRESSION.statPerLevel
+    const furnaceSpeed = this.faction === "ally" && !this.def.temporaryGroundSupport
+      ? furnaceAllyAttackSpeedMultiplier(this.furnaceLevelValue) - 1
       : 0;
-    return this.def.attackInterval / (1 + upgradeSpeed + this.attackSpeedBonus + this.abilities.auraAttackBonus);
+    return this.def.attackInterval / (
+      1 + furnaceSpeed + this.attackSpeedBonus + this.abilities.auraAttackBonus + this.abilities.bannerAttackSpeedBonus
+    );
   }
   get effectiveMoveSpeed(): number {
     return this.def.moveSpeed * (1 + this.moveSpeedBonus + this.abilities.auraMoveBonus) * (1 - this.slowFactor);
@@ -186,6 +199,8 @@ export class CombatUnit implements Damageable {
   get vulnerabilityRemaining(): number { return Math.max(0, this.vulnerabilityTimer); }
   get vulnerabilityFactor(): number { return this.vulnerability; }
   get groundSupportEngaged(): boolean { return this.groundSupportEngagedValue; }
+  get bannerAttackBonus(): number { return this.abilities.bannerAttackBonus; }
+  get bannerAttackSpeedBonus(): number { return this.abilities.bannerAttackSpeedBonus; }
 
   attachSharedHealth(pool: SharedHealthPool): void {
     this.sharedHealth = pool;
@@ -230,18 +245,18 @@ export class CombatUnit implements Damageable {
     this.moveSpeedBonus = moveBonus;
   }
 
-  /** Applies a run-local class upgrade to an already deployed or new ally. */
-  applyAllyUpgradeLevel(level: number): void {
-    if (this.faction !== "ally" || this.def.canRepair) return;
-    const next = Math.max(0, Math.floor(level));
-    if (next === this.allyUpgradeLevelValue) return;
+  /** Applies the central furnace level to an already deployed allied unit. */
+  setFurnaceLevel(level: number): void {
+    if (this.faction !== "ally" || this.def.temporaryGroundSupport) return;
+    const next = Math.max(1, Math.floor(level));
+    if (next === this.furnaceLevelValue) return;
     const previousMax = this.maxHealth;
-    this.allyUpgradeLevelValue = next;
+    this.furnaceLevelValue = next;
     this.maxHealth = Math.max(
       1,
-      Math.round(this.def.maxHealth * this.healthMultiplier * allyUpgradeMultiplier(next)),
+      Math.round(this.def.maxHealth * this.healthMultiplier * furnaceAllyHealthMultiplier(next)),
     );
-    // An upgrade grants its new HP immediately without erasing existing damage.
+    // A fire-level increase grants its new HP immediately without erasing damage.
     this.health = Math.min(this.maxHealth, this.health + Math.max(0, this.maxHealth - previousMax));
   }
 
@@ -394,8 +409,10 @@ export class CombatUnit implements Damageable {
     if (this.attackTimer > 0) this.attackTimer -= dt;
     this.tauntTimer = refreshTaunt(this, this.ctx, dt, this.tauntTimer);
 
-    if (this.brain) this.brain.update(dt);
-    else this.updateEnemy(dt);
+    if (this.brain) {
+      this.brain.update(dt);
+      this.abilities.tickAlly(dt);
+    } else this.updateEnemy(dt);
     this.abilities.tickFreezeZone(dt);
 
     if (!this.animator.isBusy) {

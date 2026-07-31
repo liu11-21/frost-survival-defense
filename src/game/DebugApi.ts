@@ -227,6 +227,12 @@ export function createDebugApi(s: GameSystems, controls: DebugControls): Record<
         const b = s.buildings.slot(slotId)?.building;
         return b ? { health: Math.ceil(b.health), max: b.maxHealth } : null;
       },
+      slotStats: (slotId: string) => {
+        const b = s.buildings.slot(slotId)?.building;
+        return b
+          ? { level: b.level, health: Math.ceil(b.health), max: b.maxHealth, attack: b.attackPower }
+          : null;
+      },
       startTutorial: () => controls.startTutorial(),
       damageBoss: (amount: number) => {
         const b = s.boss.boss;

@@ -112,6 +112,23 @@ export const UNIT_VISUALS: Record<string, UnitVisual> = {
     weapon: "cross",
     accent: [0.5, 1.0, 0.7],
   },
+  flagbearer: {
+    body: [0.76, 0.16, 0.12],
+    limb: [0.34, 0.16, 0.12],
+    head: [0.82, 0.66, 0.52],
+    crest: [0.95, 0.74, 0.22],
+    weapon: "banner",
+    accent: [1.0, 0.82, 0.2],
+    cape: true,
+    torsoSize: [0.48, 0.62, 0.32],
+    attachments: [
+      // Tall cloth on the back plus a shoulder cord make the banner readable
+      // even when the hand-held pole is hidden by the formation.
+      { shape: "box", parent: "back", position: [0, 1.78, -0.08], size: [0.58, 0.5, 0.06], material: "accent" },
+      { shape: "box", parent: "body", position: [0, 0.95, 0.18], rotation: [0, 0, 0.55], size: [0.07, 0.52, 0.06], material: "crest" },
+      { shape: "sphere", parent: "head", position: [0, 0.32, 0], size: [0.14, 0.14, 0.14], material: "accent" },
+    ],
+  },
   mage: {
     body: [0.36, 0.34, 0.72],
     limb: [0.24, 0.22, 0.5],

@@ -83,7 +83,7 @@ export class SquadManager {
     }
   }
 
-  recruit(defId: string, x: number, z: number, upgradeLevel = 0): Squad | null {
+  recruit(defId: string, x: number, z: number, furnaceLevel = 1): Squad | null {
     const def = ALLY_BY_ID.get(defId);
     if (!def) return null;
     const squad = this.spawnSquad(
@@ -93,7 +93,7 @@ export class SquadManager {
       z,
       this.ctx.scaling.allyHealth,
       this.ctx.scaling.allyAttack,
-      def.canRepair ? 0 : upgradeLevel,
+      furnaceLevel,
     );
     this.allySquads.push(squad);
     this.attachAllySquad(squad);
@@ -187,14 +187,14 @@ export class SquadManager {
     z: number,
     healthMul: number,
     attackMul: number,
-    upgradeLevel = 0,
+    furnaceLevel = 1,
   ): Squad {
-    const squad = new Squad(def, faction, upgradeLevel);
+    const squad = new Squad(def, faction, furnaceLevel);
     const template = this.templates.get(def.visual);
     for (let i = 0; i < def.squadSize; i++) {
       const rig = template.spawn(def.scale);
       const unit = new CombatUnit(def, faction, rig, this.ctx, healthMul, attackMul, squad.id);
-      unit.applyAllyUpgradeLevel(upgradeLevel);
+      unit.setFurnaceLevel(furnaceLevel);
       this.formation.memberSlot(i, def.squadSize, x, z, this.member);
       unit.setPosition(this.member.x, this.member.z);
       unit.setYaw(Math.atan2(-x, -z));
@@ -492,10 +492,10 @@ export class SquadManager {
     });
   }
 
-  /** Applies a class upgrade to every currently deployed squad of that type. */
-  setAllyUpgradeLevel(defId: string, level: number): void {
+  /** Applies one central-fire level to every ordinary allied squad. */
+  setFurnaceLevel(level: number): void {
     for (const squad of this.allySquads) {
-      if (squad.def.id === defId) squad.applyUpgradeLevel(level);
+      if (!squad.isGroundSupportSquad) squad.setFurnaceLevel(level);
     }
   }
 

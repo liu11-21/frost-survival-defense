@@ -224,7 +224,8 @@ export async function runV6Checks(ctx) {
   const musketeerCodex = await call("codexEntry", "ally.musketeer");
   const wallCodex = await call("codexEntry", "mechanic.wall");
   const healthbarCodex = await call("codexEntry", "mechanic.healthbar");
-  const upgradeCodex = await call("codexEntry", "mechanic.ally-upgrade");
+  const progressionCodex = await call("codexEntry", "mechanic.furnace-progression");
+  const flagbearerCodex = await call("codexEntry", "ally.flagbearer");
   const priorityCodex = await call("codexEntry", "mechanic.enemy-priority");
   const skillsCodex = await call("codexEntry", "mechanic.hero-skills");
   check(
@@ -249,11 +250,12 @@ export async function runV6Checks(ctx) {
     JSON.stringify({ wallCodex, healthbarCodex }),
   );
   check(
-    "Codex includes current upgrade, enemy-priority, and the AUTO fourth skill page",
-    upgradeCodex.fields.some((f) => f.value.includes("+10%")) &&
+    "Codex includes furnace-synced growth, the Flagbearer, enemy-priority, and the AUTO fourth skill page",
+    progressionCodex.fields.some((f) => f.label === "個別升級" && f.value.includes("已取消")) &&
+      flagbearerCodex.fields.some((f) => f.label === "每名成員生命" && f.value === "500") &&
       priorityCodex.fields.some((f) => f.value.includes("城牆 → 盾兵")) &&
       skillsCodex.fields.map((f) => f.label).join(",") === "按鍵 1,按鍵 2,按鍵 3,按鍵 AUTO",
-    JSON.stringify({ upgradeCodex, priorityCodex, skillsCodex }),
+    JSON.stringify({ progressionCodex, flagbearerCodex, priorityCodex, skillsCodex }),
   );
   await call("killAllAllies");
   await step(0.016, 200);

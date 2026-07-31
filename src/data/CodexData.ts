@@ -6,7 +6,7 @@ import { WALL_REBUILD_DECAY } from "./BuildingDefinitions";
 import { MECHANIC_ENTRIES } from "./CodexMechanics";
 import { ASSAULT_RULES } from "./AssaultConfig";
 import { STANDOFF } from "../ai/AIConfig";
-import { ALLY_PROGRESSION } from "./AllyProgressionConfig";
+import { FURNACE_UPGRADE } from "./FurnaceUpgradeConfig";
 import { ENGINEER_RULES } from "./EngineerConfig";
 import { GATHER, RESPAWN, STONE_CAPACITY, TREE_CAPACITY } from "./ResourceNodeConfig";
 import { WAREHOUSE_LOSS } from "./BuildingDefinitions";
@@ -62,6 +62,7 @@ const ALLY_ROLE: Record<string, string> = {
   shield: "承傷與嘲諷",
   archer: "後排持續輸出",
   medic: "全隊治療",
+  flagbearer: "範圍攻擊／攻速增益",
   mage: "高爆發範圍法術",
   assault: "Lv.4+ 爆發刺客",
   engineer: "建築維修",
@@ -74,9 +75,10 @@ const ALLY_SPECIAL: Record<string, string> = {
   shield: `半徑 ${ALLY_UNITS.find((u) => u.id === "shield")?.tauntRadius ?? 0} 內的敵人會轉而攻擊它，並且能替建築吸引火力。`,
   archer: `會自動維持 ${STANDOFF.archer.min} 至 ${STANDOFF.archer.max} 的射擊距離，不會貼到前線。`,
   medic: `每 ${MEDIC_RULES.interval.toFixed(2)} 秒替最虛弱的小隊治療 ${MEDIC_RULES.healPerMember}，整隊只觸發一次。`,
+  flagbearer: `不會攻擊；半徑 ${ALLY_UNITS.find((u) => u.id === "flagbearer")?.supportAura?.radius ?? 0} 內友軍取最強一面旗幟，獲得攻擊與攻速增益。`,
   mage: `半徑 ${ALLY_UNITS.find((u) => u.id === "mage")?.areaRadius ?? 0} 的爆炸，一次最多命中 ${ALLY_UNITS.find((u) => u.id === "mage")?.maxAreaTargets ?? 0} 名敵人。`,
   assault: `登場時瞬移到場上等級最高的敵人旁。前 ${ASSAULT_RULES.invulnerableSeconds} 秒完全無敵，接著 ${ASSAULT_RULES.reducedDamageSeconds} 秒減傷 ${Math.round(ASSAULT_RULES.damageReduction * 100)}%，之後歸零；對 Lv.${ASSAULT_RULES.highTierMinLevel}+ 傷害 ×${ASSAULT_RULES.highTierDamageMultiplier}。`,
-  engineer: `1 人獨立小隊、100 生命、沒有攻擊。每 ${ENGINEER_RULES.scanInterval} 秒尋找最近且未被其他工程兵預約的受損設施；非受擊狀態完整倒數 ${ENGINEER_RULES.safeRepairInterval} 秒、受擊狀態完整倒數 ${ENGINEER_RULES.underAttackRepairInterval} 秒後，一次回復該設施最大生命 ${Math.round(ENGINEER_RULES.repairFraction * 100)}%。不能修復中央火爐或已被擊破的設施。`,
+  engineer: `1 人獨立小隊、基礎 100 生命、沒有攻擊。每 ${ENGINEER_RULES.scanInterval} 秒尋找最近且未被其他工程兵預約的受損設施；非受擊狀態完整倒數 ${ENGINEER_RULES.safeRepairInterval} 秒、受擊狀態完整倒數 ${ENGINEER_RULES.underAttackRepairInterval} 秒後，一次回復該設施最大生命 ${Math.round(ENGINEER_RULES.repairFraction * 100)}%。不能修復中央火爐或已被擊破的設施。`,
   musketeer: `對 Lv.4-5 敵人 +40% 傷害、對 Boss +20% 傷害；每次命中疊加 5% 減速（Boss 2%），最多 3 層。`,
   frostmage: `攻擊附帶 25% 範圍減速；每 10 秒施放凍結領域。Boss 只承受較弱減速且不會被暈眩。`,
 };
@@ -86,6 +88,7 @@ const ALLY_ADVICE: Record<string, string> = {
   shield: "適合吸引敵人火力並保護遠程單位，但傷害較低。",
   archer: "輸出高但很脆，一定要有前排擋在前面。",
   medic: "本身不會攻擊，價值完全來自延長其他小隊的存活時間。",
+  flagbearer: "放在主力交戰圈後方覆蓋輸出小隊；多面旗幟不疊加，適合分守不同戰線。",
   mage: "對成群的小兵效率極高，對單一高血量目標則不划算。",
   assault: "基礎攻擊很低，專門切入重裝壁壘、破城者、轟擊者與 Boss；面對 Lv.1–3 不划算。",
   engineer: `不占一般小隊額度且不跟隨主角；主角倒下前敵人不會攻擊工程兵。上限為 2 隊，火爐 Lv.20／50／80 時依序提高到 3／4／5 隊。`,
@@ -126,6 +129,24 @@ const BUILDING_ADVICE: Record<string, string> = {
 function allyEntry(index: number): CodexEntry {
   const def = ALLY_UNITS[index];
   const heal = def.attackType === "heal";
+  const fields: CodexField[] = [
+    { label: "小隊人數", value: `${def.squadSize} 人` },
+    { label: "每名成員生命", value: String(def.maxHealth) },
+    { label: heal ? "治療力" : "攻擊力", value: String(def.attackPower) },
+    { label: "攻擊間隔", value: `${def.attackInterval.toFixed(2)} 秒` },
+    { label: "攻擊範圍", value: String(def.attackRange) },
+    { label: "招募成本", value: `${def.recruitCost ?? 0} 金幣` },
+    {
+      label: "火爐同步",
+      value: `每級火爐：生命、攻擊、攻速各 +${Math.round(FURNACE_UPGRADE.allyMaxHealthPct * 100)}%`,
+    },
+  ];
+  if (def.supportAura) {
+    fields.push({
+      label: "旗幟光環",
+      value: `半徑 ${def.supportAura.radius}：攻擊、攻速各 +${Math.round(def.supportAura.attackBonus * 100)}%；每級火爐再各 +${Math.round(def.supportAura.attackBonusPerFurnaceLevel * 100)}%`,
+    });
+  }
   return {
     id: `ally.${def.id}`,
     category: "ally",
@@ -133,20 +154,7 @@ function allyEntry(index: number): CodexEntry {
     role: ALLY_ROLE[def.id] ?? "",
     visual: def.visual,
     icon: "",
-    fields: [
-      { label: "小隊人數", value: `${def.squadSize} 人` },
-      { label: "每名成員生命", value: String(def.maxHealth) },
-      { label: heal ? "治療力" : "攻擊力", value: String(def.attackPower) },
-      { label: "攻擊間隔", value: `${def.attackInterval.toFixed(2)} 秒` },
-      { label: "攻擊範圍", value: String(def.attackRange) },
-      { label: "招募成本", value: `${def.recruitCost ?? 0} 金幣` },
-      {
-        label: "兵種升級",
-        value: def.canRepair
-          ? "不可升級"
-          : `每級生命、攻擊、攻速各 +${Math.round(ALLY_PROGRESSION.statPerLevel * 100)}%`,
-      },
-    ],
+    fields,
     advice: `${ALLY_SPECIAL[def.id] ?? ""}${ALLY_ADVICE[def.id] ?? ""}`,
     unlocked: true,
     search: `${def.name}${def.id}${ALLY_ROLE[def.id] ?? ""}`.toLowerCase(),
@@ -213,6 +221,12 @@ function buildingEntry(index: number): CodexEntry {
     { label: "建造時間", value: `${def.buildTime.toFixed(1)} 秒` },
     { label: "生命值", value: def.canBeAttacked ? String(def.maxHealth) : "不可被攻擊" },
     { label: "自動重建", value: def.canBeRebuilt ? "可以" : "不可以" },
+    {
+      label: "火爐同步",
+      value: def.canBeAttacked
+        ? `每級火爐：生命、攻擊各 +${Math.round(FURNACE_UPGRADE.facilityMaxHealthPct * 100)}%`
+        : "不可被攻擊的設施不需生命同步",
+    },
     { label: "可拆除", value: "可以，返還 50% 木材與石頭" },
   ];
   if (def.id === "wall") {

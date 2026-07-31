@@ -44,6 +44,7 @@ export class BuildingManager {
   private validationTimer = 30;
   private attackSpeedBuffRemaining = 0;
   private attackSpeedBuffMultiplier = 1;
+  private furnaceLevel = 1;
   /** Counts how many times the safety net had to step in; the tests read it. */
   visualRepairs = 0;
   /**
@@ -144,7 +145,15 @@ export class BuildingManager {
       this.detach(slot);
       slot.building.dispose();
     }
-    const building = new Building(this.scene, this.materials, this.events, type, slot, healthMultiplier);
+    const building = new Building(
+      this.scene,
+      this.materials,
+      this.events,
+      type,
+      slot,
+      healthMultiplier,
+      this.furnaceLevel,
+    );
     slot.building = building;
     if (building.def.canBeAttacked) {
       this.world.structures.push(building);
@@ -184,7 +193,16 @@ export class BuildingManager {
     return this.wallRebuildsThisWave.get(slotId) ?? 0;
   }
 
+  /** Applies the central furnace level to every existing and future facility. */
+  setFurnaceLevel(level: number): void {
+    const next = Math.max(1, Math.floor(level));
+    if (next === this.furnaceLevel) return;
+    this.furnaceLevel = next;
+    for (const slot of this.slots) slot.building?.setFurnaceLevel(next);
+  }
+
   update(dt: number, ctx: CombatContext, heroPos: Vector3, productionRate: number, furnaceLevel = 1): void {
+    this.setFurnaceLevel(furnaceLevel);
     this.clock += dt;
     if (this.rebuildCooldown > 0) this.rebuildCooldown -= dt;
     if (this.attackSpeedBuffRemaining > 0) {
@@ -376,6 +394,7 @@ export class BuildingManager {
     this.rebuildCooldown = 0;
     this.attackSpeedBuffRemaining = 0;
     this.attackSpeedBuffMultiplier = 1;
+    this.furnaceLevel = 1;
     this.clock = 0;
     this.autoRebuildEnabled = true;
   }

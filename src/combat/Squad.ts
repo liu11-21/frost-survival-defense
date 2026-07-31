@@ -5,7 +5,7 @@ import { MEDIC_RULES } from "../data/UnitDefinitions";
 import type { Building } from "../buildings/Building";
 import type { CombatContext } from "./CombatContext";
 import type { CombatUnit } from "./CombatUnit";
-import { allyUpgradeMultiplier } from "../data/AllyProgressionConfig";
+import { furnaceAllyAttackMultiplier } from "../data/FurnaceUpgradeConfig";
 import { ENGINEER_RULES } from "../data/EngineerConfig";
 
 let nextSquadId = 1;
@@ -40,7 +40,7 @@ export class Squad {
   constructor(
     readonly def: UnitDefinition,
     readonly faction: Faction,
-    private upgradeLevelValue = 0,
+    private furnaceLevelValue = 1,
   ) {}
 
   add(unit: CombatUnit): void {
@@ -62,14 +62,13 @@ export class Squad {
     return this.def.attackType === "heal";
   }
 
-  get upgradeLevel(): number {
-    return this.upgradeLevelValue;
+  get furnaceLevel(): number {
+    return this.furnaceLevelValue;
   }
 
-  applyUpgradeLevel(level: number): void {
-    if (this.def.canRepair) return;
-    this.upgradeLevelValue = Math.max(0, Math.floor(level));
-    for (const member of this.members) member.applyAllyUpgradeLevel(this.upgradeLevelValue);
+  setFurnaceLevel(level: number): void {
+    this.furnaceLevelValue = Math.max(1, Math.floor(level));
+    for (const member of this.members) member.setFurnaceLevel(this.furnaceLevelValue);
   }
 
   /** Total current health over total max health across living members. */
@@ -193,7 +192,7 @@ export class Squad {
     healStats.events += 1;
     for (const m of target.members) {
       if (!m.alive) continue;
-      m.heal(MEDIC_RULES.healPerMember * allyUpgradeMultiplier(this.upgradeLevelValue));
+      m.heal(MEDIC_RULES.healPerMember * furnaceAllyAttackMultiplier(this.furnaceLevelValue));
       healStats.healedUnits += 1;
     }
     target.centre(this.scratch);

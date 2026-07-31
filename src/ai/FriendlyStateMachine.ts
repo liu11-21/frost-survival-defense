@@ -76,6 +76,9 @@ export class FriendlyBrain {
   private get isEngineer(): boolean {
     return this.unit.def.canRepair === true;
   }
+  private get isSupporter(): boolean {
+    return this.unit.def.attackType === "none" && !this.isEngineer;
+  }
   private get isRanged(): boolean {
     const t = this.unit.def.attackType;
     return t === "rangedSingle" || t === "rangedArea";
@@ -91,6 +94,7 @@ export class FriendlyBrain {
       hasRally: this.hasRally,
       isHealer: this.isHealer,
       isEngineer: this.isEngineer,
+      isSupporter: this.isSupporter,
       state: this._state,
       stateTime: this.stateTime,
       clock: this.clock,
@@ -135,6 +139,7 @@ export class FriendlyBrain {
   private get replanState(): AllyState {
     if (this.isHealer) return "acquireHealTarget";
     if (this.isEngineer) return "acquireRepairTarget";
+    if (this.isSupporter) return "followFormation";
     return "acquireTarget";
   }
 
@@ -193,6 +198,7 @@ export class FriendlyBrain {
     if (
       !this.isHealer &&
       !this.isEngineer &&
+      !this.isSupporter &&
       !this.target &&
       this._state !== "spawn" &&
       this._state !== "dead" &&

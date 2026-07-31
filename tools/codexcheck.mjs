@@ -39,9 +39,9 @@ export async function runCodexChecks(ctx) {
     }
     return out;
   });
-  // v5 added 3 allies (engineer, musketeer, frostmage) and 4 enemies
-  // (breacher, icearmor, commander, bomber): hero + 9 allies, 11 enemies.
-  check("every ally including the hero is listed", counts["友方兵種"] === 10, JSON.stringify(counts));
+  // v5 added 3 allies (engineer, musketeer, frostmage), then v10 added the
+  // Flagbearer. This is hero + 10 allies, alongside the 11 enemy entries.
+  check("every ally including the hero is listed", counts["友方兵種"] === 11, JSON.stringify(counts));
   check("all ten enemy tiers plus the boss are listed", counts["敵方單位"] === 11, JSON.stringify(counts));
   check("all thirteen buildings including the Gold Mine are listed", counts["建築設施"] === 13, JSON.stringify(counts));
   check("all three resources are listed", counts["資源"] === 3, JSON.stringify(counts));

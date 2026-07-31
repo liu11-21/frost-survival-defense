@@ -27,6 +27,23 @@ export interface BurstSpec {
  */
 export const BURSTS: BurstSpec[] = [
   {
+    key: "bannerAura",
+    sprite: "spark",
+    capacity: 32,
+    options: {
+      color1: new Color4(1, 0.92, 0.38, 1),
+      color2: new Color4(1, 0.45, 0.12, 0.05),
+      minSize: 0.08,
+      maxSize: 0.24,
+      minLifeTime: 0.35,
+      maxLifeTime: 0.8,
+      power: [1.2, 3.8],
+      gravity: 0.4,
+      spread: 0.85,
+      additive: true,
+    },
+  },
+  {
     key: "chips",
     sprite: "chip",
     capacity: 26,

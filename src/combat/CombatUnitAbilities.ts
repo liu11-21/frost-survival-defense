@@ -1,4 +1,5 @@
 import { updateBomber } from "./BomberLogic";
+import { computeBannerAuraBonus } from "./AllyBannerAura";
 import { computeAuraBonus } from "./CommanderAura";
 import type { CombatContext } from "./CombatContext";
 import type { CombatUnit } from "./CombatUnit";
@@ -17,6 +18,8 @@ export class CombatUnitAbilities {
   private freezeZoneTimer = -1;
   auraMoveBonus = 0;
   auraAttackBonus = 0;
+  bannerAttackBonus = 0;
+  bannerAttackSpeedBonus = 0;
 
   constructor(
     private readonly unit: CombatUnit,
@@ -38,6 +41,21 @@ export class CombatUnitAbilities {
       if (this.unit.def.aura) {
         this.ctx.vfx.burstAt("auraPulse", this.unit.position.x, this.unit.position.z, 16);
       }
+    }
+  }
+
+  /** Ally-only: nearby Flagbearers grant the strongest non-stacking banner. */
+  tickAlly(dt: number): void {
+    this.auraCheckTimer -= dt;
+    if (this.auraCheckTimer > 0) return;
+    this.auraCheckTimer = AURA_CHECK_INTERVAL;
+    const bonus = computeBannerAuraBonus(this.unit, this.ctx);
+    this.bannerAttackBonus = bonus.attack;
+    this.bannerAttackSpeedBonus = bonus.attackSpeed;
+    const aura = this.unit.def.supportAura;
+    if (aura) {
+      this.ctx.vfx.supportAura(this.unit.position.x, this.unit.position.z, aura.radius);
+      this.ctx.vfx.burstAt("bannerAura", this.unit.position.x, this.unit.position.z, 18);
     }
   }
 

@@ -429,7 +429,10 @@ export async function runV8Checks(ctx) {
           r.phase === "active" &&
           r.remaining.length > 0 &&
           r.remaining.every((enemy) => enemy.targetId && enemy.targetId !== "none")
-        ),
+        ) ||
+        // A run can legitimately stop in an intermission after clearing the
+        // current wave, before this bounded strategy simulation advances it.
+        (r.phase === "intermission" && r.remaining.length === 0),
     ),
     JSON.stringify(strategyResults),
   );

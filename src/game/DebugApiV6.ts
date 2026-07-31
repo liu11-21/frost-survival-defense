@@ -11,7 +11,7 @@ import type { GameSystems } from "./GameSystems";
  */
 export function createV6DebugApi(s: GameSystems): Record<string, unknown> {
   return {
-    spawnAlly: (id: string, x: number, z: number) => s.squads.recruit(id, x, z),
+    spawnAlly: (id: string, x: number, z: number) => s.squads.recruit(id, x, z, s.furnace.currentLevel),
     unitInfo: (defId: string) => {
       const find = (list: typeof s.world.allies) => list.find((u) => u.alive && u.def.id === defId);
       const u = find(s.world.allies) ?? find(s.world.enemies);
@@ -29,7 +29,9 @@ export function createV6DebugApi(s: GameSystems): Record<string, unknown> {
         effectiveMoveSpeed: Number(u.effectiveMoveSpeed.toFixed(2)),
         effectiveInterval: Number(u.effectiveInterval.toFixed(3)),
         attackPower: Number(u.attackPower.toFixed(2)),
-        upgradeLevel: u.allyUpgradeLevel,
+        furnaceLevel: u.furnaceLevel,
+        bannerAttackBonus: Number(u.bannerAttackBonus.toFixed(3)),
+        bannerAttackSpeedBonus: Number(u.bannerAttackSpeedBonus.toFixed(3)),
         damageReduction: Number(u.activeDamageReduction.toFixed(2)),
         protectionRemaining: Number(u.phasedProtectionRemaining.toFixed(2)),
         aiState: u.aiState,
@@ -43,7 +45,9 @@ export function createV6DebugApi(s: GameSystems): Record<string, unknown> {
           hp: Math.ceil(u.health),
           max: u.maxHealth,
           attackPower: Number(u.attackPower.toFixed(2)),
-          upgradeLevel: u.allyUpgradeLevel,
+          furnaceLevel: u.furnaceLevel,
+          bannerAttackBonus: Number(u.bannerAttackBonus.toFixed(3)),
+          bannerAttackSpeedBonus: Number(u.bannerAttackSpeedBonus.toFixed(3)),
           x: Number(u.position.x.toFixed(1)),
           z: Number(u.position.z.toFixed(1)),
           slowFactor: Number(u.slowFactor.toFixed(3)),
@@ -72,11 +76,7 @@ export function createV6DebugApi(s: GameSystems): Record<string, unknown> {
       limit: s.run.engineerLimit,
       regularUsed: s.squads.allySquadSlotsUsed,
     }),
-    allyUpgradeInfo: (defId: string) => ({
-      level: s.run.allyUpgradeLevel(defId),
-      cost: s.run.allyUpgradeCost(defId),
-      stats: s.run.allyUpgradeStats(defId),
-    }),
+    furnaceAllyInfo: (defId: string) => s.run.allyFurnaceStats(defId),
     allyCombatPreview: (defId: string, targetLevel: number) => {
       const def = ALLY_BY_ID.get(defId);
       if (!def) return null;
@@ -92,7 +92,6 @@ export function createV6DebugApi(s: GameSystems): Record<string, unknown> {
       const entry = CODEX_ENTRIES.find((candidate) => candidate.id === id);
       return entry ? { name: entry.name, role: entry.role, fields: entry.fields, advice: entry.advice } : null;
     },
-    upgradeAlly: (defId: string) => s.run.tryUpgradeAlly(defId),
     allyTargetKind: (defId: string) => {
       const u = s.world.allies.find((a) => a.alive && a.def.id === defId);
       const t = (u?.aiBrain?.currentTarget ?? u?.currentTarget) as

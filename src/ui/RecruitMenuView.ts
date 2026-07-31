@@ -3,14 +3,13 @@ import { resourceIcon } from "./ResourceIcons";
 import { describeSpecial, roleTag, speedWord } from "./PanelText";
 import type { PanelDeps, PanelResult } from "./ActionPanels";
 
-export type RecruitMenuTab = "melee" | "ranged" | "support" | "engineer" | "upgrade";
+export type RecruitMenuTab = "melee" | "ranged" | "support" | "engineer";
 
 export const RECRUIT_MENU_TABS: readonly RecruitMenuTab[] = [
   "melee",
   "ranged",
   "support",
   "engineer",
-  "upgrade",
 ];
 
 const RECRUIT_TAB_LABELS: Record<RecruitMenuTab, string> = {
@@ -18,12 +17,11 @@ const RECRUIT_TAB_LABELS: Record<RecruitMenuTab, string> = {
   ranged: "遠程",
   support: "支援",
   engineer: "工程",
-  upgrade: "升級",
 };
 
-function recruitCategory(defId: string): Exclude<RecruitMenuTab, "upgrade"> {
+function recruitCategory(defId: string): RecruitMenuTab {
   if (defId === "engineer") return "engineer";
-  if (defId === "medic") return "support";
+  if (defId === "medic" || defId === "flagbearer") return "support";
   if (defId === "warrior" || defId === "shield" || defId === "assault") return "melee";
   return "ranged";
 }
@@ -77,9 +75,7 @@ export function renderRecruitList(
   const list = refs.recruitList;
   list.innerHTML = hasHall ? "" : '<div class="panel-note">先在內圈槽位建造招募所，才能招募小隊。</div>';
 
-  const visible = activeTab === "upgrade"
-    ? ALLY_UNITS.filter((def) => !def.canRepair)
-    : ALLY_UNITS.filter((def) => recruitCategory(def.id) === activeTab);
+  const visible = ALLY_UNITS.filter((def) => recruitCategory(def.id) === activeTab);
 
   for (const def of visible) {
     const cost = run.recruitCost(def.id);
@@ -91,39 +87,33 @@ export function renderRecruitList(
     else if (store.gold < cost) reason = `金幣不足，還差 ${Math.ceil(cost - store.gold)}`;
 
     const isHeal = def.attackType === "heal";
-    const level = run.allyUpgradeLevel(def.id);
-    const stats = run.allyUpgradeStats(def.id);
-    const upgradeCost = run.allyUpgradeCost(def.id);
-    const upgradeReason =
-      engineer ? "工程兵無法升級" :
-      !hasHall ? "招募所未完成" :
-      store.gold < upgradeCost ? `金幣不足 ${Math.ceil(upgradeCost - store.gold)}` : "";
-    const power = engineer ? "無攻擊" : isHeal ? `治療 ${stats?.power ?? def.attackPower}` : `攻擊 ${stats?.power ?? def.attackPower}`;
+    const isBanner = def.supportAura !== undefined;
+    const stats = run.allyFurnaceStats(def.id);
+    const power = isBanner
+      ? "無攻擊 · 範圍增益"
+      : isHeal
+        ? `治療 ${stats?.power ?? def.attackPower}`
+        : def.attackType === "none" ? "無攻擊" : `攻擊 ${stats?.power ?? def.attackPower}`;
     const entry = document.createElement("div");
-    entry.className = `entry static recruit-card${activeTab === "upgrade" ? " upgrade-card" : ""}`;
+    entry.className = "entry static recruit-card";
     entry.innerHTML = `
       <div class="entry-main">
         <div class="entry-name recruit-name">${def.name}
           <span class="tag">${roleTag(def.id)}</span>
           <span class="tag">${def.squadSize} 人小隊</span>
-          ${engineer ? '<span class="tag warn">獨立額度</span>' : `<span class="tag ok">強化 +${level}</span>`}</div>
+          ${engineer ? '<span class="tag warn">獨立額度</span>' : `<span class="tag ok">火爐 Lv.${stats?.level ?? 1}</span>`}</div>
         <div class="entry-desc compact-stat">生命 ${stats?.health ?? def.maxHealth} · ${power} · ${attackTypeName(def.attackType)}</div>
         <div class="entry-desc">攻速 ${speedWord(stats?.interval ?? def.attackInterval)}（${(stats?.interval ?? def.attackInterval).toFixed(2)} 秒）
           · 距離 ${def.attackRange}</div>
-        ${activeTab === "upgrade" ? "" : `<div class="entry-desc special">${describeSpecial(def.id)}</div>`}
+        <div class="entry-desc special">${describeSpecial(def.id)}</div>
       </div>
       <div class="recruit-actions">
-        ${activeTab === "upgrade" ? "" : `<button class="mini-btn recruit-action recruit-buy" data-recruit="${def.id}" ${reason ? "disabled" : ""}>
+        <button class="mini-btn recruit-action recruit-buy" data-recruit="${def.id}" ${reason ? "disabled" : ""}>
           <span>招募</span> <strong>${resourceIcon("gold", 18)} ${cost}</strong>
           ${reason ? `<span class="bad">${reason}</span>` : ""}
-        </button>`}
-        ${activeTab !== "upgrade" ? "" : `<button class="mini-btn recruit-action upgrade" data-upgrade="${def.id}" ${upgradeReason ? "disabled" : ""}>
-          ${engineer ? "不可升級" : `升級 +10%／+10%／+10%　${resourceIcon("gold", 16)} ${upgradeCost}`}
-          ${upgradeReason && !engineer ? `<span class="bad">${upgradeReason}</span>` : ""}
-        </button>`}
+        </button>
       </div>`;
     const recruitButton = entry.querySelector<HTMLButtonElement>("[data-recruit]");
-    const upgradeButton = entry.querySelector<HTMLButtonElement>("[data-upgrade]");
     recruitButton?.addEventListener("click", () => {
       const failure = run.tryRecruit(def.id);
       if (failure) {
@@ -140,22 +130,7 @@ export function renderRecruitList(
       }
       callbacks.onRerender();
     });
-    upgradeButton?.addEventListener("click", () => {
-      const failure = run.tryUpgradeAlly(def.id);
-      if (failure) {
-        callbacks.onResult({ ok: false, title: `無法升級：${def.name}`, message: failure, iconId: "gold" });
-      } else {
-        callbacks.onResult({
-          ok: true,
-          title: `${def.name} 強化 +${run.allyUpgradeLevel(def.id)}`,
-          message: `生命、攻擊與攻速各提升 10%，消耗 ${upgradeCost} 金幣。`,
-          iconId: "gold",
-        });
-      }
-      callbacks.onRerender();
-    });
     recruitButton?.addEventListener("focus", () => callbacks.onFocus(recruitButton));
-    upgradeButton?.addEventListener("focus", () => callbacks.onFocus(upgradeButton));
     list.appendChild(entry);
   }
 }

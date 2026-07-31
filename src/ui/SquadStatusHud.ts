@@ -19,7 +19,7 @@ interface Row {
   attackPower: number;
   samples: number;
   status: Status;
-  upgradeLevel: number;
+  furnaceLevel: number;
 }
 
 const STATUS_TEXT: Record<Status, string> = {
@@ -126,7 +126,7 @@ export class SquadStatusHud {
           attackPower: 0,
           samples: 0,
           status: "normal",
-          upgradeLevel: squad.upgradeLevel,
+          furnaceLevel: squad.furnaceLevel,
         };
         byType.set(squad.def.id, row);
       }
@@ -162,7 +162,7 @@ export class SquadStatusHud {
         attackPower: 0,
         samples: 0,
         status: "wiped",
-        upgradeLevel: this.run.allyUpgradeLevel(defId),
+        furnaceLevel: this.run.allyFurnaceStats(defId)?.level ?? 1,
       });
     }
     return rows;
@@ -194,7 +194,7 @@ export class SquadStatusHud {
       return `<button class="squad-row ${row.status}${on}" data-def="${row.defId}"
           ${allowHighlight ? "" : "disabled"} title="${row.name}　${healthText}">
           <span class="squad-thumb">${unitThumb(row.defId, 22)}</span>
-          <span class="squad-name">${row.name}${row.upgradeLevel > 0 ? ` +${row.upgradeLevel}` : ""}</span>
+          <span class="squad-name">${row.name} Lv.${row.furnaceLevel}</span>
           <span class="squad-count">${row.status === "wiped" ? "—" : `×${row.squads}`}</span>
           <span class="squad-state">${STATUS_TEXT[row.status]}</span>
           <small class="squad-live-stats">${healthText}</small>

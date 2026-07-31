@@ -84,6 +84,14 @@ export interface UnitDefinition {
 
   /** Engineer: independently seeks and repairs attackable structures. */
   canRepair?: boolean;
+  /** Supporter: grants nearby allied squads the strongest single banner aura. */
+  supportAura?: {
+    radius: number;
+    attackBonus: number;
+    attackSpeedBonus: number;
+    attackBonusPerFurnaceLevel: number;
+    attackSpeedBonusPerFurnaceLevel: number;
+  };
   /** Temporary three-person escort summoned by the hero's Ground Support.
    * It never consumes recruitment capacity and only fights after enemies have
    * reached the hero target tier. */

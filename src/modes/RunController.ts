@@ -3,7 +3,17 @@ import type { CombatScaling } from "../combat/CombatContext";
 import type { CombatUnit } from "../combat/CombatUnit";
 import type { SquadManager } from "../combat/SquadManager";
 import { ALLY_BY_ID } from "../data/UnitDefinitions";
-import { FURNACE, FURNACE_UPGRADE, furnaceMaxHealth, furnaceUpgradeCost } from "../data/FurnaceUpgradeConfig";
+import {
+  FURNACE,
+  FURNACE_UPGRADE,
+  furnaceAllyAttackMultiplier,
+  furnaceAllyAttackSpeedMultiplier,
+  furnaceAllyHealthMultiplier,
+  furnaceFacilityAttackMultiplier,
+  furnaceFacilityHealthMultiplier,
+  furnaceMaxHealth,
+  furnaceUpgradeCost,
+} from "../data/FurnaceUpgradeConfig";
 import {
   ENDLESS_RULES,
   ENDLESS_SCALING,
@@ -32,7 +42,6 @@ import {
   structureRepairFixedBurst,
   structureRepairPercentPerSecond,
 } from "../combat/StructureSelfRepair";
-import { allyUpgradeCost, allyUpgradeMultiplier } from "../data/AllyProgressionConfig";
 import { engineerSquadLimit, ENGINEER_RULES } from "../data/EngineerConfig";
 
 export interface RunDeps {
@@ -62,7 +71,6 @@ export class RunController {
   private pendingUpgradeWave = 0;
   private lastScaledWave = -1;
   private readonly earlyReward: EarlyWaveRewardTracker;
-  private readonly allyUpgradeLevels = new Map<string, number>();
 
   readonly upgrades: UpgradeState;
 
@@ -129,7 +137,6 @@ export class RunController {
     this.lastScaledWave = -1;
     this.earlyReward.reset();
     this.upgrades.reset();
-    this.allyUpgradeLevels.clear();
 
     d.squads.clearAll();
     d.buildings.resetAll();
@@ -165,6 +172,8 @@ export class RunController {
       });
     }
     d.heroStats.setFurnaceLevel(d.furnace.currentLevel);
+    d.squads.setFurnaceLevel(d.furnace.currentLevel);
+    d.buildings.setFurnaceLevel(d.furnace.currentLevel);
   }
 
   update(dt: number): void {
@@ -237,6 +246,16 @@ export class RunController {
     fixedRepair: number;
     nextFixedRepair: number;
     squadLimitNote: string;
+    allyHealthMultiplier: number;
+    nextAllyHealthMultiplier: number;
+    allyAttackMultiplier: number;
+    nextAllyAttackMultiplier: number;
+    allyAttackSpeedMultiplier: number;
+    nextAllyAttackSpeedMultiplier: number;
+    facilityHealthMultiplier: number;
+    nextFacilityHealthMultiplier: number;
+    facilityAttackMultiplier: number;
+    nextFacilityAttackMultiplier: number;
   } {
     const current = this.deps.furnace.currentLevel;
     const next = Math.min(FURNACE.maxLevel, current + 1);
@@ -257,6 +276,16 @@ export class RunController {
         this.rules.squadLimitPerFurnaceLevel > 0
           ? "小隊上限：" + this.squadLimit + " → " + (this.squadLimit + this.rules.squadLimitPerFurnaceLevel)
           : "小隊上限不變（僅無限模式會增加）",
+      allyHealthMultiplier: furnaceAllyHealthMultiplier(current),
+      nextAllyHealthMultiplier: furnaceAllyHealthMultiplier(next),
+      allyAttackMultiplier: furnaceAllyAttackMultiplier(current),
+      nextAllyAttackMultiplier: furnaceAllyAttackMultiplier(next),
+      allyAttackSpeedMultiplier: furnaceAllyAttackSpeedMultiplier(current),
+      nextAllyAttackSpeedMultiplier: furnaceAllyAttackSpeedMultiplier(next),
+      facilityHealthMultiplier: furnaceFacilityHealthMultiplier(current),
+      nextFacilityHealthMultiplier: furnaceFacilityHealthMultiplier(next),
+      facilityAttackMultiplier: furnaceFacilityAttackMultiplier(current),
+      nextFacilityAttackMultiplier: furnaceFacilityAttackMultiplier(next),
     };
     stats.setFurnaceLevel(before);
     return preview;
@@ -268,41 +297,17 @@ export class RunController {
     return Math.max(1, Math.round((def.recruitCost ?? 0) * this.upgrades.multiplier("recruitCost")));
   }
 
-  allyUpgradeLevel(defId: string): number {
-    return this.allyUpgradeLevels.get(defId) ?? 0;
-  }
-
-  allyUpgradeCost(defId: string): number {
-    const def = ALLY_BY_ID.get(defId);
-    if (!def || def.canRepair) return 0;
-    return allyUpgradeCost(def, this.allyUpgradeLevel(defId) + 1);
-  }
-
-  allyUpgradeStats(defId: string): { health: number; power: number; interval: number } | null {
+  /** Recruitment UI preview: every ally reads the one current furnace level. */
+  allyFurnaceStats(defId: string): { level: number; health: number; power: number; interval: number } | null {
     const def = ALLY_BY_ID.get(defId);
     if (!def) return null;
-    const multiplier = allyUpgradeMultiplier(this.allyUpgradeLevel(defId));
+    const level = this.deps.furnace.currentLevel;
     return {
-      health: Math.round(def.maxHealth * this.deps.scaling.allyHealth * multiplier),
-      power: Math.round(def.attackPower * this.deps.scaling.allyAttack * multiplier * 10) / 10,
-      interval: def.attackInterval / multiplier,
+      level,
+      health: Math.round(def.maxHealth * this.deps.scaling.allyHealth * furnaceAllyHealthMultiplier(level)),
+      power: Math.round(def.attackPower * this.deps.scaling.allyAttack * furnaceAllyAttackMultiplier(level) * 10) / 10,
+      interval: def.attackInterval / furnaceAllyAttackSpeedMultiplier(level),
     };
-  }
-
-  /** Strengthens the selected ally class for this run, including deployed squads. */
-  tryUpgradeAlly(defId: string): string | null {
-    const d = this.deps;
-    const def = ALLY_BY_ID.get(defId);
-    if (!def) return "未知兵種";
-    if (def.canRepair) return "工程兵無法升級";
-    if (!d.buildings.hasRecruitHall) return "招募所未完成";
-    const cost = this.allyUpgradeCost(defId);
-    if (d.store.gold < cost || !d.store.spend({ gold: cost })) return "金幣不足";
-    const level = this.allyUpgradeLevel(defId) + 1;
-    this.allyUpgradeLevels.set(defId, level);
-    d.squads.setAllyUpgradeLevel(defId, level);
-    d.events.emit("squadUpgraded", { defId, name: def.name, level });
-    return null;
   }
 
   /** Returns null on success, or the reason the recruit was refused. */
@@ -327,7 +332,7 @@ export class RunController {
       defId,
       centre.x + Math.sin(angle) * radius,
       centre.z + Math.cos(angle) * radius,
-      this.allyUpgradeLevel(defId),
+      d.furnace.currentLevel,
     );
     d.events.emit("squadRecruited", { defId, name: def.name });
     return null;
@@ -346,6 +351,8 @@ export class RunController {
     d.furnace.setLevel(level);
     d.heroStats.setFurnaceLevel(level);
     d.hero.refreshMaxHealth(previousMax);
+    d.squads.setFurnaceLevel(level);
+    d.buildings.setFurnaceLevel(level);
     d.events.emit("furnaceUpgraded", { level });
     return null;
   }

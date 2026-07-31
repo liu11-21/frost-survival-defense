@@ -66,6 +66,7 @@ export interface BrainInternals {
   hasRally: boolean;
   isHealer: boolean;
   isEngineer: boolean;
+  isSupporter: boolean;
   state: AllyState;
   stateTime: number;
   clock: number;

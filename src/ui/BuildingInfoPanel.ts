@@ -42,7 +42,7 @@ export function renderBuildingInfo(
   } else if (def.produces) {
     status = `運作中 · 暫存 ${Math.floor(building.storedAmount)}`;
   } else if (def.attackKind) {
-    status = `運作中 · 每 ${def.attackInterval} 秒攻擊一次 · 距離 ${def.attackRange ?? 0}`;
+    status = `運作中 · 攻擊 ${Math.round(building.attackPower)} · 每 ${def.attackInterval} 秒攻擊一次 · 距離 ${def.attackRange ?? 0}`;
   } else {
     status = "運作中";
   }
@@ -77,7 +77,7 @@ export function renderBuildingInfo(
     <div class="entry static">
       <div class="entry-icon">${buildingIconSvg(building.type, 30)}</div>
       <div class="entry-main">
-        <div class="entry-name">${def.name}</div>
+        <div class="entry-name">${def.name}<span class="tag ok">火爐 Lv.${building.level}</span></div>
         <div class="entry-desc">${def.description}</div>
         <div class="entry-desc">${status} · ${hp}</div>
         ${extras.map((e) => `<div class="entry-desc">${e}</div>`).join("")}

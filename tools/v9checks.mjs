@@ -83,37 +83,45 @@ export async function runV9Checks(ctx) {
     labelFacing,
   );
 
-  // -------------------------------------------------- ally progression ----
-  console.log("\n> recruit-panel ally progression applies 10% health/attack/speed per class level");
+  // ----------------------------------------------- furnace progression ----
+  console.log("\n> the central furnace synchronizes allies and facilities");
+  await call("grant", 100, 100, 20);
+  await call("build", "northMid", "warehouse");
+  await step(0.016, 320);
   await call("grant", 9000, 9000, 9000);
   await call("build", "northBack", "recruitHall");
   await step(0.016, 340);
-  const warriorUpgradeBase = await call("allyUpgradeInfo", "warrior");
-  const mageUpgradeBase = await call("allyUpgradeInfo", "mage");
-  check(
-    "starting upgrade price varies with each class's recruit price",
-    warriorUpgradeBase.cost === 8 && mageUpgradeBase.cost === 35,
-    { warriorUpgradeBase, mageUpgradeBase },
-  );
+  await call("build", "eastFrontA", "tower");
+  await step(0.016, 300);
   const warriorBeforeUpgrade = await call("unitInfo", "warrior");
-  check("Warrior class upgrade succeeds", (await call("upgradeAlly", "warrior")) === null);
+  const towerBeforeUpgrade = await call("slotStats", "eastFrontA");
+  check("central furnace upgrade succeeds", (await call("upgradeFurnace")) === null);
+  await step(0.016, 10);
   const warriorAfterUpgrade = await call("unitInfo", "warrior");
+  const towerAfterUpgrade = await call("slotStats", "eastFrontA");
   check(
-    "an existing Warrior immediately gains 10% health and attack",
+    "an existing Warrior immediately gains the furnace's 10% health and attack",
     warriorAfterUpgrade.max === Math.round(warriorBeforeUpgrade.max * 1.1) &&
       Math.abs(warriorAfterUpgrade.attackPower / warriorBeforeUpgrade.attackPower - 1.1) < 0.001,
     { warriorBeforeUpgrade, warriorAfterUpgrade },
   );
   check(
-    "the same upgrade grants 10% attack speed by reducing the effective interval",
+    "the same furnace level grants 10% attack speed by reducing the effective interval",
     Math.abs(warriorAfterUpgrade.effectiveInterval - warriorBeforeUpgrade.effectiveInterval / 1.1) < 0.002,
     { warriorBeforeUpgrade, warriorAfterUpgrade },
   );
-  check("a new Warrior squad can be recruited after the upgrade", (await call("recruit", "warrior")) === null);
+  check(
+    "existing facilities immediately gain 10% health and attack from the furnace",
+    towerAfterUpgrade && towerBeforeUpgrade && towerAfterUpgrade.level === 2 &&
+      towerAfterUpgrade.max === Math.round(towerBeforeUpgrade.max * 1.1) &&
+      Math.abs(towerAfterUpgrade.attack / towerBeforeUpgrade.attack - 1.1) < 0.001,
+    { towerBeforeUpgrade, towerAfterUpgrade },
+  );
+  check("a new Warrior squad can be recruited after the furnace upgrade", (await call("recruit", "warrior")) === null);
   const upgradedWarriors = await call("allUnitsOf", "warrior");
   check(
-    "future Warrior recruits inherit the same class upgrade",
-    upgradedWarriors.length === 6 && upgradedWarriors.every((unit) => unit.max === 440 && unit.upgradeLevel === 1),
+    "future Warrior recruits inherit the current furnace level",
+    upgradedWarriors.length === 6 && upgradedWarriors.every((unit) => unit.max === 440 && unit.furnaceLevel === 2),
     upgradedWarriors,
   );
   await page.keyboard.press("KeyG");
@@ -125,20 +133,20 @@ export async function runV9Checks(ctx) {
       fits: Boolean(host) && host.scrollWidth <= host.clientWidth + 1,
     };
   });
-  await page.click("[data-recruit-tab='upgrade']");
+  await page.click("[data-recruit-tab='support']");
   await step(0.016, 3);
   const progressionUi = await page.evaluate(() => ({
-    warriorUpgrade: document.querySelector("[data-upgrade='warrior']")?.textContent ?? "",
-    engineerUpgradeAbsent: document.querySelector("[data-upgrade='engineer']") === null,
+    flagbearer: document.querySelector("[data-recruit='flagbearer']")?.closest(".entry")?.textContent ?? "",
+    noUpgradeTab: document.querySelector("[data-recruit-tab='upgrade']") === null,
   }));
   check(
-    "the recruit panel has exactly the five requested categories without scrolling through one long roster",
-    recruitTabLayout.labels.join(",") === "近戰,遠程,支援,工程,升級" && recruitTabLayout.fits,
+    "the recruit panel has four focused categories without the removed class-upgrade tab",
+    recruitTabLayout.labels.join(",") === "近戰,遠程,支援,工程" && recruitTabLayout.fits,
     recruitTabLayout,
   );
   check(
-    "the upgrade category exposes class upgrading and excludes non-upgradeable Engineers",
-    /升級/.test(progressionUi.warriorUpgrade) && progressionUi.engineerUpgradeAbsent,
+    "the support category exposes the Flagbearer and no per-class upgrade control",
+    /掌旗者/.test(progressionUi.flagbearer) && progressionUi.noUpgradeTab,
     progressionUi,
   );
   await page.keyboard.press("KeyG");
@@ -160,6 +168,28 @@ export async function runV9Checks(ctx) {
     /平均 HP/.test(splitHud.main) && /攻擊/.test(splitHud.main),
     splitHud.main,
   );
+  await call("spawnAlly", "flagbearer", 0, 1);
+  await step(0.016, 80);
+  const bannerWarrior = await call("unitInfo", "warrior");
+  const bannerBearer = await call("unitInfo", "flagbearer");
+  check(
+    "the Flagbearer has no attack, inherits the furnace health level, and buffs nearby allies",
+    bannerBearer.max === 550 &&
+      bannerBearer.attackPower === 0 &&
+      Math.abs(bannerWarrior.bannerAttackBonus - 0.11) < 0.001 &&
+      Math.abs(bannerWarrior.bannerAttackSpeedBonus - 0.11) < 0.001,
+    { bannerWarrior, bannerBearer },
+  );
+  const buffedAttack = bannerWarrior.attackPower;
+  await call("spawnAlly", "flagbearer", 0, -1);
+  await step(0.016, 50);
+  const doubleBannerWarrior = await call("unitInfo", "warrior");
+  check(
+    "multiple Flagbearers do not stack their range buff",
+    Math.abs(doubleBannerWarrior.attackPower - buffedAttack) < 0.01,
+    { buffedAttack, doubleBannerWarrior },
+  );
+  await shot("v9-flagbearer-aura");
   await call("killAllAllies");
   await step(0.016, 200);
 
@@ -571,7 +601,7 @@ export async function runV9Checks(ctx) {
     resetSkills.map((s) => Math.round(s.remaining)).join(",") === "40,10,15,0",
     resetSkills,
   );
-  check("starting a new run also resets run-local ally upgrades", (await call("allyUpgradeInfo", "warrior")).level === 0);
+  check("starting a new run resets allied units to the new furnace Lv.1 baseline", (await call("furnaceAllyInfo", "warrior")).level === 1);
 
   return {};
 }

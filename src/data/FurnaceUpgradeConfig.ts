@@ -24,6 +24,13 @@ export const FURNACE_UPGRADE = {
   /** Attack interval shrinks by this fraction of the base interval per level. */
   heroAttackSpeedPct: 0.03,
   furnaceMaxHealthPct: 0.1,
+  /** Every recruitable ally, including Engineers and support units. */
+  allyMaxHealthPct: 0.1,
+  allyAttackPct: 0.1,
+  allyAttackSpeedPct: 0.1,
+  /** Every attackable facility, including walls and non-attacking utilities. */
+  facilityMaxHealthPct: 0.1,
+  facilityAttackPct: 0.1,
   /** Endless only. */
   squadLimitPerLevel: 2,
 };
@@ -38,4 +45,25 @@ export function furnaceUpgradeCost(nextLevel: number): ResourceCost {
 export function furnaceMaxHealth(level: number): number {
   const bonus = (level - 1) * FURNACE_UPGRADE.furnaceMaxHealthPct;
   return Math.ceil(FURNACE.maxHealth * (1 + bonus));
+}
+
+/** Central-fire progression is linear from base stats, never compounded. */
+export function furnaceAllyHealthMultiplier(level: number): number {
+  return 1 + Math.max(0, Math.floor(level) - 1) * FURNACE_UPGRADE.allyMaxHealthPct;
+}
+
+export function furnaceAllyAttackMultiplier(level: number): number {
+  return 1 + Math.max(0, Math.floor(level) - 1) * FURNACE_UPGRADE.allyAttackPct;
+}
+
+export function furnaceAllyAttackSpeedMultiplier(level: number): number {
+  return 1 + Math.max(0, Math.floor(level) - 1) * FURNACE_UPGRADE.allyAttackSpeedPct;
+}
+
+export function furnaceFacilityHealthMultiplier(level: number): number {
+  return 1 + Math.max(0, Math.floor(level) - 1) * FURNACE_UPGRADE.facilityMaxHealthPct;
+}
+
+export function furnaceFacilityAttackMultiplier(level: number): number {
+  return 1 + Math.max(0, Math.floor(level) - 1) * FURNACE_UPGRADE.facilityAttackPct;
 }

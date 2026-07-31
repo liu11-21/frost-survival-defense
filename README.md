@@ -101,16 +101,17 @@ applies to the tutorial.
 
 1. **Hand-gather** from finite nodes — one wood per **0.55 s**, one stone per **0.70 s**. Each strike
    lands on the tool's hit frame; walking away stops production within 0.15 s.
-2. **Mine (20 wood)** and **lumberyard (30 stone)** produce 1 per 0.25 s. The indestructible
-   **gold mine (100 wood / 100 stone)** produces 1 gold per 0.75 s.
-3. **Warehouse (100/100/20)** — until one stands, *every* resource is capped at 100. This is the real
-   early gate: walls (250 stone) and the auto-collector (300) are unaffordable without it.
-4. **Recruit hall (80/80/15)** unlocks all nine recruitable squad types. Gold comes from kills,
+2. **Mine (35 wood)** and **lumberyard (40 stone)** produce 1 per 0.25 s. The indestructible
+   **gold mine (110 wood / 90 stone)** produces 1 gold per 0.75 s.
+3. **Warehouse (100/90/20)** — until one stands, *every* resource is capped at 100. This is the real
+   early gate: stone-heavy walls and the auto-collector are unaffordable without it.
+4. **Recruit hall (95/65/15)** unlocks all ten recruitable squad types. Gold comes from kills,
    early-wave rewards, and gold mines.
 5. **Walls and towers** close the perimeter and cover the lanes.
 6. **Auto-collector** removes the walk-over step; **auto-rebuilder** repairs losses in destruction
    order.
-7. **Upgrade the furnace** for hero power, furnace health, and (endless only) +2 squad slots.
+7. **Upgrade the furnace** for hero power, every allied squad's health/attack/speed, every attackable
+   facility's health/attack, furnace health, and (endless only) +2 squad slots.
 
 ### Finite natural resources
 
@@ -498,19 +499,22 @@ death. The skill-only Ground Support escort is the explicit exception: its three
 | 盾兵 Shield | 1 | 1500 | 5 | 1.80 s | 2.2 | 15 | taunt radius 8 |
 | 弓箭手 Archer | 3 | 200 | 20 | 0.35 s | 11 | 20 | keeps a 4–11 standoff band |
 | 醫療兵 Medic | 3 | 500 | 20 heal | 1.00 s | 14 | 30 | **one** squad-wide event per tick |
+| 掌旗者 Flagbearer | 1 | 500 | 0 | — | 8 aura | 50 | nearby allies: attack / attack speed +10%, +1% each per furnace level; non-stacking |
 | 魔法師 Mage | 1 | 150 | 100 | 1.40 s | 8 | 70 | blast radius 2.5 |
 | 突擊手 Assault | 3 | 120 | 20 | 0.70 s | 2.2 | 45 | blinks onto the top-tier enemy; 3 s invulnerable, then 3 s / 50% DR; ×5 vs Lv4+ |
 | 工程兵 Engineer | 1 | 100 | 0 | — | 2.2 | 35 | independently repairs the nearest damaged non-furnace facility |
 | 火槍手 Musketeer | 3 | 250 | 45 | 1.40 s | 12 | 80 | +40%/+20% vs Lv4-5/Boss, stacking on-hit slow |
 | 冰霜術士 Frost Sorcerer | 1 | 180 | 35 | 1.60 s | 9 | 55 | AoE slow + a Freeze Zone every 10 s |
 
-Every non-Engineer ally class can be strengthened from the recruit panel. Each run-local level adds
-**10% maximum HP, 10% power and 10% attack speed** to all deployed and future squads of that class.
-The first level costs 50% of its recruit price; subsequent levels add another 25% of that base price.
+There is no per-class recruit-panel upgrade. Every furnace level immediately gives all deployed and
+future allied squads — including Engineers and Flagbearers — **+10% maximum HP, +10% power and +10%
+attack speed**. Every attackable facility also immediately gains **+10% maximum HP and +10% attack**.
+This progression is linear from each base stat, never compounded; the battlefield labels show the
+shared furnace level.
 
 Engineers use a separate cap and never consume ordinary squad slots: 2 squads normally, 3 at furnace
-Lv.20, 4 at Lv.50 and 5 at Lv.80. They spawn beside the furnace, do not follow the hero and cannot be
-upgraded or attack. They reserve the nearest damaged facility so two Engineers never repair the same
+Lv.20, 4 at Lv.50 and 5 at Lv.80. They spawn beside the furnace, do not follow the hero and cannot
+attack. They reserve the nearest damaged facility so two Engineers never repair the same
 target. Once in range, one complete 3-second countdown restores exactly 10% of that facility's maximum
 HP; while the facility is under repeated attack the complete countdown is 6 seconds. Destroyed
 facilities and the central furnace are never repair targets.

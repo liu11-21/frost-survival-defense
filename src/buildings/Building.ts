@@ -10,6 +10,7 @@ import { makeBox, type BoxShape } from "../util/Collision";
 import { BuildingVisualController, type VisualIntegrity } from "./BuildingVisualController";
 import { fireBuilding, tickBuildingCombat } from "./BuildingCombat";
 import type { BuildSlot } from "./BuildSlot";
+import { furnaceFacilityAttackMultiplier, furnaceFacilityHealthMultiplier } from "../data/FurnaceUpgradeConfig";
 
 const KIND_BY_TYPE: Record<BuildingType, TargetKind> = {
   mine: "warehouse",
@@ -40,7 +41,8 @@ export class Building implements Damageable {
   readonly def: BuildingDefinition;
   readonly position: Vector3;
   readonly kind: TargetKind;
-  readonly level = 0;
+  private furnaceLevelValue = 1;
+  private readonly baseMaxHealth: number;
   readonly visual: BuildingVisualController;
   /** Long straight blockers carry a box; everything else stays a circle. */
   readonly blockerBox: BoxShape | null;
@@ -70,14 +72,17 @@ export class Building implements Damageable {
     readonly type: BuildingType,
     readonly slot: BuildSlot,
     healthMultiplier: number,
+    furnaceLevel = 1,
   ) {
     const def = BUILDING_BY_ID.get(type);
     if (!def) throw new Error(`unknown building type ${type}`);
     this.def = def;
     this.kind = KIND_BY_TYPE[type];
     this.position = new Vector3(slot.x, 0, slot.z);
-    this.maxHealth = Math.max(0, Math.round(def.maxHealth * healthMultiplier));
+    this.baseMaxHealth = Math.max(0, Math.round(def.maxHealth * healthMultiplier));
+    this.maxHealth = this.baseMaxHealth;
     this.health = this.maxHealth;
+    this.setFurnaceLevel(furnaceLevel);
     // The *logical* box used for reachability (`world.wallBlocks`) spans the
     // whole side including the gate gap — the gate is only ever a physical
     // opening for allies, never a hole in what an enemy can path around.
@@ -107,10 +112,14 @@ export class Building implements Damageable {
     return this.def.radius;
   }
   get threat(): number {
-    return this.def.attackPower;
+    return this.attackPower;
+  }
+  get level(): number { return this.furnaceLevelValue; }
+  get attackPower(): number {
+    return this.def.attackPower * furnaceFacilityAttackMultiplier(this.furnaceLevelValue);
   }
   get displayName(): string {
-    return this.def.name;
+    return `${this.def.name} Lv.${this.furnaceLevelValue}`;
   }
   get canBeAttacked(): boolean {
     return this.def.canBeAttacked;
@@ -145,6 +154,16 @@ export class Building implements Damageable {
    * earliest moment it is honest to free the slot and remove the wreckage. */
   get readyForRemoval(): boolean {
     return !this._alive && (!this.collapsing || this.collapseProgress >= 1);
+  }
+
+  /** Instantly synchronizes facility HP and attack with the central furnace. */
+  setFurnaceLevel(level: number): void {
+    const next = Math.max(1, Math.floor(level));
+    if (next === this.furnaceLevelValue) return;
+    const previousMax = this.maxHealth;
+    this.furnaceLevelValue = next;
+    this.maxHealth = Math.max(0, Math.round(this.baseMaxHealth * furnaceFacilityHealthMultiplier(next)));
+    this.health = Math.min(this.maxHealth, this.health + Math.max(0, this.maxHealth - previousMax));
   }
 
   /** Engineer repair. Only ever raises health, and never past the cap. */

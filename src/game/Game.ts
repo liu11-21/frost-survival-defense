@@ -131,6 +131,7 @@ export class Game {
       s.audio.play("furnaceUpgrade", 1);
       s.vfx.setFurnaceLevel(p.level);
       s.audio.setFurnaceLevel(p.level);
+      s.squadHud.markDirty();
       s.feedback.burstAt("shock", 0, 0, 32);
       s.camera.shake(0.28);
     });

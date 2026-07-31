@@ -24,6 +24,8 @@ export interface CombatVfx {
   airStrike(x: number, z: number, radius: number): void;
   /** Persistent flame patches for Air Support and mortar burn zones. */
   groundFire(x: number, z: number, radius: number, duration: number): void;
+  /** A readable golden pulse for a Flagbearer's allied range. */
+  supportAura(x: number, z: number, radius: number): void;
   taunt(x: number, z: number, radius: number): void;
   teleport(x: number, z: number): void;
   unitDeath(x: number, z: number, level: number): void;

@@ -11,6 +11,7 @@ import type { VFXManager } from "./VFXManager";
 
 const TAUNT_RINGS = 6;
 const SKILL_RINGS = 8;
+const SUPPORT_AURA_RINGS = 8;
 
 type HeroSkillKind = "airSupport" | "infiniteFirepower" | "groundSupport" | "seismicWave";
 
@@ -45,6 +46,8 @@ export class CombatFeedback implements CombatVfx {
   private readonly rings: Mesh[] = [];
   private readonly ringLife: number[] = [];
   private ringCursor = 0;
+  private readonly supportRings: SkillRing[] = [];
+  private supportRingCursor = 0;
   private readonly skillRings: SkillRing[] = [];
   private skillRingCursor = 0;
   private readonly skillMaterials: Record<HeroSkillKind, ReturnType<MaterialFactory["unlit"]>>;
@@ -78,6 +81,21 @@ export class CombatFeedback implements CombatVfx {
       ring.setEnabled(false);
       this.rings.push(ring);
       this.ringLife.push(0);
+    }
+    const supportMat = materials.unlit("mat.supportAuraRing", [1.0, 0.8, 0.18], 0.8);
+    supportMat.backFaceCulling = false;
+    for (let i = 0; i < SUPPORT_AURA_RINGS; i++) {
+      const mesh = MeshBuilder.CreateTorus(
+        `supportAuraRing${i}`,
+        { diameter: 2, thickness: 0.09, tessellation: 36 },
+        scene,
+      );
+      mesh.material = supportMat;
+      mesh.position.y = 0.11;
+      mesh.isPickable = false;
+      mesh.renderingGroupId = 1;
+      mesh.setEnabled(false);
+      this.supportRings.push({ mesh, life: 0, duration: 0.72, radius: 1, delay: 0 });
     }
     this.skillMaterials = {
       airSupport: materials.unlit("mat.skill.airSupport", [1.0, 0.35, 0.12], 0.95),
@@ -216,6 +234,20 @@ export class CombatFeedback implements CombatVfx {
     }
   }
 
+  /** A gold pulse clearly marks the Flagbearer's current support radius. */
+  supportAura(x: number, z: number, radius: number): void {
+    const ring = this.supportRings[this.supportRingCursor];
+    this.supportRingCursor = (this.supportRingCursor + 1) % this.supportRings.length;
+    ring.mesh.position.set(x, 0.11, z);
+    ring.mesh.scaling.setAll(0.3);
+    ring.mesh.visibility = 0.85;
+    ring.life = 0;
+    ring.duration = 0.72;
+    ring.radius = Math.max(1, radius);
+    ring.delay = 0;
+    ring.mesh.setEnabled(true);
+  }
+
   skillEffectSnapshot(): { casts: Record<HeroSkillKind, number>; activeRings: number; fallingStrikes: number; groundFirePatches: number } {
     return {
       casts: { ...this.skillCasts },
@@ -310,6 +342,14 @@ export class CombatFeedback implements CombatVfx {
       const scale = 0.15 + ring.radius * (1 - Math.pow(1 - t, 3));
       ring.mesh.scaling.set(scale, scale, scale);
       ring.mesh.visibility = Math.max(0, 1 - t);
+      if (t >= 1) ring.mesh.setEnabled(false);
+    }
+    for (const ring of this.supportRings) {
+      if (!ring.mesh.isEnabled()) continue;
+      ring.life += dt;
+      const t = Math.min(1, ring.life / ring.duration);
+      ring.mesh.scaling.setAll(0.25 + ring.radius * (0.48 + t * 0.55));
+      ring.mesh.visibility = Math.max(0, 0.82 * (1 - t));
       if (t >= 1) ring.mesh.setEnabled(false);
     }
     for (const strike of this.fallingStrikes) {

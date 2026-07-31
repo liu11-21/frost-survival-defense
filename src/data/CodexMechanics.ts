@@ -1,7 +1,7 @@
 import { STRUCTURE_SELF_REPAIR } from "../combat/StructureSelfRepair";
 import { BOSS_RULES } from "../enemies/BossController";
 import { HERO_SKILLS } from "../hero/HeroSkillDefinitions";
-import { ALLY_PROGRESSION } from "./AllyProgressionConfig";
+import { FURNACE_UPGRADE } from "./FurnaceUpgradeConfig";
 import { MAP } from "./BuildSlotDefinitions";
 import { WALL_REBUILD_DECAY } from "./BuildingDefinitions";
 import type { CodexEntry } from "./CodexData";
@@ -49,7 +49,7 @@ export const MECHANIC_ENTRIES: CodexEntry[] = [
     ["失敗條件", "火爐被摧毀立刻結束"],
     ["百分比自修", `火爐與可受擊設施未受擊 ${STRUCTURE_SELF_REPAIR.percentDelay} 秒後，每秒回復火爐等級 × 1% 最大生命，Lv.${STRUCTURE_SELF_REPAIR.percentLevelCap} 封頂 10%`],
     ["額外自修", `Lv.${STRUCTURE_SELF_REPAIR.fixedBurstStartLevel} 未受擊 ${STRUCTURE_SELF_REPAIR.fixedBurstDelay} 秒後一次性回復最大生命 10%；之後每級固定增加 ${STRUCTURE_SELF_REPAIR.fixedBurstPerExtraLevel.toLocaleString()} HP`],
-    ["升級", "最高 Lv.100，提升主角能力與火爐生命"],
+    ["升級", "最高 Lv.100，提升主角、所有我方兵種、可受擊設施與火爐生命"],
     ["一般小隊上限", "闖關固定 8；無限模式每升 1 級火爐增加 2 隊"],
     ["工程兵上限", "基礎 2 隊，火爐 Lv.20／50／80 時提高到 3／4／5 隊"],
   ], "火爐是唯一不能拆除、也不能由工程兵修復的建築。"),
@@ -66,13 +66,18 @@ export const MECHANIC_ENTRIES: CodexEntry[] = [
     ["Lv.5／Lv.6", "只會在 5 的倍數波次出現；有 Lv.4+ 的下一波會提高提早叫波金幣"],
     ["排行榜", "只有無限模式記錄，且僅存在這台瀏覽器"],
   ], "使用任何測試工具或教學關卡的該局都不會寫入排行榜。"),
-  mechanic("ally-upgrade", "兵種升級", [
-    ["位置", "在招募面板直接升級同一兵種"],
-    ["每級能力", `最大生命、攻擊力、攻擊速度各 +${Math.round(ALLY_PROGRESSION.statPerLevel * 100)}%`],
-    ["價格", `第一次為招募價的 ${Math.round(ALLY_PROGRESSION.startingCostFactor * 100)}%，之後每級再增加招募價的 ${Math.round(ALLY_PROGRESSION.costGrowthPerLevel * 100)}%`],
-    ["適用範圍", "場上既有小隊與之後新招募的小隊立即同步；每局重新開始歸零"],
-    ["例外", "工程兵不可升級，也不占一般小隊額度"],
-  ], "升級價格依各兵種招募價不同，高價兵種的升級也會更貴。"),
+  mechanic("furnace-progression", "火爐同步成長", [
+    ["我方兵種", `每級火爐：生命、攻擊、攻速各 +${Math.round(FURNACE_UPGRADE.allyMaxHealthPct * 100)}%，既有與新招募小隊立即同步`],
+    ["設施", `每級火爐：可受擊設施生命、攻擊各 +${Math.round(FURNACE_UPGRADE.facilityMaxHealthPct * 100)}%，既有與新建設施立即同步`],
+    ["個別升級", "已取消；招募面板不再消耗金幣升級兵種"],
+    ["工程兵", "同樣隨火爐提高生命，但仍不占一般小隊額度"],
+  ], "中央火爐是唯一的我方成長來源；升級後不用重新招募或重建。"),
+  mechanic("flagbearer", "掌旗者", [
+    ["小隊", "1 人、基礎生命 500、不會攻擊、占 1 個一般小隊額度"],
+    ["範圍", "半徑 8 內的友軍攻擊、攻速各 +10%；每級火爐再各 +1%"],
+    ["非疊加", "多面旗幟只取最強的一面，應分散覆蓋不同戰線"],
+    ["成長", "掌旗者生命與旗幟增益均隨中央火爐等級提高"],
+  ], "將掌旗者留在主力部隊附近；金色脈衝圈就是目前的增益範圍。"),
   mechanic("engineer", "工程兵修復", [
     ["偵測", `招募後立即偵測，之後每 ${ENGINEER_RULES.scanInterval} 秒尋找距離最近的受損設施`],
     ["安全設施", `完整倒數 ${ENGINEER_RULES.safeRepairInterval} 秒後，一次回復該設施最大生命 ${Math.round(ENGINEER_RULES.repairFraction * 100)}%`],

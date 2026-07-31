@@ -206,7 +206,7 @@ export async function runV4Checks(ctx) {
   await step(0.016, 40);
   const hudText = normalise((await call("uiText")).squadHud);
   check("the squad HUD lists each recruited type", /戰士/.test(hudText) && /弓箭手/.test(hudText) && /醫療兵/.test(hudText), hudText.slice(0, 80));
-  check("the squad HUD counts squads per type", /戰士\s*×2/.test(hudText), hudText.slice(0, 80));
+  check("the squad HUD counts squads per type", /戰士(?:\s*Lv\.\d+)?\s*×2/.test(hudText), hudText.slice(0, 80));
   check("the squad HUD shows a status word", /正常|受傷|危險/.test(hudText), hudText.slice(0, 80));
 
   await call("hurtAllySquads", 100000);
@@ -226,8 +226,10 @@ export async function runV4Checks(ctx) {
   await call("build", "northBack", "recruitHall");
   await step(0.016, 340);
   for (let i = 0; i < 8; i++) await call("recruit", ["warrior", "archer", "shield", "medic"][i % 4]);
-  for (let i = 0; i < 22; i++) {
-    const a = (i / 22) * Math.PI * 2;
+  // Leave enough headroom for the opening exchange: the test measures a
+  // *live* 150-unit field rather than a one-frame spawn total.
+  for (let i = 0; i < 25; i++) {
+    const a = (i / 25) * Math.PI * 2;
     await call("spawnEnemy", "grunt", Math.sin(a) * 13, Math.cos(a) * 13);
     await call("spawnEnemy", "marksman", Math.sin(a) * 15, Math.cos(a) * 15);
   }

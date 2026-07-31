@@ -32,6 +32,13 @@ export function renderFurnacePanel(
     `${(preview.nextRepairPercent * 100).toFixed(0)}%（未受擊 15 秒後）`;
   const fixedLine =
     `8 秒一次性修復：${preview.fixedRepair} → ${preview.nextFixedRepair} HP（每次受擊後重置）`;
+  const allyLine =
+    `全我方兵種：生命 +${Math.round((preview.allyHealthMultiplier - 1) * 100)}% → +${Math.round((preview.nextAllyHealthMultiplier - 1) * 100)}%` +
+    `、攻擊 +${Math.round((preview.allyAttackMultiplier - 1) * 100)}% → +${Math.round((preview.nextAllyAttackMultiplier - 1) * 100)}%` +
+    `、攻速 +${Math.round((preview.allyAttackSpeedMultiplier - 1) * 100)}% → +${Math.round((preview.nextAllyAttackSpeedMultiplier - 1) * 100)}%`;
+  const facilityLine =
+    `所有設施：生命 +${Math.round((preview.facilityHealthMultiplier - 1) * 100)}% → +${Math.round((preview.nextFacilityHealthMultiplier - 1) * 100)}%` +
+    `、攻擊 +${Math.round((preview.facilityAttackMultiplier - 1) * 100)}% → +${Math.round((preview.nextFacilityAttackMultiplier - 1) * 100)}%`;
 
   if (furnace.currentLevel >= FURNACE.maxLevel) {
     list.innerHTML = `
@@ -51,6 +58,8 @@ export function renderFurnacePanel(
       <div class="entry-desc">近戰攻擊：${Math.round(heroStats.meleeAttack)} → ${preview.melee}</div>
       <div class="entry-desc">攻擊間隔：${heroStats.attackInterval.toFixed(2)} 秒 → ${preview.interval.toFixed(2)} 秒</div>
       <div class="entry-desc">火爐最大生命：${furnace.maxHealth} → ${preview.furnaceHealth}</div>
+      <div class="entry-desc">${allyLine}</div>
+      <div class="entry-desc">${facilityLine}</div>
       <div class="entry-desc">${repairLine}</div>
       <div class="entry-desc">${fixedLine}</div>
       <div class="entry-desc">${preview.squadLimitNote}</div>
@@ -70,7 +79,7 @@ export function renderFurnacePanel(
       onResult({
         ok: true,
         title: `火爐升級至 Lv.${furnace.currentLevel}`,
-        message: `消耗 ${costText(cost)}。主角能力與火爐生命提升${run.squadLimitPerLevel > 0 ? "，小隊上限 +2" : ""}。`,
+        message: `消耗 ${costText(cost)}。主角、全我方兵種與所有設施立即同步升級${run.squadLimitPerLevel > 0 ? "，小隊上限 +2" : ""}。`,
         iconId: "gold",
       });
     }
