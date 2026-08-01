@@ -3,6 +3,7 @@ import type { CombatWorld } from "./CombatWorld";
 import type { Damageable } from "./Damageable";
 import type { ProjectilePool } from "./ProjectilePool";
 import type { CombatUnit } from "./CombatUnit";
+import type { DamageSource } from "../data/CombatTypes";
 
 /** Effects the combat layer can request without knowing how they are produced. */
 export interface CombatVfx {
@@ -70,7 +71,7 @@ export interface CombatContext {
   vfx: CombatVfx;
   scaling: CombatScaling;
   /** Applies damage and routes the hit feedback. */
-  damage(target: Damageable, amount: number, fromX: number, fromZ: number): void;
+  damage(target: Damageable, amount: number, fromX: number, fromZ: number, source?: DamageSource): void;
   /**
    * Splash damage centred on a point. Returns how many targets were hit.
    * `onHit`, when given, runs once per unit actually damaged — e.g. for an
@@ -84,6 +85,7 @@ export interface CombatContext {
     amount: number,
     maxTargets: number,
     onHit?: (target: Damageable) => void,
+    source?: DamageSource,
   ): number;
   /** Called once per individual death so gold can drop. */
   reportKill(unit: CombatUnit): void;

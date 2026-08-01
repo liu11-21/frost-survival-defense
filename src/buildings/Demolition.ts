@@ -21,10 +21,10 @@ export interface DemolishCheck {
 }
 
 /** Whole units only, always rounded down. */
-export function demolishRefund(type: BuildingType): ResourceCost {
+export function demolishRefund(type: BuildingType, costOverride?: ResourceCost): ResourceCost {
   const def = BUILDING_BY_ID.get(type);
   if (!def) return {};
-  const cost = def.cost;
+  const cost = costOverride ?? def.cost;
   const refund: ResourceCost = {};
   if (cost.wood) refund.wood = Math.floor(cost.wood * DEMOLISH_REFUND.wood);
   if (cost.stone) refund.stone = Math.floor(cost.stone * DEMOLISH_REFUND.stone);
@@ -45,7 +45,7 @@ export function canDemolish(building: Building | null, ctx: DemolishContext): De
   if (!building || !building.alive) {
     return { ok: false, reason: "此點位沒有可拆除的設施", refund: {} };
   }
-  const refund = demolishRefund(building.type);
+  const refund = demolishRefund(building.type, building.constructionCost);
   if (!building.def.canBeDemolished) {
     return { ok: false, reason: "此設施為核心設施，不可拆除", refund };
   }

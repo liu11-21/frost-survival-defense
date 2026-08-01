@@ -1,5 +1,6 @@
 import { demolishRefund, DEMOLISH_REFUND } from "../buildings/Demolition";
 import type { BuildingType } from "../data/BuildingDefinitions";
+import type { ResourceCost } from "../data/CombatTypes";
 import type { ConfirmLine } from "../ui/ConfirmDialog";
 import type { GameSystems } from "./GameSystems";
 
@@ -26,7 +27,7 @@ export function bindDemolition(s: GameSystems): void {
     s.confirm.open({
       title: `確定拆除「${building.def.name}」？`,
       message: buildDemolishMessage(s, building.type),
-      lines: demolishLines(s, building.type),
+      lines: demolishLines(s, building.type, building),
       confirmLabel: "確認拆除",
       danger: true,
       onConfirm: () => {
@@ -62,8 +63,8 @@ export function buildDemolishMessage(s: GameSystems, type: BuildingType): string
   }
 }
 
-export function demolishLines(s: GameSystems, type: BuildingType): ConfirmLine[] {
-  const refund = demolishRefund(type);
+export function demolishLines(s: GameSystems, type: BuildingType, building?: { constructionCost: ResourceCost }): ConfirmLine[] {
+  const refund = demolishRefund(type, building?.constructionCost);
   const lines: ConfirmLine[] = [
     { label: "返還木材", value: String(refund.wood ?? 0) },
     { label: "返還石頭", value: String(refund.stone ?? 0) },

@@ -1,5 +1,5 @@
 import type { Vector3 } from "@babylonjs/core";
-import type { Faction } from "../data/CombatTypes";
+import type { DamageSource, Faction } from "../data/CombatTypes";
 
 export type TargetKind = "unit" | "hero" | "wall" | "tower" | "warehouse" | "recruitHall" | "furnace";
 
@@ -29,7 +29,7 @@ export interface Damageable {
   readonly threat: number;
   readonly health: number;
   readonly maxHealth: number;
-  applyDamage(amount: number, fromX: number, fromZ: number): void;
+  applyDamage(amount: number, fromX: number, fromZ: number, source?: DamageSource): void;
 }
 
 let nextDamageId = 1;

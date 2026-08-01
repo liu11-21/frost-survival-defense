@@ -1,5 +1,5 @@
 import { Vector3 } from "@babylonjs/core";
-import type { Faction, UnitDefinition } from "../data/CombatTypes";
+import type { DamageSource, Faction, UnitDefinition } from "../data/CombatTypes";
 
 import type { FormationSlotManager } from "../ai/FormationSlotManager";
 import type { FriendlyBrain } from "../ai/FriendlyStateMachine";
@@ -74,6 +74,8 @@ export class CombatUnit implements Damageable {
   private furnaceLevelValue = 1;
   private vulnerability = 0;
   private vulnerabilityTimer = 0;
+  private remoteVulnerability = 0;
+  private remoteVulnerabilityTimer = 0;
   private groundSupportEngagedValue = false;
 
   /** Slows and the Freeze Zone stun/immunity window — see `UnitStatusEffects`. */
@@ -141,6 +143,7 @@ export class CombatUnit implements Damageable {
       : this.def.name;
   }
   get hitRadius(): number { return 0.42 * this.def.scale; }
+  get isFlying(): boolean { return this.def.isFlying === true; }
   get level(): number { return this.def.level ?? 0; }
   get threat(): number { return this.attackPower; }
   get attackPower(): number {
@@ -198,6 +201,7 @@ export class CombatUnit implements Damageable {
   }
   get vulnerabilityRemaining(): number { return Math.max(0, this.vulnerabilityTimer); }
   get vulnerabilityFactor(): number { return this.vulnerability; }
+  get remoteVulnerabilityFactor(): number { return this.remoteVulnerability; }
   get groundSupportEngaged(): boolean { return this.groundSupportEngagedValue; }
   get bannerAttackBonus(): number { return this.abilities.bannerAttackBonus; }
   get bannerAttackSpeedBonus(): number { return this.abilities.bannerAttackSpeedBonus; }
@@ -214,6 +218,12 @@ export class CombatUnit implements Damageable {
   applyVulnerability(factor: number, seconds: number): void {
     this.vulnerability = Math.max(this.vulnerability, Math.max(0, factor));
     this.vulnerabilityTimer = Math.max(this.vulnerabilityTimer, Math.max(0, seconds));
+  }
+
+  /** Sniper armour break: only ranged damage sources use this multiplier. */
+  applyRemoteVulnerability(factor: number, seconds: number): void {
+    this.remoteVulnerability = Math.max(this.remoteVulnerability, Math.max(0, factor));
+    this.remoteVulnerabilityTimer = Math.max(this.remoteVulnerabilityTimer, Math.max(0, seconds));
   }
 
   applyKnockback(fromX: number, fromZ: number, distance: number): void {
@@ -261,7 +271,7 @@ export class CombatUnit implements Damageable {
   }
 
   setPosition(x: number, z: number): void {
-    this.position.set(x, 0, z);
+    this.position.set(x, this.isFlying ? 6 : 0, z);
     this.rig.root.position.copyFrom(this.position);
   }
 
@@ -292,10 +302,11 @@ export class CombatUnit implements Damageable {
     if (this.phasedDamageReductionTimer <= 0) this.advancePhasedDamageReduction(0);
   }
 
-  applyDamage(amount: number, _fromX: number, _fromZ: number): void {
+  applyDamage(amount: number, _fromX: number, _fromZ: number, source: DamageSource = "skill"): void {
     if (!this._alive) return;
     const raw = mitigate(this.def.armor, this.armorBroken, amount);
-    const taken = raw * (1 + this.vulnerability) * (1 - this.activeDamageReduction);
+    const rangedFactor = source === "ranged" ? 1 + this.remoteVulnerability : 1;
+    const taken = raw * (1 + this.vulnerability) * rangedFactor * (1 - this.activeDamageReduction);
     this.health -= taken;
     this.animator.flashHit();
     reportDamage(this, this.ctx, taken, "damage");
@@ -389,6 +400,13 @@ export class CombatUnit implements Damageable {
         this.vulnerabilityTimer = 0;
       }
     }
+    if (this.remoteVulnerabilityTimer > 0) {
+      this.remoteVulnerabilityTimer -= dt;
+      if (this.remoteVulnerabilityTimer <= 0) {
+        this.remoteVulnerability = 0;
+        this.remoteVulnerabilityTimer = 0;
+      }
+    }
     if (this.phasedDamageReductionTimer > 0) {
       this.phasedDamageReductionTimer -= dt;
       if (this.phasedDamageReductionTimer <= 0) {
@@ -462,6 +480,21 @@ export class CombatUnit implements Damageable {
    * would only ever cost them time.
    */
   canReach(target: Damageable): boolean {
+    // Elevated platforms are outside the enemy's attack graph.  Keep this
+    // guard here as well as in target acquisition so an enemy that was already
+    // aiming at a ground facility when a sky building is constructed drops
+    // that stale reference on the next reach check.
+    if (this.faction === "enemy" && (target as { isSky?: boolean }).isSky) return false;
+    // Melee/support allies cannot interact with aerial targets.  Acquisition
+    // filters them out too, but this protects taunts and stale pooled refs.
+    if (
+      this.faction === "ally" &&
+      target.kind === "unit" &&
+      (target as CombatUnit).isFlying &&
+      this.def.attackType !== "rangedSingle" &&
+      this.def.attackType !== "rangedArea"
+    ) return false;
+    if (this.isFlying) return true;
     if (this.faction === "ally") return true;
     return this.ctx.world.reachable(this.position.x, this.position.z, target);
   }

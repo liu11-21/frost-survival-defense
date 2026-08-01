@@ -85,6 +85,7 @@
   font-size: 17px;
   font-weight: 600;
 }
+.res small { color: #9fe0bd; font-size: 9px; line-height: 1; opacity: 0.9; }
 .ico {
   width: 14px;
   height: 14px;

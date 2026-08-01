@@ -30,7 +30,7 @@ export class SlotPicker {
         scene,
       );
       mesh.rotation.x = Math.PI / 2;
-      mesh.position.set(def.x, 0.05, def.z);
+      mesh.position.set(def.x, def.surface === "sky" ? def.elevation + 0.05 : 0.05, def.z);
       mesh.isVisible = false;
       mesh.isPickable = true;
       mesh.checkCollisions = false;

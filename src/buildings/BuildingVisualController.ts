@@ -52,9 +52,11 @@ export class BuildingVisualController {
     private readonly x: number,
     private readonly z: number,
     private readonly yaw: number,
+    private readonly elevation = 0,
   ) {
     const visual = createBuildingVisual(scene, materials, type, x, z, yaw, slotId);
     this.rootNode = visual.root;
+    this.rootNode.position.y = elevation;
     this.ownedMeshes = visual.body;
     this.stageMeshes = visual.stages.map((s) => s.meshes);
     this.animator = new BuildingAnimator(events, `${type}@${slotId}`, visual.stages);
@@ -147,6 +149,7 @@ export class BuildingVisualController {
 
     const visual = createBuildingVisual(this.scene, this.materials, this.type, this.x, this.z, this.yaw, this.slotId);
     this.rootNode = visual.root;
+    this.rootNode.position.y = this.elevation;
     replaceContents(this.ownedMeshes, visual.body);
     this.stageMeshes.length = 0;
     for (const stage of visual.stages) {

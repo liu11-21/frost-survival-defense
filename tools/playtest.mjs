@@ -5,7 +5,7 @@
  * rule checks (rebuild FIFO, taunt, medic healing, wall blocking, warehouse
  * loss, mode reset), captures screenshots and fails on any console error.
  *
- *   node tools/playtest.mjs [--url http://localhost:5173] [--suite v8|v9]
+ *   node tools/playtest.mjs [--url http://localhost:5173] [--suite v6|v8|v9|v10]
  */
 import puppeteer from "puppeteer-core";
 import { mkdirSync, existsSync } from "node:fs";
@@ -18,6 +18,7 @@ import { runV6Checks } from "./v6checks.mjs";
 import { runV7Checks } from "./v7checks.mjs";
 import { runV8Checks } from "./v8checks.mjs";
 import { runV9Checks } from "./v9checks.mjs";
+import { runV10Checks } from "./v10checks.mjs";
 
 const CHROME = "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe";
 const args = process.argv.slice(2);
@@ -100,10 +101,11 @@ await shot("main-menu");
 
 // Fast, isolated iteration for focused suites. The default remains the
 // complete end-to-end run below.
-if (requestedSuite === "v6" || requestedSuite === "v8" || requestedSuite === "v9") {
+if (requestedSuite === "v6" || requestedSuite === "v8" || requestedSuite === "v9" || requestedSuite === "v10") {
   if (requestedSuite === "v6") await runV6Checks({ check, call, step, shot, page });
   else if (requestedSuite === "v8") await runV8Checks({ check, call, step, shot, page });
-  else await runV9Checks({ check, call, step, snapshot, shot, page });
+  else if (requestedSuite === "v9") await runV9Checks({ check, call, step, snapshot, shot, page });
+  else await runV10Checks({ check, call, step, page });
   await browser.close();
   const failed = checks.filter((c) => !c.ok).length;
   console.log(`\nchecks: ${checks.length - failed}/${checks.length} passed`);

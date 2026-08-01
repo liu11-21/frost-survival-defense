@@ -67,6 +67,7 @@ export const STAGE_ONE_WAVES: WaveDefinition[] = [
       { enemyId: "grunt", squads: 2, lane: 0, delay: 0 },
       { enemyId: "slinger", squads: 2, lane: 1, delay: 3 },
       { enemyId: "bruiser", squads: 1, lane: 0, delay: 7 },
+      { enemyId: "flyingMelee", squads: 1, lane: 1, delay: 9 },
     ],
   },
   {
@@ -113,6 +114,7 @@ export const STAGE_ONE_WAVES: WaveDefinition[] = [
       // All four new tiers together once, ahead of the boss wave.
       { enemyId: "commander", squads: 1, lane: 1, delay: 9 },
       { enemyId: "bomber", squads: 1, lane: 0, delay: 11 },
+      { enemyId: "flyingEliteArcher", squads: 1, lane: 1, delay: 13 },
     ],
   },
   {
@@ -151,6 +153,10 @@ const ENDLESS_POOL: Array<{ id: string; fromWave: number; weight: number }> = [
   { id: "icearmor", fromWave: 7, weight: 2 },
   { id: "juggernaut", fromWave: 9, weight: 2 },
   { id: "bombardier", fromWave: 12, weight: 2 },
+  { id: "flyingMelee", fromWave: 4, weight: 3 },
+  { id: "flyingEliteArcher", fromWave: 8, weight: 2 },
+  { id: "flyingBomber", fromWave: 15, weight: 1 },
+  { id: "flyingColossus", fromWave: 20, weight: 1 },
 ];
 
 /** First-encounter toast text, shown once per run the first time each of
@@ -160,6 +166,10 @@ export const ENEMY_INTRO: Record<string, { title: string; body: string }> = {
   commander: { title: "號令者出現", body: "為附近敵人加成攻速與移速，友軍會優先攻擊他，建議優先集火。" },
   breacher: { title: "破城者出現", body: "無視嘲諷，一定會先攻擊擋路的城牆，對城牆傷害 ×3。" },
   icearmor: { title: "冰甲重兵出現", body: "低傷害攻擊會被護甲減半，血量過半後護甲碎裂並加速。" },
+  flyingMelee: { title: "飛行近戰出現", body: "這些敵人會越過城牆，只有遠程單位與主角能攻擊。" },
+  flyingEliteArcher: { title: "飛行精銳射手出現", body: "優先讓弓箭手、魔法師與攻擊設施鎖定空中目標。" },
+  flyingBomber: { title: "飛行轟炸者出現", body: "高階空軍會在里程碑波次登場，注意範圍轟炸。" },
+  flyingColossus: { title: "飛行空中巨像出現", body: "六級空中巨像已越過城牆，集中遠程火力。" },
 };
 
 /** Level-5 and level-6 enemies are milestone threats, never ordinary waves. */
@@ -228,6 +238,7 @@ function miniEliteWave(laneCount: number): WaveDefinition {
     name: `第 ${wave} 波 — 強化精英`,
     groups: [
       { enemyId: "bombardier", squads: 1, lane: 0 % laneCount, delay: 0, extraHealthMul: 1.3, extraAttackMul: 1.15 },
+      { enemyId: "flyingBomber", squads: 1, lane: 1 % laneCount, delay: 1.2 },
       { enemyId: "icearmor", squads: 1, lane: 1 % laneCount, delay: 2 },
       { enemyId: "marksman", squads: 2, lane: 0 % laneCount, delay: 5 },
       { enemyId: "grunt", squads: 3, lane: 1 % laneCount, delay: 8 },
@@ -249,6 +260,9 @@ export function buildEndlessWave(wave: number, laneCount: number): WaveDefinitio
     const escorts = bossEscortCount(wave);
     for (let i = 0; i < escorts; i++) {
       groups.splice(i + 1, 0, { enemyId: BOSS_ESCORT[i % BOSS_ESCORT.length], squads: 1, lane: 0, delay: 0.6 + i * 0.6 });
+    }
+    if (wave === 20) {
+      groups.splice(1, 0, { enemyId: "flyingColossus", squads: 1, lane: Math.min(1, laneCount - 1), delay: 1.8 });
     }
   }
 

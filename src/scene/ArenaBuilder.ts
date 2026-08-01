@@ -7,6 +7,7 @@ import { randRange } from "../util/MathUtil";
 
 const RING_COLORS: Record<string, [number, number, number]> = {
   universal: [0.55, 0.8, 0.5],
+  sky: [0.45, 0.75, 1.0],
   wall: [0.5, 0.72, 1.0],
 };
 
@@ -17,6 +18,8 @@ const RING_COLORS: Record<string, [number, number, number]> = {
 export class ArenaBuilder {
   private readonly pads = new Map<string, Mesh>();
   private readonly padSelect = new Map<string, Mesh>();
+  private readonly slots = new Map<string, BuildSlot>();
+  private furnaceLevel = 1;
   private pulse = 0;
 
   constructor(
@@ -28,18 +31,23 @@ export class ArenaBuilder {
     this.buildLaneMarkers();
     this.buildPerimeter();
     this.buildScatter();
+    this.setFurnaceLevel(1);
   }
 
   private buildSlotPads(slots: ReadonlyArray<BuildSlot>): void {
     for (const slot of slots) {
+      this.slots.set(slot.id, slot);
       const color = RING_COLORS[slot.category] ?? RING_COLORS.universal;
       const isWall = slot.category === "wall";
+      const isSky = slot.surface === "sky";
       const wallLength = isWall ? WALL_SIDE_BY_SLOT.get(slot.id)?.length ?? 20 : 0;
       const width = isWall ? wallLength * 0.96 : 2.5;
       const depth = isWall ? 1.3 : 2.5;
 
-      const pad = MeshBuilder.CreateGround(`pad.${slot.id}`, { width, height: depth }, this.scene);
-      pad.position.set(slot.x, 0.05, slot.z);
+      const pad = isSky
+        ? MeshBuilder.CreateCylinder(`pad.${slot.id}`, { diameter: 3.3, height: 0.35, tessellation: 16 }, this.scene)
+        : MeshBuilder.CreateGround(`pad.${slot.id}`, { width, height: depth }, this.scene);
+      pad.position.set(slot.x, isSky ? slot.elevation - 0.18 : 0.05, slot.z);
       pad.rotation.y = slot.yaw;
       pad.material = this.materials.unlit(`mat.pad.${slot.category}`, color, 0.22);
       pad.isPickable = false;
@@ -51,7 +59,7 @@ export class ArenaBuilder {
         { diameter: isWall ? wallLength * 0.94 : 2.7, thickness: 0.09, tessellation: 20 },
         this.scene,
       );
-      ring.position.set(slot.x, 0.07, slot.z);
+      ring.position.set(slot.x, isSky ? slot.elevation + 0.03 : 0.07, slot.z);
       ring.rotation.y = slot.yaw;
       if (isWall) ring.scaling.z = 0.28;
       ring.material = this.materials.unlit(`mat.padRing.${slot.category}`, color, 0.9);
@@ -181,6 +189,18 @@ export class ArenaBuilder {
   setOccupied(slotId: string, occupied: boolean): void {
     const pad = this.pads.get(slotId);
     if (pad && pad.isEnabled() !== !occupied) pad.setEnabled(!occupied);
+    const slot = this.slots.get(slotId);
+    if (pad) pad.visibility = slot?.isUnlocked(this.furnaceLevel) === false ? 0.28 : 1;
+  }
+
+  /** Locked plots remain visible as dim pads, then brighten at their unlock
+   * level so the expansion path is readable without cluttering the HUD. */
+  setFurnaceLevel(level: number): void {
+    this.furnaceLevel = Math.max(1, Math.floor(level));
+    for (const [id, pad] of this.pads) {
+      const slot = this.slots.get(id);
+      pad.visibility = slot?.isUnlocked(this.furnaceLevel) === false ? 0.28 : 1;
+    }
   }
 
   update(dt: number): void {

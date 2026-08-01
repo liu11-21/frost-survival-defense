@@ -40,6 +40,7 @@ export function acquireAllyTarget(unit: CombatUnit, ctx: CombatContext): Damagea
   for (let i = 0; i < enemies.length; i++) {
     const e = enemies[i];
     if (!e.alive) continue;
+    if (e.isFlying && !isRanged(unit)) continue;
     const dx = e.position.x - unit.position.x;
     const dz = e.position.z - unit.position.z;
     const dist = dx * dx + dz * dz;
@@ -100,7 +101,7 @@ function nearestReachableStructure(unit: CombatUnit, ctx: CombatContext): Damage
   let best: Damageable | null = null;
   let bestDist = Infinity;
   for (const candidate of ctx.world.structures) {
-    if (!candidate.alive || candidate.kind === "wall" || !unit.canReach(candidate)) continue;
+    if (!candidate.alive || candidate.kind === "wall" || (candidate as { isSky?: boolean }).isSky || !unit.canReach(candidate)) continue;
     const dx = candidate.position.x - unit.position.x;
     const dz = candidate.position.z - unit.position.z;
     const dist = dx * dx + dz * dz;
@@ -188,10 +189,10 @@ export function acquireEnemyTarget(unit: CombatUnit, ctx: CombatContext): Damage
   const z = unit.position.z;
   const furnace = world.furnace;
 
-  if (unit.breachTarget?.alive) return unit.breachTarget;
+  if (!unit.isFlying && unit.breachTarget?.alive) return unit.breachTarget;
   // A navigator already steering through an open gate must not abandon that
   // route to hit an unrelated wall beside it.
-  if (!unit.navPoint && furnace?.alive) {
+  if (!unit.isFlying && !unit.navPoint && furnace?.alive) {
     const blocker = world.wallBlocks(x, z, furnace.position.x, furnace.position.z);
     if (blocker?.alive) return blocker;
   }
@@ -221,7 +222,7 @@ export function acquireEnemyTarget(unit: CombatUnit, ctx: CombatContext): Damage
   if (structure) return structure;
 
   if (furnace?.alive) {
-    const blocker = world.wallBlocks(x, z, furnace.position.x, furnace.position.z);
+    const blocker = unit.isFlying ? null : world.wallBlocks(x, z, furnace.position.x, furnace.position.z);
     if (blocker?.alive) return blocker;
     return furnace;
   }

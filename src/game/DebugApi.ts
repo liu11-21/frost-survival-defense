@@ -35,7 +35,12 @@ export function createDebugApi(s: GameSystems, controls: DebugControls): Record<
         s.store.add("gold", gold);
       },
       build: (slotId: string, type: string) =>
-        s.buildings.build(slotId, type as never, s.run.wallHealthMultiplier),
+        // Existing headless suites use fixed legacy slots to exercise every
+        // building type.  Keep that development-only path able to stage a
+        // ground fixture while the real UI and all sky slots still enforce
+        // furnace unlocks.
+        s.buildings.build(slotId, type as never, s.run.wallHealthMultiplier, true),
+      canBuild: (slotId: string, type: string) => s.buildings.canBuild(slotId, type as never),
       recruit: (id: string) => s.run.tryRecruit(id),
       upgradeFurnace: () => s.run.tryUpgradeFurnace(),
       callWave: () => s.waves.callNextWaveNow(),
@@ -44,6 +49,10 @@ export function createDebugApi(s: GameSystems, controls: DebugControls): Record<
         s.buildings.slots.map((slot) => ({
           id: slot.id,
           category: slot.category,
+          surface: slot.surface,
+          elevation: slot.elevation,
+          unlockLevel: slot.unlockLevel,
+          unlocked: slot.isUnlocked(s.furnace.currentLevel),
           occupied: slot.occupied,
           type: slot.occupiedType,
           everBuilt: slot.everBuilt,
@@ -149,7 +158,7 @@ export function createDebugApi(s: GameSystems, controls: DebugControls): Record<
         const rh = s.engine.getRenderHeight();
         const viewport = s.camera.camera.viewport.toGlobal(rw, rh);
         const coords = Vector3.Project(
-          new Vector3(slot.x, 1.2, slot.z),
+          new Vector3(slot.x, slot.elevation + 1.2, slot.z),
           Matrix.Identity(),
           s.scene.getTransformMatrix(),
           viewport,
@@ -230,9 +239,29 @@ export function createDebugApi(s: GameSystems, controls: DebugControls): Record<
       slotStats: (slotId: string) => {
         const b = s.buildings.slot(slotId)?.building;
         return b
-          ? { level: b.level, health: Math.ceil(b.health), max: b.maxHealth, attack: b.attackPower }
+          ? {
+              level: b.level,
+              health: Math.ceil(b.health),
+              max: b.maxHealth,
+              attack: b.attackPower,
+              isSky: b.isSky,
+              cost: { ...b.constructionCost },
+            }
           : null;
       },
+      slotUnlocks: () => ({
+        furnaceLevel: s.furnace.currentLevel,
+        ground: s.buildings.slots.filter((slot) => slot.surface === "ground" && slot.category === "universal" && slot.isUnlocked(s.furnace.currentLevel)).length,
+        sky: s.buildings.slots.filter((slot) => slot.surface === "sky" && slot.isUnlocked(s.furnace.currentLevel)).length,
+        groundByLevel: s.buildings.slots.filter((slot) => slot.surface === "ground" && slot.category === "universal").map((slot) => ({ id: slot.id, unlockLevel: slot.unlockLevel })),
+        skyByLevel: s.buildings.slots.filter((slot) => slot.surface === "sky").map((slot) => ({ id: slot.id, unlockLevel: slot.unlockLevel })),
+      }),
+      productionEfficiency: () => s.buildings.productionEfficiency(s.run.productionRate),
+      flyingReport: () => s.world.enemies.filter((unit) => unit.alive && unit.isFlying).map((unit) => ({
+        id: unit.def.id,
+        y: unit.position.y,
+        target: unit.currentTarget?.kind ?? "none",
+      })),
       startTutorial: () => controls.startTutorial(),
       damageBoss: (amount: number) => {
         const b = s.boss.boss;

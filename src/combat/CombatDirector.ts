@@ -1,4 +1,5 @@
 import type { CombatContext, CombatScaling, CombatVfx } from "./CombatContext";
+import type { DamageSource } from "../data/CombatTypes";
 import type { CombatUnit } from "./CombatUnit";
 import type { CollisionWorld } from "../util/Collision";
 import type { CombatWorld } from "./CombatWorld";
@@ -25,9 +26,9 @@ export function createCombatContext(
 ): CombatContext {
   const scratch: CombatUnit[] = [];
 
-  const damage = (target: Damageable, amount: number, fromX: number, fromZ: number): void => {
+  const damage = (target: Damageable, amount: number, fromX: number, fromZ: number, source: DamageSource = "skill"): void => {
     if (!target.alive || amount <= 0) return;
-    target.applyDamage(amount, fromX, fromZ);
+    target.applyDamage(amount, fromX, fromZ, source);
     if (target.kind === "furnace") {
       hooks.onFurnaceHit();
     } else if (target.kind !== "unit" && target.kind !== "hero") {
@@ -43,6 +44,7 @@ export function createCombatContext(
     amount: number,
     maxTargets: number,
     onHit?: (target: Damageable) => void,
+    source: DamageSource = "skill",
   ): number => {
     if (maxTargets <= 0 || amount <= 0) return 0;
     const victimFaction = attackerFaction === "ally" ? "enemy" : "ally";
@@ -51,7 +53,8 @@ export function createCombatContext(
     for (let i = 0; i < hit.length && count < maxTargets; i++) {
       // Engineers are protected support staff until the hero has fallen.
       if (attackerFaction === "enemy" && hit[i].def.id === "engineer" && world.hero?.alive) continue;
-      damage(hit[i], amount, x, z);
+      if (attackerFaction === "ally" && source === "melee" && hit[i].def.isFlying) continue;
+      damage(hit[i], amount, x, z, source);
       onHit?.(hit[i]);
       count++;
     }
@@ -59,20 +62,20 @@ export function createCombatContext(
     if (attackerFaction === "enemy") {
       const hero = world.hero;
       if (hero?.alive && count < maxTargets && within(hero, x, z, radius)) {
-        damage(hero, amount, x, z);
+        damage(hero, amount, x, z, source);
         onHit?.(hero);
         count++;
       }
       for (let i = 0; i < world.structures.length && count < maxTargets; i++) {
         const s = world.structures[i];
-        if (!s.alive || !within(s, x, z, radius + s.hitRadius)) continue;
-        damage(s, amount, x, z);
+        if (!s.alive || (s as { isSky?: boolean }).isSky || !within(s, x, z, radius + s.hitRadius)) continue;
+        damage(s, amount, x, z, source);
         onHit?.(s);
         count++;
       }
       const furnace = world.furnace;
       if (furnace?.alive && count < maxTargets && within(furnace, x, z, radius + furnace.hitRadius)) {
-        damage(furnace, amount, x, z);
+        damage(furnace, amount, x, z, source);
         onHit?.(furnace);
         count++;
       }

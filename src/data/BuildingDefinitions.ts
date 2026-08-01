@@ -7,7 +7,7 @@ import { DEFENSE_BUILDINGS } from "./DefenseBuildingDefinitions";
  * category, since they are placed by the perimeter system, not chosen freely.
  * "special" exists for a future dedicated plot but nothing uses it yet.
  */
-export type BuildSlotCategory = "universal" | "wall" | "special";
+export type BuildSlotCategory = "universal" | "sky" | "wall" | "special";
 
 export type BuildingType =
   | "mine"
@@ -237,6 +237,29 @@ const ECONOMY_BUILDINGS: BuildingDefinition[] = [
 export const BUILDINGS: BuildingDefinition[] = [...ECONOMY_BUILDINGS, ...DEFENSE_BUILDINGS];
 
 export const BUILDING_BY_ID = new Map(BUILDINGS.map((b) => [b.id, b]));
+
+/** Returns a defensive copy of a build cost, optionally applying a surface
+ * multiplier.  Sky platforms use this helper for both manual construction and
+ * automatic rebuilding so the two paths can never drift. */
+export function buildCostForSurface(
+  def: BuildingDefinition,
+  surface: "ground" | "sky" = "ground",
+): ResourceCost {
+  const multiplier = surface === "sky" ? 1.25 : 1;
+  const cost: ResourceCost = {};
+  for (const kind of ["wood", "stone", "gold"] as const) {
+    const amount = def.cost[kind];
+    if (amount !== undefined) cost[kind] = Math.ceil(amount * multiplier);
+  }
+  return cost;
+}
+
+/** A sky platform is deliberately restricted to a completed attack
+ * emplacement; economy/support buildings stay ground-only even though their
+ * catalogue definitions are universal. */
+export function canBuildOnSurface(def: BuildingDefinition, surface: "ground" | "sky"): boolean {
+  return surface === "ground" ? def.slotCategory === "universal" || def.slotCategory === "wall" : Boolean(def.attackKind);
+}
 
 export function buildingsForCategory(category: BuildSlotCategory): BuildingDefinition[] {
   return BUILDINGS.filter((b) => b.slotCategory === category);

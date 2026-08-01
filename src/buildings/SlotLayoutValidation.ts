@@ -1,4 +1,4 @@
-import { BUILD_SLOTS, HARVEST_NODES, MAP, UNIVERSAL_SLOTS, type BuildSlotDefinition } from "../data/BuildSlotDefinitions";
+import { BUILD_SLOTS, HARVEST_NODES, MAP, UNIVERSAL_SLOTS, isInsideBase, type BuildSlotDefinition } from "../data/BuildSlotDefinitions";
 
 /**
  * Every empty slot must already be legal the moment the map loads — the brief
@@ -55,15 +55,21 @@ export function validateBuildSlots(): SlotLayoutReport {
 
   for (const slot of slots) {
     const clearance = wallClearance(slot.x, slot.z);
-    const wallRequired = MAP.wallThickness / 2 + slot.maxBuildingRadius + SAFETY_MARGIN;
-    if (clearance < wallRequired) {
-      placementIssues.push({ id: slot.id, kind: "wall", detail: `clearance ${clearance.toFixed(2)} < ${wallRequired.toFixed(2)}` });
-    }
-    if (clearance < GATE_LANE_DEPTH) {
-      const nearestNS = MAP.baseHalfDepth - Math.abs(slot.z) <= MAP.baseHalfWidth - Math.abs(slot.x);
-      const lateral = nearestNS ? Math.abs(slot.x) : Math.abs(slot.z);
-      if (lateral < GATE_LANE_HALF) {
-        placementIssues.push({ id: slot.id, kind: "gateLane", detail: `lateral ${lateral.toFixed(2)} < ${GATE_LANE_HALF.toFixed(2)}` });
+    // Inner plots must clear the unchanged wall rectangle and its gates. The
+    // late-game outposts deliberately sit beyond that rectangle, so those
+    // checks would incorrectly reject the expansion the furnace is meant to
+    // unlock.
+    if (isInsideBase(slot.x, slot.z)) {
+      const wallRequired = MAP.wallThickness / 2 + slot.maxBuildingRadius + SAFETY_MARGIN;
+      if (clearance < wallRequired) {
+        placementIssues.push({ id: slot.id, kind: "wall", detail: `clearance ${clearance.toFixed(2)} < ${wallRequired.toFixed(2)}` });
+      }
+      if (clearance < GATE_LANE_DEPTH) {
+        const nearestNS = MAP.baseHalfDepth - Math.abs(slot.z) <= MAP.baseHalfWidth - Math.abs(slot.x);
+        const lateral = nearestNS ? Math.abs(slot.x) : Math.abs(slot.z);
+        if (lateral < GATE_LANE_HALF) {
+          placementIssues.push({ id: slot.id, kind: "gateLane", detail: `lateral ${lateral.toFixed(2)} < ${GATE_LANE_HALF.toFixed(2)}` });
+        }
       }
     }
     const furnaceRequired = MAP.furnaceRadius + slot.maxBuildingRadius + SAFETY_MARGIN;

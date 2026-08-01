@@ -40,7 +40,7 @@ export function motorMove(
   unit.position.z += (steer.z / len) * speed * dt;
   // Buildings are solid — nobody walks through a standing wall. The gate gap
   // in a perimeter wall is the one exception, and it is faction-filtered.
-  ctx.collision.resolve(unit.position, unit.hitRadius, Infinity, unit.faction);
+  if (!unit.isFlying) ctx.collision.resolve(unit.position, unit.hitRadius, Infinity, unit.faction);
   return speed;
 }
 
@@ -62,7 +62,7 @@ export function motorReposition(unit: CombatUnit, ctx: CombatContext, rally: Vec
   const step = Math.min(2.5, dist);
   unit.position.x += (dx / dist) * step;
   unit.position.z += (dz / dist) * step;
-  ctx.collision.resolve(unit.position, unit.hitRadius, Infinity, unit.faction);
+  if (!unit.isFlying) ctx.collision.resolve(unit.position, unit.hitRadius, Infinity, unit.faction);
 }
 
 /** How often a unit re-checks whether it is being taunted. */

@@ -15,6 +15,7 @@ export function createV9DebugApi(s: GameSystems): Record<string, unknown> {
       s.hero.refreshMaxHealth(previousMax);
       s.squads.setFurnaceLevel(s.furnace.currentLevel);
       s.buildings.setFurnaceLevel(s.furnace.currentLevel);
+      s.arena.setFurnaceLevel(s.furnace.currentLevel);
       return s.furnace.currentLevel;
     },
     furnaceLevel: () => s.furnace.currentLevel,

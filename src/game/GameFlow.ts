@@ -13,6 +13,7 @@ export function beginRun(s: GameSystems, mode: "stage" | "endless", levelId?: st
   s.world.allies.length = 0;
   s.projectiles.clear();
   for (const slot of s.buildings.slots) s.arena.setOccupied(slot.id, false);
+  s.arena.setFurnaceLevel(1);
   s.panels.closeAll();
   s.menus.hide();
   s.nodes.resetAll();

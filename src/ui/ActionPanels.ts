@@ -43,7 +43,7 @@ export interface PanelDeps {
   waves: WaveManager;
   /** Hovering a not-yet-built attack building's card previews its range at
    * the slot it would be built on; `null` clears it. */
-  onRangePreview?: (preview: { x: number; z: number; type: BuildingType } | null) => void;
+  onRangePreview?: (preview: { x: number; z: number; type: BuildingType; surface: "ground" | "sky" } | null) => void;
 }
 
 type OpenPanel = "none" | "build" | "recruit" | "furnace";
@@ -301,7 +301,7 @@ export class ActionPanels {
         ? `<div class="panel-note">此點位在自動重建佇列第 ${pending + 1} 位，也可以手動先建。</div>`
         : "";
 
-    const entries = entriesForTab(slot, this.activeTab, this.d.store);
+    const entries = entriesForTab(slot, this.activeTab, this.d.store, this.d.buildings.currentFurnaceLevel);
     const rangeContext = { slot, world: this.d.world, activeLaneCount: this.d.waves.activeLaneCount };
     list.innerHTML = queueNote + entries.map((e) => renderEntryHtml(e, rangeContext)).join("");
     // A rebuild replaces every card, so whatever was hovered before is gone —
@@ -314,7 +314,7 @@ export class ActionPanels {
         this.focused = button;
       });
       if (BUILDING_BY_ID.get(type)?.attackKind) {
-        button.addEventListener("pointerenter", () => this.d.onRangePreview?.({ x: slot.x, z: slot.z, type }));
+        button.addEventListener("pointerenter", () => this.d.onRangePreview?.({ x: slot.x, z: slot.z, type, surface: slot.surface }));
         button.addEventListener("pointerleave", () => this.d.onRangePreview?.(null));
       }
     }

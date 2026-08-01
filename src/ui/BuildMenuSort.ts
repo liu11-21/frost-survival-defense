@@ -1,6 +1,8 @@
 import type { BuildSlot } from "../buildings/BuildSlot";
 import type { ResourceStore } from "../economy/ResourceStore";
 import type { BuildingDefinition } from "../data/BuildingDefinitions";
+import { buildCostForSurface } from "../data/BuildingDefinitions";
+import type { ResourceCost } from "../data/CombatTypes";
 import { costBreakdown } from "./PanelText";
 
 /**
@@ -24,6 +26,7 @@ export interface ClassifiedEntry {
   /** Populated for tier 4/5; explains why in the player's own terms. */
   reasonText: string;
   totalCost: number;
+  cost: ResourceCost;
 }
 
 /** A shortfall this small counts as "close" rather than "far off" — inside
@@ -31,32 +34,39 @@ export interface ClassifiedEntry {
  * tick or two closes the gap, not an arbitrary hard cutoff. */
 const SMALL_SHORTFALL_RATIO = 0.3;
 
-function totalCostOf(def: BuildingDefinition): number {
-  return (def.cost.wood ?? 0) + (def.cost.stone ?? 0) + (def.cost.gold ?? 0);
+function totalCostOf(cost: ResourceCost): number {
+  return (cost.wood ?? 0) + (cost.stone ?? 0) + (cost.gold ?? 0);
 }
 
 /** Classifies one building against one already-known-empty slot. */
-export function classifyEntry(def: BuildingDefinition, slot: BuildSlot, store: ResourceStore): ClassifiedEntry {
-  const totalCost = totalCostOf(def);
+export function classifyEntry(def: BuildingDefinition, slot: BuildSlot, store: ResourceStore, furnaceLevel = Number.POSITIVE_INFINITY): ClassifiedEntry {
+  const cost = buildCostForSurface(def, slot.surface);
+  const totalCost = totalCostOf(cost);
   if (slot.category !== def.slotCategory) {
-    return { def, tier: 5, affordable: false, shortfallText: "", reasonText: "此槽位不可建造該設施", totalCost };
+    if (slot.surface !== "sky") {
+      return { def, tier: 5, affordable: false, shortfallText: "", reasonText: "此槽位不可建造該設施", totalCost, cost };
+    }
   }
-  if (store.canAfford(def.cost)) {
-    return { def, tier: 1, affordable: true, shortfallText: "", reasonText: "", totalCost };
+  if (!slot.isUnlocked(furnaceLevel)) {
+    return { def, tier: 4, affordable: false, shortfallText: "", reasonText: `火爐 Lv.${slot.unlockLevel} 解鎖`, totalCost, cost };
+  }
+  if (store.canAfford(cost)) {
+    return { def, tier: 1, affordable: true, shortfallText: "", reasonText: "", totalCost, cost };
   }
 
   const ratio = Math.max(
-    def.cost.wood ? Math.max(0, def.cost.wood - store.wood) / def.cost.wood : 0,
-    def.cost.stone ? Math.max(0, def.cost.stone - store.stone) / def.cost.stone : 0,
-    def.cost.gold ? Math.max(0, def.cost.gold - store.gold) / def.cost.gold : 0,
+    cost.wood ? Math.max(0, cost.wood - store.wood) / cost.wood : 0,
+    cost.stone ? Math.max(0, cost.stone - store.stone) / cost.stone : 0,
+    cost.gold ? Math.max(0, cost.gold - store.gold) / cost.gold : 0,
   );
   return {
     def,
     tier: ratio <= SMALL_SHORTFALL_RATIO ? 2 : 3,
     affordable: false,
-    shortfallText: costBreakdown(store, def.cost),
+    shortfallText: costBreakdown(store, cost),
     reasonText: "",
     totalCost,
+    cost,
   };
 }
 

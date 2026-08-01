@@ -185,7 +185,7 @@ export class CombatWorld {
     let bestDist = maxRange * maxRange;
     for (let i = 0; i < this.structures.length; i++) {
       const s = this.structures[i];
-      if (!s.alive || !kinds.includes(s.kind)) continue;
+      if (!s.alive || (s as { isSky?: boolean }).isSky || !kinds.includes(s.kind)) continue;
       const dx = s.position.x - x;
       const dz = s.position.z - z;
       const d = dx * dx + dz * dz;

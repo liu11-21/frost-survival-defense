@@ -14,9 +14,10 @@ interface BurnZone {
 const zonesByOwner = new WeakMap<object, BurnZone[]>();
 
 /**
- * Drops a burn zone at `(x, z)`. Landing on (roughly) the same spot refreshes
- * the existing zone's duration instead of stacking a second one there; once
- * `maxZones` is already out, the oldest is replaced rather than piling up.
+ * Drops a burn zone at `(x, z)`. Zones from one mortar may overlap, but each
+ * keeps its own countdown; `tickBurnZones` deduplicates a target per tick so
+ * overlap never doubles that mortar's damage. Once `maxZones` is reached the
+ * oldest zone is replaced rather than allowing an unbounded list.
  */
 export function igniteZone(
   owner: object,
@@ -33,11 +34,6 @@ export function igniteZone(
     zones = [];
     zonesByOwner.set(owner, zones);
   }
-  const existing = zones.find((zone) => Math.hypot(zone.x - x, zone.z - z) < radius * 0.6);
-  if (existing) {
-    existing.remaining = duration;
-    return;
-  }
   if (zones.length >= maxZones) zones.shift();
   zones.push({ x, z, radius, dps, bossFactor, remaining: duration });
 }
@@ -46,6 +42,7 @@ export function igniteZone(
 export function tickBurnZones(owner: object, dt: number, ctx: CombatContext): void {
   const zones = zonesByOwner.get(owner);
   if (!zones || zones.length === 0) return;
+  const damaged = new Set<number>();
   for (let i = zones.length - 1; i >= 0; i--) {
     const zone = zones[i];
     zone.remaining -= dt;
@@ -55,8 +52,10 @@ export function tickBurnZones(owner: object, dt: number, ctx: CombatContext): vo
     }
     const targets = ctx.world.queryUnits("enemy", zone.x, zone.z, zone.radius);
     for (const target of targets) {
+      if (damaged.has(target.damageId)) continue;
       const factor = target.level >= BOSS_TIER_LEVEL ? zone.bossFactor : 1;
-      ctx.damage(target, zone.dps * dt * factor, zone.x, zone.z);
+      ctx.damage(target, zone.dps * dt * factor, zone.x, zone.z, "burn");
+      damaged.add(target.damageId);
     }
   }
 }

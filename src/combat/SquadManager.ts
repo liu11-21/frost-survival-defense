@@ -34,6 +34,7 @@ export class SquadManager {
 
   private readonly anchor = new Vector3();
   private readonly member = new Vector3();
+  private readonly armyCentre = new Vector3();
   private readonly fallbackRally = new Vector3();
   private claimTimer = 0;
   private readonly repairClaims = new Map<number, number>();
@@ -271,12 +272,18 @@ export class SquadManager {
     this.cleanupRepairClaims();
 
     const point = rally ?? this.fallbackRally;
+    this.computeArmyCentre(point, this.armyCentre);
     let index = 0;
     let engineerIndex = 0;
     for (const squad of this.allySquads) {
       if (squad.alive) {
         if (squad.isGroundSupportSquad) {
           squad.assignTightRally(point, this.formation);
+        } else if (squad.def.id === "flagbearer") {
+          // The banner belongs with the line it empowers, never with the
+          // player's current position.  It deliberately does not consume a
+          // normal formation ring slot around the hero.
+          squad.assignRally(this.armyCentre, this.formation);
         } else {
           if (squad.isEngineerSquad) {
             const angle = engineerIndex * (Math.PI * 2 / 5);
@@ -315,6 +322,27 @@ export class SquadManager {
 
     prune(this.allySquads);
     prune(this.enemySquads);
+  }
+
+  private computeArmyCentre(fallback: Vector3, out: Vector3): void {
+    out.set(0, 0, 0);
+    let count = 0;
+    for (const squad of this.allySquads) {
+      if (!squad.alive || squad.isEngineerSquad || squad.isGroundSupportSquad || squad.def.id === "flagbearer") continue;
+      for (const member of squad.members) {
+        if (!member.alive) continue;
+        out.x += member.position.x;
+        out.z += member.position.z;
+        count++;
+      }
+    }
+    if (count > 0) {
+      out.x /= count;
+      out.z /= count;
+    } else {
+      out.x = fallback.x;
+      out.z = fallback.z;
+    }
   }
 
   private updateGroundSupportTaunt(dt: number): void {

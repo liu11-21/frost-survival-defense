@@ -8,8 +8,11 @@ export interface UIRefs {
   root: HTMLElement;
   hud: HTMLElement;
   wood: HTMLElement;
+  woodRate: HTMLElement;
   stone: HTMLElement;
+  stoneRate: HTMLElement;
   gold: HTMLElement;
+  goldRate: HTMLElement;
   capacityNote: HTMLElement;
   waveLabel: HTMLElement;
   waveTimer: HTMLElement;
@@ -88,9 +91,9 @@ const HTML = `
 
 <div class="hud">
   <div class="panel-box res-box">
-    <div class="res" title="${RESOURCE_TOOLTIP.wood}">${resourceIcon("wood", 22)}<span class="res-name">木材</span><b id="ui-wood">0</b></div>
-    <div class="res" title="${RESOURCE_TOOLTIP.stone}">${resourceIcon("stone", 22)}<span class="res-name">石頭</span><b id="ui-stone">0</b></div>
-    <div class="res" title="${RESOURCE_TOOLTIP.gold}">${resourceIcon("gold", 22)}<span class="res-name">金幣</span><b id="ui-gold">0</b></div>
+    <div class="res" title="${RESOURCE_TOOLTIP.wood}">${resourceIcon("wood", 22)}<span class="res-name">木材</span><b id="ui-wood">0</b><small id="ui-wood-rate">+0.0/s</small></div>
+    <div class="res" title="${RESOURCE_TOOLTIP.stone}">${resourceIcon("stone", 22)}<span class="res-name">石頭</span><b id="ui-stone">0</b><small id="ui-stone-rate">+0.0/s</small></div>
+    <div class="res" title="${RESOURCE_TOOLTIP.gold}">${resourceIcon("gold", 22)}<span class="res-name">金幣</span><b id="ui-gold">0</b><small id="ui-gold-rate">+0.0/s</small></div>
     <div class="cap-note" id="ui-cap">上限 100</div>
   </div>
 
@@ -231,8 +234,11 @@ export function buildUI(): UIRefs {
     root,
     hud: root.querySelector<HTMLElement>(".hud") as HTMLElement,
     wood: need(root, "ui-wood"),
+    woodRate: need(root, "ui-wood-rate"),
     stone: need(root, "ui-stone"),
+    stoneRate: need(root, "ui-stone-rate"),
     gold: need(root, "ui-gold"),
+    goldRate: need(root, "ui-gold-rate"),
     capacityNote: need(root, "ui-cap"),
     waveLabel: need(root, "ui-wave"),
     waveTimer: need(root, "ui-wave-timer"),

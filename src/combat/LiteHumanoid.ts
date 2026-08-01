@@ -105,6 +105,8 @@ export class HumanoidTemplate {
   private readonly weapon: Mesh | null;
   private readonly offhand: Mesh | null;
   private readonly cape: Mesh | null;
+  /** A grounded ellipse makes the six-unit flight height immediately readable. */
+  private readonly flyingShadow: Mesh | null;
   private readonly attachmentMeshes: Array<{ spec: AttachmentSpec; mesh: Mesh }> = [];
   private readonly pool: LiteRig[] = [];
   private counter = 0;
@@ -157,8 +159,12 @@ export class HumanoidTemplate {
       ? MeshBuilder.CreateBox(`${key}.cape`, { width: 0.46, height: 0.6, depth: 0.07 }, scene)
       : null;
     if (this.cape) this.cape.material = accentMat;
+    this.flyingShadow = visualKey.startsWith("flying")
+      ? MeshBuilder.CreateGround(`${key}.flightShadow`, { width: 1.8, height: 1.25 }, scene)
+      : null;
+    if (this.flyingShadow) this.flyingShadow.material = materials.blobShadow();
 
-    for (const m of [this.torso, this.head, this.arm, this.leg, this.belt, this.boot, this.crest, this.weapon, this.offhand, this.cape]) {
+    for (const m of [this.torso, this.head, this.arm, this.leg, this.belt, this.boot, this.crest, this.weapon, this.offhand, this.cape, this.flyingShadow]) {
       if (!m) continue;
       m.isPickable = false;
       m.receiveShadows = false;
@@ -214,6 +220,9 @@ export class HumanoidTemplate {
 
     const root = new TransformNode(`unit.${id}`, this.scene);
     root.scaling.setAll(scale);
+    // Flying roots live at y=6; keep their shadow on the arena floor without
+    // adding a second world entity or registering it for collision/picking.
+    attach(this.flyingShadow, root, 0, -5.95, 0);
     const body = new TransformNode(`${id}.body`, this.scene);
     body.parent = root;
 

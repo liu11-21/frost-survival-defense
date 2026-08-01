@@ -4,6 +4,8 @@ import type { CombatWorld } from "../combat/CombatWorld";
 import {
   AUTO_REBUILD,
   BUILDING_BY_ID,
+  buildCostForSurface,
+  canBuildOnSurface,
   wallRebuildFactor,
   type BuildingType,
 } from "../data/BuildingDefinitions";
@@ -100,6 +102,27 @@ export class BuildingManager {
   get attackSpeedMultiplier(): number {
     return this.attackSpeedBuffRemaining > 0 ? this.attackSpeedBuffMultiplier : 1;
   }
+  get currentFurnaceLevel(): number { return this.furnaceLevel; }
+
+  /** Completed production buildings' live per-second output. */
+  productionEfficiency(multiplier = 1): { wood: number; stone: number; gold: number } {
+    const result = { wood: 0, stone: 0, gold: 0 };
+    for (const slot of this.slots) {
+      const b = slot.building;
+      if (!b?.alive || !b.isComplete || !b.def.produces || !b.def.produceInterval) continue;
+      result[b.def.produces] += (1 / b.def.produceInterval) * Math.max(0, multiplier);
+    }
+    return result;
+  }
+
+  availableSlots(surface?: "ground" | "sky"): BuildSlot[] {
+    return this.slots.filter((slot) => (!surface || slot.surface === surface) && slot.isUnlocked(this.furnaceLevel));
+  }
+
+  costFor(slot: BuildSlot, type: BuildingType) {
+    const def = BUILDING_BY_ID.get(type);
+    return def ? buildCostForSurface(def, slot.surface) : {};
+  }
 
   activateAttackSpeedBoost(seconds: number, multiplier: number): void {
     this.attackSpeedBuffRemaining = Math.max(this.attackSpeedBuffRemaining, Math.max(0, seconds));
@@ -111,23 +134,33 @@ export class BuildingManager {
     return this.slots.filter((s) => s.category === "wall" && !s.occupied);
   }
 
-  canBuild(slotId: string, type: BuildingType): BuildResult {
+  canBuild(slotId: string, type: BuildingType, ignoreGroundUnlock = false): BuildResult {
     const slot = this.slot(slotId);
     const def = BUILDING_BY_ID.get(type);
     if (!slot || !def) return { ok: false, reason: "無效的建築" };
-    if (slot.category !== def.slotCategory) return { ok: false, reason: "此槽位不可建造該設施" };
+    if (!slot.isUnlocked(this.furnaceLevel) && !(ignoreGroundUnlock && slot.surface === "ground")) {
+      return { ok: false, reason: `火爐 Lv.${slot.unlockLevel} 解鎖` };
+    }
+    if (!canBuildOnSurface(def, slot.surface)) {
+      return { ok: false, reason: "天空點位只能建造攻擊型設施" };
+    }
+    if (slot.surface === "ground" && slot.category !== def.slotCategory) {
+      return { ok: false, reason: "此槽位不可建造該設施" };
+    }
     if (slot.occupied) return { ok: false, reason: "槽位已有建築" };
-    if (!this.store.canAfford(def.cost)) return { ok: false, reason: `${this.store.shortfall(def.cost)}不足` };
+    const cost = buildCostForSurface(def, slot.surface);
+    if (!this.store.canAfford(cost)) return { ok: false, reason: `${this.store.shortfall(cost)}不足` };
     return { ok: true };
   }
 
-  build(slotId: string, type: BuildingType, healthMultiplier = 1): BuildResult {
-    const check = this.canBuild(slotId, type);
+  build(slotId: string, type: BuildingType, healthMultiplier = 1, ignoreGroundUnlock = false): BuildResult {
+    const check = this.canBuild(slotId, type, ignoreGroundUnlock);
     if (!check.ok) return check;
     const slot = this.slot(slotId);
     const def = BUILDING_BY_ID.get(type);
     if (!slot || !def) return { ok: false, reason: "無效的建築" };
-    if (!this.store.spend(def.cost)) return { ok: false, reason: "資源不足" };
+    const cost = buildCostForSurface(def, slot.surface);
+    if (!this.store.spend(cost)) return { ok: false, reason: "資源不足" };
     let health = healthMultiplier;
     if (type === "wall") {
       const count = this.wallRebuildsThisWave.get(slot.id) ?? 0;
@@ -161,9 +194,11 @@ export class BuildingManager {
     }
 
     const wallSide = type === "wall" ? WALL_SIDE_BY_SLOT.get(slot.id) : undefined;
-    const registered: Obstacle[] = wallSide
-      ? registerWallObstacles(this.collision, wallSide)
-      : [this.collision.add(slot.x, slot.z, building.def.radius, building.blockerBox ?? undefined)];
+    const registered: Obstacle[] = slot.surface === "sky"
+      ? []
+      : wallSide
+        ? registerWallObstacles(this.collision, wallSide)
+        : [this.collision.add(slot.x, slot.z, building.def.radius, building.blockerBox ?? undefined)];
     this.obstacles.set(slot.id, registered);
     return building;
   }
@@ -243,6 +278,7 @@ export class BuildingManager {
             events: this.events,
             queue: this.rebuildQueue,
             clock: this.clock,
+            rebuildCost: (target, targetBuilding) => buildCostForSurface(targetBuilding.def, target.surface),
             detach: (target) => this.detach(target),
           })
         ) {

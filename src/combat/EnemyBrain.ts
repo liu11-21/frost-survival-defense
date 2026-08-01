@@ -26,6 +26,7 @@ export function updateEnemyBrain(unit: CombatUnit, dt: number, reachTimer: numbe
   const currentInvalid =
     !current ||
     validateTarget(unit, current) !== "ok" ||
+    (unit.faction === "enemy" && (current as { isSky?: boolean }).isSky === true) ||
     targetOutOfLeash(unit, current) ||
     (staleReach && !unit.canReach(current));
 

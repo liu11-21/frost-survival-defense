@@ -326,13 +326,15 @@ export class HeroController implements Damageable {
 
     if (dist <= HERO_MELEE.threshold + target.hitRadius) {
       const power = this.stats.meleeAttack;
-      this.ctx.damage(target, power, this.position.x, this.position.z);
-      this.ctx.areaDamage("ally", target.position.x, target.position.z, HERO_MELEE.radius, power, 5);
+      this.ctx.damage(target, power, this.position.x, this.position.z, "melee");
+      // The hero is the one melee exception: his skill/impact can still catch
+      // an airborne target standing inside the shock radius.
+      this.ctx.areaDamage("ally", target.position.x, target.position.z, HERO_MELEE.radius, power, 5, undefined, "skill");
       this.ctx.vfx.meleeHit(target.position.x, target.position.z);
     } else {
       const power = this.stats.rangedAttack;
       this.ctx.projectiles.fire("arrow", this.position.x, 1.0, this.position.z, target, (hx, hz) => {
-        if (target.alive) this.ctx.damage(target, power, hx, hz);
+        if (target.alive) this.ctx.damage(target, power, hx, hz, "ranged");
         this.ctx.vfx.rangedHit(hx, hz);
       });
     }

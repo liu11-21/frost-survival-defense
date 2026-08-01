@@ -157,6 +157,16 @@ export class ContextPrompt {
     }
 
     // Empty slot: say exactly what may go here, or exactly why nothing can.
+    if (!slot.isUnlocked(this.furnace.currentLevel)) {
+      return {
+        kind: "buildSlot",
+        label: "火爐升級後解鎖",
+        detail: `${slot.name} · 火爐 Lv.${slot.unlockLevel} 解鎖${slot.surface === "sky" ? " · 天空攻擊平台" : ""}`,
+        slot,
+        node: null,
+        enabled: false,
+      };
+    }
     const pending = this.buildings.rebuildQueue.all.findIndex((i) => i.slotId === slot.id);
     if (pending >= 0) {
       const item = this.buildings.rebuildQueue.all[pending];
@@ -171,7 +181,11 @@ export class ContextPrompt {
       };
     }
 
-    const detail = slot.category === "wall" ? slot.name : `${slot.name} · 可建造任何一般設施`;
+    const detail = slot.category === "wall"
+      ? slot.name
+      : slot.surface === "sky"
+        ? `${slot.name} · 僅可建造攻擊型設施 · 天空設施不受地面敵人攻擊`
+        : `${slot.name} · 可建造任何一般設施`;
     return {
       kind: "buildSlot",
       label: "E　建造設施",

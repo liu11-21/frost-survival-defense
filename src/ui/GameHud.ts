@@ -99,7 +99,7 @@ export class GameHud {
       events.on("buildingDemolishStarted", (p) =>
         this.notifications.show({
           title: `開始拆除：${typeName(p.type)}`,
-          message: `完成後返還 ${costText(demolishRefund(p.type))}。`,
+          message: `完成後返還 ${costText(demolishRefund(p.type, d.buildings.slot(p.slotId)?.building?.constructionCost))}。`,
           iconId: p.type,
         }),
       ),
@@ -213,6 +213,11 @@ export class GameHud {
     refs.heroStats.textContent =
       `遠程 ${Math.round(heroStats.rangedAttack)} · 近戰 ${Math.round(heroStats.meleeAttack)}` +
       ` · 攻速 ${heroStats.attackInterval.toFixed(2)}s`;
+
+    const rates = buildings.productionEfficiency(run.productionRate);
+    refs.woodRate.textContent = `+${rates.wood.toFixed(1)}/s`;
+    refs.stoneRate.textContent = `+${rates.stone.toFixed(1)}/s`;
+    refs.goldRate.textContent = `+${rates.gold.toFixed(1)}/s`;
 
     // furnace
     const fh = Math.max(0, Math.ceil(furnace.health));

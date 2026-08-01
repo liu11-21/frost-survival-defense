@@ -38,7 +38,10 @@ export const MAP = {
    * the correct, conservative answer for all of them.
    */
   wallRadius: Math.hypot(BASE_HALF_WIDTH, BASE_HALF_DEPTH),
-  universalSlots: 22,
+  /** Ground plots available at furnace level 10. */
+  universalSlots: 31,
+  groundSlots: 31,
+  skySlots: 5,
   wallSlots: 4,
 };
 
@@ -143,6 +146,12 @@ export function clampOutside(x: number, z: number, margin = 0.6): { x: number; z
 export interface BuildSlotDefinition {
   id: string;
   category: BuildSlotCategory;
+  /** Furnace level at which this plot becomes buildable. */
+  unlockLevel: number;
+  /** Ground plots participate in collision; sky plots are elevated platforms. */
+  surface: "ground" | "sky";
+  /** World-space platform height. Ground remains at zero. */
+  elevation: number;
   x: number;
   z: number;
   /** Facing, so buildings turn their front toward the interior road network. */
@@ -173,10 +182,21 @@ function facingCentre(x: number, z: number): number {
 }
 
 /** Hand-placed, not procedural — see `BUILD_SLOTS` below. */
-function plot(id: string, x: number, z: number, role: SlotRole, lanes: WallSide[], name: string): BuildSlotDefinition {
+function plot(
+  id: string,
+  x: number,
+  z: number,
+  role: SlotRole,
+  lanes: WallSide[],
+  name: string,
+  unlockLevel: number,
+): BuildSlotDefinition {
   return {
     id,
     category: "universal",
+    unlockLevel,
+    surface: "ground",
+    elevation: 0,
     x,
     z,
     yaw: facingCentre(x, z),
@@ -206,37 +226,78 @@ const CORNER_LABEL: Record<string, string> = { "north,east": "東北", "south,ea
  */
 export const BUILD_SLOTS: BuildSlotDefinition[] = [
   // ------------------------------------------------------------- north lane
-  plot("northFrontA", -5.71, 12.24, "front", ["north"], `${LANE_LABEL.north}前線A`),
-  plot("northFrontB", 5.71, 12.24, "front", ["north"], `${LANE_LABEL.north}前線B`),
-  plot("northMid", 2.48, 8.65, "mid", ["north"], `${LANE_LABEL.north}中段`),
-  plot("northBack", -2.48, 8.65, "back", ["north"], `${LANE_LABEL.north}後方`),
+  plot("northFrontA", -5.71, 12.24, "front", ["north"], `${LANE_LABEL.north}前線A`, 5),
+  plot("northFrontB", 5.71, 12.24, "front", ["north"], `${LANE_LABEL.north}前線B`, 5),
+  plot("northMid", 2.48, 8.65, "mid", ["north"], `${LANE_LABEL.north}中段`, 2),
+  plot("northBack", -2.48, 8.65, "back", ["north"], `${LANE_LABEL.north}後方`, 2),
   // -------------------------------------------------------------- east lane
-  plot("eastFrontA", 12.24, -5.71, "front", ["east"], `${LANE_LABEL.east}前線A`),
-  plot("eastFrontB", 12.24, 5.71, "front", ["east"], `${LANE_LABEL.east}前線B`),
-  plot("eastMid", 8.65, 2.48, "mid", ["east"], `${LANE_LABEL.east}中段`),
-  plot("eastBack", 8.65, -2.48, "back", ["east"], `${LANE_LABEL.east}後方`),
+  plot("eastFrontA", 12.24, -5.71, "front", ["east"], `${LANE_LABEL.east}前線A`, 6),
+  plot("eastFrontB", 12.24, 5.71, "front", ["east"], `${LANE_LABEL.east}前線B`, 6),
+  plot("eastMid", 8.65, 2.48, "mid", ["east"], `${LANE_LABEL.east}中段`, 1),
+  plot("eastBack", 8.65, -2.48, "back", ["east"], `${LANE_LABEL.east}後方`, 3),
   // ------------------------------------------------------------- south lane
-  plot("southFrontA", -5.71, -12.24, "front", ["south"], `${LANE_LABEL.south}前線A`),
-  plot("southFrontB", 5.71, -12.24, "front", ["south"], `${LANE_LABEL.south}前線B`),
-  plot("southMid", 2.48, -8.65, "mid", ["south"], `${LANE_LABEL.south}中段`),
-  plot("southBack", -2.48, -8.65, "back", ["south"], `${LANE_LABEL.south}後方`),
+  plot("southFrontA", -5.71, -12.24, "front", ["south"], `${LANE_LABEL.south}前線A`, 6),
+  plot("southFrontB", 5.71, -12.24, "front", ["south"], `${LANE_LABEL.south}前線B`, 7),
+  plot("southMid", 2.48, -8.65, "mid", ["south"], `${LANE_LABEL.south}中段`, 2),
+  plot("southBack", -2.48, -8.65, "back", ["south"], `${LANE_LABEL.south}後方`, 3),
   // -------------------------------------------------------------- west lane
-  plot("westFrontA", -12.24, -5.71, "front", ["west"], `${LANE_LABEL.west}前線A`),
-  plot("westFrontB", -12.24, 5.71, "front", ["west"], `${LANE_LABEL.west}前線B`),
-  plot("westMid", -8.65, 2.48, "mid", ["west"], `${LANE_LABEL.west}中段`),
-  plot("westBack", -8.65, -2.48, "back", ["west"], `${LANE_LABEL.west}後方`),
+  plot("westFrontA", -12.24, -5.71, "front", ["west"], `${LANE_LABEL.west}前線A`, 7),
+  plot("westFrontB", -12.24, 5.71, "front", ["west"], `${LANE_LABEL.west}前線B`, 7),
+  plot("westMid", -8.65, 2.48, "mid", ["west"], `${LANE_LABEL.west}中段`, 1),
+  plot("westBack", -8.65, -2.48, "back", ["west"], `${LANE_LABEL.west}後方`, 3),
   // ------------------------------------------------------- corner junctions
-  plot("junctionNE", 10.25, 10.25, "junction", ["north", "east"], `${CORNER_LABEL["north,east"]}交叉火力位`),
-  plot("junctionSE", 10.25, -10.25, "junction", ["south", "east"], `${CORNER_LABEL["south,east"]}交叉火力位`),
-  plot("junctionSW", -10.25, -10.25, "junction", ["south", "west"], `${CORNER_LABEL["south,west"]}交叉火力位`),
-  plot("junctionNW", -10.25, 10.25, "junction", ["north", "west"], `${CORNER_LABEL["north,west"]}交叉火力位`),
+  plot("junctionNE", 10.25, 10.25, "junction", ["north", "east"], `${CORNER_LABEL["north,east"]}交叉火力位`, 4),
+  plot("junctionSE", 10.25, -10.25, "junction", ["south", "east"], `${CORNER_LABEL["south,east"]}交叉火力位`, 4),
+  plot("junctionSW", -10.25, -10.25, "junction", ["south", "west"], `${CORNER_LABEL["south,west"]}交叉火力位`, 4),
+  plot("junctionNW", -10.25, 10.25, "junction", ["north", "west"], `${CORNER_LABEL["north,west"]}交叉火力位`, 5),
   // ------------------------------------------------------------ central hub
-  plot("centerA", 3.85, 3.85, "center", [], "中央多路防禦位A"),
-  plot("centerB", -3.85, -3.85, "center", [], "中央多路防禦位B"),
+  plot("centerA", 3.85, 3.85, "center", [], "中央多路防禦位A", 1),
+  plot("centerB", -3.85, -3.85, "center", [], "中央多路防禦位B", 1),
+
+  // ---------------------------------------------------------- outer ring
+  // These are deliberately beyond the unchanged wall rectangle. They become
+  // forward outposts as the furnace expands and remain ordinary, targetable
+  // ground facilities once unlocked.
+  plot("outpostNorth", 0, 22, "front", ["north"], "北側外圍前哨", 8),
+  plot("outpostNorthEast", 20, 20, "back", ["north", "east"], "東北外圍前哨", 9),
+  plot("outpostEast", 24, 0, "front", ["east"], "東側外圍前哨", 8),
+  plot("outpostSouthEast", 20, -20, "back", ["south", "east"], "東南外圍前哨", 10),
+  plot("outpostSouth", 0, -22, "front", ["south"], "南側外圍前哨", 8),
+  plot("outpostSouthWest", -20, -20, "back", ["south", "west"], "西南外圍前哨", 10),
+  plot("outpostWest", -24, 0, "front", ["west"], "西側外圍前哨", 9),
+  plot("outpostNorthWest", -20, 20, "back", ["north", "west"], "西北外圍前哨", 10),
+  plot("outpostFarNorth", 11, 22, "front", ["north"], "北側遠端前哨", 9),
+
+  // ---------------------------------------------------------- sky platforms
+  ...[
+    ["skyA", 0, 11, "天空平台 A"],
+    ["skyB", 10, 3, "天空平台 B"],
+    ["skyC", 6, -9, "天空平台 C"],
+    ["skyD", -6, -9, "天空平台 D"],
+    ["skyE", -10, 3, "天空平台 E"],
+  ].map(([id, x, z, name], index): BuildSlotDefinition => ({
+    id: String(id),
+    category: "sky",
+    unlockLevel: 15 + Number(index) * 5,
+    surface: "sky",
+    elevation: 8,
+    x: Number(x),
+    z: Number(z),
+    yaw: facingCentre(Number(x), Number(z)),
+    ringIndex: Number(index),
+    role: "center",
+    lanes: [],
+    name: String(name),
+    footprintRadius: UNIVERSAL_MAX_BUILDING_RADIUS,
+    maxBuildingRadius: UNIVERSAL_MAX_BUILDING_RADIUS,
+  })),
 
   ...WALL_SIDES.map((w): BuildSlotDefinition => ({
     id: w.slotId,
     category: "wall",
+    unlockLevel: 1,
+    surface: "ground",
+    elevation: 0,
     x: w.x,
     z: w.z,
     yaw: w.yaw,
@@ -257,6 +318,16 @@ export const WALL_SLOT_IDS: string[] = BUILD_SLOTS.filter((s) => s.category === 
 
 /** Every non-wall slot — what the universal-overlap validator checks pairwise. */
 export const UNIVERSAL_SLOTS: ReadonlyArray<BuildSlotDefinition> = BUILD_SLOTS.filter((s) => s.category === "universal");
+export const GROUND_SLOTS: ReadonlyArray<BuildSlotDefinition> = BUILD_SLOTS.filter((s) => s.surface === "ground" && s.category === "universal");
+export const SKY_SLOTS: ReadonlyArray<BuildSlotDefinition> = BUILD_SLOTS.filter((s) => s.surface === "sky");
+
+export function unlockedGroundSlotCount(furnaceLevel: number): number {
+  return GROUND_SLOTS.filter((slot) => Math.floor(furnaceLevel) >= slot.unlockLevel).length;
+}
+
+export function unlockedSkySlotCount(furnaceLevel: number): number {
+  return SKY_SLOTS.filter((slot) => Math.floor(furnaceLevel) >= slot.unlockLevel).length;
+}
 
 export interface LaneDefinition {
   index: number;

@@ -45,6 +45,8 @@ function applyAoeSlow(unit: CombatUnit, target: Damageable): void {
 }
 
 export function resolveUnitAttack(unit: CombatUnit, target: Damageable, ctx: CombatContext): void {
+  if (unit.faction === "ally" && target.kind === "unit" && (target as CombatUnit).isFlying &&
+      unit.def.attackType !== "rangedSingle" && unit.def.attackType !== "rangedArea") return;
   // Higher enemy tiers hit fortifications harder than they hit people.
   const siege = STRUCTURE_KINDS.has(target.kind) ? unit.siegeMultiplier : 1;
   const power = unit.attackPower * siege * tierBonusMultiplier(unit.def, target.level);
@@ -52,12 +54,12 @@ export function resolveUnitAttack(unit: CombatUnit, target: Damageable, ctx: Com
 
   switch (def.attackType) {
     case "meleeSingle":
-      ctx.damage(target, power, unit.position.x, unit.position.z);
+      ctx.damage(target, power, unit.position.x, unit.position.z, "melee");
       ctx.vfx.meleeHit(target.position.x, target.position.z);
       break;
 
     case "meleeArea":
-      ctx.damage(target, power, unit.position.x, unit.position.z);
+      ctx.damage(target, power, unit.position.x, unit.position.z, "melee");
       ctx.areaDamage(
         unit.faction,
         target.position.x,
@@ -65,6 +67,8 @@ export function resolveUnitAttack(unit: CombatUnit, target: Damageable, ctx: Com
         def.areaRadius ?? 2,
         power,
         (def.maxAreaTargets ?? 5) - 1,
+        undefined,
+        "melee",
       );
       ctx.vfx.meleeHit(target.position.x, target.position.z);
       break;
@@ -79,7 +83,7 @@ export function resolveUnitAttack(unit: CombatUnit, target: Damageable, ctx: Com
         target,
         (hx, hz) => {
           if (target.alive) {
-            ctx.damage(target, power, hx, hz);
+            ctx.damage(target, power, hx, hz, "ranged");
             applyOnHitSlow(unit, target);
           }
           ctx.vfx.rangedHit(hx, hz);
@@ -102,7 +106,7 @@ export function resolveUnitAttack(unit: CombatUnit, target: Damageable, ctx: Com
         target,
         (hx, hz) => {
           ctx.areaDamage(unit.faction, hx, hz, radius, power, def.maxAreaTargets ?? 6, (hit) =>
-            applyAoeSlow(unit, hit),
+            applyAoeSlow(unit, hit), "ranged",
           );
           if (meteor) ctx.vfx.burstAt("arcaneImpact", hx, hz, 54);
           else if (frost) {

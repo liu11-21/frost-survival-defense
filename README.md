@@ -231,6 +231,30 @@ position rather than a one-time purchase.
 
 ---
 
+## Furnace expansion, sky platforms and air units
+
+Ground plots now unlock outward with the furnace: Lv.1–10 expose 4, 7, 10, 13,
+16, 19, 22, 25, 28 and 31 universal ground plots. The four wall sides keep their
+original positions. Sky platforms unlock at Lv.15, 20, 25, 30 and 35 (five total);
+they are elevated, have no ground collision, accept attack facilities only, cost
+`ceil(base cost × 1.25)` and stay out of existing enemy target and area-damage
+queries. Their damage is multiplied by 1.5 before furnace and skill bonuses.
+
+The sky profiles are deliberately readable: crossbows volley up to three targets,
+towers gain range, nine-target coverage and a per-tower +5% streak (up to +50%),
+frost towers freeze after three consecutive hits, snipers apply five-second ranged
+armour break and a third-shot critical, and mortars burn for ten seconds at 300 DPS
+with a crowd-based two-second minimum interval. Flagbearers follow the centre of
+the living non-engineer, non-flagbearer, non-escort combat army instead of the hero;
+when that army is empty they return to the furnace.
+
+Four airborne enemy types now appear from waves 4, 8, 15 and 20. They fly over
+walls and can be hit by ranged allies, the hero and attack facilities; melee,
+shield, engineer and flagbearer units cannot target them. Their wave previews,
+elite warnings, codex entries and airborne silhouettes use the same source data as
+combat. The resource HUD also reports each completed producer's current output per
+second, and the roster is a three-column melee/ranged/support grid with HP bars.
+
 ## The perimeter
 
 **One rectangle, four walls, zero gaps.** The base used to be a ring of small, independently-built
@@ -532,6 +556,10 @@ facilities and the central furnace are never repair targets.
 | 號令者 Commander | 4 | 1 | 1200 | 10 | 30 | ×1.0 | non-stacking aura (+15% move/+10% atk speed), allies target it first |
 | 冰爆怪 Ice Bomber | 2 | 1 | 500 | 0 | 12 | ×1.0 | 2 s armed countdown, radius-3 self-destruct, 30%-scale blast if killed early |
 | 寒霜巨像 Boss | 6 | 1 | 10000 | 300 | 100 | **×2.0** | three phases, escorted by Lv4 + Lv5 |
+| 飛行近戰小兵 | 1 | 6 | 60 | 8 | 1 | ×1.0 | airborne melee; ranged-only target |
+| 飛行精銳射手 | 3 | 6 | 90 | 18 | 10 | ×1.0 | airborne ranged; ranged-only target |
+| 飛行轟炸者 | 5 | 3 | 900 | 80 | 30 | ×1.2 | airborne area attack; appears on a 5-wave multiple |
+| 飛行空中巨像 | 6 | 2 | 6000 | 220 | 100 | **×2.0** | airborne boss prototype; appears on a 5-wave multiple |
 
 ---
 
@@ -990,6 +1018,12 @@ universal build slots, the layout validator, the four new attack buildings, and 
   consecutive Boss waves
 - a real simulated run stepping through waves 1-20 never activates the Boss controller early, and
   does activate it at wave 20
+
+**The current full regression (`node tools/playtest.mjs`) is 426/426 checks passing** with no
+console errors. The focused expansion/air regression (`node tools/playtest.mjs --suite v10`) adds 12 live checks for
+ground-ring unlock counts, sky unlock levels and costs, attack-only sky placement, elevated flying
+units, melee-versus-air targeting, sky exclusion from enemy targets, roster categories, and live
+production-rate HUD values. The focused v9 HUD/codex suite passes 75 assertions.
 
 ```bash
 node tools/prodcheck.mjs --url http://localhost:4173

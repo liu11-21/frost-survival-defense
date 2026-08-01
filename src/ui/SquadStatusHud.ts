@@ -7,6 +7,7 @@ const WIPE_NOTICE = 3;
 const REFRESH_INTERVAL = 0.35;
 
 type Status = "normal" | "hurt" | "danger" | "wiped";
+type RosterCategory = "melee" | "ranged" | "support";
 
 interface Row {
   defId: string;
@@ -20,6 +21,7 @@ interface Row {
   samples: number;
   status: Status;
   furnaceLevel: number;
+  category: RosterCategory;
 }
 
 const STATUS_TEXT: Record<Status, string> = {
@@ -127,6 +129,7 @@ export class SquadStatusHud {
           samples: 0,
           status: "normal",
           furnaceLevel: squad.furnaceLevel,
+          category: categoryOf(squad.def.id),
         };
         byType.set(squad.def.id, row);
       }
@@ -163,6 +166,7 @@ export class SquadStatusHud {
         samples: 0,
         status: "wiped",
         furnaceLevel: this.run.allyFurnaceStats(defId)?.level ?? 1,
+        category: categoryOf(defId),
       });
     }
     return rows;
@@ -175,7 +179,7 @@ export class SquadStatusHud {
     this.engineerHeader.textContent =
       `工程兵 ${this.squads.engineerSquadsUsed}/${this.run.engineerLimit}`;
     this.list.innerHTML = combatRows.length > 0
-      ? this.rowsHtml(combatRows, true)
+      ? this.categoryHtml(combatRows)
       : '<div class="squad-empty">尚未招募任何小隊</div>';
     this.engineerList.innerHTML = engineerRows.length > 0
       ? this.rowsHtml(engineerRows, false)
@@ -188,6 +192,7 @@ export class SquadStatusHud {
       const avgHealth = row.samples > 0 ? row.health / row.samples : 0;
       const avgMax = row.samples > 0 ? row.maxHealth / row.samples : 0;
       const currentPower = row.samples > 0 ? row.attackPower / row.samples : 0;
+      const healthRatio = avgMax > 0 ? Math.max(0, Math.min(1, avgHealth / avgMax)) : 0;
       const healthText = row.status === "wiped"
         ? "全滅"
         : `平均 HP ${Math.round(avgHealth)}/${Math.round(avgMax)} · 攻擊 ${Math.round(currentPower)}`;
@@ -197,8 +202,27 @@ export class SquadStatusHud {
           <span class="squad-name">${row.name} Lv.${row.furnaceLevel}</span>
           <span class="squad-count">${row.status === "wiped" ? "—" : `×${row.squads}`}</span>
           <span class="squad-state">${STATUS_TEXT[row.status]}</span>
+          <span class="squad-health"><i style="width:${Math.round(healthRatio * 100)}%"></i><em>${Math.round(avgHealth)}/${Math.round(avgMax)}</em></span>
           <small class="squad-live-stats">${healthText}</small>
         </button>`;
     }).join("");
   }
+
+  private categoryHtml(rows: Row[]): string {
+    const groups: Array<[RosterCategory, string]> = [
+      ["melee", "近戰"],
+      ["ranged", "遠程"],
+      ["support", "支援"],
+    ];
+    return groups.map(([category, label]) => {
+      const subset = rows.filter((row) => row.category === category);
+      return `<section class="squad-category ${category}"><h4>${label}</h4>${subset.length > 0 ? this.rowsHtml(subset, true) : '<div class="squad-category-empty">—</div>'}</section>`;
+    }).join("");
+  }
+}
+
+function categoryOf(defId: string): RosterCategory {
+  if (["archer", "mage", "musketeer", "frostmage"].includes(defId)) return "ranged";
+  if (["medic", "flagbearer"].includes(defId)) return "support";
+  return "melee";
 }

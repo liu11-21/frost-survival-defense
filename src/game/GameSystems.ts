@@ -145,7 +145,7 @@ export class GameSystems {
   /** Set by hovering a not-yet-built attack building's build-menu card;
    * cleared on mouse-leave. The range display reads the exact same
    * definition data real combat does, never a separate hardcoded preview. */
-  rangePreview: { x: number; z: number; type: BuildingType } | null = null;
+  rangePreview: { x: number; z: number; type: BuildingType; surface: "ground" | "sky" } | null = null;
   readonly balance: BalanceKnobs = defaultBalanceKnobs();
   /** Set by the balance / stress tools; blocks leaderboard writes. */
   onBalanceAction: ((action: string) => void) | null = null;

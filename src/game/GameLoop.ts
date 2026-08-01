@@ -89,30 +89,32 @@ function updateAttackRangeDisplay(s: GameSystems): void {
 
   if (nearbyBuilding && nearbyBuilding.isComplete && nearbyBuilding.def.attackKind) {
     const def = nearbyBuilding.def;
+    const attackRange = (def.attackRange ?? 0) * (nearbyBuilding.isSky && (def.attackKind === "snipe" || def.attackKind === "areaShell") ? 1.5 : 1);
     const coverage = computeLaneCoverage(
       nearbyBuilding.position.x,
       nearbyBuilding.position.z,
-      def.attackRange ?? 0,
+      attackRange,
       liveLanes,
       def.requiresLineOfSight === true,
       s.world,
     );
-    s.attackRangeVisual.show(nearbyBuilding.position.x, nearbyBuilding.position.z, def.attackRange ?? 0, def.minAttackRange ?? 0, coverage);
+    s.attackRangeVisual.show(nearbyBuilding.position.x, nearbyBuilding.position.z, attackRange, def.minAttackRange ?? 0, coverage);
     return;
   }
 
   const preview = s.rangePreview;
   const previewDef = preview ? BUILDING_BY_ID.get(preview.type) : undefined;
   if (preview && previewDef?.attackKind) {
+    const attackRange = (previewDef.attackRange ?? 0) * (preview.surface === "sky" && (previewDef.attackKind === "snipe" || previewDef.attackKind === "areaShell") ? 1.5 : 1);
     const coverage = computeLaneCoverage(
       preview.x,
       preview.z,
-      previewDef.attackRange ?? 0,
+      attackRange,
       liveLanes,
       previewDef.requiresLineOfSight === true,
       s.world,
     );
-    s.attackRangeVisual.show(preview.x, preview.z, previewDef.attackRange ?? 0, previewDef.minAttackRange ?? 0, coverage);
+    s.attackRangeVisual.show(preview.x, preview.z, attackRange, previewDef.minAttackRange ?? 0, coverage);
     return;
   }
 

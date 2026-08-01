@@ -1,5 +1,6 @@
 import { Scene, TransformNode, Vector3 } from "@babylonjs/core";
-import { BUILDING_BY_ID, type BuildingDefinition, type BuildingType } from "../data/BuildingDefinitions";
+import { BUILDING_BY_ID, buildCostForSurface, type BuildingDefinition, type BuildingType } from "../data/BuildingDefinitions";
+import type { ResourceCost } from "../data/CombatTypes";
 import { WALL_SEGMENT_DEPTH, WALL_SIDE_BY_SLOT } from "../data/BuildSlotDefinitions";
 import type { GameEvents } from "../game/GameEvents";
 import { MaterialFactory } from "../scene/MaterialFactory";
@@ -8,7 +9,7 @@ import type { CombatContext } from "../combat/CombatContext";
 import { advanceStructureSelfRepair } from "../combat/StructureSelfRepair";
 import { makeBox, type BoxShape } from "../util/Collision";
 import { BuildingVisualController, type VisualIntegrity } from "./BuildingVisualController";
-import { fireBuilding, tickBuildingCombat } from "./BuildingCombat";
+import { fireBuilding, tickBuildingCombat, attackIntervalFor } from "./BuildingCombat";
 import type { BuildSlot } from "./BuildSlot";
 import { furnaceFacilityAttackMultiplier, furnaceFacilityHealthMultiplier } from "../data/FurnaceUpgradeConfig";
 
@@ -78,7 +79,7 @@ export class Building implements Damageable {
     if (!def) throw new Error(`unknown building type ${type}`);
     this.def = def;
     this.kind = KIND_BY_TYPE[type];
-    this.position = new Vector3(slot.x, 0, slot.z);
+    this.position = new Vector3(slot.x, slot.elevation, slot.z);
     this.baseMaxHealth = Math.max(0, Math.round(def.maxHealth * healthMultiplier));
     this.maxHealth = this.baseMaxHealth;
     this.health = this.maxHealth;
@@ -99,6 +100,7 @@ export class Building implements Damageable {
       slot.x,
       slot.z,
       slot.yaw,
+      slot.elevation,
     );
   }
 
@@ -111,12 +113,21 @@ export class Building implements Damageable {
   get hitRadius(): number {
     return this.def.radius;
   }
+  get isSky(): boolean {
+    return this.slot.surface === "sky";
+  }
+  get constructionCost(): ResourceCost {
+    return buildCostForSurface(this.def, this.slot.surface);
+  }
   get threat(): number {
     return this.attackPower;
   }
   get level(): number { return this.furnaceLevelValue; }
   get attackPower(): number {
-    return this.def.attackPower * furnaceFacilityAttackMultiplier(this.furnaceLevelValue);
+    return this.attackPowerFor(this.def.attackPower);
+  }
+  attackPowerFor(base: number): number {
+    return base * furnaceFacilityAttackMultiplier(this.furnaceLevelValue) * (this.isSky ? 1.5 : 1);
   }
   get displayName(): string {
     return `${this.def.name} Lv.${this.furnaceLevelValue}`;
@@ -270,7 +281,7 @@ export class Building implements Damageable {
       tickBuildingCombat(this, dt, ctx);
       this.attackTimer -= dt * Math.max(1, attackSpeedMultiplier);
       if (this.attackTimer <= 0 && fireBuilding(this, ctx)) {
-        this.attackTimer = this.def.attackInterval ?? 1.5;
+        this.attackTimer = attackIntervalFor(this, ctx);
       }
     }
   }

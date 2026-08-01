@@ -7,6 +7,7 @@ import type { GameEvents } from "../game/GameEvents";
 import type { Building } from "./Building";
 import type { BuildSlot } from "./BuildSlot";
 import type { RebuildQueue } from "./RebuildQueue";
+import type { ResourceCost } from "../data/CombatTypes";
 
 /**
  * Production collection, destruction handling and the ground-scatter that goes
@@ -40,6 +41,7 @@ export interface DestructionDeps {
   events: GameEvents;
   queue: RebuildQueue;
   clock: number;
+  rebuildCost(slot: BuildSlot, building: Building): ResourceCost;
   detach(slot: BuildSlot): void;
 }
 
@@ -72,7 +74,7 @@ export function handleDestroyed(slot: BuildSlot, building: Building, deps: Destr
       slotId: slot.id,
       buildingType: slot.lastCompletedType ?? type,
       destroyedAt: deps.clock,
-      rebuildCost: { ...def.cost },
+      rebuildCost: deps.rebuildCost(slot, building),
     });
   }
   return warehouseFell;

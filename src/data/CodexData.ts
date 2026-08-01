@@ -62,7 +62,7 @@ const ALLY_ROLE: Record<string, string> = {
   shield: "承傷與嘲諷",
   archer: "後排持續輸出",
   medic: "全隊治療",
-  flagbearer: "範圍攻擊／攻速增益",
+  flagbearer: "全軍跟隨／攻擊與攻速光環",
   mage: "高爆發範圍法術",
   assault: "Lv.4+ 爆發刺客",
   engineer: "建築維修",
@@ -108,6 +108,10 @@ const ENEMY_ADVICE: Record<string, string> = {
   icearmor: "低於 25 點的攻擊會被減半，集中高傷害單體反而更有效率；血量過半後護甲碎裂並加速。",
   commander: "會給附近敵人加攻速與移速，友軍會優先攻擊他，出現時應優先集火解除。",
   bomber: "接近任何目標後會倒數 2 秒自爆，聽到警告音就該後退或搶先擊殺。",
+  flyingMelee: "飛行近戰小兵，能越過城牆；近戰、盾兵、工程兵與掌旗者不能攻擊它，優先交給遠程單位。",
+  flyingEliteArcher: "飛行精銳射手，會在空中遠程點名地面單位；用弓箭手、魔法師或攻擊設施處理。",
+  flyingBomber: "飛行轟炸者，生命較低但能越過城牆進行範圍轟擊；遠程火力應優先集火。",
+  flyingColossus: "飛行空中巨像，只在五的倍數波次登場；只能由遠程火力、主角與攻擊設施鎖定。",
 };
 
 const BUILDING_ADVICE: Record<string, string> = {
@@ -186,6 +190,12 @@ function enemyEntry(index: number): CodexEntry {
       value: `半徑 ${def.aura.radius}，附近敵人 +${Math.round(def.aura.moveBonus * 100)}% 移速、+${Math.round(def.aura.attackSpeedBonus * 100)}% 攻速（不可疊加）`,
     });
   }
+  if (def.isFlying) {
+    fields.push({
+      label: "空中規則",
+      value: "可越過城牆；只有遠程我方兵種、主角與攻擊型設施能鎖定",
+    });
+  }
   if (def.selfDestruct) {
     fields.push({
       label: "自爆",
@@ -240,6 +250,7 @@ function buildingEntry(index: number): CodexEntry {
       { label: "攻擊方式", value: attackMethodName(def.attackKind) },
       { label: "傷害 / 攻速 / 距離", value: `${def.attackPower} / ${(def.attackInterval ?? 0).toFixed(2)}s / ${def.attackRange ?? 0}` },
       { label: "剋制對象", value: effectiveAgainst(def.id) },
+      { label: "天空平台", value: "Lv.15／20／25／30／35 依序解鎖；成本 ×1.25、傷害 ×1.5，並套用該設施專屬強化" },
     );
   }
   if (def.canBeAttacked) {

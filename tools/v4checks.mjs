@@ -457,7 +457,9 @@ async function panelBuild(page) {
   return page.evaluate(() => {
     const api = window.frostbound?.api();
     if (!api) return { clicked: false };
-    const slot = api.slots().find((s) => s.category === "universal" && !s.occupied);
+    // Locked outer plots are intentionally non-selectable now; choose the
+    // first free plot that the current furnace level has actually unlocked.
+    const slot = api.slots().find((s) => s.category === "universal" && s.unlocked !== false && !s.occupied);
     if (!slot) return { clicked: false, reason: "no free universal slot" };
     const pos = api.slotWorldPos(slot.id);
     if (!pos) return { clicked: false, reason: "no world position for slot" };

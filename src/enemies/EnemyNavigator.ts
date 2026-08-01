@@ -39,6 +39,11 @@ export class EnemyNavigator {
     for (let i = 0; i < this.world.enemies.length; i++) {
       const unit = this.world.enemies[i];
       if (!unit.alive) continue;
+      if (unit.isFlying) {
+        unit.navPoint = null;
+        unit.breachTarget = null;
+        continue;
+      }
       this.route(unit, sealed);
     }
   }

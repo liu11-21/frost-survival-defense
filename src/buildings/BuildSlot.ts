@@ -10,6 +10,9 @@ import type { Building } from "./Building";
 export class BuildSlot {
   readonly id: string;
   readonly category: BuildSlotCategory;
+  readonly unlockLevel: number;
+  readonly surface: "ground" | "sky";
+  readonly elevation: number;
   readonly x: number;
   readonly z: number;
   readonly yaw: number;
@@ -30,6 +33,9 @@ export class BuildSlot {
   constructor(def: BuildSlotDefinition) {
     this.id = def.id;
     this.category = def.category;
+    this.unlockLevel = def.unlockLevel;
+    this.surface = def.surface;
+    this.elevation = def.elevation;
     this.x = def.x;
     this.z = def.z;
     this.yaw = def.yaw;
@@ -45,6 +51,10 @@ export class BuildSlot {
 
   get occupiedType(): BuildingType | null {
     return this.building && this.building.alive ? this.building.type : null;
+  }
+
+  isUnlocked(furnaceLevel: number): boolean {
+    return Math.floor(furnaceLevel) >= this.unlockLevel;
   }
 
   /** Everything that has ever been finished here, oldest first. Stats only. */

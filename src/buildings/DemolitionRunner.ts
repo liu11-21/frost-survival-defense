@@ -25,7 +25,7 @@ export function completeDemolition(
   host: DemolitionHost,
 ): void {
   const type = building.type;
-  const refund: ResourceCost = demolishRefund(type);
+  const refund: ResourceCost = demolishRefund(type, building.constructionCost);
 
   host.detach(slot);
   building.dispose();

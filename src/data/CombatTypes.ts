@@ -11,6 +11,11 @@ export const BOSS_TIER_LEVEL = 6;
 
 export type AttackType = "meleeArea" | "meleeSingle" | "rangedSingle" | "rangedArea" | "heal" | "none";
 
+/** Damage provenance used by vulnerability effects such as sniper armour
+ * break.  Keeping it in the data vocabulary lets units, structures and skills
+ * share one damage router without importing combat implementations. */
+export type DamageSource = "melee" | "ranged" | "burn" | "skill" | "structure";
+
 /** Attack-speed words from the design brief, resolved to real seconds. */
 export const ATTACK_SPEED = {
   veryFast: 0.35,
@@ -53,6 +58,8 @@ export interface UnitDefinition {
   recruitCost?: number;
   /** Enemy tier, 1..6. Used for "highest level" targeting and gold value. */
   level?: number;
+  /** Flying enemies occupy an elevated lane and cannot be reached by melee. */
+  isFlying?: boolean;
   /** Gold dropped per individual on death. */
   goldValue?: number;
   /** Radius inside which this unit forces enemies to attack it. */

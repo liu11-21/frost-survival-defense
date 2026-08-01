@@ -19,7 +19,9 @@ const WALL_DEF = BUILDING_BY_ID.get("wall")!;
 /** Which tabs a slot's category offers — a wall slot only ever gets its own
  * single tab, never the four universal ones, and vice versa. */
 export function tabsForSlot(slot: BuildSlot): BuildMenuTab[] {
-  return slot.category === "wall" ? ["wall"] : UNIVERSAL_TABS;
+  if (slot.category === "wall") return ["wall"];
+  if (slot.surface === "sky") return ["defense"];
+  return UNIVERSAL_TABS;
 }
 
 export function tabLabel(tab: BuildMenuTab): string {
@@ -31,14 +33,16 @@ export function tabLabel(tab: BuildMenuTab): string {
 /** Every candidate definition for this slot, independent of which tab is
  * active — used both to render the full list and to compute each tab's count. */
 function candidatesFor(slot: BuildSlot): BuildingDefinition[] {
-  return slot.category === "wall" ? [WALL_DEF] : UNIVERSAL_DEFS;
+  if (slot.category === "wall") return [WALL_DEF];
+  if (slot.surface === "sky") return UNIVERSAL_DEFS.filter((def) => Boolean(def.attackKind));
+  return UNIVERSAL_DEFS;
 }
 
 /** Classified + sorted entries for one tab. `"all"` and `"wall"` show every
  * candidate; a category tab filters to just its own members first. */
-export function entriesForTab(slot: BuildSlot, tab: BuildMenuTab, store: ResourceStore): ClassifiedEntry[] {
+export function entriesForTab(slot: BuildSlot, tab: BuildMenuTab, store: ResourceStore, furnaceLevel = Number.POSITIVE_INFINITY): ClassifiedEntry[] {
   const pool = candidatesFor(slot).filter((def) => tab === "all" || tab === "wall" || buildMenuCategoryOf(def.id) === tab);
-  return sortClassified(pool.map((def) => classifyEntry(def, slot, store)));
+  return sortClassified(pool.map((def) => classifyEntry(def, slot, store, furnaceLevel)));
 }
 
 /** How many candidates each tab holds for this slot, for the tab bar's count badge. */
@@ -89,7 +93,7 @@ export function renderEntryHtml(entry: ClassifiedEntry, rangeContext?: { slot: B
     const coverage = computeLaneCoverage(
       rangeContext.slot.x,
       rangeContext.slot.z,
-      def.attackRange ?? 0,
+      (def.attackRange ?? 0) * (rangeContext.slot.surface === "sky" && (def.attackKind === "snipe" || def.attackKind === "areaShell") ? 1.5 : 1),
       liveLanes,
       def.requiresLineOfSight === true,
       rangeContext.world,
@@ -105,6 +109,7 @@ export function renderEntryHtml(entry: ClassifiedEntry, rangeContext?: { slot: B
       ${coverageLine}
     </div>`;
   const reasonLine = entry.tier >= 4 ? `<span class="bad">${entry.reasonText}</span>` : "";
+  const cost = entry.cost;
   return `
     <button class="entry" data-build-type="${def.id}" ${disabled ? "disabled" : ""}>
       <div class="entry-icon">${buildingIconSvg(def.id, 30)}</div>
@@ -114,6 +119,6 @@ export function renderEntryHtml(entry: ClassifiedEntry, rangeContext?: { slot: B
         ${combatLine}
         ${expand}
       </div>
-      <div class="entry-cost">${costLine(def.cost)}${entry.shortfallText ? `<span class="bad">${entry.shortfallText}</span>` : ""}${reasonLine}</div>
+      <div class="entry-cost">${costLine(cost)}${entry.shortfallText ? `<span class="bad">${entry.shortfallText}</span>` : ""}${reasonLine}${rangeContext?.slot.surface === "sky" ? `<span class="tag sky">天空 ×1.5</span>` : ""}</div>
     </button>`;
 }

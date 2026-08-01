@@ -20,6 +20,14 @@ function hasLineOfSight(building: Building, target: Damageable, ctx: CombatConte
   return ctx.world.wallBlocks(building.position.x, building.position.z, target.position.x, target.position.z) === null;
 }
 
+function rangeFor(building: Building, base: number): number {
+  // Only the sky tower and sky sniper explicitly gain extra reach.  The
+  // crossbow and frost platform upgrades are attack-speed upgrades, while the
+  // mortar's sky upgrade enlarges its impact/burn radius instead of its
+  // acquisition radius.
+  return building.isSky && (building.def.attackKind === "snipe") ? base * 1.5 : base;
+}
+
 /** A projectile always needs a `Damageable` to home in on; ground-aimed shots use this stand-in. */
 function groundAim(x: number, z: number): Damageable {
   aimPoint.set(x, 0, z);
@@ -43,7 +51,7 @@ function groundAim(x: number, z: number): Damageable {
 /** Nearest to the furnace first; a tied distance is broken by lowest HP ratio. */
 function fireSingleBolt(building: Building, ctx: CombatContext): boolean {
   const def = building.def;
-  const candidates = ctx.world.queryUnits("enemy", building.position.x, building.position.z, def.attackRange ?? 9);
+  const candidates = ctx.world.queryUnits("enemy", building.position.x, building.position.z, rangeFor(building, def.attackRange ?? 9));
   const visible = candidates.filter((c) => hasLineOfSight(building, c, ctx));
   if (visible.length === 0) return false;
 
@@ -65,10 +73,18 @@ function fireSingleBolt(building: Building, ctx: CombatContext): boolean {
 
   const power = building.attackPower * ctx.scaling.towerAttack;
   ctx.vfx.burstAt("muzzleFlash", building.position.x, building.position.z, 12);
-  ctx.projectiles.fire("crossbowBolt", building.position.x, 1.0, building.position.z, best, (hx, hz) => {
-    if (best.alive) ctx.damage(best, power, hx, hz);
-    ctx.vfx.rangedHit(hx, hz);
-  });
+  const targets = building.isSky
+    ? [best, ...visible.filter((candidate) => candidate !== best).sort((a, b) =>
+      distSq(a.position.x, a.position.z, building.position.x, building.position.z) -
+      distSq(b.position.x, b.position.z, building.position.x, building.position.z),
+    ).slice(0, 2)]
+    : [best];
+  for (const target of targets) {
+    ctx.projectiles.fire("crossbowBolt", building.position.x, 1.0, building.position.z, target, (hx, hz) => {
+      if (target.alive) ctx.damage(target, power, hx, hz, "ranged");
+      ctx.vfx.rangedHit(hx, hz);
+    });
+  }
   return true;
 }
 
@@ -83,9 +99,31 @@ function applySlow(building: Building, target: Damageable): void {
   applicable.applySlowRefresh(isBoss ? slow.bossAmount : slow.amount, isBoss ? slow.bossDuration : slow.duration);
 }
 
+const frostStreak = new WeakMap<Building, { targetId: number; hits: number }>();
+
+function applySkyFreeze(building: Building, target: Damageable, ctx: CombatContext): void {
+  if (!building.isSky || target.kind !== "unit") return;
+  const unit = target as CombatUnit;
+  const previous = frostStreak.get(building);
+  const hits = previous && previous.targetId === target.damageId ? previous.hits + 1 : 1;
+  if (!unit.alive) {
+    frostStreak.delete(building);
+    return;
+  }
+  if (hits >= 3) {
+    const boss = target.level >= BOSS_TIER_LEVEL;
+    unit.applyStun(boss ? 1.5 : 3, boss ? 0.75 : 0);
+    unit.applyVulnerability(boss ? 0.25 : 0.5, boss ? 1.5 : 3);
+    ctx.vfx.burstAt("freezeZone", target.position.x, target.position.z, 36);
+    frostStreak.set(building, { targetId: target.damageId, hits: 0 });
+  } else {
+    frostStreak.set(building, { targetId: target.damageId, hits });
+  }
+}
+
 function fireSlowBolt(building: Building, ctx: CombatContext): boolean {
   const def = building.def;
-  const candidates = ctx.world.queryUnits("enemy", building.position.x, building.position.z, def.attackRange ?? 8);
+  const candidates = ctx.world.queryUnits("enemy", building.position.x, building.position.z, rangeFor(building, def.attackRange ?? 8));
   const visible = candidates.filter((c) => hasLineOfSight(building, c, ctx));
   if (visible.length === 0) return false;
 
@@ -103,7 +141,10 @@ function fireSlowBolt(building: Building, ctx: CombatContext): boolean {
   const power = building.attackPower * ctx.scaling.towerAttack;
   ctx.vfx.burstAt("frostCast", building.position.x, building.position.z, 20);
   ctx.projectiles.fire("frostShard", building.position.x, 1.0, building.position.z, target, (hx, hz) => {
-    ctx.areaDamage("ally", hx, hz, radius, power, def.maxAreaTargets ?? 5, (hit) => applySlow(building, hit));
+    ctx.areaDamage("ally", hx, hz, radius, power, def.maxAreaTargets ?? 5, (hit) => {
+      applySlow(building, hit);
+      applySkyFreeze(building, hit, ctx);
+    }, "ranged");
     ctx.vfx.burstAt("frostImpact", hx, hz, 38);
     ctx.vfx.burstAt("frostMist", hx, hz, 22);
   });
@@ -131,8 +172,10 @@ interface SniperAim {
   target: CombatUnit;
   power: number;
   elapsed: number;
+  shotNumber: number;
 }
 const aiming = new WeakMap<Building, SniperAim>();
+const sniperStreak = new WeakMap<Building, { targetId: number; shots: number }>();
 
 /** Test-only counter: how many snipers actually committed to a shot. Used to
  * verify two snipers never both commit to the same already-lethal target. */
@@ -179,7 +222,7 @@ function fireSnipe(building: Building, ctx: CombatContext): boolean {
   if (aiming.has(building)) return false;
   const def = building.def;
   const candidates = ctx.world
-    .queryUnits("enemy", building.position.x, building.position.z, def.attackRange ?? 16)
+    .queryUnits("enemy", building.position.x, building.position.z, rangeFor(building, def.attackRange ?? 16))
     .filter((c) => hasLineOfSight(building, c, ctx))
     .filter((c) => !def.avoidOverkill || c.health > committedDamage(c.damageId));
   if (candidates.length === 0) return false;
@@ -188,11 +231,16 @@ function fireSnipe(building: Building, ctx: CombatContext): boolean {
   const target = pickSniperTarget(candidates, furnace?.position.x ?? 0, furnace?.position.z ?? 0);
   if (!target) return false;
 
+  const previous = sniperStreak.get(building);
+  const shotNumber = previous && previous.targetId === target.damageId ? previous.shots + 1 : 1;
+  const base = building.isSky ? (target.level >= 4 ? 1000 : 300) : def.attackPower;
   const bonus = target.level >= BOSS_TIER_LEVEL ? 1 + (def.bonusVsBossFactor ?? 0) : 1;
-  const power = building.attackPower * ctx.scaling.towerAttack * bonus;
+  const critical = building.isSky && shotNumber % 3 === 0;
+  const power = building.attackPowerFor(base) * ctx.scaling.towerAttack * bonus * (critical ? 2.5 : 1);
   if (def.avoidOverkill) commit(target.damageId, power);
-  aiming.set(building, { target, power, elapsed: 0 });
+  aiming.set(building, { target, power, elapsed: 0, shotNumber });
   ctx.vfx.burstAt("sniperAim", building.position.x, building.position.z, 1);
+  if (critical) ctx.vfx.burstAt("pierce", target.position.x, target.position.z, 24);
   sniperShotsFired++;
   return true;
 }
@@ -201,9 +249,9 @@ function fireSnipe(building: Building, ctx: CombatContext): boolean {
 
 function fireBurstMortar(building: Building, ctx: CombatContext): boolean {
   const def = building.def;
-  const range = def.attackRange ?? 14;
+  const range = rangeFor(building, def.attackRange ?? 14);
   const minRange = def.minAttackRange ?? 0;
-  const radius = def.areaRadius ?? 4;
+  const radius = building.isSky ? (def.areaRadius ?? 4) * 1.5 : (def.areaRadius ?? 4);
   const candidates = ctx.world
     .queryUnits("enemy", building.position.x, building.position.z, range)
     .filter((c) => distSq(c.position.x, c.position.z, building.position.x, building.position.z) >= minRange * minRange);
@@ -223,18 +271,34 @@ function fireBurstMortar(building: Building, ctx: CombatContext): boolean {
     }
   }
 
-  const power = building.attackPower * ctx.scaling.towerAttack;
-  const burn = def.burnEffect;
+  const power = building.isSky ? building.attackPowerFor(500) * ctx.scaling.towerAttack : building.attackPower * ctx.scaling.towerAttack;
+  const burn = building.isSky
+    ? { duration: 10, dps: 300, maxZones: 3, bossFactor: 0.5 }
+    : def.burnEffect;
   ctx.vfx.burstAt("muzzleFlash", building.position.x, building.position.z, 24);
   ctx.projectiles.fire("mortarShell", building.position.x, 3.0, building.position.z, groundAim(bestX, bestZ), (hx, hz) => {
-    ctx.areaDamage("ally", hx, hz, radius, power, def.maxAreaTargets ?? 8);
+    ctx.areaDamage("ally", hx, hz, radius, power, def.maxAreaTargets ?? 8, undefined, "ranged");
     ctx.vfx.areaBlast(hx, hz, radius);
     if (burn) {
-      igniteZone(building, hx, hz, radius * 0.7, burn.duration, burn.dps, burn.maxZones, burn.bossFactor);
-      ctx.vfx.groundFire(hx, hz, radius * 0.7, burn.duration);
+      const burnRadius = building.isSky ? radius : radius * 0.7;
+      igniteZone(building, hx, hz, burnRadius, burn.duration, burn.dps, burn.maxZones, burn.bossFactor);
+      ctx.vfx.groundFire(hx, hz, burnRadius, burn.duration);
     }
   });
   return true;
+}
+
+/** The sky mortar accelerates with nearby targets, while all other weapons
+ * retain the authored interval. */
+export function attackIntervalFor(building: Building, ctx: CombatContext): number {
+  if (building.isSky && building.def.attackKind === "burstMortar") {
+    const nearby = ctx.world.queryUnits("enemy", building.position.x, building.position.z, 8).length;
+    return Math.max(2, 3 - nearby * 0.1);
+  }
+  if (building.isSky && (building.def.attackKind === "singleBolt" || building.def.attackKind === "slowBolt")) {
+    return (building.def.attackInterval ?? 1.5) / 1.5;
+  }
+  return building.def.attackInterval ?? 1.5;
 }
 
 // -------------------------------------------------------------- dispatch ----
@@ -259,7 +323,17 @@ export function tickBuildingCombat(building: Building, dt: number, ctx: CombatCo
   const power = aim.power;
   ctx.projectiles.fire("sniperRound", building.position.x, 1.4, building.position.z, target, (hx, hz) => {
     if (building.def.avoidOverkill) release(target.damageId, power);
-    if (target.alive) ctx.damage(target, power, hx, hz);
+    if (target.alive) {
+      ctx.damage(target, power, hx, hz, "ranged");
+      if (building.isSky) {
+        const vulnerable = target as Partial<CombatUnit>;
+        vulnerable.applyRemoteVulnerability?.(0.2, 5);
+        if (building.isSky) ctx.vfx.burstAt("armorShatter", target.position.x, target.position.z, 12);
+        sniperStreak.set(building, { targetId: target.damageId, shots: aim.shotNumber });
+      }
+    } else {
+      sniperStreak.delete(building);
+    }
     ctx.vfx.rangedHit(hx, hz);
   });
 }
