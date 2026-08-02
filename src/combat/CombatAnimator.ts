@@ -14,6 +14,7 @@ export class CombatAnimator {
   private actionTime = 0;
   private hitFlash = 0;
   private deathTime = -1;
+  private authoredState = "";
 
   // current (blended) pose
   private bodyY = 0;
@@ -76,6 +77,7 @@ export class CombatAnimator {
   private hitFired = false;
 
   update(dt: number, speed: number): void {
+    this.syncAuthoredAnimation();
     if (this.state === "death") {
       this.updateDeath(dt);
       return;
@@ -165,6 +167,27 @@ export class CombatAnimator {
     this.rig.hipL.rotation.x = -e * 0.5;
     this.rig.hipR.rotation.x = -e * 0.4;
     this.rig.root.scaling.y = Math.max(0.02, this.rig.root.scaling.x * (1 - e * 0.35));
+  }
+
+  private syncAuthoredAnimation(): void {
+    const authored = this.rig.authored;
+    if (!authored) return;
+    const state = this.state === "walk"
+      ? "Walk"
+      : this.state === "attack"
+        ? "Attack"
+        : this.state === "cast"
+          ? "Cast"
+          : this.state === "death"
+            ? "Death"
+            : this.state === "hit"
+              ? "Hit"
+              : "Idle";
+    if (state === this.authoredState) return;
+    this.authoredState = state;
+    for (const group of authored.animationGroups) group.stop();
+    const group = authored.animationGroups.find((candidate) => candidate.name === state || candidate.name.endsWith(`:${state}`));
+    group?.start(state === "Idle" || state === "Walk", 1);
   }
 
   /** 0..1, how far through the death animation the corpse is. */

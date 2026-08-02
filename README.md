@@ -48,7 +48,12 @@ GLB is instantiated.
 
 ```bash
 npm run art:template   # create the metric Blender template
-npm run art:export     # build hero, basic turret and wall/gate GLBs
+npm run art:hero       # build the authored hero GLB
+npm run art:turret     # build the authored basic turret GLB
+npm run art:wall       # build the authored wall/gate GLB
+npm run art:units      # batch-build 25 ally/enemy unit GLBs
+npm run art:buildings  # batch-build economy, defense and furnace GLBs
+npm run art:export     # run the complete hero + facility + unit export batch
 npm run art:validate   # write reports/art-validation.json
 ```
 

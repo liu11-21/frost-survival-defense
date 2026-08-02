@@ -25,6 +25,22 @@ export interface VisualIntegrity {
   ok: boolean;
 }
 
+const AUTHORED_BUILDING_KEYS: Partial<Record<BuildingType, string>> = {
+  mine: "mine",
+  goldMine: "gold_mine",
+  lumberyard: "lumberyard",
+  warehouse: "warehouse",
+  recruitHall: "recruit_hall",
+  autoCollector: "auto_collector",
+  autoRebuilder: "auto_rebuilder",
+  tower: "turret_basic",
+  crossbowTower: "crossbow_tower",
+  frostTower: "frost_tower",
+  sniperTower: "sniper_tower",
+  mortar: "mortar",
+  wall: "wall_gate",
+};
+
 /**
  * Owns one building's meshes for its whole life.
  *
@@ -45,7 +61,7 @@ export class BuildingVisualController {
   private readonly ownedMeshes: Mesh[];
   private readonly stageMeshes: Mesh[][];
   private authored: AssetInstance | null = null;
-  private readonly authoredKey: "turret_basic" | "wall_gate" | null;
+  private readonly authoredKey: string | null;
   private recoilTime = 0;
   private phase: VisualPhase = "constructing";
   private demolishTime = 0;
@@ -62,12 +78,15 @@ export class BuildingVisualController {
     private readonly elevation = 0,
     private readonly assets?: AssetRegistry,
   ) {
-    this.authoredKey = type === "wall" ? "wall_gate" : type === "tower" ? "turret_basic" : null;
+    this.authoredKey = AUTHORED_BUILDING_KEYS[type] ?? null;
     const authored = this.authoredKey ? assets?.instantiate(this.authoredKey, `${type}.${slotId}`) ?? null : null;
     const visual = authored ? authoredVisual(authored, scene, x, z, yaw, elevation) : createBuildingVisual(scene, materials, type, x, z, yaw, slotId);
     this.authored = authored;
     this.rootNode = visual.root;
     this.rootNode.position.y = elevation;
+    if (authored) {
+      findAnimationGroup(authored.animationGroups, "Idle")?.start(true, 1);
+    }
     this.ownedMeshes = visual.body;
     this.stageMeshes = visual.stages.map((s) => s.meshes);
     this.animator = new BuildingAnimator(events, `${type}@${slotId}`, visual.stages);
@@ -172,6 +191,9 @@ export class BuildingVisualController {
     this.authored = authored;
     this.rootNode = visual.root;
     this.rootNode.position.y = this.elevation;
+    if (authored) {
+      findAnimationGroup(authored.animationGroups, "Idle")?.start(true, 1);
+    }
     replaceContents(this.ownedMeshes, visual.body);
     this.stageMeshes.length = 0;
     for (const stage of visual.stages) {

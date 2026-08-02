@@ -2,10 +2,42 @@ import { mkdir, readFile, writeFile, stat } from "node:fs/promises";
 import { dirname, resolve } from "node:path";
 
 const root = process.cwd();
+const UNIT_KEYS = [
+  "warrior", "shield", "archer", "medic", "flagbearer", "mage", "assault", "engineer", "musketeer", "frostmage",
+  "grunt", "slinger", "bruiser", "marksman", "juggernaut", "bombardier", "boss", "breacher", "icearmor", "commander", "bomber",
+  "flyingMelee", "flyingEliteArcher", "flyingBomber", "flyingColossus",
+];
+const ECONOMY_KEYS = ["mine", "gold_mine", "lumberyard", "warehouse", "recruit_hall", "auto_collector", "auto_rebuilder"];
+const ATTACK_KEYS = ["crossbow_tower", "frost_tower", "sniper_tower", "mortar"];
 const specs = [
   { key: "hero", path: "public/assets/models/characters/hero.glb", nodes: ["HeroRoot", "HeroSkeleton", "weapon_socket.R", "ranged_socket"], animations: ["Idle", "Walk", "Run", "MeleeAttack", "RangedAttack", "Hit", "Death"], skeletons: 1 },
   { key: "turret_basic", path: "public/assets/models/buildings/turret_basic.glb", nodes: ["TurretRoot", "yawPivot", "pitchPivot", "barrel", "muzzle", "recoilPart"], animations: ["Idle", "Aim", "Fire", "Recoil", "Reload"] },
   { key: "wall_gate", path: "public/assets/models/buildings/wall_gate.glb", nodes: ["WallGateRoot", "gateRoot", "gateDoorLeft", "gateDoorRight", "gateCollider", "friendlyPassTrigger"], animations: ["GateOpen", "GateClose", "Damaged", "Destroyed"] },
+  ...UNIT_KEYS.map((key) => ({
+    key,
+    path: `public/assets/models/characters/${key}.glb`,
+    nodes: ["UnitRoot", "UnitSkeleton", "weapon_socket", "attackAnchor"],
+    animations: ["Idle", "Walk", "Attack", "Cast", "Hit", "Death"],
+    skeletons: 1,
+  })),
+  ...ECONOMY_KEYS.map((key) => ({
+    key,
+    path: `public/assets/models/buildings/${key}.glb`,
+    nodes: ["BuildingRoot", "productionCore", "workPart"],
+    animations: ["Idle", "Operate", "Damaged", "Destroyed"],
+  })),
+  ...ATTACK_KEYS.map((key) => ({
+    key,
+    path: `public/assets/models/buildings/${key}.glb`,
+    nodes: ["BuildingRoot", "yawPivot", "pitchPivot", "barrel", "muzzle", "recoilPart"],
+    animations: ["Idle", "Aim", "Fire", "Recoil", "Damaged", "Destroyed"],
+  })),
+  {
+    key: "furnace",
+    path: "public/assets/models/buildings/furnace.glb",
+    nodes: ["FurnaceRoot", "heatCore", "furnaceCrown", "emitter"],
+    animations: ["Idle", "Operate", "Damaged", "Destroyed"],
+  },
 ];
 
 function parseGlb(buffer) {

@@ -13,6 +13,8 @@
     "art:hero": "node scripts/run-blender.mjs scripts/blender/build_hero.py",
     "art:turret": "node scripts/run-blender.mjs scripts/blender/build_turret.py",
     "art:wall": "node scripts/run-blender.mjs scripts/blender/build_wall_gate.py",
+    "art:units": "node scripts/run-blender.mjs scripts/blender/build_units.py",
+    "art:buildings": "node scripts/run-blender.mjs scripts/blender/build_buildings.py",
     "art:export": "node scripts/run-blender.mjs scripts/blender/batch_export.py",
     "art:validate": "node scripts/validate-models.mjs"
   },

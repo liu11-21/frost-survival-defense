@@ -5,6 +5,9 @@
 - 追查主角移動時倒向問題：Blender 是 Z-up，而基線腳本以 Y-up 建模；新增 `orient_for_babylon` 根節點校正，並對英雄 authored visual 加入半圈視覺偏移，讓其前向與遊戲 +Z 移動語意一致。
 - 同一軸向校正同步套用至 `TurretRoot` 與 `WallGateRoot`，避免三個 Blender authored asset 在 Babylon 中出現側躺或軸向不一致。
 - 軸向修正後重新執行 `art:export`／`art:validate`、`npx tsc --noEmit`、production build、v10（12/12）與 v9（75/75）；production preview 三個 GLB 仍為 HTTP 200 且無 authored fallback。
+- 角色批次重製流程新增 Blender `torus` 幾何 helper，供護具、徽章、冰晶與機械環件使用。
+- 新增 `art:units` 批次腳本，已產出 25 個非主角角色 GLB；每個角色具備專屬材質調色、職業武器／護具／背包或翅膀輪廓、`UnitSkeleton`、socket 節點與 Idle／Walk／Attack／Cast／Hit／Death 動畫。
+- 新增 `art:buildings` 批次腳本，已產出礦場、金礦、伐木場、倉庫、招募所、自動收取、自動重建、弩箭塔、冰霜塔、狙擊塔、火焰迫擊砲與中央火爐 GLB；攻擊設施保留 yaw／pitch／barrel／muzzle／recoil 節點，生產設施保留 productionCore／workPart。
 - 建立 `assets-source/` Blender 工作區、風格規範、概念圖流程、授權紀錄與可重複執行的英雄／基礎砲塔／城牆閘門建模腳本。
 - 新增 `art:template`、`art:hero`、`art:turret`、`art:wall`、`art:export`、`art:validate` 指令；模型驗證器會輸出 `reports/art-validation.json`，缺少 GLB 時明確標記為 `blocked`。
 - 新增 Babylon `AssetRegistry`／`ModelLoader` 快取、節點與動畫契約驗證、碰撞網格隱藏，以及載入失敗時的程序化模型回退；建築與主角均有 authored visual hook。
@@ -51,3 +54,9 @@
 - `node tools/playtest.mjs --suite v9`：75／75 通過。
 - `node tools/playtest.mjs --suite v10`：12／12 通過，涵蓋點位解鎖、天空建造與成本、飛行單位鎖定規則、HUD 分類與生產效率。
 - 完整 `node tools/playtest.mjs`：426／426 通過，無 console error。
+- 完成角色與設施 GLB 的執行層接回：戰鬥單位模板、一般建築與中央火爐會在驗證通過時使用 Blender 資產，並保留程序化 fallback；新增共用 authored 動畫啟動與火爐安裝鉤子。
+- 擴充 `art:validate` 覆蓋 25 個非主角角色、12 個新設施與火爐；本次驗證全部通過，包含節點、動畫、骨架、外部 URI、碰撞節點與基本面數檢查。
+- 修正 authored 角色移動方向：Blender 匯出後 `HeroRoot`／`UnitRoot` 的本地 +Z 已與 Babylon 遊戲 yaw 對齊，移除額外半圈旋轉，主角與戰鬥單位不再倒著走。
+- 將 `art:export` 批次流程擴充為主角、既有設施、25 個角色、12 個新設施與火爐的完整匯出；README／藝術驗證說明同步列出分批指令與 v6／v9／v10 回歸範圍。
+- 修正戰鬥角色 GLB 與程序化模型的 pooled rig 邊界：使用 authored 角色時，重用小隊與護甲破壞流程不會重新啟用隱藏的程序化零件造成雙重模型。
+- 本次批次後回歸：v6 49/49、v9 75/75、v10 12/12；完整預設 playtest 在 v8 的長時間策略耐久段超過 420 秒未回傳，因此不宣稱完整套件通過，需另行縮短或拆分該耐久測試。

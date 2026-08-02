@@ -4,7 +4,7 @@ import runpy
 
 def main():
     here = os.path.dirname(os.path.abspath(__file__))
-    for name in ("build_hero.py", "build_turret.py", "build_wall_gate.py"):
+    for name in ("build_hero.py", "build_turret.py", "build_wall_gate.py", "build_units.py", "build_buildings.py"):
         runpy.run_path(os.path.join(here, name), run_name="__main__")
 
 

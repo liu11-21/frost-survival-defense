@@ -104,6 +104,16 @@ def sphere(name, radius, location=(0, 0, 0), mat=None, target="LOD0"):
     return obj
 
 
+def torus(name, major_radius, minor_radius, location=(0, 0, 0), mat=None, target="LOD0"):
+    bpy.ops.mesh.primitive_torus_add(major_radius=major_radius, minor_radius=minor_radius, major_segments=12, minor_segments=5, location=location)
+    obj = bpy.context.object
+    obj.name = name
+    move_to(obj, target)
+    if mat:
+        apply_style(obj, mat, 0.015)
+    return obj
+
+
 def empty(name, location=(0, 0, 0), target="EXPORT", display="PLAIN_AXES"):
     obj = bpy.data.objects.new(name, None)
     obj.empty_display_type = display

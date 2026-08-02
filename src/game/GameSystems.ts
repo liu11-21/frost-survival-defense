@@ -208,7 +208,9 @@ export class GameSystems {
       },
     });
 
-    this.templates = new HumanoidTemplateCache(this.scene, this.materials);
+    // Templates are created lazily, but they still need the shared authored
+    // registry so every pooled combat rig can use its GLB when available.
+    this.templates = new HumanoidTemplateCache(this.scene, this.materials, this.assets);
     this.squads = new SquadManager(this.templates, this.ctx);
     this.buildings = new BuildingManager(
       this.scene,

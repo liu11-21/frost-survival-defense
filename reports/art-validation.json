@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-08-02T05:25:47.781Z",
+  "generatedAt": "2026-08-02T06:41:53.871Z",
   "blenderRequired": true,
   "assets": [
     {
@@ -143,6 +143,1831 @@
         "Destroyed"
       ],
       "triangles": 980,
+      "missingNodes": [],
+      "missingAnimations": [],
+      "warnings": []
+    },
+    {
+      "key": "warrior",
+      "status": "ok",
+      "path": "public/assets/models/characters/warrior.glb",
+      "nodes": 42,
+      "meshes": 18,
+      "materials": 6,
+      "skeletons": 1,
+      "rootTransforms": [
+        {
+          "index": 41,
+          "name": "UnitRoot",
+          "translation": [
+            0,
+            0,
+            0
+          ],
+          "scale": [
+            1,
+            1,
+            1
+          ]
+        }
+      ],
+      "bounds": {
+        "min": [
+          -0.2750000059604645,
+          -0.2800000011920929,
+          -0.36000001430511475
+        ],
+        "max": [
+          0.2750000059604645,
+          0.2800000011920929,
+          0.36000001430511475
+        ]
+      },
+      "animations": [
+        "Idle",
+        "Walk",
+        "Attack",
+        "Cast",
+        "Hit",
+        "Death"
+      ],
+      "triangles": 2000,
+      "missingNodes": [],
+      "missingAnimations": [],
+      "warnings": []
+    },
+    {
+      "key": "shield",
+      "status": "ok",
+      "path": "public/assets/models/characters/shield.glb",
+      "nodes": 43,
+      "meshes": 19,
+      "materials": 8,
+      "skeletons": 1,
+      "rootTransforms": [
+        {
+          "index": 42,
+          "name": "UnitRoot",
+          "translation": [
+            0,
+            0,
+            0
+          ],
+          "scale": [
+            1,
+            1,
+            1
+          ]
+        }
+      ],
+      "bounds": {
+        "min": [
+          -0.6949866414070129,
+          -0.30000001192092896,
+          -0.712859570980072
+        ],
+        "max": [
+          0.6949866414070129,
+          0.30000001192092896,
+          0.6486976146697998
+        ]
+      },
+      "animations": [
+        "Idle",
+        "Walk",
+        "Attack",
+        "Cast",
+        "Hit",
+        "Death"
+      ],
+      "triangles": 2584,
+      "missingNodes": [],
+      "missingAnimations": [],
+      "warnings": []
+    },
+    {
+      "key": "archer",
+      "status": "ok",
+      "path": "public/assets/models/characters/archer.glb",
+      "nodes": 41,
+      "meshes": 17,
+      "materials": 6,
+      "skeletons": 1,
+      "rootTransforms": [
+        {
+          "index": 40,
+          "name": "UnitRoot",
+          "translation": [
+            0,
+            0,
+            0
+          ],
+          "scale": [
+            1,
+            1,
+            1
+          ]
+        }
+      ],
+      "bounds": {
+        "min": [
+          -0.37977442145347595,
+          -0.3100000023841858,
+          -0.37977442145347595
+        ],
+        "max": [
+          0.37977442145347595,
+          0.3100000023841858,
+          0.37977442145347595
+        ]
+      },
+      "animations": [
+        "Idle",
+        "Walk",
+        "Attack",
+        "Cast",
+        "Hit",
+        "Death"
+      ],
+      "triangles": 2048,
+      "missingNodes": [],
+      "missingAnimations": [],
+      "warnings": []
+    },
+    {
+      "key": "medic",
+      "status": "ok",
+      "path": "public/assets/models/characters/medic.glb",
+      "nodes": 41,
+      "meshes": 17,
+      "materials": 6,
+      "skeletons": 1,
+      "rootTransforms": [
+        {
+          "index": 40,
+          "name": "UnitRoot",
+          "translation": [
+            0,
+            0,
+            0
+          ],
+          "scale": [
+            1,
+            1,
+            1
+          ]
+        }
+      ],
+      "bounds": {
+        "min": [
+          -0.294827938079834,
+          -0.3100000023841858,
+          -0.3100000023841858
+        ],
+        "max": [
+          0.294827938079834,
+          0.3100000023841858,
+          0.3100000023841858
+        ]
+      },
+      "animations": [
+        "Idle",
+        "Walk",
+        "Attack",
+        "Cast",
+        "Hit",
+        "Death"
+      ],
+      "triangles": 1780,
+      "missingNodes": [],
+      "missingAnimations": [],
+      "warnings": []
+    },
+    {
+      "key": "flagbearer",
+      "status": "ok",
+      "path": "public/assets/models/characters/flagbearer.glb",
+      "nodes": 41,
+      "meshes": 17,
+      "materials": 7,
+      "skeletons": 1,
+      "rootTransforms": [
+        {
+          "index": 40,
+          "name": "UnitRoot",
+          "translation": [
+            0,
+            0,
+            0
+          ],
+          "scale": [
+            1,
+            1,
+            1
+          ]
+        }
+      ],
+      "bounds": {
+        "min": [
+          -1.2557368278503418,
+          -0.28999999165534973,
+          -1.444783091545105
+        ],
+        "max": [
+          1.2557368278503418,
+          0.28999999165534973,
+          1.444783091545105
+        ]
+      },
+      "animations": [
+        "Idle",
+        "Walk",
+        "Attack",
+        "Cast",
+        "Hit",
+        "Death"
+      ],
+      "triangles": 1808,
+      "missingNodes": [],
+      "missingAnimations": [],
+      "warnings": []
+    },
+    {
+      "key": "mage",
+      "status": "ok",
+      "path": "public/assets/models/characters/mage.glb",
+      "nodes": 41,
+      "meshes": 17,
+      "materials": 7,
+      "skeletons": 1,
+      "rootTransforms": [
+        {
+          "index": 40,
+          "name": "UnitRoot",
+          "translation": [
+            0,
+            0,
+            0
+          ],
+          "scale": [
+            1,
+            1,
+            1
+          ]
+        }
+      ],
+      "bounds": {
+        "min": [
+          -1.018204689025879,
+          -0.2800000011920929,
+          -1.0443896055221558
+        ],
+        "max": [
+          1.018204689025879,
+          0.2800000011920929,
+          0.9460172653198242
+        ]
+      },
+      "animations": [
+        "Idle",
+        "Walk",
+        "Attack",
+        "Cast",
+        "Hit",
+        "Death"
+      ],
+      "triangles": 2280,
+      "missingNodes": [],
+      "missingAnimations": [],
+      "warnings": []
+    },
+    {
+      "key": "assault",
+      "status": "ok",
+      "path": "public/assets/models/characters/assault.glb",
+      "nodes": 43,
+      "meshes": 19,
+      "materials": 7,
+      "skeletons": 1,
+      "rootTransforms": [
+        {
+          "index": 42,
+          "name": "UnitRoot",
+          "translation": [
+            0,
+            0,
+            0
+          ],
+          "scale": [
+            1,
+            1,
+            1
+          ]
+        }
+      ],
+      "bounds": {
+        "min": [
+          -0.2750000059604645,
+          -0.2800000011920929,
+          -0.3100000023841858
+        ],
+        "max": [
+          0.2750000059604645,
+          0.2800000011920929,
+          0.3100000023841858
+        ]
+      },
+      "animations": [
+        "Idle",
+        "Walk",
+        "Attack",
+        "Cast",
+        "Hit",
+        "Death"
+      ],
+      "triangles": 2108,
+      "missingNodes": [],
+      "missingAnimations": [],
+      "warnings": []
+    },
+    {
+      "key": "engineer",
+      "status": "ok",
+      "path": "public/assets/models/characters/engineer.glb",
+      "nodes": 41,
+      "meshes": 17,
+      "materials": 6,
+      "skeletons": 1,
+      "rootTransforms": [
+        {
+          "index": 40,
+          "name": "UnitRoot",
+          "translation": [
+            0,
+            0,
+            0
+          ],
+          "scale": [
+            1,
+            1,
+            1
+          ]
+        }
+      ],
+      "bounds": {
+        "min": [
+          -0.4503331780433655,
+          -0.30000001192092896,
+          -0.5108701586723328
+        ],
+        "max": [
+          0.4503331780433655,
+          0.30000001192092896,
+          0.5108701586723328
+        ]
+      },
+      "animations": [
+        "Idle",
+        "Walk",
+        "Attack",
+        "Cast",
+        "Hit",
+        "Death"
+      ],
+      "triangles": 2624,
+      "missingNodes": [],
+      "missingAnimations": [],
+      "warnings": []
+    },
+    {
+      "key": "musketeer",
+      "status": "ok",
+      "path": "public/assets/models/characters/musketeer.glb",
+      "nodes": 45,
+      "meshes": 21,
+      "materials": 7,
+      "skeletons": 1,
+      "rootTransforms": [
+        {
+          "index": 44,
+          "name": "UnitRoot",
+          "translation": [
+            0,
+            0,
+            0
+          ],
+          "scale": [
+            1,
+            1,
+            1
+          ]
+        }
+      ],
+      "bounds": {
+        "min": [
+          -0.969458281993866,
+          -0.4000000059604645,
+          -0.9943897724151611
+        ],
+        "max": [
+          0.969458281993866,
+          0.4000000059604645,
+          0.9009688496589661
+        ]
+      },
+      "animations": [
+        "Idle",
+        "Walk",
+        "Attack",
+        "Cast",
+        "Hit",
+        "Death"
+      ],
+      "triangles": 2296,
+      "missingNodes": [],
+      "missingAnimations": [],
+      "warnings": []
+    },
+    {
+      "key": "frostmage",
+      "status": "ok",
+      "path": "public/assets/models/characters/frostmage.glb",
+      "nodes": 44,
+      "meshes": 20,
+      "materials": 8,
+      "skeletons": 1,
+      "rootTransforms": [
+        {
+          "index": 43,
+          "name": "UnitRoot",
+          "translation": [
+            0,
+            0,
+            0
+          ],
+          "scale": [
+            1,
+            1,
+            1
+          ]
+        }
+      ],
+      "bounds": {
+        "min": [
+          -0.9959291815757751,
+          -0.28999999165534973,
+          -1.1434783935546875
+        ],
+        "max": [
+          0.9959291815757751,
+          0.28999999165534973,
+          1.1434783935546875
+        ]
+      },
+      "animations": [
+        "Idle",
+        "Walk",
+        "Attack",
+        "Cast",
+        "Hit",
+        "Death"
+      ],
+      "triangles": 2188,
+      "missingNodes": [],
+      "missingAnimations": [],
+      "warnings": []
+    },
+    {
+      "key": "grunt",
+      "status": "ok",
+      "path": "public/assets/models/characters/grunt.glb",
+      "nodes": 42,
+      "meshes": 18,
+      "materials": 8,
+      "skeletons": 1,
+      "rootTransforms": [
+        {
+          "index": 41,
+          "name": "UnitRoot",
+          "translation": [
+            0,
+            0,
+            0
+          ],
+          "scale": [
+            1,
+            1,
+            1
+          ]
+        }
+      ],
+      "bounds": {
+        "min": [
+          -0.6949866414070129,
+          -0.2800000011920929,
+          -0.712859570980072
+        ],
+        "max": [
+          0.6949866414070129,
+          0.2800000011920929,
+          0.6486976146697998
+        ]
+      },
+      "animations": [
+        "Idle",
+        "Walk",
+        "Attack",
+        "Cast",
+        "Hit",
+        "Death"
+      ],
+      "triangles": 1916,
+      "missingNodes": [],
+      "missingAnimations": [],
+      "warnings": []
+    },
+    {
+      "key": "slinger",
+      "status": "ok",
+      "path": "public/assets/models/characters/slinger.glb",
+      "nodes": 41,
+      "meshes": 17,
+      "materials": 6,
+      "skeletons": 1,
+      "rootTransforms": [
+        {
+          "index": 40,
+          "name": "UnitRoot",
+          "translation": [
+            0,
+            0,
+            0
+          ],
+          "scale": [
+            1,
+            1,
+            1
+          ]
+        }
+      ],
+      "bounds": {
+        "min": [
+          -0.294827938079834,
+          -0.3100000023841858,
+          -0.3100000023841858
+        ],
+        "max": [
+          0.294827938079834,
+          0.3100000023841858,
+          0.3100000023841858
+        ]
+      },
+      "animations": [
+        "Idle",
+        "Walk",
+        "Attack",
+        "Cast",
+        "Hit",
+        "Death"
+      ],
+      "triangles": 2052,
+      "missingNodes": [],
+      "missingAnimations": [],
+      "warnings": []
+    },
+    {
+      "key": "bruiser",
+      "status": "ok",
+      "path": "public/assets/models/characters/bruiser.glb",
+      "nodes": 43,
+      "meshes": 19,
+      "materials": 8,
+      "skeletons": 1,
+      "rootTransforms": [
+        {
+          "index": 42,
+          "name": "UnitRoot",
+          "translation": [
+            0,
+            0,
+            0
+          ],
+          "scale": [
+            1,
+            1,
+            1
+          ]
+        }
+      ],
+      "bounds": {
+        "min": [
+          -0.6949866414070129,
+          -0.2800000011920929,
+          -0.712859570980072
+        ],
+        "max": [
+          0.6949866414070129,
+          0.2800000011920929,
+          0.6486976146697998
+        ]
+      },
+      "animations": [
+        "Idle",
+        "Walk",
+        "Attack",
+        "Cast",
+        "Hit",
+        "Death"
+      ],
+      "triangles": 2220,
+      "missingNodes": [],
+      "missingAnimations": [],
+      "warnings": []
+    },
+    {
+      "key": "marksman",
+      "status": "ok",
+      "path": "public/assets/models/characters/marksman.glb",
+      "nodes": 40,
+      "meshes": 16,
+      "materials": 7,
+      "skeletons": 1,
+      "rootTransforms": [
+        {
+          "index": 39,
+          "name": "UnitRoot",
+          "translation": [
+            0,
+            0,
+            0
+          ],
+          "scale": [
+            1,
+            1,
+            1
+          ]
+        }
+      ],
+      "bounds": {
+        "min": [
+          -0.37977442145347595,
+          -0.2800000011920929,
+          -0.4399999976158142
+        ],
+        "max": [
+          0.37977442145347595,
+          0.2800000011920929,
+          0.4399999976158142
+        ]
+      },
+      "animations": [
+        "Idle",
+        "Walk",
+        "Attack",
+        "Cast",
+        "Hit",
+        "Death"
+      ],
+      "triangles": 1940,
+      "missingNodes": [],
+      "missingAnimations": [],
+      "warnings": []
+    },
+    {
+      "key": "juggernaut",
+      "status": "ok",
+      "path": "public/assets/models/characters/juggernaut.glb",
+      "nodes": 43,
+      "meshes": 19,
+      "materials": 8,
+      "skeletons": 1,
+      "rootTransforms": [
+        {
+          "index": 42,
+          "name": "UnitRoot",
+          "translation": [
+            0,
+            0,
+            0
+          ],
+          "scale": [
+            1,
+            1,
+            1
+          ]
+        }
+      ],
+      "bounds": {
+        "min": [
+          -0.6949866414070129,
+          -0.30000001192092896,
+          -0.712859570980072
+        ],
+        "max": [
+          0.6949866414070129,
+          0.30000001192092896,
+          0.6486976146697998
+        ]
+      },
+      "animations": [
+        "Idle",
+        "Walk",
+        "Attack",
+        "Cast",
+        "Hit",
+        "Death"
+      ],
+      "triangles": 2584,
+      "missingNodes": [],
+      "missingAnimations": [],
+      "warnings": []
+    },
+    {
+      "key": "bombardier",
+      "status": "ok",
+      "path": "public/assets/models/characters/bombardier.glb",
+      "nodes": 42,
+      "meshes": 18,
+      "materials": 7,
+      "skeletons": 1,
+      "rootTransforms": [
+        {
+          "index": 41,
+          "name": "UnitRoot",
+          "translation": [
+            0,
+            0,
+            0
+          ],
+          "scale": [
+            1,
+            1,
+            1
+          ]
+        }
+      ],
+      "bounds": {
+        "min": [
+          -1.018204689025879,
+          -0.3100000023841858,
+          -1.0443896055221558
+        ],
+        "max": [
+          1.018204689025879,
+          0.3100000023841858,
+          0.9460172653198242
+        ]
+      },
+      "animations": [
+        "Idle",
+        "Walk",
+        "Attack",
+        "Cast",
+        "Hit",
+        "Death"
+      ],
+      "triangles": 2248,
+      "missingNodes": [],
+      "missingAnimations": [],
+      "warnings": []
+    },
+    {
+      "key": "boss",
+      "status": "ok",
+      "path": "public/assets/models/characters/boss.glb",
+      "nodes": 41,
+      "meshes": 17,
+      "materials": 7,
+      "skeletons": 1,
+      "rootTransforms": [
+        {
+          "index": 40,
+          "name": "UnitRoot",
+          "translation": [
+            0,
+            0,
+            0
+          ],
+          "scale": [
+            1,
+            1,
+            1
+          ]
+        }
+      ],
+      "bounds": {
+        "min": [
+          -0.6949866414070129,
+          -0.2800000011920929,
+          -0.712859570980072
+        ],
+        "max": [
+          0.6949866414070129,
+          0.2800000011920929,
+          0.6486976146697998
+        ]
+      },
+      "animations": [
+        "Idle",
+        "Walk",
+        "Attack",
+        "Cast",
+        "Hit",
+        "Death"
+      ],
+      "triangles": 1836,
+      "missingNodes": [],
+      "missingAnimations": [],
+      "warnings": []
+    },
+    {
+      "key": "breacher",
+      "status": "ok",
+      "path": "public/assets/models/characters/breacher.glb",
+      "nodes": 42,
+      "meshes": 18,
+      "materials": 7,
+      "skeletons": 1,
+      "rootTransforms": [
+        {
+          "index": 41,
+          "name": "UnitRoot",
+          "translation": [
+            0,
+            0,
+            0
+          ],
+          "scale": [
+            1,
+            1,
+            1
+          ]
+        }
+      ],
+      "bounds": {
+        "min": [
+          -0.7921540141105652,
+          -0.30000001192092896,
+          -0.7921540141105652
+        ],
+        "max": [
+          0.7921540141105652,
+          0.30000001192092896,
+          0.7921540141105652
+        ]
+      },
+      "animations": [
+        "Idle",
+        "Walk",
+        "Attack",
+        "Cast",
+        "Hit",
+        "Death"
+      ],
+      "triangles": 2308,
+      "missingNodes": [],
+      "missingAnimations": [],
+      "warnings": []
+    },
+    {
+      "key": "icearmor",
+      "status": "ok",
+      "path": "public/assets/models/characters/icearmor.glb",
+      "nodes": 44,
+      "meshes": 20,
+      "materials": 9,
+      "skeletons": 1,
+      "rootTransforms": [
+        {
+          "index": 43,
+          "name": "UnitRoot",
+          "translation": [
+            0,
+            0,
+            0
+          ],
+          "scale": [
+            1,
+            1,
+            1
+          ]
+        }
+      ],
+      "bounds": {
+        "min": [
+          -0.6949866414070129,
+          -0.28999999165534973,
+          -0.712859570980072
+        ],
+        "max": [
+          0.6949866414070129,
+          0.28999999165534973,
+          0.6486976146697998
+        ]
+      },
+      "animations": [
+        "Idle",
+        "Walk",
+        "Attack",
+        "Cast",
+        "Hit",
+        "Death"
+      ],
+      "triangles": 2328,
+      "missingNodes": [],
+      "missingAnimations": [],
+      "warnings": []
+    },
+    {
+      "key": "commander",
+      "status": "ok",
+      "path": "public/assets/models/characters/commander.glb",
+      "nodes": 42,
+      "meshes": 18,
+      "materials": 8,
+      "skeletons": 1,
+      "rootTransforms": [
+        {
+          "index": 41,
+          "name": "UnitRoot",
+          "translation": [
+            0,
+            0,
+            0
+          ],
+          "scale": [
+            1,
+            1,
+            1
+          ]
+        }
+      ],
+      "bounds": {
+        "min": [
+          -1.2557368278503418,
+          -0.2800000011920929,
+          -1.444783091545105
+        ],
+        "max": [
+          1.2557368278503418,
+          0.2800000011920929,
+          1.444783091545105
+        ]
+      },
+      "animations": [
+        "Idle",
+        "Walk",
+        "Attack",
+        "Cast",
+        "Hit",
+        "Death"
+      ],
+      "triangles": 1916,
+      "missingNodes": [],
+      "missingAnimations": [],
+      "warnings": []
+    },
+    {
+      "key": "bomber",
+      "status": "ok",
+      "path": "public/assets/models/characters/bomber.glb",
+      "nodes": 39,
+      "meshes": 15,
+      "materials": 6,
+      "skeletons": 1,
+      "rootTransforms": [
+        {
+          "index": 38,
+          "name": "UnitRoot",
+          "translation": [
+            0,
+            0,
+            0
+          ],
+          "scale": [
+            1,
+            1,
+            1
+          ]
+        }
+      ],
+      "bounds": {
+        "min": [
+          -0.28531739115715027,
+          -0.30000001192092896,
+          -0.3100000023841858
+        ],
+        "max": [
+          0.28531739115715027,
+          0.30000001192092896,
+          0.3100000023841858
+        ]
+      },
+      "animations": [
+        "Idle",
+        "Walk",
+        "Attack",
+        "Cast",
+        "Hit",
+        "Death"
+      ],
+      "triangles": 1508,
+      "missingNodes": [],
+      "missingAnimations": [],
+      "warnings": []
+    },
+    {
+      "key": "flyingMelee",
+      "status": "ok",
+      "path": "public/assets/models/characters/flyingMelee.glb",
+      "nodes": 44,
+      "meshes": 20,
+      "materials": 8,
+      "skeletons": 1,
+      "rootTransforms": [
+        {
+          "index": 43,
+          "name": "UnitRoot",
+          "translation": [
+            0,
+            0,
+            0
+          ],
+          "scale": [
+            1,
+            1,
+            1
+          ]
+        }
+      ],
+      "bounds": {
+        "min": [
+          -0.6949866414070129,
+          -0.2800000011920929,
+          -0.712859570980072
+        ],
+        "max": [
+          0.6949866414070129,
+          0.2800000011920929,
+          0.6486976146697998
+        ]
+      },
+      "animations": [
+        "Idle",
+        "Walk",
+        "Attack",
+        "Cast",
+        "Hit",
+        "Death"
+      ],
+      "triangles": 2160,
+      "missingNodes": [],
+      "missingAnimations": [],
+      "warnings": []
+    },
+    {
+      "key": "flyingEliteArcher",
+      "status": "ok",
+      "path": "public/assets/models/characters/flyingEliteArcher.glb",
+      "nodes": 43,
+      "meshes": 19,
+      "materials": 8,
+      "skeletons": 1,
+      "rootTransforms": [
+        {
+          "index": 42,
+          "name": "UnitRoot",
+          "translation": [
+            0,
+            0,
+            0
+          ],
+          "scale": [
+            1,
+            1,
+            1
+          ]
+        }
+      ],
+      "bounds": {
+        "min": [
+          -0.37977442145347595,
+          -0.2800000011920929,
+          -0.37977442145347595
+        ],
+        "max": [
+          0.37977442145347595,
+          0.2800000011920929,
+          0.37977442145347595
+        ]
+      },
+      "animations": [
+        "Idle",
+        "Walk",
+        "Attack",
+        "Cast",
+        "Hit",
+        "Death"
+      ],
+      "triangles": 2264,
+      "missingNodes": [],
+      "missingAnimations": [],
+      "warnings": []
+    },
+    {
+      "key": "flyingBomber",
+      "status": "ok",
+      "path": "public/assets/models/characters/flyingBomber.glb",
+      "nodes": 44,
+      "meshes": 20,
+      "materials": 8,
+      "skeletons": 1,
+      "rootTransforms": [
+        {
+          "index": 43,
+          "name": "UnitRoot",
+          "translation": [
+            0,
+            0,
+            0
+          ],
+          "scale": [
+            1,
+            1,
+            1
+          ]
+        }
+      ],
+      "bounds": {
+        "min": [
+          -1.018204689025879,
+          -0.30000001192092896,
+          -1.0443896055221558
+        ],
+        "max": [
+          1.018204689025879,
+          0.30000001192092896,
+          0.9460172653198242
+        ]
+      },
+      "animations": [
+        "Idle",
+        "Walk",
+        "Attack",
+        "Cast",
+        "Hit",
+        "Death"
+      ],
+      "triangles": 2464,
+      "missingNodes": [],
+      "missingAnimations": [],
+      "warnings": []
+    },
+    {
+      "key": "flyingColossus",
+      "status": "ok",
+      "path": "public/assets/models/characters/flyingColossus.glb",
+      "nodes": 44,
+      "meshes": 20,
+      "materials": 8,
+      "skeletons": 1,
+      "rootTransforms": [
+        {
+          "index": 43,
+          "name": "UnitRoot",
+          "translation": [
+            0,
+            0,
+            0
+          ],
+          "scale": [
+            1,
+            1,
+            1
+          ]
+        }
+      ],
+      "bounds": {
+        "min": [
+          -0.6949866414070129,
+          -0.2800000011920929,
+          -0.712859570980072
+        ],
+        "max": [
+          0.6949866414070129,
+          0.2800000011920929,
+          0.6486976146697998
+        ]
+      },
+      "animations": [
+        "Idle",
+        "Walk",
+        "Attack",
+        "Cast",
+        "Hit",
+        "Death"
+      ],
+      "triangles": 2160,
+      "missingNodes": [],
+      "missingAnimations": [],
+      "warnings": []
+    },
+    {
+      "key": "mine",
+      "status": "ok",
+      "path": "public/assets/models/buildings/mine.glb",
+      "nodes": 9,
+      "meshes": 8,
+      "materials": 6,
+      "skeletons": 0,
+      "rootTransforms": [
+        {
+          "index": 8,
+          "name": "BuildingRoot",
+          "translation": [
+            0,
+            0,
+            0
+          ],
+          "scale": [
+            1,
+            1,
+            1
+          ]
+        }
+      ],
+      "bounds": {
+        "min": [
+          -0.949999988079071,
+          -1.0499999523162842,
+          -0.800000011920929
+        ],
+        "max": [
+          0.949999988079071,
+          1.0499999523162842,
+          0.800000011920929
+        ]
+      },
+      "animations": [
+        "Idle",
+        "Operate",
+        "Aim",
+        "Fire",
+        "Recoil",
+        "Damaged",
+        "Destroyed"
+      ],
+      "triangles": 1032,
+      "missingNodes": [],
+      "missingAnimations": [],
+      "warnings": []
+    },
+    {
+      "key": "gold_mine",
+      "status": "ok",
+      "path": "public/assets/models/buildings/gold_mine.glb",
+      "nodes": 9,
+      "meshes": 8,
+      "materials": 5,
+      "skeletons": 0,
+      "rootTransforms": [
+        {
+          "index": 8,
+          "name": "BuildingRoot",
+          "translation": [
+            0,
+            0,
+            0
+          ],
+          "scale": [
+            1,
+            1,
+            1
+          ]
+        }
+      ],
+      "bounds": {
+        "min": [
+          -0.949999988079071,
+          -1.0499999523162842,
+          -0.800000011920929
+        ],
+        "max": [
+          0.949999988079071,
+          1.0499999523162842,
+          0.800000011920929
+        ]
+      },
+      "animations": [
+        "Idle",
+        "Operate",
+        "Aim",
+        "Fire",
+        "Recoil",
+        "Damaged",
+        "Destroyed"
+      ],
+      "triangles": 1032,
+      "missingNodes": [],
+      "missingAnimations": [],
+      "warnings": []
+    },
+    {
+      "key": "lumberyard",
+      "status": "ok",
+      "path": "public/assets/models/buildings/lumberyard.glb",
+      "nodes": 12,
+      "meshes": 10,
+      "materials": 5,
+      "skeletons": 0,
+      "rootTransforms": [
+        {
+          "index": 11,
+          "name": "BuildingRoot",
+          "translation": [
+            0,
+            0,
+            0
+          ],
+          "scale": [
+            1,
+            1,
+            1
+          ]
+        }
+      ],
+      "bounds": {
+        "min": [
+          -1.399999976158142,
+          -1.0499999523162842,
+          -0.8500000238418579
+        ],
+        "max": [
+          1.399999976158142,
+          1.0499999523162842,
+          0.8500000238418579
+        ]
+      },
+      "animations": [
+        "Idle",
+        "Operate",
+        "Aim",
+        "Fire",
+        "Recoil",
+        "Damaged",
+        "Destroyed"
+      ],
+      "triangles": 1492,
+      "missingNodes": [],
+      "missingAnimations": [],
+      "warnings": []
+    },
+    {
+      "key": "warehouse",
+      "status": "ok",
+      "path": "public/assets/models/buildings/warehouse.glb",
+      "nodes": 11,
+      "meshes": 10,
+      "materials": 6,
+      "skeletons": 0,
+      "rootTransforms": [
+        {
+          "index": 10,
+          "name": "BuildingRoot",
+          "translation": [
+            0,
+            0,
+            0
+          ],
+          "scale": [
+            1,
+            1,
+            1
+          ]
+        }
+      ],
+      "bounds": {
+        "min": [
+          -1.649999976158142,
+          -1.350000023841858,
+          -0.8999999761581421
+        ],
+        "max": [
+          1.649999976158142,
+          1.350000023841858,
+          0.8999999761581421
+        ]
+      },
+      "animations": [
+        "Idle",
+        "Operate",
+        "Aim",
+        "Fire",
+        "Recoil",
+        "Damaged",
+        "Destroyed"
+      ],
+      "triangles": 1164,
+      "missingNodes": [],
+      "missingAnimations": [],
+      "warnings": []
+    },
+    {
+      "key": "recruit_hall",
+      "status": "ok",
+      "path": "public/assets/models/buildings/recruit_hall.glb",
+      "nodes": 12,
+      "meshes": 11,
+      "materials": 7,
+      "skeletons": 0,
+      "rootTransforms": [
+        {
+          "index": 11,
+          "name": "BuildingRoot",
+          "translation": [
+            0,
+            0,
+            0
+          ],
+          "scale": [
+            1,
+            1,
+            1
+          ]
+        }
+      ],
+      "bounds": {
+        "min": [
+          -1.625,
+          -1.399999976158142,
+          -1.493478775024414
+        ],
+        "max": [
+          1.625,
+          1.399999976158142,
+          1.493478775024414
+        ]
+      },
+      "animations": [
+        "Idle",
+        "Operate",
+        "Aim",
+        "Fire",
+        "Recoil",
+        "Damaged",
+        "Destroyed"
+      ],
+      "triangles": 1496,
+      "missingNodes": [],
+      "missingAnimations": [],
+      "warnings": []
+    },
+    {
+      "key": "auto_collector",
+      "status": "ok",
+      "path": "public/assets/models/buildings/auto_collector.glb",
+      "nodes": 8,
+      "meshes": 6,
+      "materials": 5,
+      "skeletons": 0,
+      "rootTransforms": [
+        {
+          "index": 7,
+          "name": "BuildingRoot",
+          "translation": [
+            0,
+            0,
+            0
+          ],
+          "scale": [
+            1,
+            1,
+            1
+          ]
+        }
+      ],
+      "bounds": {
+        "min": [
+          -2.2444519996643066,
+          -1.0499999523162842,
+          -2.2444519996643066
+        ],
+        "max": [
+          2.242154121398926,
+          1.0499999523162842,
+          2.2444519996643066
+        ]
+      },
+      "animations": [
+        "Idle",
+        "Operate",
+        "Aim",
+        "Fire",
+        "Recoil",
+        "Damaged",
+        "Destroyed"
+      ],
+      "triangles": 1364,
+      "missingNodes": [],
+      "missingAnimations": [],
+      "warnings": []
+    },
+    {
+      "key": "auto_rebuilder",
+      "status": "ok",
+      "path": "public/assets/models/buildings/auto_rebuilder.glb",
+      "nodes": 11,
+      "meshes": 9,
+      "materials": 5,
+      "skeletons": 0,
+      "rootTransforms": [
+        {
+          "index": 10,
+          "name": "BuildingRoot",
+          "translation": [
+            0,
+            0,
+            0
+          ],
+          "scale": [
+            1,
+            1,
+            1
+          ]
+        }
+      ],
+      "bounds": {
+        "min": [
+          -1.100000023841858,
+          -1.25,
+          -1
+        ],
+        "max": [
+          1.100000023841858,
+          1.25,
+          1
+        ]
+      },
+      "animations": [
+        "Idle",
+        "Operate",
+        "Aim",
+        "Fire",
+        "Recoil",
+        "Damaged",
+        "Destroyed"
+      ],
+      "triangles": 1168,
+      "missingNodes": [],
+      "missingAnimations": [],
+      "warnings": []
+    },
+    {
+      "key": "crossbow_tower",
+      "status": "ok",
+      "path": "public/assets/models/buildings/crossbow_tower.glb",
+      "nodes": 15,
+      "meshes": 10,
+      "materials": 4,
+      "skeletons": 0,
+      "rootTransforms": [
+        {
+          "index": 14,
+          "name": "BuildingRoot",
+          "translation": [
+            0,
+            0,
+            0
+          ],
+          "scale": [
+            1,
+            1,
+            1
+          ]
+        }
+      ],
+      "bounds": {
+        "min": [
+          -0.8999999761581421,
+          -1.0499999523162842,
+          -0.6499999761581421
+        ],
+        "max": [
+          0.8999999761581421,
+          1.0499999523162842,
+          0.6499999761581421
+        ]
+      },
+      "animations": [
+        "Idle",
+        "Operate",
+        "Aim",
+        "Fire",
+        "Recoil",
+        "Damaged",
+        "Destroyed"
+      ],
+      "triangles": 1164,
+      "missingNodes": [],
+      "missingAnimations": [],
+      "warnings": []
+    },
+    {
+      "key": "frost_tower",
+      "status": "ok",
+      "path": "public/assets/models/buildings/frost_tower.glb",
+      "nodes": 12,
+      "meshes": 7,
+      "materials": 4,
+      "skeletons": 0,
+      "rootTransforms": [
+        {
+          "index": 11,
+          "name": "BuildingRoot",
+          "translation": [
+            0,
+            0,
+            0
+          ],
+          "scale": [
+            1,
+            1,
+            1
+          ]
+        }
+      ],
+      "bounds": {
+        "min": [
+          -1.8186532258987427,
+          -1.0499999523162842,
+          -2.090869903564453
+        ],
+        "max": [
+          1.8186532258987427,
+          1.0499999523162842,
+          2.090869903564453
+        ]
+      },
+      "animations": [
+        "Idle",
+        "Operate",
+        "Aim",
+        "Fire",
+        "Recoil",
+        "Damaged",
+        "Destroyed"
+      ],
+      "triangles": 1476,
+      "missingNodes": [],
+      "missingAnimations": [],
+      "warnings": []
+    },
+    {
+      "key": "sniper_tower",
+      "status": "ok",
+      "path": "public/assets/models/buildings/sniper_tower.glb",
+      "nodes": 14,
+      "meshes": 9,
+      "materials": 4,
+      "skeletons": 0,
+      "rootTransforms": [
+        {
+          "index": 13,
+          "name": "BuildingRoot",
+          "translation": [
+            0,
+            0,
+            0
+          ],
+          "scale": [
+            1,
+            1,
+            1
+          ]
+        }
+      ],
+      "bounds": {
+        "min": [
+          -3.1921541690826416,
+          -1.0499999523162842,
+          -3.1921541690826416
+        ],
+        "max": [
+          3.1921541690826416,
+          1.0499999523162842,
+          3.1921541690826416
+        ]
+      },
+      "animations": [
+        "Idle",
+        "Operate",
+        "Aim",
+        "Fire",
+        "Recoil",
+        "Damaged",
+        "Destroyed"
+      ],
+      "triangles": 1252,
+      "missingNodes": [],
+      "missingAnimations": [],
+      "warnings": []
+    },
+    {
+      "key": "mortar",
+      "status": "ok",
+      "path": "public/assets/models/buildings/mortar.glb",
+      "nodes": 12,
+      "meshes": 7,
+      "materials": 5,
+      "skeletons": 0,
+      "rootTransforms": [
+        {
+          "index": 11,
+          "name": "BuildingRoot",
+          "translation": [
+            0,
+            0,
+            0
+          ],
+          "scale": [
+            1,
+            1,
+            1
+          ]
+        }
+      ],
+      "bounds": {
+        "min": [
+          -1.4921540021896362,
+          -1.0499999523162842,
+          -1.4921540021896362
+        ],
+        "max": [
+          1.4921540021896362,
+          1.0499999523162842,
+          1.4921540021896362
+        ]
+      },
+      "animations": [
+        "Idle",
+        "Operate",
+        "Aim",
+        "Fire",
+        "Recoil",
+        "Damaged",
+        "Destroyed"
+      ],
+      "triangles": 896,
+      "missingNodes": [],
+      "missingAnimations": [],
+      "warnings": []
+    },
+    {
+      "key": "furnace",
+      "status": "ok",
+      "path": "public/assets/models/buildings/furnace.glb",
+      "nodes": 13,
+      "meshes": 9,
+      "materials": 4,
+      "skeletons": 0,
+      "rootTransforms": [
+        {
+          "index": 12,
+          "name": "FurnaceRoot",
+          "translation": [
+            0,
+            0,
+            0
+          ],
+          "scale": [
+            1,
+            1,
+            1
+          ]
+        }
+      ],
+      "bounds": {
+        "min": [
+          -1.9547743797302246,
+          -1.350000023841858,
+          -1.9547743797302246
+        ],
+        "max": [
+          1.9547743797302246,
+          1.350000023841858,
+          1.9547743797302246
+        ]
+      },
+      "animations": [
+        "Idle",
+        "Operate",
+        "Aim",
+        "Fire",
+        "Recoil",
+        "Damaged",
+        "Destroyed"
+      ],
+      "triangles": 1692,
       "missingNodes": [],
       "missingAnimations": [],
       "warnings": []

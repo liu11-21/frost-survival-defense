@@ -318,6 +318,7 @@ export class Game {
       new Promise<void>((resolve) => window.setTimeout(resolve, 5000)),
     ]);
     this.s.hero.applyAuthoredAsset(this.s.assets);
+    this.s.furnace.applyAuthoredAsset(this.s.assets);
     hideLoadingScreen();
     this.refitCamera();
     this.s.codex.onClose = () => this.closeCodex();

@@ -1,7 +1,7 @@
 import type { AssetContainer, AnimationGroup, AbstractMesh, Node, Skeleton, TransformNode } from "@babylonjs/core";
 
 /** Stable keys shared by Blender exports, the runtime manifest and tests. */
-export type AssetKey = "hero" | "turret_basic" | "wall_gate";
+export type AssetKey = string;
 
 export interface AssetSpec {
   key: AssetKey;

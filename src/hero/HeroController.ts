@@ -70,10 +70,10 @@ export class HeroController implements Damageable {
     const instance = assets.instantiate("hero", "hero.player");
     if (!instance) return false;
     this.avatar.attachAuthored(instance);
-    // The authored Blender mesh's visual front is -Z after the Z-up → Y-up
-    // export correction. Keep gameplay yaw semantics (+Z is forward) aligned
-    // with the procedural avatar by applying a visual-only half-turn.
-    instance.root.rotation.y = Math.PI;
+    // The exporter keeps the authored front on local +Z after the Z-up → Y-up
+    // conversion. The avatar root already uses +Z as gameplay forward, so a
+    // second half-turn would make the hero visibly walk backwards.
+    instance.root.rotation.set(0, 0, 0);
     return true;
   }
 

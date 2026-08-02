@@ -22,7 +22,7 @@ export class AssetRegistry {
   get manifest(): readonly typeof AUTHORED_ASSET_MANIFEST[number][] { return AUTHORED_ASSET_MANIFEST; }
 
   async preload(): Promise<void> {
-    for (const spec of AUTHORED_ASSET_MANIFEST) {
+    await Promise.all(AUTHORED_ASSET_MANIFEST.map(async (spec) => {
       const path = `${spec.rootUrl}${spec.fileName}`;
       try {
         // A GET probe (rather than HEAD) is supported by Vite's static server
@@ -32,7 +32,7 @@ export class AssetRegistry {
         const response = await fetch(path, { method: "GET", cache: "no-store" });
         if (!response.ok) {
           this.markUnavailable(spec.key, "missing", path, `HTTP ${response.status}`);
-          continue;
+          return;
         }
         await response.arrayBuffer();
         const container = await this.loader.load(spec);
@@ -41,14 +41,14 @@ export class AssetRegistry {
         if (report.status !== "loaded") {
           this.unavailable.add(spec.key);
           console.warn(`[assets] ${path} failed the authored contract; procedural fallback remains active`, report);
-          continue;
+          return;
         }
         this.containers.set(spec.key, container);
         this.loaded.set(spec.key, container.meshes);
       } catch (error) {
         this.markUnavailable(spec.key, "error", path, error instanceof Error ? error.message : String(error));
       }
-    }
+    }));
     this.ready = true;
   }
 

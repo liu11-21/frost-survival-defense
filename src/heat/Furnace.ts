@@ -7,6 +7,9 @@ import type { LightingSetup } from "../scene/LightingSetup";
 import type { CollisionWorld } from "../util/Collision";
 import { damp, easeOutCubic } from "../util/MathUtil";
 import { HeatSource } from "./HeatSource";
+import type { AssetInstance } from "../assets/AssetTypes";
+import type { AssetRegistry } from "../assets/AssetRegistry";
+import { findAnimationGroup } from "../assets/AnimationRegistry";
 
 /**
  * The one thing that must not fall. It is a damageable structure, a healing
@@ -41,6 +44,8 @@ export class Furnace implements Damageable {
   private selfHealTimer = 0;
   private fixedSelfHealApplied = false;
   private hitFlash = 0;
+  private authored: AssetInstance | null = null;
+  private readonly proceduralMeshes: Mesh[];
 
   constructor(
     scene: Scene,
@@ -151,8 +156,30 @@ export class Furnace implements Damageable {
 
     for (const part of this.upgradeParts) part.setEnabled(false);
 
+    // Keep the procedural furnace alive as a deterministic fallback, but hide
+    // only its meshes once the authored GLB is attached.  The root, collision
+    // registration and heat source remain owned by this class either way.
+    this.proceduralMeshes = this.root.getChildMeshes(false).filter((mesh): mesh is Mesh => mesh instanceof Mesh);
+
     this.heat = new HeatSource(0, 0, 13, 1);
     collision.add(0, 0, FURNACE.radius);
+  }
+
+  /** Installs the optional Blender furnace without changing gameplay state. */
+  applyAuthoredAsset(assets: AssetRegistry): boolean {
+    if (this.authored) return true;
+    const instance = assets.instantiate("furnace", "furnace.main");
+    if (!instance) return false;
+    this.authored = instance;
+    instance.root.parent = this.root;
+    instance.root.position.set(0, 0, 0);
+    instance.root.rotation.set(0, 0, 0);
+    for (const mesh of this.proceduralMeshes) {
+      mesh.isVisible = false;
+      mesh.setEnabled(false);
+    }
+    findAnimationGroup(instance.animationGroups, "Idle")?.start(true, 1);
+    return true;
   }
 
   get alive(): boolean {

@@ -2,6 +2,8 @@ import { InstancedMesh, Mesh, MeshBuilder, Scene, TransformNode } from "@babylon
 import { UNIT_VISUALS, type AttachmentSpec, type UnitVisual, type WeaponKind } from "../data/UnitVisuals";
 import { MaterialFactory } from "../scene/MaterialFactory";
 import { buildAttachmentMesh } from "./AttachmentMeshBuilder";
+import type { AssetInstance } from "../assets/AssetTypes";
+import type { AssetRegistry } from "../assets/AssetRegistry";
 
 /**
  * The joints a combat animator is allowed to move. Every visible part is an
@@ -10,6 +12,8 @@ import { buildAttachmentMesh } from "./AttachmentMeshBuilder";
  */
 export interface LiteRig {
   root: TransformNode;
+  /** Authored GLB instance; null means the pooled procedural fallback is active. */
+  authored: AssetInstance | null;
   body: TransformNode;
   head: TransformNode;
   shoulderL: TransformNode;
@@ -115,6 +119,7 @@ export class HumanoidTemplate {
     private readonly scene: Scene,
     materials: MaterialFactory,
     readonly visualKey: string,
+    private readonly assets?: AssetRegistry,
   ) {
     const v: UnitVisual = UNIT_VISUALS[visualKey] ?? UNIT_VISUALS.grunt;
     const key = `unit.${visualKey}`;
@@ -299,9 +304,19 @@ export class HumanoidTemplate {
     const restPosition = joints.map((j) => j.position.clone());
     const partRotation = parts.map((p) => p.rotation.clone());
     const partScale = parts.map((p) => p.scaling.clone());
+    const authored = this.assets?.instantiate(this.visualKey, `unit.${id}`) ?? null;
+    if (authored) {
+      authored.root.parent = root;
+      authored.root.position.set(0, 0, 0);
+      // UnitRoot already carries the Blender-to-Babylon orientation. Keep the
+      // authored local +Z front aligned with the combat root's +Z yaw.
+      authored.root.rotation.set(0, 0, 0);
+      for (const part of parts) part.setEnabled(false);
+    }
 
     const rig: LiteRig = {
       root,
+      authored,
       body,
       head,
       shoulderL,
@@ -317,6 +332,11 @@ export class HumanoidTemplate {
         root.position.set(0, 0, 0);
         root.rotation.set(0, 0, 0);
         root.scaling.setAll(nextScale);
+        if (authored) {
+          authored.root.position.set(0, 0, 0);
+          authored.root.rotation.set(0, 0, 0);
+          authored.root.setEnabled(true);
+        }
         for (let i = 0; i < joints.length; i++) {
           joints[i].rotation.copyFrom(restRotation[i]);
           joints[i].position.copyFrom(restPosition[i]);
@@ -329,17 +349,23 @@ export class HumanoidTemplate {
           p.scaling.copyFrom(partScale[i]);
           p.visibility = 1;
           p.isVisible = true;
-          p.setEnabled(true);
+          // Authored instances replace the procedural instances for the whole
+          // rig lifetime.  A pooled reset must not briefly render both layers
+          // or re-enable armor after the GLB has been installed.
+          p.setEnabled(!authored);
         }
       },
       release(): void {
         root.setEnabled(false);
+        authored?.root.setEnabled(false);
         pool.push(rig);
       },
       setArmorVisible(visible: boolean): void {
+        if (authored) return;
         for (const p of armorParts) p.setEnabled(visible);
       },
       dispose(): void {
+        authored?.dispose();
         for (const p of parts) p.dispose();
         root.dispose(false, false);
       },
@@ -362,12 +388,16 @@ export class HumanoidTemplate {
 export class HumanoidTemplateCache {
   private readonly cache = new Map<string, HumanoidTemplate>();
 
-  constructor(private readonly scene: Scene, private readonly materials: MaterialFactory) {}
+  constructor(
+    private readonly scene: Scene,
+    private readonly materials: MaterialFactory,
+    private readonly assets?: AssetRegistry,
+  ) {}
 
   get(visualKey: string): HumanoidTemplate {
     let t = this.cache.get(visualKey);
     if (!t) {
-      t = new HumanoidTemplate(this.scene, this.materials, visualKey);
+      t = new HumanoidTemplate(this.scene, this.materials, visualKey, this.assets);
       this.cache.set(visualKey, t);
     }
     return t;
