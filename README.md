@@ -63,7 +63,17 @@ npm run art:buildings  # batch-build economy, defense and furnace GLBs
 npm run art:resources  # build authored tree and ore resource props
 npm run art:export     # run the complete hero + facility + unit export batch
 npm run art:validate   # write reports/art-validation.json
+npm run ai:sync         # refresh docs/ai-sync and lightweight sync reports
 ```
+
+### Private GitHub synchronization
+
+The canonical remote is a private GitHub repository. Keep credentials in local
+environment variables only; `.env`, `node_modules/`, `dist/`, caches and local
+captures are excluded by `.gitignore`. Run `npm run ai:sync` after major
+changes, inspect `git status`, commit intentionally, and push `main` without
+force-pushing. Editable Blender source media uses Git LFS for future changes;
+the initial repository setup does not rewrite existing local history.
 
 For an offline art review, Blender can also render the deterministic sheets:
 

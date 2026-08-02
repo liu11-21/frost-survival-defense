@@ -1,0 +1,985 @@
+{
+  "generatedAt": "2026-08-02T13:49:21.576Z",
+  "glbSummary": {
+    "total": 42,
+    "characters": 26,
+    "buildings": 14,
+    "environment": 2,
+    "validatedOk": 42
+  },
+  "glbs": [
+    {
+      "path": "public/assets/models/buildings/auto_collector.glb",
+      "bytes": 626896,
+      "category": "building",
+      "status": "ok",
+      "nodes": 48,
+      "meshes": 44,
+      "materials": 11,
+      "skeletons": 0,
+      "triangles": 7904,
+      "animations": [
+        "Idle",
+        "Operate",
+        "Aim",
+        "Fire",
+        "Recoil",
+        "Damaged",
+        "Destroyed"
+      ]
+    },
+    {
+      "path": "public/assets/models/buildings/auto_rebuilder.glb",
+      "bytes": 627960,
+      "category": "building",
+      "status": "ok",
+      "nodes": 53,
+      "meshes": 49,
+      "materials": 10,
+      "skeletons": 0,
+      "triangles": 7700,
+      "animations": [
+        "Idle",
+        "Operate",
+        "Aim",
+        "Fire",
+        "Recoil",
+        "Damaged",
+        "Destroyed"
+      ]
+    },
+    {
+      "path": "public/assets/models/buildings/crossbow_tower.glb",
+      "bytes": 732500,
+      "category": "building",
+      "status": "ok",
+      "nodes": 75,
+      "meshes": 68,
+      "materials": 15,
+      "skeletons": 0,
+      "triangles": 11028,
+      "animations": [
+        "Idle",
+        "Operate",
+        "Aim",
+        "Fire",
+        "Recoil",
+        "Damaged",
+        "Destroyed"
+      ]
+    },
+    {
+      "path": "public/assets/models/buildings/frost_tower.glb",
+      "bytes": 597656,
+      "category": "building",
+      "status": "ok",
+      "nodes": 49,
+      "meshes": 42,
+      "materials": 11,
+      "skeletons": 0,
+      "triangles": 8084,
+      "animations": [
+        "Idle",
+        "Operate",
+        "Aim",
+        "Fire",
+        "Recoil",
+        "Damaged",
+        "Destroyed"
+      ]
+    },
+    {
+      "path": "public/assets/models/buildings/furnace.glb",
+      "bytes": 1014088,
+      "category": "building",
+      "status": "ok",
+      "nodes": 100,
+      "meshes": 94,
+      "materials": 10,
+      "skeletons": 0,
+      "triangles": 14276,
+      "animations": [
+        "Idle",
+        "Operate",
+        "Aim",
+        "Fire",
+        "Recoil",
+        "Damaged",
+        "Destroyed"
+      ]
+    },
+    {
+      "path": "public/assets/models/buildings/gold_mine.glb",
+      "bytes": 658252,
+      "category": "building",
+      "status": "ok",
+      "nodes": 54,
+      "meshes": 51,
+      "materials": 14,
+      "skeletons": 0,
+      "triangles": 8708,
+      "animations": [
+        "Idle",
+        "Operate",
+        "Aim",
+        "Fire",
+        "Recoil",
+        "Damaged",
+        "Destroyed"
+      ]
+    },
+    {
+      "path": "public/assets/models/buildings/lumberyard.glb",
+      "bytes": 643212,
+      "category": "building",
+      "status": "ok",
+      "nodes": 58,
+      "meshes": 54,
+      "materials": 13,
+      "skeletons": 0,
+      "triangles": 9612,
+      "animations": [
+        "Idle",
+        "Operate",
+        "Aim",
+        "Fire",
+        "Recoil",
+        "Damaged",
+        "Destroyed"
+      ]
+    },
+    {
+      "path": "public/assets/models/buildings/mine.glb",
+      "bytes": 660656,
+      "category": "building",
+      "status": "ok",
+      "nodes": 52,
+      "meshes": 49,
+      "materials": 14,
+      "skeletons": 0,
+      "triangles": 8492,
+      "animations": [
+        "Idle",
+        "Operate",
+        "Aim",
+        "Fire",
+        "Recoil",
+        "Damaged",
+        "Destroyed"
+      ]
+    },
+    {
+      "path": "public/assets/models/buildings/mortar.glb",
+      "bytes": 602248,
+      "category": "building",
+      "status": "ok",
+      "nodes": 49,
+      "meshes": 42,
+      "materials": 10,
+      "skeletons": 0,
+      "triangles": 7196,
+      "animations": [
+        "Idle",
+        "Operate",
+        "Aim",
+        "Fire",
+        "Recoil",
+        "Damaged",
+        "Destroyed"
+      ]
+    },
+    {
+      "path": "public/assets/models/buildings/recruit_hall.glb",
+      "bytes": 590520,
+      "category": "building",
+      "status": "ok",
+      "nodes": 55,
+      "meshes": 52,
+      "materials": 15,
+      "skeletons": 0,
+      "triangles": 7480,
+      "animations": [
+        "Idle",
+        "Operate",
+        "Aim",
+        "Fire",
+        "Recoil",
+        "Damaged",
+        "Destroyed"
+      ]
+    },
+    {
+      "path": "public/assets/models/buildings/sniper_tower.glb",
+      "bytes": 551988,
+      "category": "building",
+      "status": "ok",
+      "nodes": 52,
+      "meshes": 45,
+      "materials": 10,
+      "skeletons": 0,
+      "triangles": 7088,
+      "animations": [
+        "Idle",
+        "Operate",
+        "Aim",
+        "Fire",
+        "Recoil",
+        "Damaged",
+        "Destroyed"
+      ]
+    },
+    {
+      "path": "public/assets/models/buildings/turret_basic.glb",
+      "bytes": 425480,
+      "category": "building",
+      "status": "ok",
+      "nodes": 39,
+      "meshes": 33,
+      "materials": 8,
+      "skeletons": 0,
+      "triangles": 6184,
+      "animations": [
+        "Idle",
+        "Aim",
+        "Fire",
+        "Recoil",
+        "Reload"
+      ]
+    },
+    {
+      "path": "public/assets/models/buildings/wall_gate.glb",
+      "bytes": 497360,
+      "category": "building",
+      "status": "ok",
+      "nodes": 62,
+      "meshes": 52,
+      "materials": 7,
+      "skeletons": 0,
+      "triangles": 7620,
+      "animations": [
+        "Damaged",
+        "Destroyed",
+        "GateOpen",
+        "GateClose"
+      ]
+    },
+    {
+      "path": "public/assets/models/buildings/warehouse.glb",
+      "bytes": 543344,
+      "category": "building",
+      "status": "ok",
+      "nodes": 55,
+      "meshes": 52,
+      "materials": 14,
+      "skeletons": 0,
+      "triangles": 7424,
+      "animations": [
+        "Idle",
+        "Operate",
+        "Aim",
+        "Fire",
+        "Recoil",
+        "Damaged",
+        "Destroyed"
+      ]
+    },
+    {
+      "path": "public/assets/models/characters/archer.glb",
+      "bytes": 1109488,
+      "category": "character",
+      "status": "ok",
+      "nodes": 124,
+      "meshes": 98,
+      "materials": 14,
+      "skeletons": 1,
+      "triangles": 14280,
+      "animations": [
+        "Idle",
+        "Walk",
+        "Attack",
+        "Cast",
+        "Hit",
+        "Death"
+      ]
+    },
+    {
+      "path": "public/assets/models/characters/assault.glb",
+      "bytes": 1026792,
+      "category": "character",
+      "status": "ok",
+      "nodes": 125,
+      "meshes": 99,
+      "materials": 13,
+      "skeletons": 1,
+      "triangles": 13116,
+      "animations": [
+        "Idle",
+        "Walk",
+        "Attack",
+        "Cast",
+        "Hit",
+        "Death"
+      ]
+    },
+    {
+      "path": "public/assets/models/characters/bombardier.glb",
+      "bytes": 1103908,
+      "category": "character",
+      "status": "ok",
+      "nodes": 122,
+      "meshes": 96,
+      "materials": 13,
+      "skeletons": 1,
+      "triangles": 13308,
+      "animations": [
+        "Idle",
+        "Walk",
+        "Attack",
+        "Cast",
+        "Hit",
+        "Death"
+      ]
+    },
+    {
+      "path": "public/assets/models/characters/bomber.glb",
+      "bytes": 1027868,
+      "category": "character",
+      "status": "ok",
+      "nodes": 116,
+      "meshes": 90,
+      "materials": 14,
+      "skeletons": 1,
+      "triangles": 12052,
+      "animations": [
+        "Idle",
+        "Walk",
+        "Attack",
+        "Cast",
+        "Hit",
+        "Death"
+      ]
+    },
+    {
+      "path": "public/assets/models/characters/boss.glb",
+      "bytes": 1056944,
+      "category": "character",
+      "status": "ok",
+      "nodes": 122,
+      "meshes": 96,
+      "materials": 14,
+      "skeletons": 1,
+      "triangles": 12744,
+      "animations": [
+        "Idle",
+        "Walk",
+        "Attack",
+        "Cast",
+        "Hit",
+        "Death"
+      ]
+    },
+    {
+      "path": "public/assets/models/characters/breacher.glb",
+      "bytes": 1147708,
+      "category": "character",
+      "status": "ok",
+      "nodes": 125,
+      "meshes": 99,
+      "materials": 13,
+      "skeletons": 1,
+      "triangles": 13560,
+      "animations": [
+        "Idle",
+        "Walk",
+        "Attack",
+        "Cast",
+        "Hit",
+        "Death"
+      ]
+    },
+    {
+      "path": "public/assets/models/characters/bruiser.glb",
+      "bytes": 1109456,
+      "category": "character",
+      "status": "ok",
+      "nodes": 125,
+      "meshes": 99,
+      "materials": 13,
+      "skeletons": 1,
+      "triangles": 13600,
+      "animations": [
+        "Idle",
+        "Walk",
+        "Attack",
+        "Cast",
+        "Hit",
+        "Death"
+      ]
+    },
+    {
+      "path": "public/assets/models/characters/commander.glb",
+      "bytes": 1043576,
+      "category": "character",
+      "status": "ok",
+      "nodes": 119,
+      "meshes": 93,
+      "materials": 14,
+      "skeletons": 1,
+      "triangles": 12844,
+      "animations": [
+        "Idle",
+        "Walk",
+        "Attack",
+        "Cast",
+        "Hit",
+        "Death"
+      ]
+    },
+    {
+      "path": "public/assets/models/characters/engineer.glb",
+      "bytes": 1089432,
+      "category": "character",
+      "status": "ok",
+      "nodes": 118,
+      "meshes": 92,
+      "materials": 15,
+      "skeletons": 1,
+      "triangles": 13676,
+      "animations": [
+        "Idle",
+        "Walk",
+        "Attack",
+        "Cast",
+        "Hit",
+        "Death"
+      ]
+    },
+    {
+      "path": "public/assets/models/characters/flagbearer.glb",
+      "bytes": 1048068,
+      "category": "character",
+      "status": "ok",
+      "nodes": 119,
+      "meshes": 93,
+      "materials": 15,
+      "skeletons": 1,
+      "triangles": 12784,
+      "animations": [
+        "Idle",
+        "Walk",
+        "Attack",
+        "Cast",
+        "Hit",
+        "Death"
+      ]
+    },
+    {
+      "path": "public/assets/models/characters/flyingBomber.glb",
+      "bytes": 1324248,
+      "category": "character",
+      "status": "ok",
+      "nodes": 145,
+      "meshes": 119,
+      "materials": 15,
+      "skeletons": 1,
+      "triangles": 16280,
+      "animations": [
+        "Idle",
+        "Walk",
+        "Attack",
+        "Cast",
+        "Hit",
+        "Death"
+      ]
+    },
+    {
+      "path": "public/assets/models/characters/flyingColossus.glb",
+      "bytes": 1430232,
+      "category": "character",
+      "status": "ok",
+      "nodes": 170,
+      "meshes": 144,
+      "materials": 14,
+      "skeletons": 1,
+      "triangles": 19244,
+      "animations": [
+        "Idle",
+        "Walk",
+        "Attack",
+        "Cast",
+        "Hit",
+        "Death"
+      ]
+    },
+    {
+      "path": "public/assets/models/characters/flyingEliteArcher.glb",
+      "bytes": 1262508,
+      "category": "character",
+      "status": "ok",
+      "nodes": 146,
+      "meshes": 120,
+      "materials": 14,
+      "skeletons": 1,
+      "triangles": 16784,
+      "animations": [
+        "Idle",
+        "Walk",
+        "Attack",
+        "Cast",
+        "Hit",
+        "Death"
+      ]
+    },
+    {
+      "path": "public/assets/models/characters/flyingMelee.glb",
+      "bytes": 1185560,
+      "category": "character",
+      "status": "ok",
+      "nodes": 140,
+      "meshes": 114,
+      "materials": 14,
+      "skeletons": 1,
+      "triangles": 15380,
+      "animations": [
+        "Idle",
+        "Walk",
+        "Attack",
+        "Cast",
+        "Hit",
+        "Death"
+      ]
+    },
+    {
+      "path": "public/assets/models/characters/frostmage.glb",
+      "bytes": 1137548,
+      "category": "character",
+      "status": "ok",
+      "nodes": 128,
+      "meshes": 102,
+      "materials": 14,
+      "skeletons": 1,
+      "triangles": 14364,
+      "animations": [
+        "Idle",
+        "Walk",
+        "Attack",
+        "Cast",
+        "Hit",
+        "Death"
+      ]
+    },
+    {
+      "path": "public/assets/models/characters/grunt.glb",
+      "bytes": 1047452,
+      "category": "character",
+      "status": "ok",
+      "nodes": 121,
+      "meshes": 95,
+      "materials": 13,
+      "skeletons": 1,
+      "triangles": 12704,
+      "animations": [
+        "Idle",
+        "Walk",
+        "Attack",
+        "Cast",
+        "Hit",
+        "Death"
+      ]
+    },
+    {
+      "path": "public/assets/models/characters/hero.glb",
+      "bytes": 1094084,
+      "category": "character",
+      "status": "ok",
+      "nodes": 123,
+      "meshes": 97,
+      "materials": 10,
+      "skeletons": 1,
+      "triangles": 14252,
+      "animations": [
+        "Idle",
+        "Walk",
+        "Run",
+        "MeleeAttack",
+        "RangedAttack",
+        "Hit",
+        "Death"
+      ]
+    },
+    {
+      "path": "public/assets/models/characters/icearmor.glb",
+      "bytes": 1106224,
+      "category": "character",
+      "status": "ok",
+      "nodes": 129,
+      "meshes": 103,
+      "materials": 14,
+      "skeletons": 1,
+      "triangles": 14268,
+      "animations": [
+        "Idle",
+        "Walk",
+        "Attack",
+        "Cast",
+        "Hit",
+        "Death"
+      ]
+    },
+    {
+      "path": "public/assets/models/characters/juggernaut.glb",
+      "bytes": 1140172,
+      "category": "character",
+      "status": "ok",
+      "nodes": 130,
+      "meshes": 104,
+      "materials": 13,
+      "skeletons": 1,
+      "triangles": 13872,
+      "animations": [
+        "Idle",
+        "Walk",
+        "Attack",
+        "Cast",
+        "Hit",
+        "Death"
+      ]
+    },
+    {
+      "path": "public/assets/models/characters/mage.glb",
+      "bytes": 1101500,
+      "category": "character",
+      "status": "ok",
+      "nodes": 121,
+      "meshes": 95,
+      "materials": 14,
+      "skeletons": 1,
+      "triangles": 13824,
+      "animations": [
+        "Idle",
+        "Walk",
+        "Attack",
+        "Cast",
+        "Hit",
+        "Death"
+      ]
+    },
+    {
+      "path": "public/assets/models/characters/marksman.glb",
+      "bytes": 1038140,
+      "category": "character",
+      "status": "ok",
+      "nodes": 122,
+      "meshes": 96,
+      "materials": 14,
+      "skeletons": 1,
+      "triangles": 13252,
+      "animations": [
+        "Idle",
+        "Walk",
+        "Attack",
+        "Cast",
+        "Hit",
+        "Death"
+      ]
+    },
+    {
+      "path": "public/assets/models/characters/medic.glb",
+      "bytes": 1046288,
+      "category": "character",
+      "status": "ok",
+      "nodes": 119,
+      "meshes": 93,
+      "materials": 14,
+      "skeletons": 1,
+      "triangles": 13316,
+      "animations": [
+        "Idle",
+        "Walk",
+        "Attack",
+        "Cast",
+        "Hit",
+        "Death"
+      ]
+    },
+    {
+      "path": "public/assets/models/characters/musketeer.glb",
+      "bytes": 1123924,
+      "category": "character",
+      "status": "ok",
+      "nodes": 130,
+      "meshes": 104,
+      "materials": 15,
+      "skeletons": 1,
+      "triangles": 13556,
+      "animations": [
+        "Idle",
+        "Walk",
+        "Attack",
+        "Cast",
+        "Hit",
+        "Death"
+      ]
+    },
+    {
+      "path": "public/assets/models/characters/shield.glb",
+      "bytes": 1049296,
+      "category": "character",
+      "status": "ok",
+      "nodes": 120,
+      "meshes": 94,
+      "materials": 14,
+      "skeletons": 1,
+      "triangles": 13152,
+      "animations": [
+        "Idle",
+        "Walk",
+        "Attack",
+        "Cast",
+        "Hit",
+        "Death"
+      ]
+    },
+    {
+      "path": "public/assets/models/characters/slinger.glb",
+      "bytes": 1092956,
+      "category": "character",
+      "status": "ok",
+      "nodes": 122,
+      "meshes": 96,
+      "materials": 13,
+      "skeletons": 1,
+      "triangles": 13172,
+      "animations": [
+        "Idle",
+        "Walk",
+        "Attack",
+        "Cast",
+        "Hit",
+        "Death"
+      ]
+    },
+    {
+      "path": "public/assets/models/characters/warrior.glb",
+      "bytes": 1188740,
+      "category": "character",
+      "status": "ok",
+      "nodes": 140,
+      "meshes": 114,
+      "materials": 13,
+      "skeletons": 1,
+      "triangles": 14880,
+      "animations": [
+        "Idle",
+        "Walk",
+        "Attack",
+        "Cast",
+        "Hit",
+        "Death"
+      ]
+    },
+    {
+      "path": "public/assets/models/environment/resource_rock.glb",
+      "bytes": 217720,
+      "category": "environment",
+      "status": "ok",
+      "nodes": 21,
+      "meshes": 18,
+      "materials": 6,
+      "skeletons": 0,
+      "triangles": 3436,
+      "animations": []
+    },
+    {
+      "path": "public/assets/models/environment/resource_tree.glb",
+      "bytes": 337828,
+      "category": "environment",
+      "status": "ok",
+      "nodes": 30,
+      "meshes": 27,
+      "materials": 8,
+      "skeletons": 0,
+      "triangles": 5288,
+      "animations": []
+    }
+  ],
+  "blenderSources": {
+    "total": 43,
+    "files": [
+      {
+        "path": "assets-source/blender/buildings/auto_collector.blend",
+        "bytes": 2725868
+      },
+      {
+        "path": "assets-source/blender/buildings/auto_rebuilder.blend",
+        "bytes": 2782762
+      },
+      {
+        "path": "assets-source/blender/buildings/crossbow_tower.blend",
+        "bytes": 2872416
+      },
+      {
+        "path": "assets-source/blender/buildings/frost_tower.blend",
+        "bytes": 2929182
+      },
+      {
+        "path": "assets-source/blender/buildings/furnace.blend",
+        "bytes": 3130991
+      },
+      {
+        "path": "assets-source/blender/buildings/gold_mine.blend",
+        "bytes": 2420089
+      },
+      {
+        "path": "assets-source/blender/buildings/lumberyard.blend",
+        "bytes": 2492903
+      },
+      {
+        "path": "assets-source/blender/buildings/mine.blend",
+        "bytes": 2351553
+      },
+      {
+        "path": "assets-source/blender/buildings/mortar.blend",
+        "bytes": 3046202
+      },
+      {
+        "path": "assets-source/blender/buildings/recruit_hall.blend",
+        "bytes": 2658974
+      },
+      {
+        "path": "assets-source/blender/buildings/sniper_tower.blend",
+        "bytes": 2989516
+      },
+      {
+        "path": "assets-source/blender/buildings/turret_basic.blend",
+        "bytes": 232758
+      },
+      {
+        "path": "assets-source/blender/buildings/wall_gate.blend",
+        "bytes": 275401
+      },
+      {
+        "path": "assets-source/blender/buildings/warehouse.blend",
+        "bytes": 2569893
+      },
+      {
+        "path": "assets-source/blender/characters/archer.blend",
+        "bytes": 416802
+      },
+      {
+        "path": "assets-source/blender/characters/assault.blend",
+        "bytes": 737485
+      },
+      {
+        "path": "assets-source/blender/characters/bombardier.blend",
+        "bytes": 1447505
+      },
+      {
+        "path": "assets-source/blender/characters/bomber.blend",
+        "bytes": 1835456
+      },
+      {
+        "path": "assets-source/blender/characters/boss.blend",
+        "bytes": 1521572
+      },
+      {
+        "path": "assets-source/blender/characters/breacher.blend",
+        "bytes": 1598164
+      },
+      {
+        "path": "assets-source/blender/characters/bruiser.blend",
+        "bytes": 1223832
+      },
+      {
+        "path": "assets-source/blender/characters/commander.blend",
+        "bytes": 1756824
+      },
+      {
+        "path": "assets-source/blender/characters/engineer.blend",
+        "bytes": 827503
+      },
+      {
+        "path": "assets-source/blender/characters/flagbearer.blend",
+        "bytes": 580900
+      },
+      {
+        "path": "assets-source/blender/characters/flyingBomber.blend",
+        "bytes": 2100524
+      },
+      {
+        "path": "assets-source/blender/characters/flyingColossus.blend",
+        "bytes": 2191984
+      },
+      {
+        "path": "assets-source/blender/characters/flyingEliteArcher.blend",
+        "bytes": 2011890
+      },
+      {
+        "path": "assets-source/blender/characters/flyingMelee.blend",
+        "bytes": 1929406
+      },
+      {
+        "path": "assets-source/blender/characters/frostmage.blend",
+        "bytes": 1005100
+      },
+      {
+        "path": "assets-source/blender/characters/grunt.blend",
+        "bytes": 1075800
+      },
+      {
+        "path": "assets-source/blender/characters/hero.blend",
+        "bytes": 235926
+      },
+      {
+        "path": "assets-source/blender/characters/icearmor.blend",
+        "bytes": 1685208
+      },
+      {
+        "path": "assets-source/blender/characters/juggernaut.blend",
+        "bytes": 1377513
+      },
+      {
+        "path": "assets-source/blender/characters/mage.blend",
+        "bytes": 665289
+      },
+      {
+        "path": "assets-source/blender/characters/marksman.blend",
+        "bytes": 1302341
+      },
+      {
+        "path": "assets-source/blender/characters/medic.blend",
+        "bytes": 493677
+      },
+      {
+        "path": "assets-source/blender/characters/musketeer.blend",
+        "bytes": 918163
+      },
+      {
+        "path": "assets-source/blender/characters/shield.blend",
+        "bytes": 331591
+      },
+      {
+        "path": "assets-source/blender/characters/slinger.blend",
+        "bytes": 1154040
+      },
+      {
+        "path": "assets-source/blender/characters/warrior.blend",
+        "bytes": 258919
+      },
+      {
+        "path": "assets-source/blender/environment/resource_rock.blend",
+        "bytes": 3145689
+      },
+      {
+        "path": "assets-source/blender/environment/resource_tree.blend",
+        "bytes": 3123221
+      },
+      {
+        "path": "assets-source/blender/templates/game_asset_template.blend",
+        "bytes": 94208
+      }
+    ]
+  },
+  "fallback": "Babylon keeps the procedural renderer available when an authored GLB is missing or fails its asset contract.",
+  "qualityBoundary": "Static validation proves the GLB contract; it does not constitute final commercial-art sign-off."
+}

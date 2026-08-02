@@ -4,4 +4,27 @@ playtest-shots/
 *.local
 __pycache__/
 *.blend1
+
+# Local tooling, test captures and generated caches.
+.vite/
+coverage/
+.cache/
+cache/
+temp/
+tmp/
+blender-cache/
+reports/runtime/
+screenshots/
+recordings/
+*.log
+*.pyc
+
+# Local secrets and editor state. Keep the safe template tracked.
+.env
+.env.*
+!.env.example
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
 .DS_Store

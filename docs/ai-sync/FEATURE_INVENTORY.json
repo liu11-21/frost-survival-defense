@@ -1,0 +1,82 @@
+{
+  "generatedAt": "2026-08-02T13:49:21.575Z",
+  "sourceOfTruth": [
+    "src/",
+    "package.json",
+    "reports/art-validation.json"
+  ],
+  "features": [
+    {
+      "id": "modes",
+      "name": "Stage and Endless modes",
+      "status": "implemented",
+      "files": [
+        "src/modes/"
+      ]
+    },
+    {
+      "id": "furnace",
+      "name": "Furnace progression and self-repair",
+      "status": "implemented",
+      "files": [
+        "src/heat/"
+      ]
+    },
+    {
+      "id": "combat",
+      "name": "Hero, ally, enemy and facility combat",
+      "status": "implemented",
+      "files": [
+        "src/combat/"
+      ]
+    },
+    {
+      "id": "ai",
+      "name": "Targeting, navigation, watchdog and repair AI",
+      "status": "implemented",
+      "files": [
+        "src/ai/"
+      ]
+    },
+    {
+      "id": "construction",
+      "name": "Build, demolish and rebuild flow",
+      "status": "implemented",
+      "files": [
+        "src/buildings/"
+      ]
+    },
+    {
+      "id": "economy",
+      "name": "Wood, stone, gold and production facilities",
+      "status": "implemented",
+      "files": [
+        "src/economy/"
+      ]
+    },
+    {
+      "id": "skills",
+      "name": "Hero skills and combat feedback",
+      "status": "implemented",
+      "files": [
+        "src/hero/"
+      ]
+    },
+    {
+      "id": "authored-assets",
+      "name": "Blender GLB pipeline with procedural fallback",
+      "status": "implemented",
+      "files": [
+        "scripts/blender/"
+      ]
+    },
+    {
+      "id": "qa",
+      "name": "TypeScript, build, playtest and model validation tooling",
+      "status": "implemented",
+      "files": [
+        "tools/"
+      ]
+    }
+  ]
+}
