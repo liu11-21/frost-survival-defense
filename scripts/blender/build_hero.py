@@ -20,9 +20,9 @@ def build():
     glow = material("MAT_hero_glow", (0.3, 0.78, 1.0), 0.24, 0.0, (0.18, 0.62, 1.0))
     accent = material("MAT_hero_accent", (0.45, 0.78, 1.0), 0.35, 0.5)
     root = orient_for_babylon(empty("HeroRoot", target="EXPORT", display="PLAIN_AXES"))
-    root["commercialStage"] = "H2"
+    root["commercialStage"] = "H3"
     root["commercialIteration"] = 2
-    root["clothingReview"] = "reinforced side panels, hem pleats, hood lining and seam piping"
+    root["identityReview"] = "layered visor lens, asymmetric hood pin, mask bridge and badge contrast"
     add_lod_markers(root, "character")
     parts = [
         # H1 iteration 1: a wider padded torso, slightly lower centre of
@@ -164,6 +164,20 @@ def build():
         prism("heroHemPleat.R", [(0.19, 0.91), (0.31, 0.91), (0.35, 0.54), (0.22, 0.58)], 0.055, (0.04, 0, 0.20), leather, "LOD0", 0.010),
         torus("heroHoodLining", 0.335, 0.018, (0, 1.88, 0.03), accent, "LOD0"),
         box("heroSeamPiping", (0.04, 0.56, 0.035), (0, 1.10, 0.49), snow, "LOD0", 0.008),
+        # H3 iteration 1: identity shapes are deliberately placed on the
+        # camera-facing silhouette, not hidden inside the hood volume.
+        prism("heroVisor", [(-0.22, 1.87), (0.22, 1.87), (0.17, 1.70), (-0.17, 1.70)], 0.08, (0, 0, 0.36), cloth_dark, "LOD0", 0.012),
+        prism("heroFaceMark", [(-0.045, 1.77), (0.045, 1.77), (0.06, 1.61), (0, 1.56), (-0.06, 1.61)], 0.025, (0, 0, 0.39), glow, "LOD0", 0.008),
+        prism("heroHoodCrest", [(-0.10, 2.08), (0, 2.22), (0.10, 2.08), (0.05, 1.98), (-0.05, 1.98)], 0.07, (0, 0, -0.22), accent, "LOD0", 0.012),
+        prism("heroShoulderInsignia.L", [(-0.11, 1.48), (0.11, 1.48), (0.07, 1.34), (-0.07, 1.34)], 0.035, (-0.50, 0, 0.20), glow, "LOD0", 0.008),
+        prism("heroShoulderInsignia.R", [(-0.11, 1.48), (0.11, 1.48), (0.07, 1.34), (-0.07, 1.34)], 0.035, (0.50, 0, 0.20), glow, "LOD0", 0.008),
+        # H3 iteration 2: a shallow lens, mask bridge and one-sided hood pin
+        # create a memorable asymmetry without adding an extra material.
+        prism("heroVisorLens", [(-0.14, 1.82), (0.14, 1.82), (0.11, 1.75), (-0.11, 1.75)], 0.025, (0, 0, 0.415), glow, "LOD0", 0.006),
+        box("heroMaskBridge", (0.07, 0.15, 0.035), (0, 1.69, 0.42), metal_light, "LOD0", 0.008),
+        prism("heroHoodPin", [(-0.06, 2.12), (0.10, 2.16), (0.07, 2.02), (-0.08, 2.03)], 0.04, (0.24, 0, -0.22), metal_light, "LOD0", 0.008),
+        prism("heroShoulderBadge", [(-0.13, 1.52), (0.13, 1.52), (0.11, 1.36), (-0.11, 1.36)], 0.045, (-0.50, 0, 0.235), accent, "LOD0", 0.010),
+        sphere("heroBadgeGem", 0.035, (-0.50, 1.44, 0.27), glow),
     ]
     assign_surface_variants(parts, [
         ("_cloth", snow, cloth),
