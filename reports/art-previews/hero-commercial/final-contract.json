@@ -1,0 +1,828 @@
+{
+  "generatedAt": "2026-08-02T16:28:57.202Z",
+  "asset": "hero",
+  "sourcePath": "assets-source/blender/characters/hero.blend",
+  "glbPath": "public/assets/models/characters/hero.glb",
+  "status": "pass",
+  "checks": {
+    "sourceArtifact": true,
+    "nonEmpty": true,
+    "notPlaceholder": true,
+    "requiredNodes": true,
+    "requiredAnimations": true,
+    "skeleton": true,
+    "rootTransform": true,
+    "orientationContract": true,
+    "groundedContract": true,
+    "uvAndColor": true,
+    "lodGeometry": true,
+    "embeddedTextures": true,
+    "textureResolution": true,
+    "noExternalUris": true,
+    "noAbsolutePaths": true,
+    "collisionNotRenderable": true,
+    "triangleBudget": true,
+    "materialBudget": true,
+    "rootExtras": true,
+    "stageEvidence": true
+  },
+  "artifact": {
+    "status": "pass",
+    "glb": {
+      "bytes": 1451016,
+      "assetVersion": "2.0",
+      "nodes": 159,
+      "meshes": 133,
+      "materials": 10,
+      "textures": 9,
+      "skeletons": 1,
+      "requiredNodes": {
+        "HeroRoot": true,
+        "HeroSkeleton": true,
+        "weapon_socket.R": true,
+        "ranged_socket": true,
+        "LOD1": true,
+        "LOD2": true
+      },
+      "requiredAnimations": {
+        "Idle": true,
+        "Walk": true,
+        "Run": true,
+        "MeleeAttack": true,
+        "RangedAttack": true,
+        "Hit": true,
+        "Death": true
+      },
+      "roots": [
+        {
+          "index": 158,
+          "name": "HeroRoot",
+          "translation": [
+            0,
+            0,
+            0
+          ],
+          "rotation": [
+            0.7071068286895752,
+            0,
+            0,
+            0.7071068286895752
+          ],
+          "scale": [
+            1,
+            1,
+            1
+          ],
+          "extras": {
+            "commercialStage": "H6",
+            "commercialIteration": 2,
+            "animationReview": "contact-safe walk/run cycles, staged attacks, stable hit/death poses",
+            "feetGrounded": true,
+            "orientationContract": "Babylon Y-up, forward +Z",
+            "animationIteration2": "follow-through and recovery keys"
+          }
+        }
+      ],
+      "rootExtras": {
+        "commercialStage": "H6",
+        "commercialIteration": 2,
+        "animationReview": "contact-safe walk/run cycles, staged attacks, stable hit/death poses",
+        "feetGrounded": true,
+        "orientationContract": "Babylon Y-up, forward +Z",
+        "animationIteration2": "follow-through and recovery keys"
+      },
+      "triangles": 19716,
+      "lodTriangles": {
+        "LOD0": 19172,
+        "LOD1": 300,
+        "LOD2": 244
+      },
+      "renderPrimitiveCount": 188,
+      "lodRenderPrimitives": {
+        "LOD0": 184,
+        "LOD1": 2,
+        "LOD2": 2
+      },
+      "images": [
+        {
+          "name": "ART_PAINT_MAT_hero_skin",
+          "mimeType": "image/png",
+          "resolution": {
+            "width": 64,
+            "height": 64
+          },
+          "embedded": true
+        },
+        {
+          "name": "ART_PAINT_MAT_hero_glow",
+          "mimeType": "image/png",
+          "resolution": {
+            "width": 64,
+            "height": 64
+          },
+          "embedded": true
+        },
+        {
+          "name": "ART_PAINT_MAT_hero_snow",
+          "mimeType": "image/png",
+          "resolution": {
+            "width": 64,
+            "height": 64
+          },
+          "embedded": true
+        },
+        {
+          "name": "ART_PAINT_MAT_hero_leather",
+          "mimeType": "image/png",
+          "resolution": {
+            "width": 64,
+            "height": 64
+          },
+          "embedded": true
+        },
+        {
+          "name": "ART_PAINT_MAT_hero_accent",
+          "mimeType": "image/png",
+          "resolution": {
+            "width": 64,
+            "height": 64
+          },
+          "embedded": true
+        },
+        {
+          "name": "ART_PAINT_MAT_hero_metal_light",
+          "mimeType": "image/png",
+          "resolution": {
+            "width": 64,
+            "height": 64
+          },
+          "embedded": true
+        },
+        {
+          "name": "ART_PAINT_MAT_hero_cloth",
+          "mimeType": "image/png",
+          "resolution": {
+            "width": 64,
+            "height": 64
+          },
+          "embedded": true
+        },
+        {
+          "name": "ART_PAINT_MAT_hero_metal",
+          "mimeType": "image/png",
+          "resolution": {
+            "width": 64,
+            "height": 64
+          },
+          "embedded": true
+        },
+        {
+          "name": "ART_PAINT_MAT_hero_cloth_dark",
+          "mimeType": "image/png",
+          "resolution": {
+            "width": 64,
+            "height": 64
+          },
+          "embedded": true
+        }
+      ],
+      "animations": [
+        {
+          "name": "Idle",
+          "channels": 54,
+          "samplers": 54,
+          "totalInputKeys": 152,
+          "maxSamplerKeys": 24,
+          "durationSeconds": 1,
+          "targetPaths": [
+            "translation",
+            "rotation",
+            "scale"
+          ]
+        },
+        {
+          "name": "Walk",
+          "channels": 54,
+          "samplers": 54,
+          "totalInputKeys": 284,
+          "maxSamplerKeys": 24,
+          "durationSeconds": 1,
+          "targetPaths": [
+            "translation",
+            "rotation",
+            "scale"
+          ]
+        },
+        {
+          "name": "Run",
+          "channels": 54,
+          "samplers": 54,
+          "totalInputKeys": 220,
+          "maxSamplerKeys": 18,
+          "durationSeconds": 0.75,
+          "targetPaths": [
+            "translation",
+            "rotation",
+            "scale"
+          ]
+        },
+        {
+          "name": "MeleeAttack",
+          "channels": 54,
+          "samplers": 54,
+          "totalInputKeys": 150,
+          "maxSamplerKeys": 16,
+          "durationSeconds": 0.6666666666666666,
+          "targetPaths": [
+            "translation",
+            "rotation",
+            "scale"
+          ]
+        },
+        {
+          "name": "RangedAttack",
+          "channels": 54,
+          "samplers": 54,
+          "totalInputKeys": 164,
+          "maxSamplerKeys": 16,
+          "durationSeconds": 0.6666666666666666,
+          "targetPaths": [
+            "translation",
+            "rotation",
+            "scale"
+          ]
+        },
+        {
+          "name": "Hit",
+          "channels": 54,
+          "samplers": 54,
+          "totalInputKeys": 138,
+          "maxSamplerKeys": 12,
+          "durationSeconds": 0.5,
+          "targetPaths": [
+            "translation",
+            "rotation",
+            "scale"
+          ]
+        },
+        {
+          "name": "Death",
+          "channels": 54,
+          "samplers": 54,
+          "totalInputKeys": 234,
+          "maxSamplerKeys": 20,
+          "durationSeconds": 0.8333333333333334,
+          "targetPaths": [
+            "translation",
+            "rotation",
+            "scale"
+          ]
+        }
+      ],
+      "externalUris": [],
+      "absolutePathMetadata": false,
+      "renderableCollisionNodes": []
+    },
+    "source": {
+      "bytes": 263907,
+      "exists": true
+    },
+    "checks": {
+      "nonEmpty": true,
+      "notPlaceholder": true,
+      "requiredNodes": true,
+      "requiredAnimations": true,
+      "skeleton": true,
+      "rootTransform": true,
+      "orientationContract": true,
+      "groundedContract": true,
+      "uvAndColor": true,
+      "lodGeometry": true,
+      "embeddedTextures": true,
+      "textureResolution": true,
+      "noExternalUris": true,
+      "noAbsolutePaths": true,
+      "collisionNotRenderable": true,
+      "triangleBudget": true,
+      "materialBudget": true,
+      "rootExtras": true
+    }
+  },
+  "stageEvidence": {
+    "stages": [
+      {
+        "stage": "H1",
+        "iterations": [
+          {
+            "iteration": 1,
+            "note": "Iteration 1: broader torso/shoulder line, protected hood profile, grounded boot proportion.",
+            "sizeBytes": 1089380,
+            "nodes": 123,
+            "meshes": 97,
+            "triangles": 14148,
+            "lodTriangles": {
+              "LOD0": 13604,
+              "LOD1": 300,
+              "LOD2": 244
+            },
+            "materials": 10,
+            "textures": 9,
+            "animations": [
+              "Idle",
+              "Walk",
+              "Run",
+              "MeleeAttack",
+              "RangedAttack",
+              "Hit",
+              "Death"
+            ]
+          },
+          {
+            "iteration": 2,
+            "note": "Iteration 2: split rear flare and tapered cape/boot profile for readable side silhouette.",
+            "sizeBytes": 1102008,
+            "nodes": 125,
+            "meshes": 99,
+            "triangles": 14364,
+            "lodTriangles": {
+              "LOD0": 13820,
+              "LOD1": 300,
+              "LOD2": 244
+            },
+            "materials": 10,
+            "textures": 9,
+            "animations": [
+              "Idle",
+              "Walk",
+              "Run",
+              "MeleeAttack",
+              "RangedAttack",
+              "Hit",
+              "Death"
+            ]
+          }
+        ],
+        "comparison": {
+          "deltas": {
+            "sizeBytes": 7924,
+            "nodes": 2,
+            "meshes": 2,
+            "triangles": 112,
+            "lod0Triangles": 112
+          },
+          "changedBetweenIterations": true
+        },
+        "babylonEvidence": {
+          "sceneContracts": [
+            "Babylon formal uiVerification scene",
+            "Babylon formal uiVerification scene"
+          ],
+          "formalScene": true,
+          "screenshots": [
+            {
+              "file": "reports/art-previews/hero-commercial/H1/babylon-runtime-iteration-1.png",
+              "bytes": 80488
+            },
+            {
+              "file": "reports/art-previews/hero-commercial/H1/babylon-runtime-iteration-2.png",
+              "bytes": 80544
+            }
+          ],
+          "screenshotsPresent": true,
+          "metricsValid": true
+        }
+      },
+      {
+        "stage": "H2",
+        "iterations": [
+          {
+            "iteration": 1,
+            "note": "Iteration 1: fitted jacket fronts, collar break, hem band and cuffs establish layered garment construction.",
+            "sizeBytes": 1182036,
+            "nodes": 132,
+            "meshes": 106,
+            "triangles": 15624,
+            "lodTriangles": {
+              "LOD0": 15080,
+              "LOD1": 300,
+              "LOD2": 244
+            },
+            "materials": 10,
+            "textures": 9,
+            "animations": [
+              "Idle",
+              "Walk",
+              "Run",
+              "MeleeAttack",
+              "RangedAttack",
+              "Hit",
+              "Death"
+            ]
+          },
+          {
+            "iteration": 2,
+            "note": "Iteration 2: reinforced side panels, hem pleats, hood lining and seam piping complete the clothing stack.",
+            "sizeBytes": 1239636,
+            "nodes": 138,
+            "meshes": 112,
+            "triangles": 16540,
+            "lodTriangles": {
+              "LOD0": 15996,
+              "LOD1": 300,
+              "LOD2": 244
+            },
+            "materials": 10,
+            "textures": 9,
+            "animations": [
+              "Idle",
+              "Walk",
+              "Run",
+              "MeleeAttack",
+              "RangedAttack",
+              "Hit",
+              "Death"
+            ]
+          }
+        ],
+        "comparison": {
+          "deltas": {
+            "sizeBytes": 137628,
+            "nodes": 13,
+            "meshes": 13,
+            "triangles": 2176,
+            "lod0Triangles": 2176
+          },
+          "changedBetweenIterations": true
+        },
+        "babylonEvidence": {
+          "sceneContracts": [
+            "Babylon formal uiVerification scene",
+            "Babylon formal uiVerification scene"
+          ],
+          "formalScene": true,
+          "screenshots": [
+            {
+              "file": "reports/art-previews/hero-commercial/H2/babylon-runtime-iteration-1.png",
+              "bytes": 80599
+            },
+            {
+              "file": "reports/art-previews/hero-commercial/H2/babylon-runtime-iteration-2.png",
+              "bytes": 80562
+            }
+          ],
+          "screenshotsPresent": true,
+          "metricsValid": true
+        }
+      },
+      {
+        "stage": "H3",
+        "iterations": [
+          {
+            "iteration": 1,
+            "note": "Iteration 1: camera-facing visor, face mark, hood crest and shoulder insignia establish hero identity.",
+            "sizeBytes": 1271772,
+            "nodes": 143,
+            "meshes": 117,
+            "triangles": 17136,
+            "lodTriangles": {
+              "LOD0": 16592,
+              "LOD1": 300,
+              "LOD2": 244
+            },
+            "materials": 10,
+            "textures": 9,
+            "animations": [
+              "Idle",
+              "Walk",
+              "Run",
+              "MeleeAttack",
+              "RangedAttack",
+              "Hit",
+              "Death"
+            ]
+          },
+          {
+            "iteration": 2,
+            "note": "Iteration 2: layered visor lens, mask bridge, asymmetric hood pin and contrast badge finish identity read.",
+            "sizeBytes": 1306828,
+            "nodes": 148,
+            "meshes": 122,
+            "triangles": 17648,
+            "lodTriangles": {
+              "LOD0": 17104,
+              "LOD1": 300,
+              "LOD2": 244
+            },
+            "materials": 10,
+            "textures": 9,
+            "animations": [
+              "Idle",
+              "Walk",
+              "Run",
+              "MeleeAttack",
+              "RangedAttack",
+              "Hit",
+              "Death"
+            ]
+          }
+        ],
+        "comparison": {
+          "deltas": {
+            "sizeBytes": 67192,
+            "nodes": 10,
+            "meshes": 10,
+            "triangles": 1108,
+            "lod0Triangles": 1108
+          },
+          "changedBetweenIterations": true
+        },
+        "babylonEvidence": {
+          "sceneContracts": [
+            "Babylon formal uiVerification scene",
+            "Babylon formal uiVerification scene"
+          ],
+          "formalScene": true,
+          "screenshots": [
+            {
+              "file": "reports/art-previews/hero-commercial/H3/babylon-runtime-iteration-1.png",
+              "bytes": 80544
+            },
+            {
+              "file": "reports/art-previews/hero-commercial/H3/babylon-runtime-iteration-2.png",
+              "bytes": 80567
+            }
+          ],
+          "screenshotsPresent": true,
+          "metricsValid": true
+        }
+      },
+      {
+        "stage": "H4",
+        "iterations": [
+          {
+            "iteration": 1,
+            "note": "Iteration 1: authored melee profile, ranged body/barrel/sight and explicit socket locations.",
+            "sizeBytes": 1368036,
+            "nodes": 153,
+            "meshes": 127,
+            "triangles": 18524,
+            "lodTriangles": {
+              "LOD0": 17980,
+              "LOD1": 300,
+              "LOD2": 244
+            },
+            "materials": 10,
+            "textures": 9,
+            "animations": [
+              "Idle",
+              "Walk",
+              "Run",
+              "MeleeAttack",
+              "RangedAttack",
+              "Hit",
+              "Death"
+            ]
+          },
+          {
+            "iteration": 2,
+            "note": "Iteration 2: sharpened blade edges, ranged stock/bolt, socket guide geometry and axis metadata.",
+            "sizeBytes": 1442912,
+            "nodes": 159,
+            "meshes": 133,
+            "triangles": 19716,
+            "lodTriangles": {
+              "LOD0": 19172,
+              "LOD1": 300,
+              "LOD2": 244
+            },
+            "materials": 10,
+            "textures": 9,
+            "animations": [
+              "Idle",
+              "Walk",
+              "Run",
+              "MeleeAttack",
+              "RangedAttack",
+              "Hit",
+              "Death"
+            ]
+          }
+        ],
+        "comparison": {
+          "deltas": {
+            "sizeBytes": 136084,
+            "nodes": 11,
+            "meshes": 11,
+            "triangles": 2068,
+            "lod0Triangles": 2068
+          },
+          "changedBetweenIterations": true
+        },
+        "babylonEvidence": {
+          "sceneContracts": [
+            "Babylon formal uiVerification scene",
+            "Babylon formal uiVerification scene"
+          ],
+          "formalScene": true,
+          "screenshots": [
+            {
+              "file": "reports/art-previews/hero-commercial/H4/babylon-runtime-iteration-1.png",
+              "bytes": 80550
+            },
+            {
+              "file": "reports/art-previews/hero-commercial/H4/babylon-runtime-iteration-2.png",
+              "bytes": 80587
+            }
+          ],
+          "screenshotsPresent": true,
+          "metricsValid": true
+        }
+      },
+      {
+        "stage": "H5",
+        "iterations": [
+          {
+            "iteration": 1,
+            "note": "Iteration 1: tuned existing ten-material PBR roughness/metallic/emission response and regenerated packed brush textures.",
+            "sizeBytes": 1442868,
+            "nodes": 159,
+            "meshes": 133,
+            "triangles": 19716,
+            "lodTriangles": {
+              "LOD0": 19172,
+              "LOD1": 300,
+              "LOD2": 244
+            },
+            "materials": 10,
+            "textures": 9,
+            "animations": [
+              "Idle",
+              "Walk",
+              "Run",
+              "MeleeAttack",
+              "RangedAttack",
+              "Hit",
+              "Death"
+            ]
+          },
+          {
+            "iteration": 2,
+            "note": "Iteration 2: cool palette contrast, calibrated emissive strength and regenerated packed brush texture.",
+            "sizeBytes": 1442756,
+            "nodes": 159,
+            "meshes": 133,
+            "triangles": 19716,
+            "lodTriangles": {
+              "LOD0": 19172,
+              "LOD1": 300,
+              "LOD2": 244
+            },
+            "materials": 10,
+            "textures": 9,
+            "animations": [
+              "Idle",
+              "Walk",
+              "Run",
+              "MeleeAttack",
+              "RangedAttack",
+              "Hit",
+              "Death"
+            ]
+          }
+        ],
+        "comparison": {
+          "deltas": {
+            "sizeBytes": -156,
+            "nodes": 0,
+            "meshes": 0,
+            "triangles": 0,
+            "lod0Triangles": 0
+          },
+          "changedBetweenIterations": true
+        },
+        "babylonEvidence": {
+          "sceneContracts": [
+            "Babylon formal uiVerification scene",
+            "Babylon formal uiVerification scene"
+          ],
+          "formalScene": true,
+          "screenshots": [
+            {
+              "file": "reports/art-previews/hero-commercial/H5/babylon-runtime-iteration-1.png",
+              "bytes": 80527
+            },
+            {
+              "file": "reports/art-previews/hero-commercial/H5/babylon-runtime-iteration-2.png",
+              "bytes": 80528
+            }
+          ],
+          "screenshotsPresent": true,
+          "metricsValid": true
+        }
+      },
+      {
+        "stage": "H6",
+        "iterations": [
+          {
+            "iteration": 1,
+            "note": "Iteration 1: contact-safe walk/run cycles and staged attack/hit poses add deformation keys.",
+            "sizeBytes": 1450568,
+            "nodes": 159,
+            "meshes": 133,
+            "triangles": 19716,
+            "lodTriangles": {
+              "LOD0": 19172,
+              "LOD1": 300,
+              "LOD2": 244
+            },
+            "materials": 10,
+            "textures": 9,
+            "animations": [
+              "Idle",
+              "Walk",
+              "Run",
+              "MeleeAttack",
+              "RangedAttack",
+              "Hit",
+              "Death"
+            ]
+          },
+          {
+            "iteration": 2,
+            "note": "Iteration 2: melee follow-through, ranged recovery and hit recovery keys finish grounded deformation pass.",
+            "sizeBytes": 1451016,
+            "nodes": 159,
+            "meshes": 133,
+            "triangles": 19716,
+            "lodTriangles": {
+              "LOD0": 19172,
+              "LOD1": 300,
+              "LOD2": 244
+            },
+            "materials": 10,
+            "textures": 9,
+            "animations": [
+              "Idle",
+              "Walk",
+              "Run",
+              "MeleeAttack",
+              "RangedAttack",
+              "Hit",
+              "Death"
+            ]
+          }
+        ],
+        "comparison": {
+          "deltas": {
+            "sizeBytes": 8260,
+            "nodes": 0,
+            "meshes": 0,
+            "triangles": 0,
+            "lod0Triangles": 0
+          },
+          "changedBetweenIterations": true
+        },
+        "babylonEvidence": {
+          "sceneContracts": [
+            "Babylon formal uiVerification scene",
+            "Babylon formal uiVerification scene"
+          ],
+          "formalScene": true,
+          "screenshots": [
+            {
+              "file": "reports/art-previews/hero-commercial/H6/babylon-runtime-iteration-1.png",
+              "bytes": 80504
+            },
+            {
+              "file": "reports/art-previews/hero-commercial/H6/babylon-runtime-iteration-2.png",
+              "bytes": 80572
+            }
+          ],
+          "screenshotsPresent": true,
+          "metricsValid": true
+        }
+      }
+    ],
+    "allStagesHaveTwoIterations": true,
+    "allFormalBabylonEvidence": true,
+    "allScreenshotsPresent": true,
+    "allMetricsValid": true,
+    "allIterationsChanged": true
+  },
+  "runtimeEvidence": {
+    "formalBabylonScene": true,
+    "sourceIndicator": "Hero Model Source: GLB",
+    "reloadIterations": 12,
+    "requiredAnimations": [
+      "Idle",
+      "Walk",
+      "Run",
+      "MeleeAttack",
+      "RangedAttack",
+      "Hit",
+      "Death"
+    ],
+    "loadBehavior": "Each H1-H6 iteration has a formal Babylon uiVerification reload screenshot; the existing runtime gate retries authored preload before settling on procedural fallback.",
+    "liveDrawCallCounter": "not captured in this static contract report; renderPrimitiveCount is recorded above"
+  }
+}

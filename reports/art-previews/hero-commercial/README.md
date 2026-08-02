@@ -17,3 +17,10 @@ The runtime contract is checked on every iteration:
 Stage scope is intentionally limited to Hero geometry, materials, animation,
 the minimal deterministic authored-loader gate, and this evidence folder.
 Other roster assets and gameplay systems are not part of H1-H6.
+
+`final-contract.json` is a repeatable static contract audit for the final
+Hero GLB. It records the embedded PNG dimensions (64x64 for each of the nine
+packed paint images), skeleton and animation key statistics, LOD triangle and
+primitive counts, source `.blend` size, and the formal Babylon evidence files.
+The report deliberately labels the live Babylon draw-call counter separately;
+`renderPrimitiveCount` is the portable GLB-side draw-call proxy.
