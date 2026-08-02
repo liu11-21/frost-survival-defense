@@ -79,6 +79,13 @@ def apply_style(obj, mat, bevel=0.04):
     if hasattr(obj.data, "materials"):
         obj.data.materials.append(mat)
     if bevel and obj.type == "MESH":
+        # Large architectural panels need a readable silhouette highlight at
+        # the normal game distance. Keep small fasteners on their authored
+        # bevel, but give broad masses a restrained adaptive edge treatment so
+        # they do not read as unmodified cubes. This is geometry, not a
+        # post-process, and is applied before glTF export.
+        if len(obj.data.polygons) <= 6 and max(obj.dimensions) > 0.75 and bevel < 0.06:
+            bevel = min(0.08, max(bevel, max(obj.dimensions) * 0.035))
         modifier = obj.modifiers.new("soft bevel", "BEVEL")
         modifier.width = bevel
         # Broad silhouette pieces get one extra bevel segment so they catch a
@@ -411,6 +418,25 @@ def sphere(name, radius, location=(0, 0, 0), mat=None, target="LOD0"):
     move_to(obj, target)
     if mat:
         apply_style(obj, mat, 0.02)
+    return obj
+
+
+def ellipsoid(name, dimensions, location=(0, 0, 0), mat=None, target="LOD0"):
+    """Create a low-poly organic volume with explicit world dimensions.
+
+    The unit library uses this for torso and limb volumes so the shared body
+    reads as padded cloth or armour rather than a stack of rectangular blocks.
+    It remains a deterministic rigid mesh and can be bound to the existing
+    segmented armature exactly like the previous primitives.
+    """
+    bpy.ops.mesh.primitive_ico_sphere_add(subdivisions=2, radius=0.5, location=location)
+    obj = bpy.context.object
+    obj.name = name
+    obj.scale = (dimensions[0], dimensions[1], dimensions[2])
+    bpy.ops.object.transform_apply(location=False, rotation=False, scale=True)
+    move_to(obj, target)
+    if mat:
+        apply_style(obj, mat, min(0.028, min(dimensions) * 0.06))
     return obj
 
 

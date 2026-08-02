@@ -316,3 +316,52 @@ improvements, but the library is still stylized procedural low-poly art. It
 does not yet constitute hand-painted UV atlases, sculpted facial/cloth forms or
 final human commercial art-direction approval. Those manual review items stay
 open.
+
+## Eleventh-pass organic body volumes and current difficulty inventory (2026-08-02)
+
+The latest geometry pass changes the shared construction rather than merely
+adding another decoration layer. `common.py` now provides an explicit
+low-poly `ellipsoid`; the unit builder uses it for every authored unit's torso,
+arms and legs. `apply_style` also gives broad cube-shaped architectural masses
+a bounded adaptive bevel, while leaving small bolts and trims at their
+original widths. The goal is a softer, more designed silhouette with the
+existing skeleton, sockets, collision roots and animation contracts untouched.
+
+Current evidence is technically healthy:
+
+- 26 character GLBs, 14 building GLBs and two environment GLBs are present.
+- Every character reports one skeleton and the required six named clips;
+  hero retains its seven named clips. Facilities retain their required
+  moving-node and animation contracts.
+- The current library is 38,180,784 bytes with 487 embedded images and zero
+  external image or buffer URIs.
+- `reports/art-validation.json` is 42/42 `ok`; v9 is 75/75 and v10 is 12/12
+  after the geometry rebuild.
+
+The remaining difficulty is visual quality, not file existence:
+
+1. The source is still a deterministic primitive construction system. The
+   unit builder contains 125 `box` and 68 `prism` calls; the building builder
+   contains 115 `box` and 30 `prism` calls. Rounded volumes reduce the blockout
+   feeling but do not provide hand-sculpted topology, facial planes or bespoke
+   cloth folds.
+2. The 487 packed layers are 64x64 material-aware brush images. They provide
+   surface variation but are not hand-painted UV atlases and do not include
+   authored normal/roughness/detail maps.
+3. Visual QA coverage is incomplete: the current sheets render six of 26
+   characters and four of 14 facilities, with labels that are hard to read.
+   This is insufficient evidence for a full-roster commercial sign-off.
+4. The GLB animation contract proves clips and channels exist, not that each
+   role has convincing acting, attack anticipation, recoil, cloth response or
+   weapon follow-through. Those require per-asset Babylon review.
+5. The runtime keeps procedural visuals as a deliberate fallback. No missing
+   GLB is reported by the static validator, but a dedicated all-manifest
+   runtime report and performance profile are still needed to prove that every
+   authored instance is active under real wave load.
+6. The current exported inventory is about 38 MB and 488k triangles. It passes
+   the present limits, but simultaneous wave, HUD and roster stress has not
+   been measured against a commercial frame-time target.
+
+The five manual-quality priorities remain hero, warrior, flyingColossus,
+furnace and crossbow/turret. The latest geometry pass is an improvement, not a
+claim that these assets have reached final hand-authored commercial quality.

@@ -327,3 +327,45 @@ This pass improves measurable UV coverage and surface readability, but the
 assets are still stylized procedural low-poly work. Manual UV layout,
 hand-painted texture authoring, sculpted facial/cloth forms and final human
 commercial art-direction sign-off remain open.
+
+## 2026-08-02 | eleventh-pass organic body volumes and adaptive architectural edges
+
+- Added a shared low-poly `ellipsoid` primitive and replaced the common unit
+  torso, arms and legs with explicit rounded volumes. The existing role kits,
+  sockets, collision roots, skeleton bindings and animation names are kept;
+  this is a silhouette change intended to reduce the mannequin/block-stack
+  read across all 26 character assets.
+- Added a restrained adaptive bevel rule for broad cube-based architectural
+  panels. Large building masses now receive a wider, bounded edge treatment
+  while small fasteners keep their authored bevels. This improves highlight
+  continuity without indiscriminately increasing every mesh's polygon count.
+- Rebuilt all 42 source blends and re-exported the complete GLB library with
+  Blender 5.2.0 LTS. The current inventory is 42 GLBs / 38,180,784 bytes /
+  487 embedded images / zero external image or buffer URIs. The latest
+  `reports/art-validation.json` is 42/42 `ok`.
+- Babylon evidence after the geometry pass: v9 75/75 and v10 12/12. The
+  existing runtime still attaches authored assets with the procedural visual
+  path as a fail-safe; this pass does not remove that fallback boundary.
+
+### Current commercial-art difficulty inventory
+
+- The construction is still procedural low-poly: the shared unit builder uses
+  125 `box` calls and 68 `prism` calls, and the building builder uses 115
+  `box` calls and 30 `prism` calls. The new volumes soften silhouettes but do
+  not equal hand-sculpted topology.
+- The 487 images are deterministic 64x64 packed brush layers, not hand-painted
+  UV atlases with authored normal, roughness or detail maps. Per-face UV
+  projection is functional but still a technical fallback for art review.
+- The review sheets currently show only 6/26 characters and 4/14 facilities,
+  and their labels are not reliably legible. Full-roster game-camera review is
+  still missing, so the weakest silhouettes cannot yet be signed off.
+- Animation and moving-node contracts are structurally present, but shared
+  generic clips do not prove role-specific acting, attack timing or natural
+  cloth/weapon motion. A per-asset Babylon visual review remains required.
+- 38 MB of GLBs and roughly 488k triangles are technically within the current
+  validator budget, but simultaneous roster/wave load performance has not yet
+  been profiled as a commercial target.
+
+The commercial-art goal therefore remains open. The next priority is a full
+roster review sheet plus manual-quality focal passes for hero, warrior,
+flyingColossus, furnace and crossbow/turret before claiming display readiness.

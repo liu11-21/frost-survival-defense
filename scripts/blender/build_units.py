@@ -21,6 +21,7 @@ from common import (  # noqa: E402
     collision_box,
     cone,
     cylinder,
+    ellipsoid,
     empty,
     material,
     move_to,
@@ -778,7 +779,7 @@ def build_unit(visual, cfg):
     parts = []
     heavy = cfg["armor"] in ("heavy", "iceArmor", "batteringRam", "wingsHeavy")
     torso_width = 0.54 if heavy else 0.46
-    parts += [box("torso", (torso_width, 0.62, 0.34), (0, 0.98, 0), mats["cloth"])]
+    parts += [ellipsoid("torso", (torso_width * 1.06, 0.68, 0.44), (0, 0.98, 0), mats["cloth"])]
     # Layered cloth, leather and metal keep the silhouette readable at the
     # game's normal zoom instead of looking like a single coloured primitive.
     parts += [
@@ -793,14 +794,14 @@ def build_unit(visual, cfg):
         sphere("head.eye.R", 0.038, (0.085, 1.75, 0.268), mats["glow"]),
     ]
     parts += [
-        box("leg.L", (0.18, 0.55, 0.2), (-0.13, 0.38, 0), mats["leather"], bevel=0.045),
-        box("leg.R", (0.18, 0.55, 0.2), (0.13, 0.38, 0), mats["leather"], bevel=0.045),
+        ellipsoid("leg.L", (0.23, 0.55, 0.24), (-0.13, 0.38, 0), mats["leather"]),
+        ellipsoid("leg.R", (0.23, 0.55, 0.24), (0.13, 0.38, 0), mats["leather"]),
         box("knee.L", (0.2, 0.16, 0.22), (-0.13, 0.27, 0.08), mats["accent"], bevel=0.035),
         box("knee.R", (0.2, 0.16, 0.22), (0.13, 0.27, 0.08), mats["accent"], bevel=0.035),
         box("boot.L", (0.22, 0.12, 0.38), (-0.13, 0.08, 0.08), mats["dark"], bevel=0.045),
         box("boot.R", (0.22, 0.12, 0.38), (0.13, 0.08, 0.08), mats["dark"], bevel=0.045),
-        box("arm.L", (0.17, 0.58, 0.18), (-0.38, 1.02, 0), mats["cloth"], bevel=0.045),
-        box("arm.R", (0.17, 0.58, 0.18), (0.38, 1.02, 0), mats["cloth"], bevel=0.045),
+        ellipsoid("arm.L", (0.22, 0.58, 0.23), (-0.38, 1.02, 0), mats["cloth"]),
+        ellipsoid("arm.R", (0.22, 0.58, 0.23), (0.38, 1.02, 0), mats["cloth"]),
         sphere("glove.L", 0.11, (-0.38, 0.72, 0.02), mats["skin"]),
         sphere("glove.R", 0.11, (0.38, 0.72, 0.02), mats["skin"]),
         box("shoulder.L", (0.27, 0.17, 0.3), (-0.34, 1.28, 0), mats["accent"], bevel=0.06),
