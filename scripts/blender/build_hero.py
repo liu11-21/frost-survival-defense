@@ -4,7 +4,7 @@ import bpy
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 sys.path.append(HERE)
-from common import reset_scene, material, box, prism, cylinder, sphere, empty, collision_box, parent_all, move_to, orient_for_babylon, add_lod_markers, cone, torus, save_source, export_glb
+from common import reset_scene, material, box, prism, cylinder, sphere, empty, collision_box, parent_all, move_to, orient_for_babylon, add_lod_markers, assign_surface_variants, cone, torus, save_source, export_glb
 from build_units import make_skeleton, bind_unit_pieces, add_armature_clip
 
 
@@ -118,6 +118,12 @@ def build():
         torus("shoulderRing.L", 0.18, 0.028, (-0.47, 1.40, 0.06), accent, "LOD0"),
         torus("shoulderRing.R", 0.18, 0.028, (0.47, 1.40, 0.06), accent, "LOD0"),
     ]
+    assign_surface_variants(parts, [
+        ("_cloth", snow, cloth),
+        ("_leather", accent, leather),
+        ("_metal", metal_light, metal),
+        ("_accent", snow, accent),
+    ])
     parent_all(parts, root)
     skeleton = make_skeleton(root)
     skeleton.name = "HeroSkeleton"

@@ -95,6 +95,53 @@ def apply_style(obj, mat, bevel=0.04):
     return obj
 
 
+def assign_surface_variants(objects, families):
+    """Add deterministic top/underside material breakup to authored parts.
+
+    The asset language is intentionally low-poly, but a single flat material
+    on every primitive still reads like a blockout.  This helper reuses the
+    existing light/dark palette variants on upward and underside polygons,
+    creating a restrained hand-painted-style value break without external
+    textures.  It runs before parenting/rig binding, so it has no runtime or
+    animation cost beyond the additional material slots in the GLB.
+
+    ``families`` is an ordered list of ``(token, light, dark)`` tuples.  The
+    token is matched against the source material name, which keeps the helper
+    usable by both the unit and facility palettes.
+    """
+    for obj in objects:
+        if obj.type != "MESH" or not obj.data.materials or len(obj.data.polygons) < 4:
+            continue
+        source = obj.data.materials[0]
+        if source is None:
+            continue
+        source_name = source.name.lower()
+        chosen = next((entry for entry in families if entry[0] in source_name), None)
+        if chosen is None:
+            continue
+        _, light, dark = chosen
+        if light is None or dark is None or light == dark:
+            continue
+
+        def slot_for(mat):
+            index = obj.data.materials.find(mat.name)
+            if index < 0:
+                obj.data.materials.append(mat)
+                index = len(obj.data.materials) - 1
+            return index
+
+        light_slot = slot_for(light)
+        dark_slot = slot_for(dark)
+        for polygon in obj.data.polygons:
+            # Every second upward face receives the light value, while only a
+            # subset of downward faces receives the shadow value.  The index
+            # test keeps round primitives from turning into a checkerboard.
+            if polygon.normal.z > 0.72 and polygon.index % 2 == 0:
+                polygon.material_index = light_slot
+            elif polygon.normal.z < -0.72 and polygon.index % 3 == 0:
+                polygon.material_index = dark_slot
+
+
 def box(name, dimensions, location=(0, 0, 0), mat=None, target="LOD0", bevel=0.04):
     bpy.ops.mesh.primitive_cube_add(location=location)
     obj = bpy.context.object

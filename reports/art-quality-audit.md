@@ -169,3 +169,21 @@ sign-off. The manual top-five list above remains open.
 This pass improves authored surface readability but does not change the
 commercial-art boundary above: UV layout, hand-painted texture breakup,
 sculpted facial/cloth forms and final art-direction sign-off remain pending.
+
+## Sixth-pass authored value breakup (2026-08-02)
+
+- Added deterministic top/underside material variation to the authored unit,
+  facility and hero parts. The pass reuses the existing palette (light/dark
+  cloth, leather, metal, wood, stone and accent variants), so it adds readable
+  planar value breaks without introducing external textures or unbounded
+  material counts.
+- Re-exported the complete 42-asset library with Blender 5.2.0 LTS and
+  regenerated both review sheets. The latest direct inventory is 42 GLBs /
+  14,748,308 bytes; `reports/art-validation.json` is 42/42 `ok` with no
+  warnings or blocked assets.
+- Runtime regression remains green after the material-slot changes: v9 is
+  75/75, v10 is 12/12, `npm run typecheck` passes, and the production Vite
+  build passes with the existing large-chunk advisory.
+- This is still a stylized authored low-poly presentation pass, not final UV,
+  hand-painted texture, hand-sculpted facial/cloth or human art-direction
+  sign-off. The manual top-five refinement list above remains open.

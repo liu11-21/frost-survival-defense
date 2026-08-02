@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-08-02T10:31:38.693Z",
+  "generatedAt": "2026-08-02T10:43:30.547Z",
   "blenderRequired": true,
   "assets": [
     {
@@ -1712,7 +1712,7 @@
       "path": "public/assets/models/buildings/mine.glb",
       "nodes": 45,
       "meshes": 42,
-      "materials": 12,
+      "materials": 14,
       "skeletons": 0,
       "rootTransforms": [
         {
@@ -1775,7 +1775,7 @@
       "path": "public/assets/models/buildings/gold_mine.glb",
       "nodes": 47,
       "meshes": 44,
-      "materials": 12,
+      "materials": 14,
       "skeletons": 0,
       "rootTransforms": [
         {
@@ -1838,7 +1838,7 @@
       "path": "public/assets/models/buildings/lumberyard.glb",
       "nodes": 52,
       "meshes": 48,
-      "materials": 11,
+      "materials": 13,
       "skeletons": 0,
       "rootTransforms": [
         {
@@ -1901,7 +1901,7 @@
       "path": "public/assets/models/buildings/warehouse.glb",
       "nodes": 48,
       "meshes": 45,
-      "materials": 12,
+      "materials": 14,
       "skeletons": 0,
       "rootTransforms": [
         {
@@ -1964,7 +1964,7 @@
       "path": "public/assets/models/buildings/recruit_hall.glb",
       "nodes": 49,
       "meshes": 46,
-      "materials": 12,
+      "materials": 14,
       "skeletons": 0,
       "rootTransforms": [
         {
@@ -2027,7 +2027,7 @@
       "path": "public/assets/models/buildings/auto_collector.glb",
       "nodes": 43,
       "meshes": 39,
-      "materials": 10,
+      "materials": 11,
       "skeletons": 0,
       "rootTransforms": [
         {
@@ -2090,7 +2090,7 @@
       "path": "public/assets/models/buildings/auto_rebuilder.glb",
       "nodes": 47,
       "meshes": 43,
-      "materials": 8,
+      "materials": 10,
       "skeletons": 0,
       "rootTransforms": [
         {
@@ -2153,7 +2153,7 @@
       "path": "public/assets/models/buildings/crossbow_tower.glb",
       "nodes": 62,
       "meshes": 55,
-      "materials": 11,
+      "materials": 12,
       "skeletons": 0,
       "rootTransforms": [
         {
@@ -2216,7 +2216,7 @@
       "path": "public/assets/models/buildings/frost_tower.glb",
       "nodes": 44,
       "meshes": 37,
-      "materials": 10,
+      "materials": 11,
       "skeletons": 0,
       "rootTransforms": [
         {
@@ -2279,7 +2279,7 @@
       "path": "public/assets/models/buildings/sniper_tower.glb",
       "nodes": 47,
       "meshes": 40,
-      "materials": 8,
+      "materials": 10,
       "skeletons": 0,
       "rootTransforms": [
         {
@@ -2342,7 +2342,7 @@
       "path": "public/assets/models/buildings/mortar.glb",
       "nodes": 43,
       "meshes": 36,
-      "materials": 8,
+      "materials": 10,
       "skeletons": 0,
       "rootTransforms": [
         {
@@ -2405,7 +2405,7 @@
       "path": "public/assets/models/buildings/furnace.glb",
       "nodes": 82,
       "meshes": 76,
-      "materials": 9,
+      "materials": 10,
       "skeletons": 0,
       "rootTransforms": [
         {

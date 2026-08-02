@@ -191,3 +191,22 @@
 - Re-exported the complete asset library after the material change and
   regenerated both review sheets. `art:validate` remains 42/42 `ok`; v9/v10,
   typecheck and production build were rerun successfully.
+
+## 2026-08-02 | authored material value breakup pass
+
+- Added deterministic top/underside material-slot variation to the authored
+  unit, facility and hero parts. The pass reuses the existing light/dark
+  palette variants for cloth, leather, metal, wood, stone and accents, making
+  planar forms read more clearly without external textures or uncontrolled
+  material growth.
+- Re-exported all 42 Blender-authored assets with Blender 5.2.0 LTS and
+  regenerated `reports/art-previews/unit-sheet.png` and
+  `reports/art-previews/facility-sheet.png`. The runtime inventory is now
+  42 GLBs / 14,748,308 bytes; `reports/art-validation.json` remains 42/42
+  `ok` with no warnings or blocked assets.
+- Regression after the pass: `node tools/playtest.mjs --suite v9` 75/75,
+  `--suite v10` 12/12, `npm run typecheck`, and `npm run build` all pass. The
+  known Vite large-chunk advisory remains informational.
+- This remains an authored stylized low-poly pass. Manual UV/layout,
+  hand-painted texture breakup, sculpted facial/cloth refinement and final
+  commercial art-direction sign-off are still explicitly pending.

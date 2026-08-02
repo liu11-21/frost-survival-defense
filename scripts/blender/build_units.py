@@ -15,6 +15,7 @@ sys.path.append(HERE)
 from common import (  # noqa: E402
     add_simple_animation,
     add_lod_markers,
+    assign_surface_variants,
     box,
     collision_box,
     cone,
@@ -800,6 +801,13 @@ def build_unit(visual, cfg):
     add_bodycraft_finish(parts, visual, cfg, mats, torso_width, heavy)
     add_role_finish(parts, visual, cfg, mats, torso_width, heavy)
     add_unit_finish(parts, visual, cfg, mats, torso_width, heavy)
+    assign_surface_variants(parts, [
+        ("_cloth", mats["clothLight"], mats["cloth"]),
+        ("_leather", mats["leatherLight"], mats["leather"]),
+        ("_metal", mats["metalLight"], mats["metal"]),
+        ("_accent", mats["highlight"], mats["accent"]),
+        ("_wood", mats["leatherLight"], mats["wood"]),
+    ])
     parent_all(parts, root)
     skeleton = make_skeleton(root)
     bind_unit_pieces(parts, skeleton)

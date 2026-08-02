@@ -10,6 +10,7 @@ sys.path.append(HERE)
 from common import (  # noqa: E402
     add_simple_animation,
     add_lod_markers,
+    assign_surface_variants,
     box,
     collision_box,
     cone,
@@ -487,6 +488,12 @@ def build_facility(key, cfg):
             sphere("flameCrown", 0.24, (0, 2.72, 0), mats["glow"]),
         ]
 
+    assign_surface_variants(parts, [
+        ("_stone", mats["stoneLight"], mats["stoneDark"]),
+        ("_wood", mats["woodLight"], mats["darkwood"]),
+        ("_metal", mats["metalLight"], mats["metal"]),
+        ("_accent", mats["snow"], mats["accent"]),
+    ])
     parent_all(parts + functional, root)
     collision_box("COL_Building", (2.5, 3.5, 2.5), (0, 1.5, 0), root)
     if kind not in ("mine", "goldMine", "lumberyard", "warehouse", "recruitHall", "autoCollector", "autoRebuilder", "furnace"):
