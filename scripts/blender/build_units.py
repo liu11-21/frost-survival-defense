@@ -68,9 +68,12 @@ UNITS = {
 def build_weapon(root, kind, mats, prefix):
     parts = []
     if kind in ("sword", "dagger"):
-        parts += [box(f"{prefix}.blade", (0.08, 0.72 if kind == "sword" else 0.42, 0.16), (0.0, 0.0, 0.08), mats["metal"])]
+        blade_half = 0.28 if kind == "sword" else 0.18
+        blade_tip = 0.42 if kind == "sword" else 0.28
+        parts += [prism(f"{prefix}.blade", [(-0.07, -blade_half), (0.07, -blade_half), (0.09, blade_tip - 0.12), (0, blade_tip), (-0.09, blade_tip - 0.12)], 0.09, (0.0, 0.0, 0.08), mats["metal"], "LOD0", 0.012)]
+        parts += [box(f"{prefix}.fuller", (0.035, blade_tip + blade_half - 0.1, 0.02), (0, (blade_tip - blade_half) * 0.5 - 0.02, 0.14), mats["accent"], "LOD0", 0.008)]
         parts += [cylinder(f"{prefix}.guard", 0.06, 0.46, (0, -0.32, 0), mats["accent"], "LOD0", 8)]
-        parts += [box(f"{prefix}.grip", (0.1, 0.2, 0.1), (0, -0.5, 0), mats["leather"])]
+        parts += [box(f"{prefix}.grip", (0.1, 0.2, 0.1), (0, -0.5, 0), mats["leather"]), sphere(f"{prefix}.pommel", 0.075, (0, -0.62, 0), mats["glow"])]
     elif kind in ("club", "shieldClub"):
         parts += [cylinder(f"{prefix}.club", 0.72, 0.2, (0, 0, 0), mats["wood"], "LOD0", 7)]
         parts += [sphere(f"{prefix}.stud", 0.12, (0, 0.3, 0), mats["metal"])]
@@ -209,7 +212,7 @@ def bone_for_piece(name):
         return "hand.R"
     if lower.startswith(("offhand.", "shield.")):
         return "hand.L"
-    if lower.startswith(("head", "crest.")):
+    if lower.startswith(("head", "crest.", "helmet", "face")):
         return "head"
     if lower.startswith(("torso", "belt", "cape", "pack", "medic", "chest", "ramframe", "ramtip", "core", "ice", "tool")):
         return "chest"
@@ -282,6 +285,8 @@ def build_unit(visual, cfg):
         vertical_cylinder("neckGuard", 0.12, 0.16, (0, 1.38, 0), mats["leather"], "LOD0", 8),
         sphere("head", 0.28, (0, 1.7, 0), mats["skin"]),
         box("faceStripe", (0.2, 0.06, 0.035), (0, 1.71, 0.25), mats["accent"], bevel=0.02),
+        sphere("head.eye.L", 0.038, (-0.085, 1.75, 0.268), mats["glow"]),
+        sphere("head.eye.R", 0.038, (0.085, 1.75, 0.268), mats["glow"]),
     ]
     parts += [
         box("leg.L", (0.18, 0.55, 0.2), (-0.13, 0.38, 0), mats["leather"], bevel=0.045),
@@ -322,6 +327,19 @@ def build_unit(visual, cfg):
         parts.append(shoulder_cap)
     parts += add_crest(root, cfg["crest"], mats)
     parts += build_weapon(root, cfg["weapon"], mats, "weapon")
+    # The warrior is the reference melee silhouette: layered breastplate,
+    # raised shoulder guards and a scabbard give it a fitted armour read rather
+    # than the shared tunic reading as a coloured block.
+    if visual == "warrior":
+        parts += [
+            prism("warriorBreastplate", [(-0.24, 1.34), (0.24, 1.34), (0.2, 0.94), (0, 0.84), (-0.2, 0.94)], 0.13, (0, 0, 0.25), mats["metal"], "LOD0", 0.025),
+            prism("warriorCollar", [(-0.26, 1.38), (0.26, 1.38), (0.18, 1.5), (-0.18, 1.5)], 0.1, (0, 0, 0.08), mats["accent"], "LOD0", 0.018),
+            prism("warriorShoulder.L", [(-0.2, 1.42), (0.02, 1.5), (0.12, 1.28), (-0.2, 1.22)], 0.18, (-0.36, 0, 0), mats["metal"], "LOD0", 0.02),
+            prism("warriorShoulder.R", [(-0.02, 1.5), (0.2, 1.42), (0.2, 1.22), (-0.12, 1.28)], 0.18, (0.36, 0, 0), mats["metal"], "LOD0", 0.02),
+            torus("warriorChestSeal", 0.1, 0.025, (0, 1.12, 0.34), mats["glow"], "LOD0"),
+            box("warriorScabbard", (0.1, 0.72, 0.12), (-0.28, 1.02, -0.22), mats["leather"], "LOD0", 0.025),
+            box("warriorScabbardCap", (0.14, 0.08, 0.16), (-0.28, 0.66, -0.22), mats["metal"], "LOD0", 0.018),
+        ]
 
     # Distinctive focal pieces make the role readable even when the held prop
     # is occluded by a squad mate.  The geometry stays low-poly but each piece
@@ -380,6 +398,28 @@ def build_unit(visual, cfg):
         for side in (-1, 1):
             parts += [box(f"wing.{side}.inner", (span, 0.1, 0.35), (side * 0.48, 1.15, -0.04), mats["accent"]), box(f"wing.{side}.outer", (span * 0.72, 0.08, 0.24), (side * 0.95, 1.12, -0.04), mats["ice"])]
             parts.append(prism(f"wing.{side}.feather", [(-0.1, 1.45), (0.42, 1.32), (0.64, 1.08), (0.18, 1.16)], 0.07, (side * 0.58, 0, -0.06), mats["ice"], "LOD0", 0.018))
+        if visual == "flyingColossus":
+            # The boss uses a three-panel membrane and a rigid spar on each
+            # wing so the flying silhouette reads as a creature, not two flat
+            # bars. Panels remain separate meshes for cheap animation and LOD.
+            membrane = [(-0.08, 1.48), (0.48, 1.34), (0.82, 1.02), (0.46, 1.04), (0.12, 1.18)]
+            for side in (-1, 1):
+                mirrored = [(x * side, y) for x, y in membrane]
+                parts += [
+                    prism(f"wing.{side}.membraneA", mirrored, 0.045, (0, 0, -0.16), mats["cloth"], "LOD0", 0.014),
+                    prism(f"wing.{side}.membraneB", [(x * 0.82, y - 0.12) for x, y in mirrored], 0.04, (0, 0, -0.18), mats["accent"], "LOD0", 0.012),
+                    cylinder(f"wing.{side}.spar", 0.04, 0.82, (side * 0.58, 1.23, -0.2), mats["metal"], "LOD0", 7),
+                ]
+                parts[-1].rotation_euler.y = side * math.pi * 0.38
+            parts += [
+                prism("colossusMantle", [(-0.5, 1.44), (0.5, 1.44), (0.66, 0.9), (0, 0.72), (-0.66, 0.9)], 0.16, (0, 0, -0.28), mats["metal"], "LOD0", 0.025),
+                cone("head.colossusHorn.L", 0.14, 0.02, 0.48, (-0.2, 1.98, 0.04), mats["accent"], "LOD0", 7),
+                cone("head.colossusHorn.R", 0.14, 0.02, 0.48, (0.2, 1.98, 0.04), mats["accent"], "LOD0", 7),
+                sphere("head.colossusEye.L", 0.06, (-0.1, 1.74, 0.3), mats["glow"]),
+                sphere("head.colossusEye.R", 0.06, (0.1, 1.74, 0.3), mats["glow"]),
+                prism("colossusKneeGuard.L", [(-0.12, 0.44), (0.12, 0.44), (0.08, 0.2), (-0.12, 0.2)], 0.12, (-0.16, 0, 0.2), mats["metal"], "LOD0", 0.018),
+                prism("colossusKneeGuard.R", [(-0.12, 0.44), (0.12, 0.44), (0.12, 0.2), (-0.08, 0.2)], 0.12, (0.16, 0, 0.2), mats["metal"], "LOD0", 0.018),
+            ]
     if armor == "batteringRam":
         parts += [box("ramFrame", (0.8, 0.24, 0.2), (0, 1.0, 0.28), mats["metal"]), sphere("ramTip", 0.2, (0, 1.0, 0.62), mats["accent"])]
 

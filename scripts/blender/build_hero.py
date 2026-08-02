@@ -50,12 +50,18 @@ def build():
         torus("bracer.L", 0.13, 0.035, (-0.51, 0.93, 0.02), metal, "LOD0"),
         torus("bracer.R", 0.13, 0.035, (0.51, 0.93, 0.02), metal, "LOD0"),
         prism("helmetBrow", [(-0.22, 1.84), (0.22, 1.84), (0.16, 1.68), (-0.16, 1.68)], 0.22, (0, 0, 0.22), leather, "LOD0", 0.02),
+        sphere("head.eye.L", 0.045, (-0.095, 1.78, 0.275), glow),
+        sphere("head.eye.R", 0.045, (0.095, 1.78, 0.275), glow),
+        cone("head.nose", 0.045, 0.012, 0.09, (0, 1.73, 0.30), skin, "LOD0", 6),
         prism("bootToe.L", [(-0.13, 0.16), (0.09, 0.16), (0.1, 0.02), (-0.13, 0.02)], 0.3, (-0.2, 0, 0.16), metal, "LOD0", 0.018),
         prism("bootToe.R", [(-0.09, 0.16), (0.13, 0.16), (0.13, 0.02), (-0.1, 0.02)], 0.3, (0.2, 0, 0.16), metal, "LOD0", 0.018),
-        torus("weaponGuard", 0.09, 0.025, (0.62, 0.88, 0.16), accent, "LOD0"),
+        torus("weapon.guard", 0.09, 0.025, (0.62, 0.88, 0.16), accent, "LOD0"),
         prism("sigilPlate", [(-0.14, 1.28), (0.14, 1.28), (0.1, 1.02), (-0.1, 1.02)], 0.06, (0, 0, 0.26), glow, "LOD0", 0.015),
-        cylinder("weapon", 0.055, 1.15, (0.62, 0.86, 0.16), metal, "LOD0", 8),
-        sphere("weaponGem", 0.1, (0.62, 1.44, 0.16), glow),
+        box("weapon.grip", (0.09, 0.28, 0.09), (0.62, 0.69, 0.16), leather, "LOD0", 0.02),
+        cylinder("weapon.blade", 0.055, 1.15, (0.62, 0.86, 0.16), metal, "LOD0", 8),
+        sphere("weapon.gem", 0.1, (0.62, 1.44, 0.16), glow),
+        prism("lapel.L", [(-0.22, 1.38), (0.02, 1.38), (0.08, 1.08), (-0.18, 1.14)], 0.05, (-0.14, 0, 0.27), accent, "LOD0", 0.015),
+        prism("lapel.R", [(-0.02, 1.38), (0.22, 1.38), (0.18, 1.14), (-0.08, 1.08)], 0.05, (0.14, 0, 0.27), accent, "LOD0", 0.015),
     ]
     parent_all(parts, root)
     skeleton = make_skeleton(root)

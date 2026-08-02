@@ -330,4 +330,14 @@ def export_glb(path):
 
 def save_source(path):
     os.makedirs(os.path.dirname(path), exist_ok=True)
-    bpy.ops.wm.save_as_mainfile(filepath=path)
+    # Source .blend files are generated artifacts in this pipeline. Disable
+    # Blender's rotating .blend1 backup for this one deterministic save so a
+    # batch export does not leave dozens of ignored backup files beside the
+    # authored workspace.
+    filepaths = bpy.context.preferences.filepaths
+    previous_versions = getattr(filepaths, "save_version", 1)
+    filepaths.save_version = 0
+    try:
+        bpy.ops.wm.save_as_mainfile(filepath=path)
+    finally:
+        filepaths.save_version = previous_versions

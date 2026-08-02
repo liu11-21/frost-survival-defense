@@ -45,11 +45,11 @@ def setup():
     # Keep world X horizontal and world Z vertical in the sheet.  The authored
     # GLBs are Y-up after import, so a near-front elevated camera makes the six
     # grid cells read as a proper catalogue instead of a diagonal pile-up.
-    bpy.ops.object.camera_add(location=(0, 12.5, 9.8))
+    bpy.ops.object.camera_add(location=(0, 8.5, 14.0))
     camera = bpy.context.object
     camera.data.type = "ORTHO"
-    camera.data.ortho_scale = 8.8
-    look_at(camera, (0, 0.0, 1.0))
+    camera.data.ortho_scale = 10.5
+    look_at(camera, (0, 2.3, 0.0))
     scene.camera = camera
     bpy.ops.object.light_add(type="AREA", location=(2.5, 7, 4))
     key = bpy.context.object
@@ -81,7 +81,7 @@ def add_label(text, location):
     label.data.materials.append(material(f"label-{text}", (0.78, 0.9, 1.0), 0.55, 0.1))
     # The review camera is above the ground; tilt the text toward it so the
     # label remains legible in the three-quarter sheet.
-    label.rotation_euler = (math.radians(90), 0, 0)
+    label.rotation_euler = (math.radians(90), 0, math.pi)
     return label
 
 
@@ -93,7 +93,7 @@ def import_asset(path, location):
     root = next((obj for obj in roots if obj.name.startswith("UnitRoot")), roots[0] if roots else None)
     if root:
         root.location = location
-        root.scale = (1.65, 1.65, 1.65)
+        root.scale = (1.25, 1.25, 1.25)
     for obj in imported:
         if obj.type == "MESH":
             base_name = obj.name.split(":")[-1]
@@ -106,17 +106,19 @@ def import_asset(path, location):
 def main():
     clear()
     setup()
+    # Y is height in the imported GLBs; use Z for the catalogue depth so the
+    # second row is not pushed below the ground or hidden behind the first.
     paths = [
-        ("hero", (-3.2, 1.9, 0)),
-        ("warrior", (0, 1.9, 0)),
-        ("shield", (3.2, 1.9, 0)),
-        ("mage", (-3.2, -1.9, 0)),
-        ("musketeer", (0, -1.9, 0)),
-        ("flyingColossus", (3.2, -1.9, 0)),
+        ("hero", (-3.2, 4.0, 0)),
+        ("warrior", (0, 4.0, 0)),
+        ("shield", (3.2, 4.0, 0)),
+        ("mage", (-3.2, 0, 0)),
+        ("musketeer", (0, 0, 0)),
+        ("flyingColossus", (3.2, 0, 0)),
     ]
     for key, location in paths:
         import_asset(os.path.join(ROOT, "public", "assets", "models", "characters", f"{key}.glb"), location)
-        add_label(key, (location[0], location[1] - 0.62, 0.04))
+        add_label(key, (location[0], location[1] - 1.62, -0.18))
     os.makedirs(os.path.dirname(OUT), exist_ok=True)
     bpy.context.scene.render.filepath = OUT
     bpy.context.scene.frame_set(10)

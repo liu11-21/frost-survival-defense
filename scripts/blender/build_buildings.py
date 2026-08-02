@@ -12,6 +12,7 @@ from common import (  # noqa: E402
     add_lod_markers,
     box,
     collision_box,
+    cone,
     cylinder,
     empty,
     export_glb,
@@ -68,7 +69,15 @@ def attack_pivot(root, mats, key, style):
     pitch = empty("pitchPivot", (0, 0.0, 0), "EXPORT", "CUBE")
     pitch.parent = yaw
     if style == "crossbow":
-        parts = [box("barrel", (0.16, 0.16, 1.2), (0, 0, 0.35), mats["wood"]), box("limb.L", (0.9, 0.1, 0.1), (-0.35, 0.0, 0), mats["accent"]), box("limb.R", (0.9, 0.1, 0.1), (0.35, 0.0, 0), mats["accent"])]
+        parts = [
+            box("barrel", (0.16, 0.16, 1.2), (0, 0, 0.35), mats["wood"]),
+            prism("limb.L", [(-0.48, 0.06), (-0.24, 0.15), (0.02, 0.1), (-0.06, -0.02), (-0.3, -0.1)], 0.12, (-0.35, 0, 0.02), mats["accent"], "LOD0", 0.015),
+            prism("limb.R", [(-0.02, 0.1), (0.24, 0.15), (0.48, 0.06), (0.3, -0.1), (0.06, -0.02)], 0.12, (0.35, 0, 0.02), mats["accent"], "LOD0", 0.015),
+            box("bowGrip", (0.14, 0.18, 0.18), (0, 0, 0.04), mats["metal"], "LOD0", 0.025),
+            box("bowString", (0.035, 0.035, 0.95), (0, 0.02, 0.02), mats["dark"], "LOD0", 0.008),
+            torus("winch", 0.16, 0.04, (0, -0.04, 0.44), mats["metal"], "LOD0"),
+            cylinder("winchAxle", 0.035, 0.42, (0, -0.04, 0.44), mats["accent"], "LOD0", 8),
+        ]
     elif style == "frost":
         parts = [cylinder("barrel", 0.9, 0.16, (0, 0, 0.32), mats["ice"], "LOD0", 6), torus("frostRing", 0.3, 0.05, (0, 0.25, 0.2), mats["metal"])]
     elif style == "sniper":
@@ -166,6 +175,10 @@ def build_facility(key, cfg):
                 prism("crossbowShield", [(-0.72, 1.72), (0.72, 1.72), (0.52, 1.38), (-0.52, 1.38)], 0.1, (0, 0, -0.65), mats["metal"], "LOD0", 0.03),
                 prism("crossbowSkirt", [(-0.82, 1.55), (0.82, 1.55), (0.62, 1.12), (-0.62, 1.12)], 0.12, (0, 0, 0.52), mats["stoneDark"], "LOD0", 0.025),
             ]
+            for side in (-1, 1):
+                brace = box(f"crossbowBrace.{side}", (0.12, 1.2, 0.12), (side * 0.48, 0.94, 0), mats["metal"], "LOD0", 0.025)
+                brace.rotation_euler.z = side * math.pi * 0.18
+                parts.append(brace)
             attack_pivot(root, mats, key, "crossbow")
         elif kind == "frostTower":
             parts += [cylinder("spire", 2.1, 0.34, (0, 1.35, 0), mats["ice"], "LOD0", 6), prism("frostSkirt", [(-0.76, 0.72), (0.76, 0.72), (0.6, 1.75), (-0.6, 1.75)], 0.14, (0, 0, -0.5), mats["stoneDark"], "LOD0", 0.025), torus("ring", 0.9, 0.08, (0, 2.25, 0), mats["metal"]), sphere("crystalCore", 0.25, (0, 2.9, 0), mats["glow"])]
@@ -178,7 +191,29 @@ def build_facility(key, cfg):
             attack_pivot(root, mats, key, "mortar")
         functional += [sphere("productionCore", 0.13, (0, 2.55, 0), mats["glow"])]
     elif kind == "furnace":
-        parts += [cylinder("furnaceBody", 1.8, 2.5, (0, 1.0, 0), mats["stone"], "LOD0", 10), cylinder("coalBowl", 0.35, 1.5, (0, 2.0, 0), mats["dark"], "LOD0", 10), sphere("heatCore", 0.52, (0, 2.05, 0), mats["glow"]), torus("furnaceCrown", 1.8, 0.16, (0, 2.8, 0), mats["accent"]), prism("furnaceFrontGuard", [(-0.85, 1.76), (0.85, 1.76), (0.62, 0.68), (-0.62, 0.68)], 0.12, (0, 0, -1.58), mats["metal"], "LOD0", 0.04), prism("furnaceSnowLip", [(-0.92, 2.48), (0.92, 2.48), (0.8, 2.62), (-0.8, 2.62)], 0.22, (0, 0, 0), mats["snow"], "LOD0", 0.035)]
+        parts += [
+            cylinder("furnaceBody", 1.8, 2.5, (0, 1.0, 0), mats["stone"], "LOD0", 10),
+            cylinder("coalBowl", 0.35, 1.5, (0, 2.0, 0), mats["dark"], "LOD0", 10),
+            sphere("heatCore", 0.52, (0, 2.05, 0), mats["glow"]),
+            torus("furnaceCrown", 1.8, 0.16, (0, 2.8, 0), mats["accent"]),
+            prism("furnaceFrontGuard", [(-0.85, 1.76), (0.85, 1.76), (0.62, 0.68), (-0.62, 0.68)], 0.12, (0, 0, -1.58), mats["metal"], "LOD0", 0.04),
+            prism("furnaceSnowLip", [(-0.92, 2.48), (0.92, 2.48), (0.8, 2.62), (-0.8, 2.62)], 0.22, (0, 0, 0), mats["snow"], "LOD0", 0.035),
+            prism("fireChamberInset", [(-0.58, 1.72), (0.58, 1.72), (0.48, 1.08), (-0.48, 1.08)], 0.08, (0, 0, -1.73), mats["dark"], "LOD0", 0.02),
+            prism("fireChamberRim", [(-0.7, 1.8), (0.7, 1.8), (0.58, 0.98), (-0.58, 0.98)], 0.07, (0, 0, -1.79), mats["metal"], "LOD0", 0.018),
+        ]
+        # Hand-built masonry courses break the cylinder into a believable
+        # load-bearing shell. Small alternating blocks preserve the low-poly
+        # budget while giving the furnace a strong hero-prop read.
+        for ring, (radius, height) in enumerate(((1.18, 0.72), (1.22, 1.2))):
+            for brick in range(10):
+                angle = (brick + (0.5 if ring else 0.0)) * math.pi * 0.2
+                block = box(f"masonry.{ring}.{brick}", (0.62, 0.28, 0.24), (math.sin(angle) * radius, height, math.cos(angle) * radius), mats["stoneLight"], "LOD0", 0.035)
+                block.rotation_euler.y = angle + math.pi * 0.5
+                parts.append(block)
+        for index, x in enumerate((-0.25, 0.0, 0.25)):
+            flame = cone(f"flameTongue.{index}", 0.18 if index == 1 else 0.13, 0.025, 0.48 if index == 1 else 0.34, (x, 1.4 + (0.08 if index == 1 else 0), -1.84), mats["glow"], "LOD0", 6)
+            flame.rotation_euler.x = math.pi * 0.5
+            parts.append(flame)
         for i in range(4):
             angle = i * math.pi * 0.5
             parts.append(box(f"rune.{i}", (0.12, 0.42, 0.06), (math.sin(angle) * 1.28, 1.1, math.cos(angle) * 1.28), mats["glow"]))

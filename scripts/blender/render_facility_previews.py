@@ -26,11 +26,11 @@ def setup():
     scene.render.resolution_percentage = 100
     scene.render.image_settings.file_format = "PNG"
     scene.world.color = (0.012, 0.018, 0.035)
-    bpy.ops.object.camera_add(location=(0, 13.5, 11.5))
+    bpy.ops.object.camera_add(location=(0, 8.5, 14.0))
     camera = bpy.context.object
     camera.data.type = "ORTHO"
     camera.data.ortho_scale = 10.5
-    look_at(camera, (0, 0.0, 1.2))
+    look_at(camera, (0, 2.3, 0.0))
     scene.camera = camera
     for location, energy, color, size in [
         ((3.5, 8, 5), 1100, (1, 0.86, 0.68), 5),
@@ -61,7 +61,7 @@ def add_label(text, location):
     mat = bpy.data.materials.new(f"label-{text}")
     mat.diffuse_color = (0.78, 0.9, 1.0, 1)
     label.data.materials.append(mat)
-    label.rotation_euler = (math.radians(90), 0, 0)
+    label.rotation_euler = (math.radians(90), 0, math.pi)
     return label
 
 
@@ -73,7 +73,7 @@ def import_asset(path, location):
     root = next((obj for obj in roots if obj.name.startswith("BuildingRoot") or obj.name.startswith("FurnaceRoot")), roots[0] if roots else None)
     if root:
         root.location = location
-        root.scale = (1.25, 1.25, 1.25)
+        root.scale = (1.0, 1.0, 1.0)
     for obj in imported:
         if obj.type == "MESH":
             base_name = obj.name.split(":")[-1]
@@ -85,10 +85,12 @@ def import_asset(path, location):
 def main():
     clear()
     scene = setup()
-    items = [("furnace", (-3.25, 2.15, 0)), ("crossbow_tower", (3.25, 2.15, 0)), ("recruit_hall", (-3.25, -2.15, 0)), ("auto_rebuilder", (3.25, -2.15, 0))]
+    # Keep both rows on the same ground plane; the imported GLBs use Y for
+    # height, so catalogue depth belongs in Z rather than Y.
+    items = [("furnace", (-3.25, 4.0, 0)), ("crossbow_tower", (3.25, 4.0, 0)), ("recruit_hall", (-3.25, 0, 0)), ("auto_rebuilder", (3.25, 0, 0))]
     for key, location in items:
         import_asset(os.path.join(ROOT, "public", "assets", "models", "buildings", f"{key}.glb"), location)
-        add_label(key, (location[0], location[1] - 0.9, 0.04))
+        add_label(key, (location[0], location[1] - 1.65, -0.2))
     os.makedirs(os.path.dirname(OUT), exist_ok=True)
     scene.render.filepath = OUT
     scene.frame_set(10)

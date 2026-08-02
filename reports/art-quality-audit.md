@@ -1,6 +1,8 @@
 # Art quality audit
 
-Generated during the 2026-08-02 authored-asset iteration. This report
+Generated during the 2026-08-02 authored-asset iteration. The latest pass adds
+targeted second-round silhouette and functional-detail refinements to the five
+highest-risk assets while preserving the runtime contract. This report
 separates the runtime contract (which is machine-validated) from the visual
 commercial-art sign-off (which still needs a human art review).
 
@@ -63,12 +65,28 @@ corresponding authored file passes validation.
 | resource_tree | `public/assets/models/environment/resource_tree.glb` | staged canopy/snow/stump meshes |
 | resource_rock | `public/assets/models/environment/resource_rock.glb` | staged ore/body/remains meshes |
 
+## Latest targeted refinement
+
+- `hero.glb`: face focal points, lapels, a hand-bound grip/blade/guard/gem set,
+  and head-bone mapping for the authored facial pieces.
+- `warrior.glb`: layered breastplate, collar, shoulder guards, chest seal and
+  a readable scabbard silhouette; the sword blade now has a tapered profile,
+  fuller and pommel.
+- `flyingColossus.glb`: mirrored multi-panel wing membranes, wing spars,
+  mantle, horns, eyes and knee guards.
+- `furnace.glb`: alternating masonry courses, recessed fire chamber, rim,
+  and three authored flame tongues; all new parts are parented under
+  `FurnaceRoot` so their placement follows the building instance.
+- `crossbow_tower.glb`: shaped bow limbs, string, grip, winch and diagonal
+  deck braces; braces remain under `BuildingRoot`.
+
 ## Still not a commercial-art sign-off
 
 The shared pass now adds authored silhouette panels, props, bevels, snow/metal
-separation and functional structure. It is still a stylized procedural Blender
-authoring pass rather than a hand-sculpted, retopologized and texture-painted
-production pack. The five assets most in need of manual refinement are:
+separation and functional structure. The targeted second pass improves the
+five assets above, but this is still a stylized procedural Blender authoring
+pass rather than a hand-sculpted, retopologized and texture-painted production
+pack. The five assets most in need of manual refinement remain:
 
 1. `hero.glb` — hand-shaped face, coat folds, weapon/hand contact and texture breakup.
 2. `warrior.glb` — replace the broad torso block with sculpted layered armour and a fitted sword grip.
