@@ -151,3 +151,21 @@ This is a measurable construction and presentation improvement, but it remains
 an authored stylized low-poly pass. It is not a substitute for a final human
 art-direction review, texture/UV polish, or hand-sculpted commercial asset
 sign-off. The manual top-five list above remains open.
+
+## Fifth-pass surface response (2026-08-02)
+
+- Applied weighted surface-normal modifiers to every authored mesh after the
+  existing bevel pass. The modifier is exported into the GLB normals, so the
+  Babylon runtime receives broad, stable highlights on plates, braces and
+  faceted construction pieces instead of a runtime-only shading adjustment.
+- Re-exported all 42 runtime GLBs with Blender 5.2.0 LTS. The direct filesystem
+  inventory is 13,879,248 bytes; the validator still reports 42/42 `ok`, with
+  no blocked assets or warnings. The representative `hero.glb` remains 11,288
+  triangles, 10 materials, one skeleton and seven named clips.
+- Babylon smoke evidence after the export: v9 is 75/75 and v10 is 12/12;
+  `npm run typecheck` and the production Vite build pass. The build still emits
+  the known large-chunk advisory (~5.8 MB), which is not an asset failure.
+
+This pass improves authored surface readability but does not change the
+commercial-art boundary above: UV layout, hand-painted texture breakup,
+sculpted facial/cloth forms and final art-direction sign-off remain pending.

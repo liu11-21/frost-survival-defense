@@ -6,6 +6,13 @@
 - `HeroController` 載入 authored `hero.glb` 後，改以 `head.nose`／眼睛標記相對於 GLB 根節點的位置，自動決定是否需要 180° 校正；不再把單一匯出版本的角度寫死。
 - 目前 `hero.glb` 的臉部標記位於根節點 `+Z`，執行期校正結果為 `0°`；移動、碰撞與攻擊邏輯維持不變。
 
+## 2026-08-02｜全資產表面法線與 Babylon 回歸
+
+- 共用 Blender 材質流程在倒角後為所有 authored Mesh 加入加權表面法線，讓金屬板、支架與多面體結構在 GLB／Babylon 中保留較穩定的高光過渡。
+- 重新匯出完整 42 個 GLB；`reports/art-validation.json` 維持 42/42 `ok`、無 blocked／invalid／warning。直接檔案總量為 13,879,248 bytes。
+- Babylon 回歸：`node tools/playtest.mjs --suite v9` 75/75、`--suite v10` 12/12、`npm run typecheck` 與 `npm run build` 通過；production build 仍有既有約 5.8 MB chunk 警告。
+- 主角方向已以執行期臉部標記校正，不再硬寫單一版本的 180°；實測 W 使 `z` 由 `-4.5` 增至 `-2.72`，移動方向正確。預設鏡頭在南側，因此向北移動時看到背面，不代表倒退。
+
 ## 2026-08-02｜全資產第三輪 Blender 精修與批次重建
 
 - 共享角色資產加入領口／下顎／腰封／胸線、袖口、靴底鉚釘、陣營徽記、武器握把纏帶與重裝肩部硬體；飛行敵人改用分層翼膜與翼根關節，維持既有 UnitSkeleton 與六段動畫契約。

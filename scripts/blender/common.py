@@ -85,6 +85,13 @@ def apply_style(obj, mat, bevel=0.04):
     if obj.type == "MESH":
         for polygon in obj.data.polygons:
             polygon.use_smooth = True
+        # Weighted normals keep bevel highlights broad and intentional on
+        # stylized plates, boxes and prism faces.  The modifier is applied by
+        # the glTF export step, so Babylon receives clean vertex normals rather
+        # than a runtime-only Blender shading trick.
+        normal = obj.modifiers.new("weighted surface normals", "WEIGHTED_NORMAL")
+        normal.keep_sharp = True
+        normal.weight = 50
     return obj
 
 
