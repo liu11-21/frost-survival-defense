@@ -46,7 +46,10 @@ BUILDINGS = {
 def make_materials(key, cfg):
     return {
         "stone": material(f"MAT_{key}_stone", cfg["body"], 0.94),
+        "stoneLight": material(f"MAT_{key}_stoneLight", tuple(min(1.0, c * 1.35 + 0.04) for c in cfg["body"]), 0.9),
+        "stoneDark": material(f"MAT_{key}_stoneDark", tuple(max(0.02, c * 0.58) for c in cfg["body"]), 0.97),
         "wood": material(f"MAT_{key}_wood", (0.36, 0.19, 0.08), 0.88),
+        "woodLight": material(f"MAT_{key}_woodLight", (0.56, 0.31, 0.12), 0.82),
         "darkwood": material(f"MAT_{key}_darkwood", (0.2, 0.11, 0.06), 0.9),
         "metal": material(f"MAT_{key}_metal", (0.32, 0.39, 0.48), 0.28, 0.86),
         "dark": material(f"MAT_{key}_dark", (0.05, 0.06, 0.08), 0.58, 0.5),
@@ -96,37 +99,76 @@ def build_facility(key, cfg):
     if kind == "mine" or kind == "goldMine":
         for x in (-0.85, 0.85):
             parts.append(box(f"derrick.{x}", (0.16, 1.6, 0.16), (x, 0.95, 0), mats["wood"]))
-        parts += [box("derrick.top", (1.9, 0.18, 0.18), (0, 1.75, 0), mats["wood"]), box("shaftMouth", (1.45, 1.15, 0.5), (0, 0.8, -0.8), mats["dark"]), cylinder("orePile", 0.55, 0.4, (0.62, 0.4, 0.55), mats["gold" if kind == "goldMine" else "ice"], "LOD0", 7)]
+        parts += [
+            box("derrick.top", (1.9, 0.18, 0.18), (0, 1.75, 0), mats["woodLight"]),
+            box("shaftMouth", (1.45, 1.15, 0.5), (0, 0.8, -0.8), mats["dark"]),
+            prism("shaftArch", [(-0.78, 0.42), (-0.62, 1.45), (-0.42, 1.58), (0.42, 1.58), (0.62, 1.45), (0.78, 0.42)], 0.12, (0, 0, -1.08), mats["stoneLight"], "LOD0", 0.025),
+            cylinder("orePile", 0.55, 0.4, (0.62, 0.4, 0.55), mats["gold" if kind == "goldMine" else "ice"], "LOD0", 7),
+        ]
         functional += [box("workPart", (0.85, 0.18, 0.18), (0, 1.35, -0.78), mats["metal"]), sphere("productionCore", 0.16, (0, 1.88, 0), mats["gold" if kind == "goldMine" else "glow"])]
     elif kind == "lumberyard":
         for x in (-1.0, 1.0):
             for z in (-0.8, 0.8): parts.append(box(f"post.{x}.{z}", (0.18, 1.7, 0.18), (x, 0.92, z), mats["wood"]))
-        parts += [box("roof.left", (2.8, 0.18, 1.0), (0, 1.95, -0.48), mats["darkwood"]), box("roof.right", (2.8, 0.18, 1.0), (0, 1.95, 0.48), mats["darkwood"]), cylinder("sawWheel", 0.1, 1.0, (0, 0.95, 0.72), mats["metal"], "LOD0", 12), box("logStack", (2.0, 0.32, 0.4), (0, 0.52, 0.9), mats["wood"])]
+        parts += [
+            box("roof.left", (2.8, 0.18, 1.0), (0, 1.95, -0.48), mats["darkwood"]),
+            box("roof.right", (2.8, 0.18, 1.0), (0, 1.95, 0.48), mats["darkwood"]),
+            prism("yardGable", [(-1.3, 1.78), (1.3, 1.78), (0, 2.55)], 0.12, (0, 0, -0.5), mats["woodLight"], "LOD0", 0.025),
+            cylinder("sawWheel", 0.1, 1.0, (0, 0.95, 0.72), mats["metal"], "LOD0", 12),
+            box("logStack", (2.0, 0.32, 0.4), (0, 0.52, 0.9), mats["wood"]),
+        ]
         functional += [empty("workPart", (0, 1.0, 0.7), "EXPORT", "CUBE"), torus("productionCore", 0.34, 0.06, (0, 1.0, 0.72), mats["accent"])]
     elif kind == "warehouse":
-        parts += [box("warehouseBody", (2.7, 1.8, 2.3), (0, 1.0, 0), mats["wood"]), box("door", (1.0, 1.2, 0.12), (0, 0.78, -1.2), mats["darkwood"]), box("roof.left", (3.2, 0.22, 1.55), (0, 2.15, -0.6), mats["darkwood"]), box("roof.right", (3.2, 0.22, 1.55), (0, 2.15, 0.6), mats["darkwood"]), box("ridge", (3.3, 0.2, 0.2), (0, 2.58, 0), mats["metal"])]
+        parts += [
+            box("warehouseBody", (2.7, 1.8, 2.3), (0, 1.0, 0), mats["wood"]),
+            box("door", (1.0, 1.2, 0.12), (0, 0.78, -1.2), mats["darkwood"]),
+            prism("warehouseGable", [(-1.46, 1.88), (1.46, 1.88), (0, 2.72)], 0.14, (0, 0, -0.72), mats["woodLight"], "LOD0", 0.03),
+            box("roof.left", (3.2, 0.22, 1.55), (0, 2.15, -0.6), mats["darkwood"]),
+            box("roof.right", (3.2, 0.22, 1.55), (0, 2.15, 0.6), mats["darkwood"]),
+            box("ridge", (3.3, 0.2, 0.2), (0, 2.58, 0), mats["metal"]),
+        ]
         parts += [box("crateA", (0.65, 0.65, 0.65), (-1.7, 0.38, 0.6), mats["wood"]), box("crateB", (0.62, 0.62, 0.62), (1.6, 0.35, -0.55), mats["wood"])]
         functional += [box("workPart", (0.7, 0.35, 0.08), (0, 1.75, -1.25), mats["accent"]), sphere("productionCore", 0.12, (0, 1.55, 0), mats["glow"])]
     elif kind == "recruitHall":
-        parts += [box("hallBody", (2.6, 1.9, 2.2), (0, 1.0, 0), mats["wood"]), box("gate", (1.2, 1.35, 0.12), (0, 0.82, -1.16), mats["dark"]), box("roof", (3.25, 0.24, 2.8), (0, 2.08, 0), mats["darkwood"]), cylinder("watchtower", 1.2, 0.85, (0.85, 2.68, 0.4), mats["stone"], "LOD0", 8)]
+        parts += [
+            box("hallBody", (2.6, 1.9, 2.2), (0, 1.0, 0), mats["wood"]),
+            box("gate", (1.2, 1.35, 0.12), (0, 0.82, -1.16), mats["dark"]),
+            prism("hallGable", [(-1.42, 1.9), (1.42, 1.9), (0, 2.8)], 0.15, (0, 0, -0.7), mats["woodLight"], "LOD0", 0.03),
+            box("roof", (3.25, 0.24, 2.8), (0, 2.08, 0), mats["darkwood"]),
+            cylinder("watchtower", 1.2, 0.85, (0.85, 2.68, 0.4), mats["stone"], "LOD0", 8),
+        ]
         for x in (-1.25, 1.25): parts += [cylinder(f"flagPole.{x}", 1.5, 0.05, (x, 1.7, -1.25), mats["metal"], "LOD0", 6), box(f"flag.{x}", (0.45, 0.38, 0.04), (x + 0.2, 2.2, -1.25), mats["accent"])]
         functional += [box("workPart", (1.2, 0.18, 0.1), (0, 1.75, 1.1), mats["metal"]), sphere("productionCore", 0.13, (0, 2.62, 0.4), mats["glow"])]
     elif kind == "autoCollector":
-        parts += [cylinder("pylon", 2.25, 0.5, (0, 1.25, 0), mats["metal"], "LOD0", 8), torus("collectorRingA", 0.85, 0.08, (0, 1.95, 0), mats["accent"]), torus("collectorRingB", 1.25, 0.06, (0, 2.35, 0), mats["metal"]), box("hopper", (0.7, 0.4, 0.7), (0, 2.7, 0), mats["dark"])]
+        parts += [
+            cylinder("pylon", 2.25, 0.5, (0, 1.25, 0), mats["metal"], "LOD0", 8),
+            torus("collectorRingA", 0.85, 0.08, (0, 1.95, 0), mats["accent"]),
+            torus("collectorRingB", 1.25, 0.06, (0, 2.35, 0), mats["metal"]),
+            prism("collectorGuard", [(-0.72, 1.35), (0.72, 1.35), (0.58, 2.0), (-0.58, 2.0)], 0.12, (0, 0, -0.46), mats["stoneDark"], "LOD0", 0.025),
+            box("hopper", (0.7, 0.4, 0.7), (0, 2.7, 0), mats["dark"]),
+        ]
         functional += [empty("workPart", (0, 2.05, 0), "EXPORT", "CUBE"), sphere("productionCore", 0.22, (0, 2.7, 0), mats["glow"])]
     elif kind == "autoRebuilder":
         for x in (-0.9, 0.9):
             for z in (-0.9, 0.9): parts.append(box(f"frame.{x}.{z}", (0.18, 2.0, 0.18), (x, 1.15, z), mats["metal"]))
-        parts += [box("topFrame", (2.2, 0.2, 2.2), (0, 2.3, 0), mats["dark"]), cylinder("craneCore", 0.65, 0.6, (0, 1.35, 0), mats["accent"], "LOD0", 8), box("jib", (0.16, 0.16, 2.5), (0, 2.72, 0.65), mats["metal"])]
+        parts += [
+            box("topFrame", (2.2, 0.2, 2.2), (0, 2.3, 0), mats["dark"]),
+            prism("repairCrown", [(-0.9, 2.18), (0.9, 2.18), (0.65, 2.72), (-0.65, 2.72)], 0.16, (0, 0, -0.8), mats["accent"], "LOD0", 0.025),
+            cylinder("craneCore", 0.65, 0.6, (0, 1.35, 0), mats["accent"], "LOD0", 8),
+            box("jib", (0.16, 0.16, 2.5), (0, 2.72, 0.65), mats["metal"]),
+        ]
         functional += [empty("workPart", (0, 1.35, 0), "EXPORT", "CUBE"), sphere("productionCore", 0.18, (0, 2.9, 0.0), mats["glow"])]
     elif kind in ("crossbowTower", "frostTower", "sniperTower", "mortar"):
         if kind == "crossbowTower":
             for x in (-0.72, 0.72):
                 for z in (-0.72, 0.72): parts.append(box(f"leg.{x}.{z}", (0.18, 1.3, 0.18), (x, 0.85, z), mats["wood"]))
-            parts += [box("deck", (1.8, 0.16, 1.8), (0, 1.58, 0), mats["wood"]), prism("crossbowShield", [(-0.72, 1.72), (0.72, 1.72), (0.52, 1.38), (-0.52, 1.38)], 0.1, (0, 0, -0.65), mats["metal"], "LOD0", 0.03)]
+            parts += [
+                box("deck", (1.8, 0.16, 1.8), (0, 1.58, 0), mats["wood"]),
+                prism("crossbowShield", [(-0.72, 1.72), (0.72, 1.72), (0.52, 1.38), (-0.52, 1.38)], 0.1, (0, 0, -0.65), mats["metal"], "LOD0", 0.03),
+                prism("crossbowSkirt", [(-0.82, 1.55), (0.82, 1.55), (0.62, 1.12), (-0.62, 1.12)], 0.12, (0, 0, 0.52), mats["stoneDark"], "LOD0", 0.025),
+            ]
             attack_pivot(root, mats, key, "crossbow")
         elif kind == "frostTower":
-            parts += [cylinder("spire", 2.1, 0.34, (0, 1.35, 0), mats["ice"], "LOD0", 6), torus("ring", 0.9, 0.08, (0, 2.25, 0), mats["metal"]), sphere("crystalCore", 0.25, (0, 2.9, 0), mats["glow"])]
+            parts += [cylinder("spire", 2.1, 0.34, (0, 1.35, 0), mats["ice"], "LOD0", 6), prism("frostSkirt", [(-0.76, 0.72), (0.76, 0.72), (0.6, 1.75), (-0.6, 1.75)], 0.14, (0, 0, -0.5), mats["stoneDark"], "LOD0", 0.025), torus("ring", 0.9, 0.08, (0, 2.25, 0), mats["metal"]), sphere("crystalCore", 0.25, (0, 2.9, 0), mats["glow"])]
             attack_pivot(root, mats, key, "frost")
         elif kind == "sniperTower":
             parts += [cylinder("shaft", 3.2, 0.55, (0, 1.9, 0), mats["stone"], "LOD0", 8), box("deck", (1.6, 0.16, 1.6), (0, 3.7, 0), mats["metal"]), box("railA", (1.6, 0.35, 0.08), (0, 3.95, 0.75), mats["dark"]), box("railB", (1.6, 0.35, 0.08), (0, 3.95, -0.75), mats["dark"]), prism("sniperWindbreak", [(-0.62, 3.84), (0.62, 3.84), (0.52, 3.18), (-0.52, 3.18)], 0.08, (0, 0, -0.72), mats["metal"], "LOD0", 0.025)]

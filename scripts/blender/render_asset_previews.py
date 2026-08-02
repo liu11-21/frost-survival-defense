@@ -36,16 +36,20 @@ def material(name, color, metallic=0.0, roughness=0.75):
 def setup():
     scene = bpy.context.scene
     scene.render.engine = "BLENDER_EEVEE"
-    scene.render.resolution_x = 1024
-    scene.render.resolution_y = 768
+    scene.render.resolution_x = 1200
+    scene.render.resolution_y = 900
     scene.render.resolution_percentage = 100
     scene.render.image_settings.file_format = "PNG"
     scene.render.film_transparent = False
     scene.world.color = (0.012, 0.018, 0.035)
-    bpy.ops.object.camera_add(location=(9.5, 5.8, 14.8))
+    # Keep world X horizontal and world Z vertical in the sheet.  The authored
+    # GLBs are Y-up after import, so a near-front elevated camera makes the six
+    # grid cells read as a proper catalogue instead of a diagonal pile-up.
+    bpy.ops.object.camera_add(location=(0, 12.5, 9.8))
     camera = bpy.context.object
-    camera.data.lens = 46
-    look_at(camera, (0, 1.0, 0))
+    camera.data.type = "ORTHO"
+    camera.data.ortho_scale = 8.8
+    look_at(camera, (0, 0.0, 1.0))
     scene.camera = camera
     bpy.ops.object.light_add(type="AREA", location=(2.5, 7, 4))
     key = bpy.context.object
@@ -63,6 +67,22 @@ def setup():
     ground = bpy.context.object
     ground.data.materials.append(material("preview-ground", (0.025, 0.04, 0.07), 0, 0.92))
     return scene
+
+
+def add_label(text, location):
+    """Add a small camera-facing review label without affecting the GLB."""
+    bpy.ops.object.text_add(location=location)
+    label = bpy.context.object
+    label.name = f"PreviewLabel_{text}"
+    label.data.body = text
+    label.data.align_x = "CENTER"
+    label.data.size = 0.28
+    label.data.extrude = 0.008
+    label.data.materials.append(material(f"label-{text}", (0.78, 0.9, 1.0), 0.55, 0.1))
+    # The review camera is above the ground; tilt the text toward it so the
+    # label remains legible in the three-quarter sheet.
+    label.rotation_euler = (math.radians(90), 0, 0)
+    return label
 
 
 def import_asset(path, location):
@@ -87,13 +107,16 @@ def main():
     clear()
     setup()
     paths = [
-        ("warrior", (0, 0, 0)),
-        ("mage", (2.2, 0, 0)),
-        ("musketeer", (-2.2, 0, 0)),
-        ("flyingColossus", (0, 0, -2.4)),
+        ("hero", (-3.2, 1.9, 0)),
+        ("warrior", (0, 1.9, 0)),
+        ("shield", (3.2, 1.9, 0)),
+        ("mage", (-3.2, -1.9, 0)),
+        ("musketeer", (0, -1.9, 0)),
+        ("flyingColossus", (3.2, -1.9, 0)),
     ]
     for key, location in paths:
         import_asset(os.path.join(ROOT, "public", "assets", "models", "characters", f"{key}.glb"), location)
+        add_label(key, (location[0], location[1] - 0.62, 0.04))
     os.makedirs(os.path.dirname(OUT), exist_ok=True)
     bpy.context.scene.render.filepath = OUT
     bpy.context.scene.frame_set(10)

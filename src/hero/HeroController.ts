@@ -60,7 +60,10 @@ export class HeroController implements Damageable {
     this.avatar = createPlayerAvatar(scene, materials);
     this.avatar.rig.root.scaling.setAll(0.78);
     this.avatar.position.set(0, 0, -4.5);
-    this.avatar.setYawImmediate(Math.PI);
+    // The authored hero and procedural fallback both face local +Z, which is
+    // also the gameplay forward direction. From the south side of the furnace
+    // the initial heading therefore points north toward +Z.
+    this.avatar.setYawImmediate(0);
     this.health = stats.maxHealth;
     this.avatar.animator.onChopHit = () => this.onSwingHit();
   }
@@ -71,12 +74,9 @@ export class HeroController implements Damageable {
     if (!instance) return false;
     this.avatar.attachAuthored(instance);
     // The exporter keeps the authored front on local +Z after the Z-up → Y-up
-    // conversion. The avatar root already uses +Z as gameplay forward, so a
-    // second half-turn would make the hero visibly walk backwards.
-    // The authored silhouette faces local -Z, while gameplay yaw/movement use
-    // local +Z as forward. Correct only the authored child so fallback, facing
-    // math and collision remain unchanged.
-    instance.root.rotation.set(0, Math.PI, 0);
+    // conversion. Keep the child aligned with the gameplay root; a 180°
+    // correction here makes the visible hero walk backwards.
+    instance.root.rotation.set(0, 0, 0);
     return true;
   }
 
@@ -173,7 +173,7 @@ export class HeroController implements Damageable {
     this.downTimer = 0;
     this.target = null;
     this.avatar.position.set(0, 0, -4.5);
-    this.avatar.setYawImmediate(Math.PI);
+    this.avatar.setYawImmediate(0);
     this.avatar.animator.setState("idle");
     this.avatar.animator.setRiseProgress(1);
   }

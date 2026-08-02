@@ -297,8 +297,49 @@ def build_unit(visual, cfg):
         box("shoulder.L", (0.27, 0.17, 0.3), (-0.34, 1.28, 0), mats["accent"], bevel=0.06),
         box("shoulder.R", (0.27, 0.17, 0.3), (0.34, 1.28, 0), mats["accent"], bevel=0.06),
     ]
+    # Shared hero-quality silhouette pass.  These are small authored panels
+    # and caps rather than extra colour swaps: they give every role a readable
+    # front plane, a waist break and a believable boot contact in the normal
+    # isometric camera.
+    shell_mat = mats["metal"] if heavy else mats["accent"]
+    parts += [
+        prism(
+            "torsoShell",
+            [(-torso_width * 0.46, 1.28), (torso_width * 0.46, 1.28), (torso_width * 0.38, 0.86), (0, 0.78), (-torso_width * 0.38, 0.86)],
+            0.11,
+            (0, 0, 0.19),
+            shell_mat,
+            "LOD0",
+            0.025,
+        ),
+        prism("helmetBrow", [(-0.2, 1.83), (0.2, 1.83), (0.15, 1.69), (-0.15, 1.69)], 0.22, (0, 0, 0.2), mats["dark"], "LOD0", 0.02),
+        prism("bootToe.L", [(-0.12, 0.16), (0.08, 0.16), (0.1, 0.03), (-0.12, 0.03)], 0.28, (-0.13, 0, 0.15), mats["dark"], "LOD0", 0.018),
+        prism("bootToe.R", [(-0.08, 0.16), (0.12, 0.16), (0.12, 0.03), (-0.1, 0.03)], 0.28, (0.13, 0, 0.15), mats["dark"], "LOD0", 0.018),
+    ]
+    for side in (-1, 1):
+        shoulder_cap = cone(f"shoulderCap.{side}", 0.19 if heavy else 0.16, 0.1, 0.18, (side * 0.37, 1.37, 0), mats["metal"], "LOD0", 6)
+        shoulder_cap.rotation_euler.x = math.pi * 0.5
+        parts.append(shoulder_cap)
     parts += add_crest(root, cfg["crest"], mats)
     parts += build_weapon(root, cfg["weapon"], mats, "weapon")
+
+    # Distinctive focal pieces make the role readable even when the held prop
+    # is occluded by a squad mate.  The geometry stays low-poly but each piece
+    # has a clear material and a bone-friendly name.
+    if cfg["weapon"] in ("sword", "dagger", "club", "shieldClub", "ram"):
+        parts += [sphere("weaponPommel", 0.075, (0, 0.0, 0.0), mats["glow"])]
+    if cfg["weapon"] in ("staff", "iceStaff"):
+        parts += [
+            torus("spellFocusRing", 0.2, 0.035, (0, 1.4, 0.05), mats["accent"], "LOD0"),
+            prism("spellFocusShard", [(-0.1, 1.42), (0, 1.62), (0.1, 1.42), (0, 1.28)], 0.08, (0, 0, 0.08), mats["glow"], "LOD0", 0.015),
+        ]
+    if cfg["weapon"] in ("bow", "sling", "musket"):
+        parts += [
+            box("rangedSight", (0.08, 0.12, 0.18), (0.23, 1.22, 0.2), mats["metal"], "LOD0", 0.02),
+            torus("rangedBadge", 0.09, 0.025, (0, 0.82, 0.25), mats["accent"], "LOD0"),
+        ]
+    if cfg["armor"] in ("medic", "toolpack", "bandolier", "crystals"):
+        parts.append(prism("roleBadge", [(-0.13, 1.2), (0.13, 1.2), (0.1, 0.98), (-0.1, 0.98)], 0.05, (0, 0, 0.25), mats["glow"], "LOD0", 0.012))
 
     # Role silhouettes use a few authored polygon profiles in addition to the
     # shared body rig.  These are deliberately distinct garment/armour pieces,
@@ -338,6 +379,7 @@ def build_unit(visual, cfg):
         span = 0.7 if armor == "wings" else 1.05
         for side in (-1, 1):
             parts += [box(f"wing.{side}.inner", (span, 0.1, 0.35), (side * 0.48, 1.15, -0.04), mats["accent"]), box(f"wing.{side}.outer", (span * 0.72, 0.08, 0.24), (side * 0.95, 1.12, -0.04), mats["ice"])]
+            parts.append(prism(f"wing.{side}.feather", [(-0.1, 1.45), (0.42, 1.32), (0.64, 1.08), (0.18, 1.16)], 0.07, (side * 0.58, 0, -0.06), mats["ice"], "LOD0", 0.018))
     if armor == "batteringRam":
         parts += [box("ramFrame", (0.8, 0.24, 0.2), (0, 1.0, 0.28), mats["metal"]), sphere("ramTip", 0.2, (0, 1.0, 0.62), mats["accent"])]
 

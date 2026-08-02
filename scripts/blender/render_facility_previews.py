@@ -1,5 +1,6 @@
 """Render a deterministic facility art-review sheet for local QA."""
 import os
+import math
 import bpy
 from mathutils import Vector
 
@@ -20,15 +21,16 @@ def clear():
 def setup():
     scene = bpy.context.scene
     scene.render.engine = "BLENDER_EEVEE"
-    scene.render.resolution_x = 1024
-    scene.render.resolution_y = 768
+    scene.render.resolution_x = 1200
+    scene.render.resolution_y = 900
     scene.render.resolution_percentage = 100
     scene.render.image_settings.file_format = "PNG"
     scene.world.color = (0.012, 0.018, 0.035)
-    bpy.ops.object.camera_add(location=(10.5, 7.5, 16.0))
+    bpy.ops.object.camera_add(location=(0, 13.5, 11.5))
     camera = bpy.context.object
-    camera.data.lens = 44
-    look_at(camera, (0, 1.2, 0))
+    camera.data.type = "ORTHO"
+    camera.data.ortho_scale = 10.5
+    look_at(camera, (0, 0.0, 1.2))
     scene.camera = camera
     for location, energy, color, size in [
         ((3.5, 8, 5), 1100, (1, 0.86, 0.68), 5),
@@ -46,6 +48,21 @@ def setup():
     mat.diffuse_color = (0.025, 0.04, 0.07, 1)
     ground.data.materials.append(mat)
     return scene
+
+
+def add_label(text, location):
+    bpy.ops.object.text_add(location=location)
+    label = bpy.context.object
+    label.name = f"PreviewLabel_{text}"
+    label.data.body = text
+    label.data.align_x = "CENTER"
+    label.data.size = 0.3
+    label.data.extrude = 0.008
+    mat = bpy.data.materials.new(f"label-{text}")
+    mat.diffuse_color = (0.78, 0.9, 1.0, 1)
+    label.data.materials.append(mat)
+    label.rotation_euler = (math.radians(90), 0, 0)
+    return label
 
 
 def import_asset(path, location):
@@ -68,9 +85,10 @@ def import_asset(path, location):
 def main():
     clear()
     scene = setup()
-    items = [("furnace", (-2.5, 0, -1.35)), ("crossbow_tower", (2.5, 0, -1.35)), ("recruit_hall", (-2.5, 0, 1.75)), ("auto_rebuilder", (2.5, 0, 1.75))]
+    items = [("furnace", (-3.25, 2.15, 0)), ("crossbow_tower", (3.25, 2.15, 0)), ("recruit_hall", (-3.25, -2.15, 0)), ("auto_rebuilder", (3.25, -2.15, 0))]
     for key, location in items:
         import_asset(os.path.join(ROOT, "public", "assets", "models", "buildings", f"{key}.glb"), location)
+        add_label(key, (location[0], location[1] - 0.9, 0.04))
     os.makedirs(os.path.dirname(OUT), exist_ok=True)
     scene.render.filepath = OUT
     scene.frame_set(10)

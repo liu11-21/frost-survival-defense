@@ -73,7 +73,10 @@ blender --background --python scripts/blender/render_facility_previews.py
 ```
 
 The sheets are written under `reports/art-previews/`; they are review aids, not
-runtime assets.
+runtime assets. `reports/art-quality-audit.md` lists the complete 42-asset
+inventory, runtime contracts and the remaining human art-review queue. A green
+GLB validator result proves integration readiness, not a final commercial-art
+sign-off.
 
 Blender remains optional at runtime, but this machine now has Blender 5.2.0 LTS
 installed from the official Blender Foundation Windows ZIP. `BLENDER_PATH` is

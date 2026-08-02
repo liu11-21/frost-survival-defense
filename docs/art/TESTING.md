@@ -32,3 +32,9 @@ the same report; when available, `ResourceNodeView` swaps them in after the
 preload barrier and keeps the original MeshBuilder implementation as fallback.
 For a visual review, run the two Blender preview scripts documented in the
 README and inspect the generated PNGs before calling an asset commercial-ready.
+The sheets are deliberately catalogue-style rather than gameplay screenshots:
+they expose silhouette, material separation, props and occlusion consistently.
+Passing the GLB validator proves the runtime contract only; it does not by
+itself prove commercial art direction. Assets with a broad primitive silhouette
+or placeholder-like material breakup remain `needs_manual_art_review` in the
+release checklist until a human art pass signs them off.
