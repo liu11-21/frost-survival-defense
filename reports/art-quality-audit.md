@@ -1,7 +1,7 @@
 # Art quality audit
 
 Generated during the 2026-08-02 authored-asset iteration. The latest pass adds
-shared third-round silhouette, construction and material-layer refinements to
+shared fourth-round silhouette, construction and material-layer refinements to
 the complete character/facility library while preserving the runtime contract. This report
 separates the runtime contract (which is machine-validated) from the visual
 commercial-art sign-off (which still needs a human art review).
@@ -83,9 +83,14 @@ corresponding authored file passes validation.
 - `crossbow_tower.glb`: shaped bow limbs, string, grip, winch, stock profile,
   bolt rail/head, draw wheels and diagonal deck braces; braces remain under
   `BuildingRoot`.
-- All other character GLBs now receive the shared tapered torso-front shell,
-  back yoke and light-metal material separation without changing their
-  `UnitSkeleton` or animation contracts.
+- All 26 character GLBs now have a role-specific focal kit in addition to the
+  shared tapered torso-front shell and back yoke: shield boss/chevron, archery
+  bracers and arrowheads, medic satchel/vials, banner harness, mage robe and
+  rune belt, assault rig, engineer goggles/tools, musketeer lapels/bayonet,
+  frost mantle, enemy armour breaks, ammunition and flight harnesses.
+- These role kits are separate low-poly meshes with named material layers,
+  remain bound to the existing `UnitSkeleton`, and preserve the Idle/Walk/
+  Attack/Cast/Hit/Death clips used by Babylon.
 - All 26 character GLBs: added collar and jaw planes, waist and chest seams,
   cuffs, boot soles/rivets, faction badges, weapon grip wraps and role-specific
   shoulder hardware. Flying units now use layered membrane panels and wing

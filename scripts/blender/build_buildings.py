@@ -113,13 +113,25 @@ def add_facility_finish(parts, kind, mats):
             torus("winchDrum", 0.18, 0.045, (0, 1.43, -0.78), mats["metalLight"], "LOD0"),
             sphere("oreChunkA", 0.12, (-0.22, 0.48, 0.54), mats["gold" if kind == "goldMine" else "ice"]),
             sphere("oreChunkB", 0.09, (0.12, 0.42, 0.64), mats["gold" if kind == "goldMine" else "ice"]),
+            box("mineRail.L", (1.45, 0.06, 0.07), (-0.45, 0.34, -0.18), mats["metal"], "LOD0", 0.012),
+            box("mineRail.R", (1.45, 0.06, 0.07), (0.45, 0.34, -0.18), mats["metal"], "LOD0", 0.012),
+            torus("mineCartWheel.L", 0.11, 0.035, (-0.30, 0.36, -0.64), mats["metalLight"], "LOD0"),
+            torus("mineCartWheel.R", 0.11, 0.035, (0.30, 0.36, -0.64), mats["metalLight"], "LOD0"),
         ]
+        if kind == "goldMine":
+            parts += [
+                box("goldIngotStack.A", (0.26, 0.12, 0.14), (-0.58, 0.58, 0.62), mats["gold"], "LOD0", 0.018),
+                box("goldIngotStack.B", (0.22, 0.10, 0.12), (-0.48, 0.72, 0.62), mats["gold"], "LOD0", 0.016),
+            ]
     elif kind == "lumberyard":
         parts += [
             cylinder("logEnd.L", 0.22, 0.10, (-0.6, 0.56, 0.92), mats["woodLight"], "LOD0", 10),
             cylinder("logEnd.R", 0.22, 0.10, (0.6, 0.56, 0.92), mats["woodLight"], "LOD0", 10),
             box("beamJoin", (1.7, 0.10, 0.10), (0, 1.42, 0.54), mats["metalLight"], "LOD0", 0.018),
             torus("sawHub", 0.12, 0.035, (0, 0.95, 0.72), mats["accent"], "LOD0"),
+            *(box(f"sawTooth.{i}", (0.08, 0.08, 0.18), (-0.48 + i * 0.16, 1.08, 0.72), mats["metalLight"], "LOD0", 0.012) for i in range(7)),
+            torus("logCradle", 0.42, 0.045, (0, 0.60, 0.92), mats["metal"], "LOD0"),
+            box("logCraneHook", (0.08, 0.44, 0.08), (0.82, 1.20, 0.34), mats["metalLight"], "LOD0", 0.015),
         ]
     elif kind in ("warehouse", "recruitHall"):
         for side in (-1, 1):
@@ -127,17 +139,27 @@ def add_facility_finish(parts, kind, mats):
                 box(f"timberFrame.{side}", (0.12, 1.25, 0.12), (side * 1.05, 1.02, -0.98), mats["woodLight"], "LOD0", 0.025),
                 box(f"window.{side}", (0.38, 0.42, 0.045), (side * 0.78, 1.40, -1.16), mats["glass"], "LOD0", 0.02),
                 sphere(f"windowLamp.{side}", 0.055, (side * 0.78, 1.18, -1.20), mats["glow"]),
+                box(f"windowCross.{side}", (0.035, 0.42, 0.055), (side * 0.78, 1.40, -1.19), mats["metalLight"], "LOD0", 0.008),
             ]
+        parts += [
+            box("roofTruss.L", (0.10, 0.10, 2.2), (-0.58, 2.28, 0), mats["woodLight"], "LOD0", 0.014),
+            box("roofTruss.R", (0.10, 0.10, 2.2), (0.58, 2.28, 0), mats["woodLight"], "LOD0", 0.014),
+        ]
     elif kind == "autoCollector":
         for side in (-1, 1):
             arm = box(f"collectorArm.{side}", (0.10, 0.10, 1.8), (side * 0.62, 2.05, 0), mats["metalLight"], "LOD0", 0.018)
             arm.rotation_euler.y = side * math.pi * 0.20
-            parts += [arm, sphere(f"collectorJoint.{side}", 0.11, (side * 0.62, 2.05, 0), mats["accent"])]
+            parts += [arm, sphere(f"collectorJoint.{side}", 0.11, (side * 0.62, 2.05, 0), mats["accent"]), cone(f"collectorNozzle.{side}", 0.12, 0.035, 0.34, (side * 0.92, 1.72, 0), mats["glass"], "LOD0", 6)]
+        parts += [torus("collectorFilter", 0.32, 0.04, (0, 2.70, -0.12), mats["metalLight"], "LOD0"), sphere("collectorCoreLens", 0.12, (0, 2.70, -0.30), mats["glow"])]
     elif kind == "autoRebuilder":
         parts += [
             torus("craneBearing", 0.72, 0.055, (0, 1.38, 0), mats["metalLight"], "LOD0"),
             sphere("repairHead", 0.18, (0, 2.70, 1.85), mats["glow"]),
             vertical_cylinder("repairCable", 0.028, 1.4, (0, 2.0, 1.86), mats["dark"], "LOD0", 6),
+            box("repairArm.L", (0.12, 0.12, 1.4), (-0.42, 2.15, 0.72), mats["metalLight"], "LOD0", 0.018),
+            box("repairArm.R", (0.12, 0.12, 1.4), (0.42, 2.15, 0.72), mats["metalLight"], "LOD0", 0.018),
+            sphere("repairClamp.L", 0.10, (-0.42, 1.48, 1.35), mats["accent"]),
+            sphere("repairClamp.R", 0.10, (0.42, 1.48, 1.35), mats["accent"]),
         ]
     elif kind == "crossbowTower":
         parts += [
@@ -156,6 +178,8 @@ def add_facility_finish(parts, kind, mats):
             box("ladderRail.L", (0.08, 1.3, 0.08), (-0.55, 2.55, -0.88), mats["metalLight"], "LOD0", 0.015),
             box("ladderRail.R", (0.08, 1.3, 0.08), (0.55, 2.55, -0.88), mats["metalLight"], "LOD0", 0.015),
             *(box(f"ladderStep.{i}", (1.1, 0.06, 0.06), (0, 2.05 + i * 0.26, -0.88), mats["metal"], "LOD0", 0.012) for i in range(4)),
+            box("sniperSightHousing", (0.34, 0.16, 0.44), (0, 3.84, 0.22), mats["metalLight"], "LOD0", 0.018),
+            sphere("sniperSightLens", 0.08, (0, 3.84, 0.46), mats["glow"]),
         ]
     elif kind == "mortar":
         parts += [
@@ -163,6 +187,8 @@ def add_facility_finish(parts, kind, mats):
             sphere("shellA", 0.10, (-0.34, 0.70, -0.74), mats["accent"]),
             sphere("shellB", 0.10, (-0.10, 0.70, -0.84), mats["accent"]),
             sphere("shellC", 0.10, (0.14, 0.70, -0.74), mats["accent"]),
+            box("mortarBreech", (0.48, 0.28, 0.44), (0, 1.08, -0.26), mats["metalLight"], "LOD0", 0.025),
+            torus("mortarFuseRing", 0.13, 0.025, (0, 1.24, 0.02), mats["accent"], "LOD0"),
         ]
     elif kind == "furnace":
         parts += [

@@ -147,3 +147,16 @@
 - Applied the shared torso-front/back shell treatment and light-metal material separation to the remaining authored unit library without changing Babylon skeleton, animation or functional-node contracts.
 - Re-exported all 42 source `.blend` files and runtime `.glb` files with Blender 5.2.0 LTS. `npm run art:validate` remains 42/42 `ok` with no blocked or invalid assets.
 - Refreshed the character and facility review sheets. Visual review remains an honest production checkpoint: these are authored stylized low-poly assets, not a final hand-sculpted/texture-painted commercial pack.
+
+## 2026-08-02 | authored roster detail pass
+
+- Added bespoke role kits to every one of the 26 character GLBs instead of relying only on the shared body: shield bosses and chevrons, archery bracers and arrows, medic satchels and vials, banner harnesses, mage robe/rune pieces, assault rigging, engineer goggles/tools, musketeer lapels/bayonet, frost mantle/icicles, enemy armour breaks, ammunition and flying-unit harnesses/talons.
+- Added the missing character glass and gold material definitions required by engineer and musketeer details; the first batch stopped safely on those missing keys and was rerun from the beginning after correction.
+- Re-exported the complete 42-asset library with `npm run art:export`; `npm run art:validate` remains 42/42 `ok` with skeleton, animation, LOD, root and collision checks intact.
+- Babylon integration regression after the roster pass: v9 75/75 and v10 12/12. The full endurance suite remains a separate unfinished check and is not silently promoted to passed.
+
+## 2026-08-02 | authored facility detail pass
+
+- Added facility-specific construction kits instead of relying on the shared building shell: mine and gold-mine rails, cart wheels and ingots; lumberyard saw teeth, log cradle and crane hook; warehouse and recruit-hall window crosses and roof trusses; collector nozzles/filter/core lens; rebuilder repair arms/clamps; sniper sight housing/lens; and mortar breech/fuse details.
+- Re-exported the complete 42-asset library after the facility pass with Blender 5.2.0 LTS. The final `npm run art:validate` report remains 42/42 `ok`, with no invalid or blocked assets.
+- Re-rendered both review sheets so the visual evidence matches the latest authored GLBs.
