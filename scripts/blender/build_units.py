@@ -694,6 +694,14 @@ def build_unit(visual, cfg):
             box("warriorKneeBand.L", (0.22, 0.06, 0.24), (-0.13, 0.38, 0.16), mats["metalLight"], "LOD0", 0.012),
             box("warriorKneeBand.R", (0.22, 0.06, 0.24), (0.13, 0.38, 0.16), mats["metalLight"], "LOD0", 0.012),
             sphere("warriorPommelGem", 0.06, (0.38, 0.68, 0.20), mats["glow"]),
+            prism("warriorCloakPanel.L", [(-0.30, 1.20), (-0.04, 1.12), (-0.12, 0.48), (-0.38, 0.60)], 0.07, (-0.03, 0, -0.30), mats["cloth"], "LOD0", 0.016),
+            prism("warriorCloakPanel.R", [(0.04, 1.12), (0.30, 1.20), (0.38, 0.60), (0.12, 0.48)], 0.07, (0.03, 0, -0.30), mats["dark"], "LOD0", 0.016),
+            torus("warriorGorget", 0.24, 0.032, (0, 1.43, 0.28), mats["metalLight"], "LOD0"),
+            box("warriorChestInset", (0.18, 0.26, 0.045), (0, 1.12, 0.43), mats["accent"], "LOD0", 0.012),
+            sphere("warriorChestInsetGem", 0.035, (0, 1.12, 0.47), mats["glow"]),
+            box("weapon.warriorSwordGuard", (0.34, 0.07, 0.07), (0.38, 1.28, 0.18), mats["metalLight"], "LOD0", 0.012),
+            sphere("weapon.warriorSwordGuardGem", 0.04, (0.38, 1.28, 0.23), mats["glow"]),
+            *(sphere(f"warriorShoulderRivet.{side}", 0.035, (side * 0.48, 1.44, 0.18), mats["highlight"]) for side in (-1, 1)),
         ]
 
     # Distinctive focal pieces make the role readable even when the held prop
@@ -795,6 +803,12 @@ def build_unit(visual, cfg):
                 box("wingTip.L", (0.08, 0.08, 0.56), (-1.02, 1.08, -0.20), mats["metalLight"], "LOD0", 0.012),
                 box("wingTip.R", (0.08, 0.08, 0.56), (1.02, 1.08, -0.20), mats["metalLight"], "LOD0", 0.012),
                 torus("tailRing", 0.16, 0.028, (0, 0.42, -0.30), mats["accent"], "LOD0"),
+                torus("colossusCrownRing", 0.30, 0.045, (0, 1.93, 0.02), mats["metalLight"], "LOD0"),
+                torus("colossusCoreRing", 0.16, 0.028, (0, 1.16, 0.56), mats["accent"], "LOD0"),
+                prism("colossusTailFin", [(-0.18, 0.62), (0.18, 0.62), (0.30, 0.18), (0.0, 0.02), (-0.30, 0.18)], 0.06, (0, 0, -0.40), mats["accent"], "LOD0", 0.014),
+                *(box(f"wingEdge.{side}", (0.06, 0.06, 0.86), (side * 0.72, 1.23, -0.24), mats["metalLight"], "LOD0", 0.008) for side in (-1, 1)),
+                cone("head.colossusTusk.L", 0.08, 0.012, 0.26, (-0.18, 1.50, 0.42), mats["metalLight"], "LOD0", 6),
+                cone("head.colossusTusk.R", 0.08, 0.012, 0.26, (0.18, 1.50, 0.42), mats["metalLight"], "LOD0", 6),
             ]
     if armor == "batteringRam":
         parts += [box("ramFrame", (0.8, 0.24, 0.2), (0, 1.0, 0.28), mats["metal"]), sphere("ramTip", 0.2, (0, 1.0, 0.62), mats["accent"])]
@@ -809,7 +823,11 @@ def build_unit(visual, cfg):
         ("_accent", mats["highlight"], mats["accent"]),
         ("_wood", mats["leatherLight"], mats["wood"]),
     ])
-    author_surface_paint(parts, seed=sum(ord(char) for char in visual))
+    author_surface_paint(
+        parts,
+        seed=sum(ord(char) for char in visual),
+        textured=visual in ("warrior", "flyingColossus"),
+    )
     parent_all(parts, root)
     skeleton = make_skeleton(root)
     bind_unit_pieces(parts, skeleton)

@@ -85,6 +85,12 @@ def attack_pivot(root, mats, key, style):
             cylinder("winchAxle", 0.035, 0.42, (0, -0.04, 0.44), mats["accent"], "LOD0", 8),
             torus("drawWheel.L", 0.12, 0.025, (-0.34, 0.02, 0.04), mats["metalLight"], "LOD0"),
             torus("drawWheel.R", 0.12, 0.025, (0.34, 0.02, 0.04), mats["metalLight"], "LOD0"),
+            prism("limbTip.L", [(-0.18, 0.10), (-0.02, 0.08), (-0.06, -0.10), (-0.22, -0.06)], 0.10, (-0.43, 0, 0.03), mats["metalLight"], "LOD0", 0.01),
+            prism("limbTip.R", [(0.02, 0.08), (0.18, 0.10), (0.22, -0.06), (0.06, -0.10)], 0.10, (0.43, 0, 0.03), mats["metalLight"], "LOD0", 0.01),
+            box("drawCam.L", (0.08, 0.16, 0.12), (-0.36, 0.02, 0.08), mats["metal"], "LOD0", 0.012),
+            box("drawCam.R", (0.08, 0.16, 0.12), (0.36, 0.02, 0.08), mats["metal"], "LOD0", 0.012),
+            torus("boltCollar", 0.09, 0.018, (0, 0.10, 0.84), mats["metalLight"], "LOD0"),
+            sphere("boltFletching", 0.045, (0, 0.10, 0.30), mats["accent"]),
         ]
     elif style == "frost":
         parts = [cylinder("barrel", 0.9, 0.16, (0, 0, 0.32), mats["ice"], "LOD0", 6), torus("frostRing", 0.3, 0.05, (0, 0.25, 0.2), mats["metal"])]
@@ -248,6 +254,9 @@ def add_signature_facility_finish(parts, kind, mats):
             box("crossbowStringGuide", (0.06, 0.06, 0.90), (0, 1.72, -0.42), mats["dark"], "LOD0", 0.008),
             box("crossbowDeckRivet.L", (0.08, 0.08, 0.08), (-0.70, 1.66, -0.72), mats["metalLight"], "LOD0", 0.012),
             box("crossbowDeckRivet.R", (0.08, 0.08, 0.08), (0.70, 1.66, -0.72), mats["metalLight"], "LOD0", 0.012),
+            prism("crossbowMountPlate", [(-0.42, 1.70), (0.42, 1.70), (0.36, 1.48), (-0.36, 1.48)], 0.08, (0, 0, 0.16), mats["metalLight"], "LOD0", 0.014),
+            torus("crossbowMountCollar", 0.28, 0.035, (0, 1.50, 0.16), mats["metal"], "LOD0"),
+            *(sphere(f"crossbowMountBolt.{side}", 0.045, (side * 0.28, 1.58, 0.22), mats["accent"]) for side in (-1, 1)),
         ]
     elif kind == "frostTower":
         parts += [
@@ -428,6 +437,19 @@ def build_facility(key, cfg):
         ]
         for index, angle in enumerate((0.0, math.pi * 0.5, math.pi, math.pi * 1.5)):
             parts.append(box(f"chimneyBlock.{index}", (0.42, 0.26, 0.24), (math.sin(angle) * 0.72, 2.92, math.cos(angle) * 0.72), mats["stoneLight"], "LOD0", 0.025))
+        # Fifth-pass furnace finish: tie rods, vent collars and a nested
+        # ember window make the core read as a load-bearing forge rather than
+        # a single cylinder with a glowing sphere inside it.
+        parts += [
+            box("furnaceTieRod.L", (0.10, 2.05, 0.10), (-1.62, 1.36, -0.10), mats["metalLight"], "LOD0", 0.016),
+            box("furnaceTieRod.R", (0.10, 2.05, 0.10), (1.62, 1.36, -0.10), mats["metalLight"], "LOD0", 0.016),
+            torus("furnaceVent.L", 0.18, 0.035, (-1.58, 1.62, -0.54), mats["metal"], "LOD0"),
+            torus("furnaceVent.R", 0.18, 0.035, (1.58, 1.62, -0.54), mats["metal"], "LOD0"),
+            sphere("furnaceVentGlow.L", 0.065, (-1.58, 1.62, -0.58), mats["glow"]),
+            sphere("furnaceVentGlow.R", 0.065, (1.58, 1.62, -0.58), mats["glow"]),
+            prism("furnaceWindowInner", [(-0.42, 1.56), (0.42, 1.56), (0.34, 1.20), (-0.34, 1.20)], 0.045, (0, 0, -1.93), mats["glow"], "LOD0", 0.01),
+            *(sphere(f"furnaceCrownBolt.{i}", 0.045, (math.sin(i * math.pi * 0.5) * 1.12, 2.66, math.cos(i * math.pi * 0.5) * 1.12), mats["metalLight"]) for i in range(4)),
+        ]
         functional += [empty("workPart", (0, 2.05, 0), "EXPORT", "CUBE"), empty("productionCore", (0, 2.05, 0), "EXPORT", "CUBE"), empty("emitter", (0, 2.55, 0), "EXPORT", "PLAIN_AXES")]
 
     add_facility_finish(parts, kind, mats)
@@ -495,7 +517,11 @@ def build_facility(key, cfg):
         ("_metal", mats["metalLight"], mats["metal"]),
         ("_accent", mats["snow"], mats["accent"]),
     ])
-    author_surface_paint(parts + functional, seed=sum(ord(char) for char in key))
+    author_surface_paint(
+        parts + functional,
+        seed=sum(ord(char) for char in key),
+        textured=kind in ("furnace", "crossbowTower"),
+    )
     parent_all(parts + functional, root)
     collision_box("COL_Building", (2.5, 3.5, 2.5), (0, 1.5, 0), root)
     if kind not in ("mine", "goldMine", "lumberyard", "warehouse", "recruitHall", "autoCollector", "autoRebuilder", "furnace"):

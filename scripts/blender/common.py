@@ -145,18 +145,47 @@ def assign_surface_variants(objects, families):
                 polygon.material_index = dark_slot
 
 
-def author_surface_paint(objects, seed=0):
+def author_surface_paint(objects, seed=0, textured=False):
     """Author a tiny UV and vertex-paint layer for every render mesh.
 
     The procedural palette is intentionally restrained: it supplies a soft
     hand-painted value breakup and edge lift while retaining the existing
     Principled material as the dominant colour.  Vertex colour is part of the
     glTF contract (COLOR_0), so Babylon receives the breakup without a runtime
-    shader or an external texture dependency.  A deterministic planar UV map
-    is also created for every part, leaving the assets ready for a future
-    hand-painted atlas rather than shipping unwrapped primitives.
+    shader.  Focal assets can opt into a tiny packed colour-aware brush image
+    through ``textured=True``; the rest keep the lean vertex-only path.  A
+    deterministic planar UV map is created for every part.
     """
-    def connect_material(mat):
+    def make_brush_texture(mat, base_color, material_seed):
+        """Create a tiny packed, colour-aware brush texture for hero assets.
+
+        The image is deliberately small and deterministic.  It is not a
+        substitute for a hand-painted atlas, but it gives the five focal
+        assets a real baked surface breakup while keeping every source blend
+        self-contained and avoiding external texture paths.
+        """
+        image_name = f"ART_PAINT_{mat.name}"
+        image = bpy.data.images.get(image_name)
+        if image is None:
+            image = bpy.data.images.new(image_name, width=32, height=32, alpha=True)
+            pixels = []
+            for y in range(32):
+                for x in range(32):
+                    wave = math.sin((x + material_seed) * 0.43) * 0.045
+                    wave += math.cos((y * 1.7 + material_seed) * 0.31) * 0.035
+                    stroke = 0.035 if ((x // 5 + y // 9 + material_seed) % 5 == 0) else 0.0
+                    value = max(0.78, min(1.10, 0.95 + wave + stroke))
+                    pixels.extend((
+                        max(0.0, min(1.0, base_color[0] * value)),
+                        max(0.0, min(1.0, base_color[1] * value)),
+                        max(0.0, min(1.0, base_color[2] * value)),
+                        1.0,
+                    ))
+            image.pixels = pixels
+            image.pack()
+        return image
+
+    def connect_material(mat, material_seed):
         if mat is None or not getattr(mat, "use_nodes", False):
             return
         nodes = mat.node_tree.nodes
@@ -178,23 +207,31 @@ def author_surface_paint(objects, seed=0):
         # Blender 5's Mix node exposes duplicate A/B sockets for every data
         # type; RGBA is indices 6/7. Keeping the graph in this canonical form
         # lets the stock glTF exporter detect COLOR_0 as a base-colour factor.
-        if not mix.inputs[6].is_linked:
+        if textured:
+            base_color = tuple(base_input.default_value[:3])
+            texture = nodes.get("ArtSurfaceTexture") or nodes.new("ShaderNodeTexImage")
+            texture.name = "ArtSurfaceTexture"
+            texture.label = "Packed authored brush texture"
+            texture.image = make_brush_texture(mat, base_color, material_seed)
+            texture.interpolation = "Linear"
+            if not mix.inputs[6].is_linked:
+                links.new(texture.outputs["Color"], mix.inputs[6])
+        elif not mix.inputs[6].is_linked:
             mix.inputs[6].default_value = base_input.default_value
         if not mix.inputs[7].is_linked:
             links.new(attr.outputs["Color"], mix.inputs[7])
         if not base_input.is_linked or base_input.links[0].from_node != mix:
             links.new(mix.outputs["Result"], base_input)
-        # Keep this as a single canonical Vertex Color -> Mix -> Base Color
-        # chain.  Blender's stock glTF exporter recognizes that graph as
-        # COLOR_0; nesting a packed brush texture here makes it drop the
-        # vertex attribute even though the material still renders in Blender.
+        # Keep this as one canonical Texture/Base Color -> Mix -> Vertex Color
+        # -> Base Color chain. Blender's stock exporter recognizes the graph
+        # and preserves COLOR_0 while embedding the optional packed texture.
 
     for object_index, obj in enumerate(objects):
         if obj.type != "MESH" or not obj.data.polygons:
             continue
         mesh = obj.data
-        for material_slot in mesh.materials:
-            connect_material(material_slot)
+        for material_slot_index, material_slot in enumerate(mesh.materials):
+            connect_material(material_slot, seed + object_index + material_slot_index)
         if not mesh.uv_layers:
             uv_layer = mesh.uv_layers.new(name="UVMap")
         else:

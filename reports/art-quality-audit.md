@@ -219,3 +219,31 @@ This contract improves runtime-ready asset data and documents the apparent
 rear-facing view, but it does not close the manual UV layout, hand-painted
 texture, hand-sculpted form or human commercial art-direction sign-off items
 listed above.
+
+## Eighth-pass focal silhouette and brush refinement (2026-08-02)
+
+- The next focal pass adds layered and role-readable construction to five
+  assets instead of changing the runtime contract: hero cape/scarf/rib/guard
+  pieces, warrior cloak/gorget/chest/sword hardware, flying-colossus
+  crown/core/wing/tusk details, furnace rods/vents/window/crown fasteners,
+  and crossbow mount/draw/bolt/fletching details. The pieces are still rigid
+  parts bound to the existing authored skeleton or facility animation pivot.
+- `author_surface_paint(..., textured=True)` now creates a small deterministic
+  colour-aware brush image only for hero, warrior, flyingColossus, furnace and
+  crossbowTower. The images are packed into the `.blend` and GLB; the
+  exporter-compatible `ArtTint` path remains present so every asset keeps
+  `TEXCOORD_0` and `COLOR_0`. There are no external image URIs.
+- Blender 5.2.0 LTS regenerated all 42 assets and both preview sheets.
+  The latest filesystem inventory is 42 GLBs / 28,003,628 bytes. The
+  validator reports 42/42 `ok`, zero blocked, zero invalid and 54 embedded
+  images. The focal GLBs remain within their authored validation budgets and
+  retain their required clips/skeletons (see `reports/art-validation.json`).
+- Browser evidence remains green: v9 75/75 and v10 12/12. TypeScript
+  no-emit and the Vite production build also pass; the build's known large
+  chunk warning is unchanged.
+
+This is a measurable authored construction and surface-breakup improvement,
+but the preview remains stylized low-poly. Manual UV layout, hand-painted
+texture breakup, hand-sculpted facial/cloth refinement and final human
+commercial art-direction sign-off remain open rather than being implied by
+the validator.

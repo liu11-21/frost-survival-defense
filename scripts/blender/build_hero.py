@@ -118,13 +118,31 @@ def build():
         torus("shoulderRing.L", 0.18, 0.028, (-0.47, 1.40, 0.06), accent, "LOD0"),
         torus("shoulderRing.R", 0.18, 0.028, (0.47, 1.40, 0.06), accent, "LOD0"),
     ]
+    # Fifth-pass focal finish: layered cloth edges and weapon hardware give
+    # the hero a designed, catalogue-ready silhouette from both front and
+    # rear.  These remain rigid pieces on the existing skeleton, so the
+    # gameplay animation and authored socket contract are unchanged.
+    parts += [
+        prism("heroCapePanel.L", [(-0.34, 1.12), (-0.05, 1.06), (-0.14, 0.40), (-0.42, 0.52), (-0.56, 0.78)], 0.07, (-0.04, 0, -0.34), cloth_dark, "LOD0", 0.016),
+        prism("heroCapePanel.R", [(0.05, 1.06), (0.34, 1.12), (0.56, 0.78), (0.42, 0.52), (0.14, 0.40)], 0.07, (0.04, 0, -0.34), leather, "LOD0", 0.016),
+        prism("heroScarfTail.L", [(-0.20, 1.45), (-0.04, 1.42), (-0.12, 0.92), (-0.28, 1.04)], 0.06, (-0.28, 0, -0.06), accent, "LOD0", 0.012),
+        prism("heroScarfTail.R", [(0.04, 1.42), (0.20, 1.45), (0.28, 1.04), (0.12, 0.92)], 0.06, (0.28, 0, -0.06), accent, "LOD0", 0.012),
+        box("weapon.crossguard", (0.34, 0.06, 0.07), (0.62, 1.28, 0.16), metal_light, "LOD0", 0.012),
+        sphere("weapon.guardGem", 0.045, (0.62, 1.28, 0.21), glow),
+        torus("arm.L.forearmRing", 0.11, 0.022, (-0.50, 0.82, 0.03), metal_light, "LOD0"),
+        torus("arm.R.forearmRing", 0.11, 0.022, (0.50, 0.82, 0.03), metal_light, "LOD0"),
+        prism("chest.heroRib.L", [(-0.25, 1.25), (-0.18, 1.25), (-0.14, 1.00), (-0.22, 1.00)], 0.035, (-0.06, 0, 0.39), accent, "LOD0", 0.008),
+        prism("chest.heroRib.R", [(0.18, 1.25), (0.25, 1.25), (0.22, 1.00), (0.14, 1.00)], 0.035, (0.06, 0, 0.39), accent, "LOD0", 0.008),
+        box("heroHoodToggle", (0.08, 0.12, 0.06), (0.0, 2.04, -0.23), metal_light, "LOD0", 0.012),
+        sphere("heroHoodGem", 0.035, (0.0, 2.04, -0.28), glow),
+    ]
     assign_surface_variants(parts, [
         ("_cloth", snow, cloth),
         ("_leather", accent, leather),
         ("_metal", metal_light, metal),
         ("_accent", snow, accent),
     ])
-    author_surface_paint(parts, seed=17)
+    author_surface_paint(parts, seed=17, textured=True)
     parent_all(parts, root)
     skeleton = make_skeleton(root)
     skeleton.name = "HeroSkeleton"

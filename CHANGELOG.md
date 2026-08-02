@@ -233,3 +233,37 @@
 - Regression evidence: v9 75/75, v10 12/12, typecheck and production build
   all pass. The authored stylized low-poly assets still need manual UV,
   hand-painted texture, sculpted form and final human art-direction review.
+
+## 2026-08-02 | focal silhouette and packed brush refinement
+
+- Added a fifth-pass focal detail kit: layered cape and scarf tails, rib and
+  harness accents, hood gem and weapon guard details for the hero; cloak,
+  gorget, chest inset, sword guard and shoulder rivets for the warrior;
+  crown/core rings, tail fin, wing edges and tusks for the flying colossus;
+  tie rods, vents, window inset and crown bolts for the furnace; and a
+  mount plate, collar, limb tips, draw cams, bolt collar and fletching for
+  the crossbow tower. Existing skeletons and facility animation pivots remain
+  intact.
+- Added a deterministic packed colour-aware brush image layer only to the
+  five focal assets (hero, warrior, flying colossus, furnace and crossbow
+  tower). Images are embedded in the GLBs; the exporter still emits both
+  `TEXCOORD_0` and `COLOR_0`, and no external image URI is introduced.
+- Re-exported the full 42-asset library with Blender 5.2.0 LTS and regenerated
+  both review sheets. The direct inventory is 42 GLBs / 28,003,628 bytes;
+  `reports/art-validation.json` is 42/42 `ok`, zero blocked, zero invalid,
+  zero external image URIs, and 54 embedded images.
+- Representative focal contracts: `hero.glb` 910,348 bytes / 123 nodes /
+  97 meshes / 10 materials / one skeleton / 14,000 triangles / seven clips;
+  `warrior.glb` 963,908 bytes / 140 nodes / 114 meshes / 13 materials /
+  one skeleton / 14,340 triangles / six clips; `flyingColossus.glb`
+  1,202,088 bytes / 170 nodes / 144 meshes / 14 materials / one skeleton /
+  18,744 triangles / six clips; `furnace.glb` 772,760 bytes / 93 nodes /
+  87 meshes / 10 materials / 12,728 triangles / seven clips; and
+  `crossbow_tower.glb` 563,172 bytes / 72 nodes / 65 meshes / 15 materials /
+  9,960 triangles / seven clips.
+- Runtime evidence after the pass: v9 75/75, v10 12/12,
+  `npm run typecheck`, and `npm run build` all pass. The existing Vite
+  large-chunk advisory remains informational.
+- This remains an authored stylized low-poly refinement with a deterministic
+  packed brush breakup, not a claim of hand-painted UV texturing,
+  hand-sculpted forms or final human commercial art-direction sign-off.

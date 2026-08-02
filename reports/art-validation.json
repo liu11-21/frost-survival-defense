@@ -1,18 +1,18 @@
 {
-  "generatedAt": "2026-08-02T11:06:55.236Z",
+  "generatedAt": "2026-08-02T11:23:11.294Z",
   "blenderRequired": true,
   "assets": [
     {
       "key": "hero",
       "status": "ok",
       "path": "public/assets/models/characters/hero.glb",
-      "nodes": 111,
-      "meshes": 85,
+      "nodes": 123,
+      "meshes": 97,
       "materials": 10,
       "skeletons": 1,
       "rootTransforms": [
         {
-          "index": 110,
+          "index": 122,
           "name": "HeroRoot",
           "translation": [
             0,
@@ -56,7 +56,7 @@
         "Hit": 54,
         "Death": 54
       },
-      "triangles": 12168,
+      "triangles": 14000,
       "surfaceAttributes": {
         "TEXCOORD_0": true,
         "COLOR_0": true
@@ -197,13 +197,13 @@
       "key": "warrior",
       "status": "ok",
       "path": "public/assets/models/characters/warrior.glb",
-      "nodes": 131,
-      "meshes": 105,
+      "nodes": 140,
+      "meshes": 114,
       "materials": 13,
       "skeletons": 1,
       "rootTransforms": [
         {
-          "index": 130,
+          "index": 139,
           "name": "UnitRoot",
           "translation": [
             0,
@@ -245,7 +245,7 @@
         "Hit": 54,
         "Death": 54
       },
-      "triangles": 13196,
+      "triangles": 14340,
       "surfaceAttributes": {
         "TEXCOORD_0": true,
         "COLOR_0": true
@@ -1757,13 +1757,13 @@
       "key": "flyingColossus",
       "status": "ok",
       "path": "public/assets/models/characters/flyingColossus.glb",
-      "nodes": 163,
-      "meshes": 137,
+      "nodes": 170,
+      "meshes": 144,
       "materials": 14,
       "skeletons": 1,
       "rootTransforms": [
         {
-          "index": 162,
+          "index": 169,
           "name": "UnitRoot",
           "translation": [
             0,
@@ -1805,7 +1805,7 @@
         "Hit": 54,
         "Death": 54
       },
-      "triangles": 17328,
+      "triangles": 18744,
       "surfaceAttributes": {
         "TEXCOORD_0": true,
         "COLOR_0": true
@@ -2291,13 +2291,13 @@
       "key": "crossbow_tower",
       "status": "ok",
       "path": "public/assets/models/buildings/crossbow_tower.glb",
-      "nodes": 62,
-      "meshes": 55,
-      "materials": 12,
+      "nodes": 72,
+      "meshes": 65,
+      "materials": 15,
       "skeletons": 0,
       "rootTransforms": [
         {
-          "index": 61,
+          "index": 71,
           "name": "BuildingRoot",
           "translation": [
             0,
@@ -2341,7 +2341,7 @@
         "Damaged": 1,
         "Destroyed": 1
       },
-      "triangles": 8316,
+      "triangles": 9960,
       "surfaceAttributes": {
         "TEXCOORD_0": true,
         "COLOR_0": true
@@ -2559,13 +2559,13 @@
       "key": "furnace",
       "status": "ok",
       "path": "public/assets/models/buildings/furnace.glb",
-      "nodes": 82,
-      "meshes": 76,
+      "nodes": 93,
+      "meshes": 87,
       "materials": 10,
       "skeletons": 0,
       "rootTransforms": [
         {
-          "index": 81,
+          "index": 92,
           "name": "FurnaceRoot",
           "translation": [
             0,
@@ -2609,7 +2609,7 @@
         "Damaged": 1,
         "Destroyed": 1
       },
-      "triangles": 11108,
+      "triangles": 12728,
       "surfaceAttributes": {
         "TEXCOORD_0": true,
         "COLOR_0": true
