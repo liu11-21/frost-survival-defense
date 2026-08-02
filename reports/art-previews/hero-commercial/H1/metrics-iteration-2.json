@@ -1,0 +1,101 @@
+{
+  "stage": "H1",
+  "iteration": 2,
+  "note": "Iteration 2: split rear flare and tapered cape/boot profile for readable side silhouette.",
+  "recordedAt": "2026-08-02T15:58:02.019Z",
+  "contract": {
+    "source": "GLB",
+    "scene": "Babylon formal uiVerification scene",
+    "requiredNodes": [
+      "HeroRoot",
+      "HeroSkeleton",
+      "weapon_socket.R",
+      "ranged_socket",
+      "LOD1",
+      "LOD2"
+    ],
+    "requiredAnimations": [
+      "Idle",
+      "Walk",
+      "Run",
+      "MeleeAttack",
+      "RangedAttack",
+      "Hit",
+      "Death"
+    ]
+  },
+  "metrics": {
+    "key": "hero",
+    "status": "ok",
+    "path": "public/assets/models/characters/hero.glb",
+    "sizeBytes": 1102008,
+    "nodes": 125,
+    "meshes": 99,
+    "materials": 10,
+    "textures": 9,
+    "skeletons": 1,
+    "rootTransforms": [
+      {
+        "index": 124,
+        "name": "HeroRoot",
+        "translation": [
+          0,
+          0,
+          0
+        ],
+        "scale": [
+          1,
+          1,
+          1
+        ]
+      }
+    ],
+    "bounds": {
+      "min": [
+        -0.6161909699440002,
+        -0.75,
+        -2.0785748958587646
+      ],
+      "max": [
+        0.6161909699440002,
+        0.75,
+        0.4508700966835022
+      ]
+    },
+    "animations": [
+      "Idle",
+      "Walk",
+      "Run",
+      "MeleeAttack",
+      "RangedAttack",
+      "Hit",
+      "Death"
+    ],
+    "animationChannels": {
+      "Idle": 54,
+      "Walk": 54,
+      "Run": 54,
+      "MeleeAttack": 54,
+      "RangedAttack": 54,
+      "Hit": 54,
+      "Death": 54
+    },
+    "triangles": 14364,
+    "lodTriangles": {
+      "LOD0": 13820,
+      "LOD1": 300,
+      "LOD2": 244
+    },
+    "surfaceAttributes": {
+      "TEXCOORD_0": true,
+      "COLOR_0": true
+    },
+    "lodProxies": {
+      "LOD1": 2,
+      "LOD2": 2
+    },
+    "missingNodes": [],
+    "missingAnimations": [],
+    "warnings": []
+  }
+}

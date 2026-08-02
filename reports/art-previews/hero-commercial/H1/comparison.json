@@ -1,0 +1,166 @@
+{
+  "stage": "H1",
+  "before": {
+    "stage": "baseline",
+    "iteration": 0,
+    "metrics": {
+      "key": "hero",
+      "status": "ok",
+      "path": "public/assets/models/characters/hero.glb",
+      "sizeBytes": 1094084,
+      "nodes": 123,
+      "meshes": 97,
+      "materials": 10,
+      "textures": 9,
+      "skeletons": 1,
+      "rootTransforms": [
+        {
+          "index": 122,
+          "name": "HeroRoot",
+          "translation": [
+            0,
+            0,
+            0
+          ],
+          "scale": [
+            1,
+            1,
+            1
+          ]
+        }
+      ],
+      "bounds": {
+        "min": [
+          -0.604046106338501,
+          -0.75,
+          -2.0785748958587646
+        ],
+        "max": [
+          0.604046106338501,
+          0.75,
+          0.4508700966835022
+        ]
+      },
+      "animations": [
+        "Idle",
+        "Walk",
+        "Run",
+        "MeleeAttack",
+        "RangedAttack",
+        "Hit",
+        "Death"
+      ],
+      "animationChannels": {
+        "Idle": 54,
+        "Walk": 54,
+        "Run": 54,
+        "MeleeAttack": 54,
+        "RangedAttack": 54,
+        "Hit": 54,
+        "Death": 54
+      },
+      "triangles": 14252,
+      "lodTriangles": {
+        "LOD0": 13708,
+        "LOD1": 300,
+        "LOD2": 244
+      },
+      "surfaceAttributes": {
+        "TEXCOORD_0": true,
+        "COLOR_0": true
+      },
+      "lodProxies": {
+        "LOD1": 2,
+        "LOD2": 2
+      },
+      "missingNodes": [],
+      "missingAnimations": [],
+      "warnings": []
+    }
+  },
+  "after": {
+    "stage": "H1",
+    "iteration": 2,
+    "metrics": {
+      "key": "hero",
+      "status": "ok",
+      "path": "public/assets/models/characters/hero.glb",
+      "sizeBytes": 1102008,
+      "nodes": 125,
+      "meshes": 99,
+      "materials": 10,
+      "textures": 9,
+      "skeletons": 1,
+      "rootTransforms": [
+        {
+          "index": 124,
+          "name": "HeroRoot",
+          "translation": [
+            0,
+            0,
+            0
+          ],
+          "scale": [
+            1,
+            1,
+            1
+          ]
+        }
+      ],
+      "bounds": {
+        "min": [
+          -0.6161909699440002,
+          -0.75,
+          -2.0785748958587646
+        ],
+        "max": [
+          0.6161909699440002,
+          0.75,
+          0.4508700966835022
+        ]
+      },
+      "animations": [
+        "Idle",
+        "Walk",
+        "Run",
+        "MeleeAttack",
+        "RangedAttack",
+        "Hit",
+        "Death"
+      ],
+      "animationChannels": {
+        "Idle": 54,
+        "Walk": 54,
+        "Run": 54,
+        "MeleeAttack": 54,
+        "RangedAttack": 54,
+        "Hit": 54,
+        "Death": 54
+      },
+      "triangles": 14364,
+      "lodTriangles": {
+        "LOD0": 13820,
+        "LOD1": 300,
+        "LOD2": 244
+      },
+      "surfaceAttributes": {
+        "TEXCOORD_0": true,
+        "COLOR_0": true
+      },
+      "lodProxies": {
+        "LOD1": 2,
+        "LOD2": 2
+      },
+      "missingNodes": [],
+      "missingAnimations": [],
+      "warnings": []
+    }
+  },
+  "deltas": {
+    "sizeBytes": 7924,
+    "nodes": 2,
+    "meshes": 2,
+    "triangles": 112,
+    "lod0Triangles": 112
+  }
+}

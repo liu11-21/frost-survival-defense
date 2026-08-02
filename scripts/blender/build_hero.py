@@ -20,28 +20,32 @@ def build():
     glow = material("MAT_hero_glow", (0.3, 0.78, 1.0), 0.24, 0.0, (0.18, 0.62, 1.0))
     accent = material("MAT_hero_accent", (0.45, 0.78, 1.0), 0.35, 0.5)
     root = orient_for_babylon(empty("HeroRoot", target="EXPORT", display="PLAIN_AXES"))
+    root["commercialStage"] = "H1"
+    root["commercialIteration"] = 2
+    root["silhouetteReview"] = "layered back flare, clean shoulder taper, grounded boots"
     add_lod_markers(root, "character")
     parts = [
-        # Organic padded volumes keep the hero's coat and limbs from reading
-        # as a stack of bevelled boxes while retaining the existing rig.
-        ellipsoid("body", (0.66, 0.85, 0.42), (0, 1.05, 0), cloth),
-        box("coatSkirt", (0.76, 0.24, 0.5), (0, 0.68, -0.01), leather, bevel=0.06),
-        box("chestPlate", (0.48, 0.38, 0.08), (0, 1.12, 0.22), metal, bevel=0.045),
+        # H1 iteration 1: a wider padded torso, slightly lower centre of
+        # mass and a protected head make the silhouette read at gameplay
+        # distance while retaining the existing rig and socket contract.
+        ellipsoid("body", (0.72, 0.88, 0.45), (0, 1.04, 0), cloth),
+        box("coatSkirt", (0.84, 0.28, 0.56), (0, 0.64, -0.02), leather, bevel=0.06),
+        box("chestPlate", (0.52, 0.38, 0.08), (0, 1.12, 0.22), metal, bevel=0.045),
         box("chestTrim", (0.52, 0.07, 0.05), (0, 1.28, 0.24), snow, bevel=0.02),
-        sphere("head", 0.3, (0, 1.75, 0), skin),
-        cone("hood", 0.42, 0.2, 0.3, (0, 1.98, 0), snow, "LOD0", 8),
-        torus("hoodRim", 0.3, 0.035, (0, 1.83, 0), snow, "LOD0"),
+        sphere("head", 0.31, (0, 1.78, 0), skin),
+        cone("hood", 0.45, 0.2, 0.32, (0, 2.02, 0), snow, "LOD0", 8),
+        torus("hoodRim", 0.31, 0.035, (0, 1.86, 0), snow, "LOD0"),
         box("coatTrim", (0.74, 0.12, 0.46), (0, 1.42, 0), snow, bevel=0.04),
-        ellipsoid("arm.L", (0.18, 0.7, 0.2), (-0.48, 1.1, 0), cloth),
-        ellipsoid("arm.R", (0.18, 0.7, 0.2), (0.48, 1.1, 0), cloth),
-        sphere("glove.L", 0.12, (-0.48, 0.72, 0.02), skin),
-        sphere("glove.R", 0.12, (0.48, 0.72, 0.02), skin),
-        box("shoulder.L", (0.3, 0.18, 0.3), (-0.46, 1.38, 0), metal, bevel=0.06),
-        box("shoulder.R", (0.3, 0.18, 0.3), (0.46, 1.38, 0), metal, bevel=0.06),
-        ellipsoid("leg.L", (0.22, 0.7, 0.24), (-0.2, 0.42, 0), leather),
-        ellipsoid("leg.R", (0.22, 0.7, 0.24), (0.2, 0.42, 0), leather),
-        box("boot.L", (0.25, 0.14, 0.42), (-0.2, 0.07, 0.08), metal, bevel=0.05),
-        box("boot.R", (0.25, 0.14, 0.42), (0.2, 0.07, 0.08), metal, bevel=0.05),
+        ellipsoid("arm.L", (0.2, 0.72, 0.21), (-0.52, 1.1, 0), cloth),
+        ellipsoid("arm.R", (0.2, 0.72, 0.21), (0.52, 1.1, 0), cloth),
+        sphere("glove.L", 0.125, (-0.52, 0.70, 0.02), skin),
+        sphere("glove.R", 0.125, (0.52, 0.70, 0.02), skin),
+        box("shoulder.L", (0.32, 0.19, 0.32), (-0.50, 1.38, 0), metal, bevel=0.06),
+        box("shoulder.R", (0.32, 0.19, 0.32), (0.50, 1.38, 0), metal, bevel=0.06),
+        ellipsoid("leg.L", (0.23, 0.7, 0.25), (-0.22, 0.42, 0), leather),
+        ellipsoid("leg.R", (0.23, 0.7, 0.25), (0.22, 0.42, 0), leather),
+        box("boot.L", (0.27, 0.14, 0.44), (-0.22, 0.07, 0.08), metal, bevel=0.05),
+        box("boot.R", (0.27, 0.14, 0.44), (0.22, 0.07, 0.08), metal, bevel=0.05),
         box("belt", (0.74, 0.12, 0.48), (0, 0.82, 0), leather, bevel=0.04),
         box("beltSigil", (0.13, 0.13, 0.05), (0, 0.82, 0.24), glow, bevel=0.02),
         # Faceted profiles break the rectangular silhouette and read as
@@ -57,8 +61,8 @@ def build():
         sphere("head.eye.L", 0.045, (-0.095, 1.78, 0.275), glow),
         sphere("head.eye.R", 0.045, (0.095, 1.78, 0.275), glow),
         cone("head.nose", 0.045, 0.012, 0.09, (0, 1.73, 0.30), skin, "LOD0", 6),
-        prism("bootToe.L", [(-0.13, 0.16), (0.09, 0.16), (0.1, 0.02), (-0.13, 0.02)], 0.3, (-0.2, 0, 0.16), metal, "LOD0", 0.018),
-        prism("bootToe.R", [(-0.09, 0.16), (0.13, 0.16), (0.13, 0.02), (-0.1, 0.02)], 0.3, (0.2, 0, 0.16), metal, "LOD0", 0.018),
+        prism("bootToe.L", [(-0.15, 0.17), (0.10, 0.17), (0.11, 0.02), (-0.15, 0.02)], 0.32, (-0.22, 0, 0.17), metal, "LOD0", 0.018),
+        prism("bootToe.R", [(-0.10, 0.17), (0.15, 0.17), (0.15, 0.02), (-0.11, 0.02)], 0.32, (0.22, 0, 0.17), metal, "LOD0", 0.018),
         torus("weapon.guard", 0.09, 0.025, (0.62, 0.88, 0.16), accent, "LOD0"),
         prism("sigilPlate", [(-0.14, 1.28), (0.14, 1.28), (0.1, 1.02), (-0.1, 1.02)], 0.06, (0, 0, 0.26), glow, "LOD0", 0.015),
         box("weapon.grip", (0.09, 0.28, 0.09), (0.62, 0.69, 0.16), leather, "LOD0", 0.02),
@@ -125,8 +129,8 @@ def build():
     # rear.  These remain rigid pieces on the existing skeleton, so the
     # gameplay animation and authored socket contract are unchanged.
     parts += [
-        prism("heroCapePanel.L", [(-0.34, 1.12), (-0.05, 1.06), (-0.14, 0.40), (-0.42, 0.52), (-0.56, 0.78)], 0.07, (-0.04, 0, -0.34), cloth_dark, "LOD0", 0.016),
-        prism("heroCapePanel.R", [(0.05, 1.06), (0.34, 1.12), (0.56, 0.78), (0.42, 0.52), (0.14, 0.40)], 0.07, (0.04, 0, -0.34), leather, "LOD0", 0.016),
+        prism("heroCapePanel.L", [(-0.38, 1.15), (-0.05, 1.08), (-0.18, 0.34), (-0.48, 0.46), (-0.62, 0.78)], 0.08, (-0.04, 0, -0.36), cloth_dark, "LOD0", 0.016),
+        prism("heroCapePanel.R", [(0.05, 1.08), (0.38, 1.15), (0.62, 0.78), (0.48, 0.46), (0.18, 0.34)], 0.08, (0.04, 0, -0.36), leather, "LOD0", 0.016),
         prism("heroScarfTail.L", [(-0.20, 1.45), (-0.04, 1.42), (-0.12, 0.92), (-0.28, 1.04)], 0.06, (-0.28, 0, -0.06), accent, "LOD0", 0.012),
         prism("heroScarfTail.R", [(0.04, 1.42), (0.20, 1.45), (0.28, 1.04), (0.12, 0.92)], 0.06, (0.28, 0, -0.06), accent, "LOD0", 0.012),
         box("weapon.crossguard", (0.34, 0.06, 0.07), (0.62, 1.28, 0.16), metal_light, "LOD0", 0.012),
@@ -137,6 +141,10 @@ def build():
         prism("chest.heroRib.R", [(0.18, 1.25), (0.25, 1.25), (0.22, 1.00), (0.14, 1.00)], 0.035, (0.06, 0, 0.39), accent, "LOD0", 0.008),
         box("heroHoodToggle", (0.08, 0.12, 0.06), (0.0, 2.04, -0.23), metal_light, "LOD0", 0.012),
         sphere("heroHoodGem", 0.035, (0.0, 2.04, -0.28), glow),
+        # H1 iteration 2: an explicit split back flare prevents the coat from
+        # collapsing into one narrow pillar when viewed from the side/rear.
+        prism("heroBackFlare.L", [(-0.28, 1.14), (-0.04, 1.08), (-0.18, 0.38), (-0.44, 0.52)], 0.09, (-0.03, 0, -0.43), cloth_dark, "LOD0", 0.018),
+        prism("heroBackFlare.R", [(0.04, 1.08), (0.28, 1.14), (0.44, 0.52), (0.18, 0.38)], 0.09, (0.03, 0, -0.43), leather, "LOD0", 0.018),
     ]
     assign_surface_variants(parts, [
         ("_cloth", snow, cloth),
@@ -153,7 +161,7 @@ def build():
     for name in ("weapon_socket.R", "weapon_socket.L", "ranged_socket", "back_socket"):
         socket = empty(name, (0, 1.1, 0), "RIG")
         socket.parent = root
-    collision_box("COL_Hero", (0.75, 1.85, 0.75), (0, 0.95, 0), root)
+    collision_box("COL_Hero", (0.82, 1.9, 0.82), (0, 0.95, 0), root)
     add_armature_clip(skeleton, "Idle", 24, [(1, {}), (12, {"chest": (0.025, 0, 0), "head": (0, 0.025, 0)}), (24, {})])
     add_armature_clip(skeleton, "Walk", 24, [
         (1, {"upper_arm.L": (0.35, 0, 0), "upper_arm.R": (-0.35, 0, 0), "thigh.L": (-0.5, 0, 0), "thigh.R": (0.5, 0, 0)}),
