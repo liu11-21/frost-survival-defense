@@ -73,11 +73,32 @@ export class HeroController implements Damageable {
     const instance = assets.instantiate("hero", "hero.player");
     if (!instance) return false;
     this.avatar.attachAuthored(instance);
-    // The exporter keeps the authored front on local +Z after the Z-up → Y-up
-    // conversion. Keep the child aligned with the gameplay root; a 180°
-    // correction here makes the visible hero walk backwards.
-    instance.root.rotation.set(0, 0, 0);
+    this.alignAuthoredFront(instance);
     return true;
+  }
+
+  /**
+   * Calibrate the imported root from an authored face marker instead of
+   * hard-coding a π correction. This keeps the gameplay +Z convention stable
+   * if a future Blender export changes the glTF child orientation.
+   */
+  private alignAuthoredFront(instance: ReturnType<AssetRegistry["instantiate"]>): void {
+    if (!instance) return;
+    instance.root.rotation.set(0, 0, 0);
+
+    const faceMarker = instance.meshes.find((mesh) => {
+      const name = mesh.name.toLowerCase();
+      return name.endsWith(":head.nose") || name.endsWith(":head.eye.l") || name.endsWith(":head.eye.r");
+    });
+    if (!faceMarker) return;
+
+    instance.root.computeWorldMatrix(true);
+    faceMarker.computeWorldMatrix(true);
+    const origin = instance.root.getAbsolutePosition();
+    const face = faceMarker.getAbsolutePosition();
+    if (face.z - origin.z < -0.02) {
+      instance.root.rotation.y = Math.PI;
+    }
   }
 
   get position(): Vector3 {
