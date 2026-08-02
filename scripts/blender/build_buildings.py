@@ -190,6 +190,91 @@ def add_facility_finish(parts, kind, mats):
             box("mortarBreech", (0.48, 0.28, 0.44), (0, 1.08, -0.26), mats["metalLight"], "LOD0", 0.025),
             torus("mortarFuseRing", 0.13, 0.025, (0, 1.24, 0.02), mats["accent"], "LOD0"),
         ]
+
+
+def add_signature_facility_finish(parts, kind, mats):
+    """Add the fourth-pass construction language to the facility silhouettes.
+
+    These are structural pieces, not a second coat of colour: corner loads,
+    access panels, fasteners and functional housings make the buildings read
+    as authored game props even when their animated pivot is idle.
+    """
+    # Shared service hardware gives every building a believable maintenance
+    # face and keeps the prop family visually coherent.
+    parts += [
+        box("servicePanelInset", (0.54, 0.24, 0.035), (0, 0.92, -1.15), mats["dark"], "LOD0", 0.012),
+        box("servicePanelTrim", (0.62, 0.035, 0.045), (0, 1.06, -1.18), mats["metalLight"], "LOD0", 0.008),
+        sphere("servicePanelLamp", 0.045, (0, 0.92, -1.20), mats["glow"]),
+    ]
+
+    if kind in ("mine", "goldMine"):
+        parts += [
+            box("mineBeamCap", (2.15, 0.12, 0.16), (0, 1.78, 0.04), mats["metalLight"], "LOD0", 0.018),
+            prism("mineRoof.L", [(-0.98, 1.78), (-0.10, 1.78), (-0.28, 2.12), (-0.86, 2.12)], 0.10, (-0.10, 0, 0.04), mats["woodLight"], "LOD0", 0.018),
+            prism("mineRoof.R", [(0.10, 1.78), (0.98, 1.78), (0.86, 2.12), (0.28, 2.12)], 0.10, (0.10, 0, 0.04), mats["woodLight"], "LOD0", 0.018),
+        ]
+    elif kind == "lumberyard":
+        parts += [
+            box("sawGuardRail", (1.45, 0.09, 0.08), (0, 1.15, 0.70), mats["metalLight"], "LOD0", 0.014),
+            box("logStop.L", (0.10, 0.34, 0.10), (-0.74, 0.54, 0.96), mats["metal"], "LOD0", 0.014),
+            box("logStop.R", (0.10, 0.34, 0.10), (0.74, 0.54, 0.96), mats["metal"], "LOD0", 0.014),
+        ]
+    elif kind in ("warehouse", "recruitHall"):
+        parts += [
+            box("cornerPost.L", (0.18, 1.85, 0.18), (-1.36, 1.08, -0.82), mats["woodLight"], "LOD0", 0.025),
+            box("cornerPost.R", (0.18, 1.85, 0.18), (1.36, 1.08, -0.82), mats["woodLight"], "LOD0", 0.025),
+            prism("frontAwning", [(-0.92, 1.74), (0.92, 1.74), (0.82, 1.52), (-0.82, 1.52)], 0.22, (0, 0, -1.28), mats["darkwood"], "LOD0", 0.025),
+        ]
+    elif kind == "autoCollector":
+        parts += [
+            torus("collectorHousing", 0.46, 0.07, (0, 2.34, 0), mats["metalLight"], "LOD0"),
+            box("collectorAccess", (0.48, 0.24, 0.06), (0, 1.72, -0.42), mats["glass"], "LOD0", 0.018),
+        ]
+    elif kind == "autoRebuilder":
+        parts += [
+            box("rebuilderControl", (0.62, 0.34, 0.10), (0, 1.22, -1.02), mats["dark"], "LOD0", 0.018),
+            *(sphere(f"rebuilderButton.{i}", 0.045, (-0.18 + i * 0.18, 1.28, -1.09), mats["glow"]) for i in range(3)),
+        ]
+    elif kind == "crossbowTower":
+        # A proper head assembly: cheek plates, string guides and a bolt
+        # magazine make the tower read as a working siege weapon from below.
+        parts += [
+            prism("crossbowCheek.L", [(-0.44, 1.78), (-0.16, 1.78), (-0.20, 1.40), (-0.48, 1.42)], 0.12, (-0.42, 0, 0.02), mats["metal"], "LOD0", 0.018),
+            prism("crossbowCheek.R", [(0.16, 1.78), (0.44, 1.78), (0.48, 1.42), (0.20, 1.40)], 0.12, (0.42, 0, 0.02), mats["metal"], "LOD0", 0.018),
+            box("crossbowMagazine", (0.28, 0.18, 0.72), (0, 1.70, -0.30), mats["woodLight"], "LOD0", 0.018),
+            *(sphere(f"crossbowBolt.{i}", 0.04, (-0.08 + i * 0.08, 1.82, -0.68), mats["glow"]) for i in range(3)),
+            box("crossbowStringGuide", (0.06, 0.06, 0.90), (0, 1.72, -0.42), mats["dark"], "LOD0", 0.008),
+            box("crossbowDeckRivet.L", (0.08, 0.08, 0.08), (-0.70, 1.66, -0.72), mats["metalLight"], "LOD0", 0.012),
+            box("crossbowDeckRivet.R", (0.08, 0.08, 0.08), (0.70, 1.66, -0.72), mats["metalLight"], "LOD0", 0.012),
+        ]
+    elif kind == "frostTower":
+        parts += [
+            prism("frostHousing", [(-0.48, 1.40), (0.48, 1.40), (0.36, 0.88), (-0.36, 0.88)], 0.12, (0, 0, -0.36), mats["stoneDark"], "LOD0", 0.018),
+            *(cone(f"frostShard.{i}", 0.10, 0.02, 0.45, ((-0.30 + i * 0.20), 1.70, -0.40), mats["ice"], "LOD0", 6) for i in range(4)),
+        ]
+    elif kind == "sniperTower":
+        parts += [
+            box("sniperCounterweight", (0.38, 0.26, 0.55), (0, 3.78, -0.64), mats["metal"], "LOD0", 0.018),
+            torus("sniperRangeRing", 0.22, 0.028, (0, 3.84, 0.47), mats["accent"], "LOD0"),
+        ]
+    elif kind == "mortar":
+        parts += [
+            box("mortarShield.L", (0.16, 0.72, 0.70), (-0.84, 1.12, -0.18), mats["metal"], "LOD0", 0.018),
+            box("mortarShield.R", (0.16, 0.72, 0.70), (0.84, 1.12, -0.18), mats["metal"], "LOD0", 0.018),
+            torus("mortarElevationRing", 0.32, 0.035, (0, 1.12, -0.24), mats["metalLight"], "LOD0"),
+        ]
+    elif kind == "furnace":
+        # The furnace is the base's hero prop: deepen the fire chamber with a
+        # grate, side buttresses and a service crown that catches the flame
+        # light while remaining part of FurnaceRoot.
+        parts += [
+            prism("furnaceEmberBed", [(-0.52, 1.42), (0.52, 1.42), (0.44, 1.18), (-0.44, 1.18)], 0.06, (0, 0, -1.88), mats["accent"], "LOD0", 0.012),
+            *(box(f"furnaceGrate.{i}", (0.055, 0.34, 0.06), (-0.34 + i * 0.23, 1.20, -1.93), mats["metalLight"], "LOD0", 0.008) for i in range(4)),
+            box("furnaceButtress.L", (0.30, 1.35, 0.30), (-1.42, 1.12, -0.18), mats["stoneLight"], "LOD0", 0.028),
+            box("furnaceButtress.R", (0.30, 1.35, 0.30), (1.42, 1.12, -0.18), mats["stoneLight"], "LOD0", 0.028),
+            torus("furnaceServiceCrown", 0.98, 0.05, (0, 2.62, -0.04), mats["metalLight"], "LOD0"),
+            sphere("furnaceEmberCore", 0.18, (0, 1.44, -1.96), mats["glow"]),
+        ]
     elif kind == "furnace":
         parts += [
             torus("heatRingLower", 1.18, 0.07, (0, 1.05, 0), mats["metalLight"], "LOD0"),
@@ -344,6 +429,7 @@ def build_facility(key, cfg):
         functional += [empty("workPart", (0, 2.05, 0), "EXPORT", "CUBE"), empty("productionCore", (0, 2.05, 0), "EXPORT", "CUBE"), empty("emitter", (0, 2.55, 0), "EXPORT", "PLAIN_AXES")]
 
     add_facility_finish(parts, kind, mats)
+    add_signature_facility_finish(parts, kind, mats)
 
     # Shared authored-art language: layered stone footing, readable fasteners,
     # snow breaks and a small emissive identity mark. These details are kept

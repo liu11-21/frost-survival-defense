@@ -160,3 +160,18 @@
 - Added facility-specific construction kits instead of relying on the shared building shell: mine and gold-mine rails, cart wheels and ingots; lumberyard saw teeth, log cradle and crane hook; warehouse and recruit-hall window crosses and roof trusses; collector nozzles/filter/core lens; rebuilder repair arms/clamps; sniper sight housing/lens; and mortar breech/fuse details.
 - Re-exported the complete 42-asset library after the facility pass with Blender 5.2.0 LTS. The final `npm run art:validate` report remains 42/42 `ok`, with no invalid or blocked assets.
 - Re-rendered both review sheets so the visual evidence matches the latest authored GLBs.
+
+## 2026-08-02 | authored construction detail pass
+
+- Added a fourth-pass bodycraft layer to every character: inset torso panels,
+  face sockets and irises, nose/mouth planes, cuffs, fasteners, shin plates,
+  boot buckles, waist hardware and utility pouches. The additions remain bound
+  to the existing UnitSkeleton/HeroSkeleton clips.
+- Added hero harness/coat/gauntlet details, warrior collar and armour hardware,
+  and flying-colossus muzzle, core, wing-tip and tail details.
+- Added a shared facility service-panel language plus new crossbow-tower
+  cheek plates, bolt magazine, string guide and deck rivets. The furnace gained
+  an ember bed, grate, buttresses, service crown and ember core.
+- Re-exported all 42 GLBs with Blender 5.2.0 LTS. Final validation for this
+  pass is 42/42 `ok`; v9 is 75/75, v10 is 12/12, typecheck passes, and the
+  production build passes with the existing large-chunk warning.

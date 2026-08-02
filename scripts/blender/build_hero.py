@@ -100,6 +100,24 @@ def build():
         prism("weapon.fuller", [(-0.022, 0.30), (0.022, 0.30), (0.036, 1.02), (0.0, 1.10), (-0.036, 1.02)], 0.018, (0.62, 0.0, 0.235), glow, "LOD0", 0.006),
         sphere("weapon.pommel", 0.08, (0.62, 0.58, 0.16), metal_light),
     ]
+    # Fourth-pass hero construction: a fitted chest harness, layered coat
+    # pleats and small facial/gauntlet hardware make the protagonist hold up
+    # in a close catalogue view instead of reading as a stack of primitives.
+    parts += [
+        prism("heroHarness.L", [(-0.29, 1.35), (-0.20, 1.35), (0.14, 0.92), (0.06, 0.90)], 0.055, (0, 0, 0.39), metal_light, "LOD0", 0.012),
+        prism("heroHarness.R", [(0.20, 1.35), (0.29, 1.35), (-0.06, 0.90), (-0.14, 0.92)], 0.055, (0, 0, 0.39), metal_light, "LOD0", 0.012),
+        box("heroHarnessClasp", (0.16, 0.16, 0.06), (0, 1.13, 0.43), accent, "LOD0", 0.016),
+        sphere("heroHarnessGem", 0.042, (0, 1.13, 0.47), glow),
+        prism("coatPleat.L", [(-0.25, 1.03), (-0.08, 1.03), (-0.14, 0.50), (-0.30, 0.42)], 0.045, (-0.06, 0, -0.31), cloth_dark, "LOD0", 0.012),
+        prism("coatPleat.R", [(0.08, 1.03), (0.25, 1.03), (0.30, 0.42), (0.14, 0.50)], 0.045, (0.06, 0, -0.31), cloth_dark, "LOD0", 0.012),
+        box("heroHoodLace", (0.035, 0.42, 0.04), (0, 1.60, 0.33), accent, "LOD0", 0.008),
+        sphere("heroEyeHighlight.L", 0.014, (-0.095, 1.79, 0.322), snow),
+        sphere("heroEyeHighlight.R", 0.014, (0.095, 1.79, 0.322), snow),
+        box("gauntletPlate.L", (0.22, 0.18, 0.06), (-0.49, 0.79, 0.16), metal_light, "LOD0", 0.016),
+        box("gauntletPlate.R", (0.22, 0.18, 0.06), (0.49, 0.79, 0.16), metal_light, "LOD0", 0.016),
+        torus("shoulderRing.L", 0.18, 0.028, (-0.47, 1.40, 0.06), accent, "LOD0"),
+        torus("shoulderRing.R", 0.18, 0.028, (0.47, 1.40, 0.06), accent, "LOD0"),
+    ]
     parent_all(parts, root)
     skeleton = make_skeleton(root)
     skeleton.name = "HeroSkeleton"

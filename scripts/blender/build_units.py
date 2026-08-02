@@ -212,9 +212,9 @@ def bone_for_piece(name):
         return "hand.R"
     if lower.startswith(("offhand.", "shield.")):
         return "hand.L"
-    if lower.startswith(("head", "ear.", "crest.", "helmet", "face", "jaw")):
+    if lower.startswith(("head", "ear.", "crest.", "helmet", "face", "jaw", "heroeye", "herohood")):
         return "head"
-    if lower.startswith(("torso", "belt", "cape", "pack", "medic", "chest", "ramframe", "ramtip", "core", "ice", "tool")):
+    if lower.startswith(("torso", "belt", "cape", "pack", "medic", "chest", "ramframe", "ramtip", "core", "ice", "tool", "heroharness")):
         return "chest"
     if lower.startswith("wing."):
         return "chest"
@@ -296,6 +296,88 @@ def add_unit_finish(parts, visual, cfg, mats, torso_width, heavy):
                 mirrored = [(x * side, y) for x, y in points]
                 parts.append(prism(f"wing.{side}.panel{index}", mirrored, 0.045, (0, 0, -0.15 - index * 0.03), mats["ice" if index else "cloth"], "LOD0", 0.012))
             parts.append(sphere(f"wing.{side}.joint", 0.09, (side * 0.36, 1.27, -0.12), mats["metal"]))
+
+
+def add_bodycraft_finish(parts, visual, cfg, mats, torso_width, heavy):
+    """Add a second construction pass to the shared body without recolouring it.
+
+    The first authored pass gave every roster entry a common silhouette and a
+    role kit.  This pass makes the body read as assembled clothing and armour
+    at the game's normal camera distance: inset chest panels, side seams,
+    articulated cuffs, face sockets, fasteners and layered hem pieces.  The
+    parts stay rigid and are bound by ``bone_for_piece`` below, so this is a
+    visual upgrade rather than a new gameplay rig.
+    """
+    shell = mats["metal"] if heavy else mats["accent"]
+    front = 0.28
+    back = -0.22
+    # Angular inset panels break the broad torso box into a fitted garment or
+    # breastplate.  The two panels intentionally leave a centre seam visible.
+    parts += [
+        prism(
+            "torsoPanel.L",
+            [(-torso_width * 0.44, 1.28), (-0.05, 1.28), (-0.08, 0.92), (-torso_width * 0.34, 0.86)],
+            0.065,
+            (0, 0, front + 0.035),
+            shell,
+            "LOD0",
+            0.014,
+        ),
+        prism(
+            "torsoPanel.R",
+            [(0.05, 1.28), (torso_width * 0.44, 1.28), (torso_width * 0.34, 0.86), (0.08, 0.92)],
+            0.065,
+            (0, 0, front + 0.035),
+            shell,
+            "LOD0",
+            0.014,
+        ),
+        box("torsoSeam.vertical", (0.028, 0.33, 0.035), (0, 1.10, front + 0.075), mats["highlight"], "LOD0", 0.008),
+        box("torsoSeam.waist", (torso_width * 0.72, 0.028, 0.035), (0, 0.90, front + 0.075), mats["leatherLight"], "LOD0", 0.008),
+        box("backSeam", (torso_width * 0.58, 0.035, 0.03), (0, 1.03, back - 0.035), mats["dark"], "LOD0", 0.008),
+    ]
+
+    # Face planes and eye sockets are deliberately small; they catch the key
+    # light and give the roster personality without requiring texture maps.
+    parts += [
+        torus("faceSocket.L", 0.073, 0.014, (-0.092, 1.765, 0.274), mats["dark"], "LOD0"),
+        torus("faceSocket.R", 0.073, 0.014, (0.092, 1.765, 0.274), mats["dark"], "LOD0"),
+        sphere("faceIris.L", 0.024, (-0.092, 1.765, 0.292), mats["glow"]),
+        sphere("faceIris.R", 0.024, (0.092, 1.765, 0.292), mats["glow"]),
+        prism("faceNoseBridge", [(-0.035, 1.80), (0.035, 1.80), (0.025, 1.64), (-0.025, 1.64)], 0.045, (0, 0, 0.285), mats["skin"], "LOD0", 0.008),
+        box("faceMouthPlate", (0.13, 0.028, 0.025), (0, 1.625, 0.286), mats["dark"], "LOD0", 0.006),
+    ]
+
+    # Separate cuffs, straps and fasteners make the limbs feel constructed and
+    # also provide an intentional material break for the game camera.
+    for side in (-1, 1):
+        label = "L" if side < 0 else "R"
+        parts += [
+            box(f"arm.{label}.cuff", (0.19, 0.10, 0.22), (side * 0.39, 0.82, 0.02), mats["leatherLight"], "LOD0", 0.018),
+            sphere(f"arm.{label}.fastener", 0.035, (side * 0.39, 0.84, 0.145), mats["highlight"]),
+            box(f"leg.{label}.shinPlate", (0.19, 0.30, 0.045), (side * 0.13, 0.36, 0.135), shell, "LOD0", 0.016),
+            box(f"boot.{label}.buckle", (0.18, 0.065, 0.045), (side * 0.13, 0.12, 0.245), mats["metalLight"], "LOD0", 0.01),
+        ]
+
+    # Fitted waist hardware and a small asymmetrical utility pouch avoid the
+    # mirrored mannequin look while remaining inexpensive at LOD0.
+    parts += [
+        box("waistFrontPlate", (0.22, 0.18, 0.055), (0, 0.83, front + 0.04), mats["metalLight"], "LOD0", 0.016),
+        sphere("waistFrontGem", 0.043, (0, 0.83, front + 0.08), mats["glow"]),
+        prism("utilityPouch", [(-0.12, 0.84), (0.12, 0.84), (0.10, 0.67), (-0.10, 0.67)], 0.14, (torso_width * 0.54, 0, 0.01), mats["leather"], "LOD0", 0.016),
+        box("utilityPouchFlap", (0.20, 0.035, 0.15), (torso_width * 0.54, 0.83, 0.09), mats["accent"], "LOD0", 0.01),
+    ]
+
+    if cfg["faction"] == "ally":
+        parts += [
+            prism("allyCollarTab", [(-0.10, 1.42), (0.10, 1.42), (0.08, 1.26), (-0.08, 1.26)], 0.055, (0, 0, front + 0.04), mats["snow"], "LOD0", 0.012),
+            sphere("allyCollarStud", 0.035, (0, 1.34, front + 0.09), mats["glow"]),
+        ]
+    else:
+        parts += [
+            prism("enemyCollarTab", [(-0.12, 1.42), (0.12, 1.42), (0.09, 1.24), (-0.09, 1.24)], 0.06, (0, 0, front + 0.04), mats["dark"], "LOD0", 0.012),
+            sphere("enemyCollarStud", 0.04, (0, 1.33, front + 0.09), mats["glow"]),
+        ]
 
 
 def add_role_finish(parts, visual, cfg, mats, torso_width, heavy):
@@ -604,6 +686,12 @@ def build_unit(visual, cfg):
             prism("warriorHipGuard.R", [(-0.04, 0.88), (0.16, 0.88), (0.10, 0.66), (-0.12, 0.62)], 0.11, (0.34, 0, 0.12), mats["metal"], "LOD0", 0.02),
             sphere("warriorRivet.L", 0.045, (-0.20, 1.18, 0.35), mats["highlight"]),
             sphere("warriorRivet.R", 0.045, (0.20, 1.18, 0.35), mats["highlight"]),
+            torus("warriorCollarRing", 0.22, 0.028, (0, 1.43, 0.16), mats["metalLight"], "LOD0"),
+            box("warriorShoulderStrap.L", (0.07, 0.34, 0.06), (-0.38, 1.40, 0.18), mats["leatherLight"], "LOD0", 0.012),
+            box("warriorShoulderStrap.R", (0.07, 0.34, 0.06), (0.38, 1.40, 0.18), mats["leatherLight"], "LOD0", 0.012),
+            box("warriorKneeBand.L", (0.22, 0.06, 0.24), (-0.13, 0.38, 0.16), mats["metalLight"], "LOD0", 0.012),
+            box("warriorKneeBand.R", (0.22, 0.06, 0.24), (0.13, 0.38, 0.16), mats["metalLight"], "LOD0", 0.012),
+            sphere("warriorPommelGem", 0.06, (0.38, 0.68, 0.20), mats["glow"]),
         ]
 
     # Distinctive focal pieces make the role readable even when the held prop
@@ -696,9 +784,20 @@ def build_unit(visual, cfg):
                     rib_obj = box(f"wingRib.{label}.{rib}", (0.035, 0.035, 0.62), (side * x, y, z), mats["metalLight"], "LOD0", 0.008)
                     rib_obj.rotation_euler.y = side * math.pi * (0.26 + rib * 0.06)
                     parts.append(rib_obj)
+            parts += [
+                prism("colossusMuzzle", [(-0.23, 1.74), (0.23, 1.74), (0.16, 1.52), (0, 1.45), (-0.16, 1.52)], 0.16, (0, 0, 0.37), mats["metalLight"], "LOD0", 0.022),
+                prism("colossusJaw", [(-0.20, 1.55), (0.20, 1.55), (0.14, 1.39), (-0.14, 1.39)], 0.12, (0, 0, 0.34), mats["dark"], "LOD0", 0.018),
+                sphere("colossusNoseGem", 0.055, (0, 1.58, 0.48), mats["glow"]),
+                box("colossusChestCoreFrame", (0.34, 0.34, 0.06), (0, 1.16, 0.48), mats["metal"], "LOD0", 0.016),
+                sphere("colossusChestCore", 0.10, (0, 1.16, 0.53), mats["glow"]),
+                box("wingTip.L", (0.08, 0.08, 0.56), (-1.02, 1.08, -0.20), mats["metalLight"], "LOD0", 0.012),
+                box("wingTip.R", (0.08, 0.08, 0.56), (1.02, 1.08, -0.20), mats["metalLight"], "LOD0", 0.012),
+                torus("tailRing", 0.16, 0.028, (0, 0.42, -0.30), mats["accent"], "LOD0"),
+            ]
     if armor == "batteringRam":
         parts += [box("ramFrame", (0.8, 0.24, 0.2), (0, 1.0, 0.28), mats["metal"]), sphere("ramTip", 0.2, (0, 1.0, 0.62), mats["accent"])]
 
+    add_bodycraft_finish(parts, visual, cfg, mats, torso_width, heavy)
     add_role_finish(parts, visual, cfg, mats, torso_width, heavy)
     add_unit_finish(parts, visual, cfg, mats, torso_width, heavy)
     parent_all(parts, root)

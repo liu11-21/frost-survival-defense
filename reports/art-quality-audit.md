@@ -121,3 +121,29 @@ five assets most in need of manual refinement remain:
 5. `crossbow_tower.glb` — better bow limb, string, winch and deck support topology.
 
 These are explicit follow-up items, not hidden behind the passing validator.
+
+## Fourth-pass construction upgrade (2026-08-02)
+
+- Added a bodycraft layer to all 26 characters: inset torso panels, centre and
+  back seams, eye sockets/irises, a nose bridge and mouth plate, cuffs,
+  fasteners, shin plates, boot buckles, waist hardware and asymmetrical utility
+  pouches. These pieces are bound to the existing UnitSkeleton/HeroSkeleton,
+  so the visual pass does not trade away animation compatibility.
+- The hero now has a harness clasp, coat pleats, hood lace, eye highlights,
+  gauntlet plates and shoulder rings. The warrior has collar hardware,
+  shoulder straps, knee bands and a pommel gem. The flying colossus has a
+  muzzle/jaw assembly, chest core frame, wing tips and tail ring.
+- Facilities now have a service-panel construction language. Mine, lumberyard,
+  warehouse/recruit hall, collector, rebuilder, frost, sniper and mortar props
+  received structural service details. The crossbow tower gained cheek plates,
+  a bolt magazine, string guide and deck rivets. The furnace gained an inset
+  ember bed, grate bars, side buttresses, a service crown and a visible ember
+  core.
+- The latest Blender batch exports all 42 GLBs. `art:validate` remains 42/42
+  `ok`; the review sheets were regenerated after export. v9 (75/75), v10
+  (12/12), `npm run typecheck` and `npm run build` all pass.
+
+This is a measurable construction and presentation improvement, but it remains
+an authored stylized low-poly pass. It is not a substitute for a final human
+art-direction review, texture/UV polish, or hand-sculpted commercial asset
+sign-off. The manual top-five list above remains open.
