@@ -20,9 +20,9 @@ def build():
     glow = material("MAT_hero_glow", (0.3, 0.78, 1.0), 0.24, 0.0, (0.18, 0.62, 1.0))
     accent = material("MAT_hero_accent", (0.45, 0.78, 1.0), 0.35, 0.5)
     root = orient_for_babylon(empty("HeroRoot", target="EXPORT", display="PLAIN_AXES"))
-    root["commercialStage"] = "H1"
+    root["commercialStage"] = "H2"
     root["commercialIteration"] = 2
-    root["silhouetteReview"] = "layered back flare, clean shoulder taper, grounded boots"
+    root["clothingReview"] = "reinforced side panels, hem pleats, hood lining and seam piping"
     add_lod_markers(root, "character")
     parts = [
         # H1 iteration 1: a wider padded torso, slightly lower centre of
@@ -145,6 +145,25 @@ def build():
         # collapsing into one narrow pillar when viewed from the side/rear.
         prism("heroBackFlare.L", [(-0.28, 1.14), (-0.04, 1.08), (-0.18, 0.38), (-0.44, 0.52)], 0.09, (-0.03, 0, -0.43), cloth_dark, "LOD0", 0.018),
         prism("heroBackFlare.R", [(0.04, 1.08), (0.28, 1.14), (0.44, 0.52), (0.18, 0.38)], 0.09, (0.03, 0, -0.43), leather, "LOD0", 0.018),
+        # H2 iteration 1: the coat is now constructed from fitted front
+        # panels, a raised collar break, and a separate hem band instead of
+        # one torso shell.  The offsets leave a deliberate air gap from the
+        # chest plate so animation does not produce z-fighting.
+        prism("heroJacketFront.L", [(-0.31, 1.35), (-0.03, 1.35), (-0.08, 0.93), (-0.28, 0.95)], 0.07, (-0.02, 0, 0.45), cloth, "LOD0", 0.014),
+        prism("heroJacketFront.R", [(0.03, 1.35), (0.31, 1.35), (0.28, 0.95), (0.08, 0.93)], 0.07, (0.02, 0, 0.45), cloth, "LOD0", 0.014),
+        prism("heroCollar.L", [(-0.28, 1.43), (-0.02, 1.43), (-0.09, 1.30), (-0.24, 1.30)], 0.08, (-0.01, 0, 0.46), snow, "LOD0", 0.014),
+        prism("heroCollar.R", [(0.02, 1.43), (0.28, 1.43), (0.24, 1.30), (0.09, 1.30)], 0.08, (0.01, 0, 0.46), snow, "LOD0", 0.014),
+        box("heroHemBand", (0.68, 0.075, 0.06), (0, 0.88, 0.43), accent, "LOD0", 0.012),
+        torus("heroCuff.L", 0.135, 0.025, (-0.53, 0.78, 0.08), accent, "LOD0"),
+        torus("heroCuff.R", 0.135, 0.025, (0.53, 0.78, 0.08), accent, "LOD0"),
+        # H2 iteration 2: the second pass separates the side construction
+        # from the front panels and adds a visible hem rhythm/hood lining.
+        prism("heroJacketSide.L", [(-0.34, 1.29), (-0.26, 1.26), (-0.30, 0.90), (-0.39, 0.96)], 0.06, (-0.28, 0, 0.23), cloth_dark, "LOD0", 0.012),
+        prism("heroJacketSide.R", [(0.26, 1.26), (0.34, 1.29), (0.39, 0.96), (0.30, 0.90)], 0.06, (0.28, 0, 0.23), leather, "LOD0", 0.012),
+        prism("heroHemPleat.L", [(-0.31, 0.91), (-0.19, 0.91), (-0.22, 0.58), (-0.35, 0.54)], 0.055, (-0.04, 0, 0.20), cloth_dark, "LOD0", 0.010),
+        prism("heroHemPleat.R", [(0.19, 0.91), (0.31, 0.91), (0.35, 0.54), (0.22, 0.58)], 0.055, (0.04, 0, 0.20), leather, "LOD0", 0.010),
+        torus("heroHoodLining", 0.335, 0.018, (0, 1.88, 0.03), accent, "LOD0"),
+        box("heroSeamPiping", (0.04, 0.56, 0.035), (0, 1.10, 0.49), snow, "LOD0", 0.008),
     ]
     assign_surface_variants(parts, [
         ("_cloth", snow, cloth),
