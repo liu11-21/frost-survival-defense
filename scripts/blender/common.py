@@ -146,35 +146,72 @@ def assign_surface_variants(objects, families):
 
 
 def author_surface_paint(objects, seed=0, textured=False):
-    """Author a tiny UV and vertex-paint layer for every render mesh.
+    """Author a projected UV, vertex-paint and packed brush layer.
 
     The procedural palette is intentionally restrained: it supplies a soft
     hand-painted value breakup and edge lift while retaining the existing
-    Principled material as the dominant colour.  Vertex colour is part of the
+    Principled material as the dominant colour. Vertex colour is part of the
     glTF contract (COLOR_0), so Babylon receives the breakup without a runtime
-    shader.  Focal assets can opt into a tiny packed colour-aware brush image
-    through ``textured=True``; the rest keep the lean vertex-only path.  A
-    deterministic planar UV map is created for every part.
+    shader. Assets can opt into a packed colour-aware brush image through
+    ``textured=True``. UVs use a deterministic per-face projection so vertical
+    walls, top plates and side panels all receive visible height variation
+    instead of a flat X/Z projection.
     """
     def make_brush_texture(mat, base_color, material_seed):
-        """Create a tiny packed, colour-aware brush texture for hero assets.
+        """Create a packed, material-aware brush texture.
 
-        The image is deliberately small and deterministic.  It is not a
-        substitute for a hand-painted atlas, but it gives the five focal
-        assets a real baked surface breakup while keeping every source blend
-        self-contained and avoiding external texture paths.
+        The image is deterministic and deliberately tile-friendly. It is not a
+        substitute for a hand-painted atlas, but it gives every authored asset
+        a materially different surface response while keeping each source
+        blend self-contained and avoiding external texture paths.
         """
         image_name = f"ART_PAINT_{mat.name}"
         image = bpy.data.images.get(image_name)
-        if image is None:
-            image = bpy.data.images.new(image_name, width=32, height=32, alpha=True)
+        texture_size = 64
+        if image is None or image.size[0] != texture_size or image.size[1] != texture_size:
+            if image is not None:
+                bpy.data.images.remove(image)
+            image = bpy.data.images.new(image_name, width=texture_size, height=texture_size, alpha=True)
+            tag = mat.name.lower()
+            is_metal = any(token in tag for token in ("metal", "gold", "steel", "iron"))
+            is_wood = any(token in tag for token in ("wood", "darkwood", "leather"))
+            is_stone = any(token in tag for token in ("stone", "brick", "masonry"))
+            is_cloth = any(token in tag for token in ("cloth", "snow", "skin"))
+            is_ice = any(token in tag for token in ("ice", "glass", "glow", "frost"))
             pixels = []
-            for y in range(32):
-                for x in range(32):
-                    wave = math.sin((x + material_seed) * 0.43) * 0.045
-                    wave += math.cos((y * 1.7 + material_seed) * 0.31) * 0.035
-                    stroke = 0.035 if ((x // 5 + y // 9 + material_seed) % 5 == 0) else 0.0
-                    value = max(0.78, min(1.10, 0.95 + wave + stroke))
+            for y in range(texture_size):
+                for x in range(texture_size):
+                    # A layered low-frequency field reads as painted breakup,
+                    # while the material branches add grain, weave, scratches
+                    # or mineral flecks instead of reusing one generic noise.
+                    wave = math.sin((x + material_seed) * 0.16) * 0.035
+                    wave += math.cos((y * 1.7 + material_seed) * 0.115) * 0.028
+                    wave += math.sin((x + y * 0.42 + material_seed) * 0.055) * 0.022
+                    if is_metal:
+                        grain = math.sin((x * 0.82 + y * 0.08 + material_seed) * 0.52)
+                        scratch = 0.075 if grain > 0.88 and ((x + y + material_seed) % 13) < 5 else 0.0
+                        wave += scratch - (0.018 if grain < -0.88 else 0.0)
+                    elif is_wood:
+                        grain = math.sin((x * 0.11 + y * 1.65 + material_seed) * 0.32)
+                        wave += grain * 0.065
+                        wave += 0.028 if ((y + material_seed) % 17) in (0, 1) else 0.0
+                    elif is_stone:
+                        fleck = math.sin((x * 0.37 + material_seed) * 1.7) * math.cos((y + material_seed) * 0.91)
+                        wave += fleck * 0.06
+                        wave += 0.035 if ((x * 3 + y * 5 + material_seed) % 29) < 3 else 0.0
+                    elif is_cloth:
+                        weave = math.sin(x * 1.35 + material_seed) * math.sin(y * 1.55 + material_seed * 0.7)
+                        wave += weave * 0.024
+                    elif is_ice:
+                        crystal = math.sin((x - y + material_seed) * 0.22)
+                        wave += crystal * 0.052
+                        wave += 0.045 if ((x + y * 2 + material_seed) % 23) < 2 else 0.0
+                    else:
+                        wave += 0.025 if ((x // 9 + y // 11 + material_seed) % 5 == 0) else 0.0
+                    # A gentle painted edge lift keeps silhouette-facing areas
+                    # readable without making every asset look plastic.
+                    edge = min(x, y, texture_size - 1 - x, texture_size - 1 - y) / 8.0
+                    value = max(0.74, min(1.14, 0.94 + wave + (0.018 if edge < 1 else 0.0)))
                     pixels.extend((
                         max(0.0, min(1.0, base_color[0] * value)),
                         max(0.0, min(1.0, base_color[1] * value)),
@@ -236,17 +273,37 @@ def author_surface_paint(objects, seed=0, textured=False):
             uv_layer = mesh.uv_layers.new(name="UVMap")
         else:
             uv_layer = mesh.uv_layers.active or mesh.uv_layers[0]
-        min_x = min(vertex.co.x for vertex in mesh.vertices)
-        max_x = max(vertex.co.x for vertex in mesh.vertices)
-        min_z = min(vertex.co.z for vertex in mesh.vertices)
-        max_z = max(vertex.co.z for vertex in mesh.vertices)
-        span_x = max(max_x - min_x, 1e-4)
-        span_z = max(max_z - min_z, 1e-4)
-        for loop in mesh.loops:
-            uv_layer.data[loop.index].uv = (
-                (mesh.vertices[loop.vertex_index].co.x - min_x) / span_x,
-                (mesh.vertices[loop.vertex_index].co.z - min_z) / span_z,
-            )
+        # Project each polygon onto its dominant plane. This is a small but
+        # important production distinction: the same packed brush can now
+        # travel down a vertical torso, across a roof, or around a side wall
+        # without collapsing the whole surface into one horizontal strip.
+        for polygon in mesh.polygons:
+            normal = polygon.normal
+            if abs(normal.z) >= abs(normal.x) and abs(normal.z) >= abs(normal.y):
+                axes = (0, 1)  # front/back panels: X/Y
+            elif abs(normal.x) >= abs(normal.y):
+                axes = (2, 1)  # side panels: Z/Y
+            else:
+                axes = (0, 2)  # top/bottom panels: X/Z
+            values = [
+                (mesh.vertices[mesh.loops[loop_index].vertex_index].co[axes[0]],
+                 mesh.vertices[mesh.loops[loop_index].vertex_index].co[axes[1]])
+                for loop_index in polygon.loop_indices
+            ]
+            if not values:
+                continue
+            low_u = min(pair[0] for pair in values)
+            high_u = max(pair[0] for pair in values)
+            low_v = min(pair[1] for pair in values)
+            high_v = max(pair[1] for pair in values)
+            span_u = max(high_u - low_u, 1e-4)
+            span_v = max(high_v - low_v, 1e-4)
+            for loop_index in polygon.loop_indices:
+                vertex = mesh.vertices[mesh.loops[loop_index].vertex_index].co
+                uv_layer.data[loop_index].uv = (
+                    (vertex[axes[0]] - low_u) / span_u,
+                    (vertex[axes[1]] - low_v) / span_v,
+                )
 
         color_layer = mesh.color_attributes.get("ArtTint")
         if color_layer is None:

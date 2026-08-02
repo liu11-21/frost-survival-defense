@@ -298,3 +298,32 @@ This is a broader authored stylized low-poly construction and embedded-surface
 pass, not a claim of human hand-painted UV layouts, hand-sculpted forms or
 final commercial art-direction sign-off. Manual review of the remaining
 commercial-art boundary is still open.
+
+## 2026-08-02 | tenth-pass projected UV and material-aware brush surface
+
+- Reworked `scripts/blender/common.py` surface authoring so all authored
+  render meshes receive a dominant-face-plane UV projection. Vertical walls,
+  torso panels and horizontal caps now receive height-aware coordinates rather
+  than the previous global X/Z projection.
+- Replaced the tiny generic brush layer with a deterministic 64x64 packed
+  surface layer whose variation is selected by material family: directional
+  metal grain, wood/leather grain, stone flecks, cloth weave and ice/crystal
+  breakup. The exporter-safe `ArtTint` vertex colour path remains in place.
+- Rebuilt and exported the complete 42-asset library with Blender 5.2.0 LTS,
+  then regenerated both review sheets. The direct inventory is 42 GLBs /
+  36,223,108 bytes / 487 embedded images / zero external image URIs.
+  `reports/art-validation.json` reports 42/42 `ok`, with no blocked or
+  invalid assets.
+- Representative current contracts: `hero.glb` 1,035,216 bytes / 123 nodes /
+  97 meshes / 10 materials / one skeleton / 14,000 triangles / seven clips;
+  `turret_basic.glb` 423,364 bytes / 39 nodes / 33 meshes / eight materials /
+  6,104 triangles / five clips; `wall_gate.glb` 453,816 bytes / 62 nodes /
+  52 meshes / seven materials / 6,180 triangles / four clips.
+- Regression evidence after the pass: v9 75/75, v10 12/12,
+  `npm run typecheck`, and `npm run build` all pass. The known Vite large
+  chunk advisory remains informational.
+
+This pass improves measurable UV coverage and surface readability, but the
+assets are still stylized procedural low-poly work. Manual UV layout,
+hand-painted texture authoring, sculpted facial/cloth forms and final human
+commercial art-direction sign-off remain open.

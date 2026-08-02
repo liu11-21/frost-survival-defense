@@ -283,3 +283,36 @@ The pass improves construction density and surface breakup across the complete
 roster, but it remains stylized procedural low-poly work. Manual UV layout,
 hand-painted texture authoring, sculpted facial/cloth forms and final human
 commercial art-direction sign-off remain open.
+
+## Tenth-pass projected UV and material-aware brush surface (2026-08-02)
+
+This pass addresses the most visible remaining technical surface weakness in
+the ninth-pass previews: the previous UV coordinates projected every face from
+global X/Z bounds, so vertical panels had little meaningful height variation.
+`author_surface_paint` now chooses a dominant face plane (X/Y for Z-facing
+faces, Z/Y for X-facing faces, X/Z otherwise) and maps each polygon to its
+local bounds. The result keeps the same runtime mesh and animation contracts,
+but gives side walls, torsos and caps usable surface coordinates.
+
+The packed brush layer is now 64x64 and material-aware. Metal families receive
+directional grain and scratches; wood/leather receive grain; stone/brick gets
+flecks; cloth/snow/skin gets a weave-like breakup; and ice/glass/glow gets
+crystal variation. Images remain packed into the GLB and the vertex-colour
+`ArtTint` path remains available for Babylon.js.
+
+Evidence:
+
+- 42 GLBs rebuilt and exported with Blender 5.2.0 LTS.
+- 36,223,108 bytes total, 487 embedded images, zero external image URIs.
+- `reports/art-validation.json`: 42/42 `ok`, zero blocked, zero invalid.
+- Review sheets regenerated at `reports/art-previews/unit-sheet.png` and
+  `reports/art-previews/facility-sheet.png`.
+- Babylon/browser regression: v9 75/75 and v10 12/12.
+- `npm run typecheck` and `npm run build` pass; Vite still reports its known
+  informational large-chunk advisory.
+
+Quality boundary: the new projection and brush breakup are measurable
+improvements, but the library is still stylized procedural low-poly art. It
+does not yet constitute hand-painted UV atlases, sculpted facial/cloth forms or
+final human commercial art-direction approval. Those manual review items stay
+open.
