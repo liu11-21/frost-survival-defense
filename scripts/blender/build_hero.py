@@ -4,7 +4,7 @@ import bpy
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 sys.path.append(HERE)
-from common import reset_scene, material, box, cylinder, sphere, empty, collision_box, parent_all, move_to, orient_for_babylon, add_lod_markers, cone, torus, save_source, export_glb
+from common import reset_scene, material, box, prism, cylinder, sphere, empty, collision_box, parent_all, move_to, orient_for_babylon, add_lod_markers, cone, torus, save_source, export_glb
 from build_units import make_skeleton, bind_unit_pieces, add_armature_clip
 
 
@@ -40,6 +40,15 @@ def build():
         box("boot.R", (0.25, 0.14, 0.42), (0.2, 0.07, 0.08), metal, bevel=0.05),
         box("belt", (0.74, 0.12, 0.48), (0, 0.82, 0), leather, bevel=0.04),
         box("beltSigil", (0.13, 0.13, 0.05), (0, 0.82, 0.24), glow, bevel=0.02),
+        # Faceted profiles break the rectangular silhouette and read as
+        # separate garment/armour layers from the normal game camera.
+        prism("coatTail", [(-0.38, 1.12), (0.38, 1.12), (0.48, 0.55), (0.18, 0.42), (-0.18, 0.42), (-0.48, 0.55)], 0.08, (0, 0, -0.24), leather, "LOD0", 0.035),
+        prism("shoulderMantle", [(-0.62, 1.4), (-0.36, 1.62), (0.36, 1.62), (0.62, 1.4), (0.42, 1.28), (-0.42, 1.28)], 0.28, (0, 0, 0), snow, "LOD0", 0.035),
+        prism("scarf", [(-0.34, 1.45), (0.34, 1.45), (0.29, 1.28), (-0.29, 1.28)], 0.46, (0, 0, 0.02), accent, "LOD0", 0.025),
+        box("backPack", (0.42, 0.5, 0.24), (0, 1.0, -0.3), leather, bevel=0.055),
+        box("backPackCap", (0.48, 0.09, 0.26), (0, 1.25, -0.3), snow, bevel=0.03),
+        torus("bracer.L", 0.13, 0.035, (-0.51, 0.93, 0.02), metal, "LOD0"),
+        torus("bracer.R", 0.13, 0.035, (0.51, 0.93, 0.02), metal, "LOD0"),
         cylinder("weapon", 0.055, 1.15, (0.62, 0.86, 0.16), metal, "LOD0", 8),
         sphere("weaponGem", 0.1, (0.62, 1.44, 0.16), glow),
     ]

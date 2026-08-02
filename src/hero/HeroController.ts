@@ -73,7 +73,10 @@ export class HeroController implements Damageable {
     // The exporter keeps the authored front on local +Z after the Z-up → Y-up
     // conversion. The avatar root already uses +Z as gameplay forward, so a
     // second half-turn would make the hero visibly walk backwards.
-    instance.root.rotation.set(0, 0, 0);
+    // The authored silhouette faces local -Z, while gameplay yaw/movement use
+    // local +Z as forward. Correct only the authored child so fallback, facing
+    // math and collision remain unchanged.
+    instance.root.rotation.set(0, Math.PI, 0);
     return true;
   }
 

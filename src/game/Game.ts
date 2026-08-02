@@ -317,6 +317,7 @@ export class Game {
       this.s.assets.preload(),
       new Promise<void>((resolve) => window.setTimeout(resolve, 5000)),
     ]);
+    this.s.nodes.attachAuthoredAssets(this.s.assets);
     this.s.hero.applyAuthoredAsset(this.s.assets);
     this.s.furnace.applyAuthoredAsset(this.s.assets);
     hideLoadingScreen();

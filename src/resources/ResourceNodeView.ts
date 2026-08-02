@@ -1,6 +1,8 @@
 import { Mesh, MeshBuilder, Scene, TransformNode, Vector3 } from "@babylonjs/core";
 import type { NodeSize } from "../data/ResourceNodeConfig";
 import { MaterialFactory } from "../scene/MaterialFactory";
+import type { AssetRegistry } from "../assets/AssetRegistry";
+import type { AssetInstance } from "../assets/AssetTypes";
 import type { CollisionWorld, Obstacle } from "../util/Collision";
 import { clamp01, easeOutCubic, randRange } from "../util/MathUtil";
 
@@ -21,8 +23,10 @@ export class ResourceNodeView {
   private readonly tiers: Mesh[] = [];
   private readonly caps: Mesh[] = [];
   private readonly chunks: Mesh[] = [];
-  private readonly trunk: Mesh | null = null;
-  private readonly remains: Mesh;
+  private trunk: Mesh | null = null;
+  private remains: Mesh;
+  private readonly proceduralMeshes: Mesh[] = [];
+  private authored: AssetInstance | null = null;
   private readonly obstacle: Obstacle;
   private readonly baseScale: number;
 
@@ -55,9 +59,59 @@ export class ResourceNodeView {
       this.buildRock(scene, materials);
       this.remains = this.buildRubble(scene, materials);
     }
+    this.proceduralMeshes.push(...this.meshes);
     this.remains.setEnabled(false);
 
     this.obstacle = collision.add(x, z, 0.75 * this.baseScale);
+  }
+
+  /** Replace the procedural resource prop once the optional GLB cache is ready. */
+  attachAuthoredAssets(assets: AssetRegistry): void {
+    if (this.authored) return;
+    const key = this.kind === "wood" ? "resource_tree" : "resource_rock";
+    const instance = assets.instantiate(key, `${key}.${this.position.x.toFixed(1)}.${this.position.z.toFixed(1)}`);
+    if (!instance) return;
+    const suffix = (mesh: Mesh): string => {
+      const parts = mesh.name.split(":");
+      return parts[parts.length - 1] ?? mesh.name;
+    };
+    const find = (name: string): Mesh | null => instance.meshes.find((mesh) => suffix(mesh as Mesh) === name) as Mesh | null;
+    const trunk = this.kind === "wood" ? find("resource_trunk") : null;
+    const remains = find(this.kind === "wood" ? "resource_stump" : "resource_rubble");
+    if ((this.kind === "wood" && !trunk) || !remains) {
+      instance.dispose();
+      return;
+    }
+    for (const mesh of this.proceduralMeshes) mesh.setEnabled(false);
+    instance.root.parent = this.shake;
+    instance.root.position.set(0, 0, 0);
+    instance.root.rotation.set(0, 0, 0);
+    instance.root.scaling.setAll(1);
+    this.authored = instance;
+    this.meshes.length = 0;
+    this.meshes.push(...(instance.meshes as Mesh[]));
+    this.tiers.length = 0;
+    this.caps.length = 0;
+    this.chunks.length = 0;
+    if (this.kind === "wood") {
+      this.trunk = trunk;
+      for (let index = 0; index < 3; index += 1) {
+        const tier = find(`resource_canopy${index}`);
+        const cap = find(`resource_snow${index}`);
+        if (tier) this.tiers.push(tier);
+        if (cap) this.caps.push(cap);
+      }
+    } else {
+      for (let index = 0; index < 3; index += 1) {
+        const vein = find(`resource_ore${index}`);
+        if (vein) this.chunks.push(vein);
+      }
+      const body = find("resource_rock_base");
+      if (body) this.chunks.unshift(body);
+    }
+    this.remains = remains;
+    this.remains.setEnabled(false);
+    this.setStage(1);
   }
 
   private buildTree(scene: Scene, materials: MaterialFactory): Mesh {
@@ -242,6 +296,8 @@ export class ResourceNodeView {
   }
 
   dispose(): void {
+    this.authored?.dispose();
+    this.authored = null;
     this.root.dispose(false, true);
   }
 }

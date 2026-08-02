@@ -24,6 +24,7 @@ from common import (  # noqa: E402
     move_to,
     orient_for_babylon,
     parent_all,
+    prism,
     reset_scene,
     save_source,
     sphere,
@@ -298,6 +299,18 @@ def build_unit(visual, cfg):
     ]
     parts += add_crest(root, cfg["crest"], mats)
     parts += build_weapon(root, cfg["weapon"], mats, "weapon")
+
+    # Role silhouettes use a few authored polygon profiles in addition to the
+    # shared body rig.  These are deliberately distinct garment/armour pieces,
+    # not recoloured copies of the same box model.
+    if cfg["armor"] in ("heavy", "iceArmor", "shield", "lightArmor"):
+        parts.append(prism("frontGuard", [(-0.34, 1.34), (0.34, 1.34), (0.28, 0.92), (-0.28, 0.92)], 0.1, (0, 0, 0.2), mats["metal"], "LOD0", 0.035))
+    if cfg["armor"] in ("cape", "cloak", "wings", "wingsHeavy"):
+        parts.append(prism("capePanel", [(-0.42, 1.46), (0.42, 1.46), (0.54, 0.64), (0.14, 0.52), (-0.54, 0.64)], 0.06, (0, 0, -0.24), mats["cloth"], "LOD0", 0.03))
+    if cfg["weapon"] in ("bow", "sling", "musket"):
+        parts.append(prism("rangedMantle", [(-0.28, 1.38), (0.28, 1.38), (0.38, 0.85), (-0.38, 0.85)], 0.08, (0, 0, -0.08), mats["leather"], "LOD0", 0.025))
+    if cfg["faction"] == "enemy":
+        parts.append(prism("raggedHem", [(-0.38, 0.82), (-0.12, 0.72), (0.1, 0.82), (0.35, 0.68), (0.42, 0.56), (-0.42, 0.56)], 0.07, (0, 0, -0.02), mats["dark"], "LOD0", 0.025))
 
     armor = cfg["armor"]
     if armor in ("shield", "heavy", "iceArmor"):

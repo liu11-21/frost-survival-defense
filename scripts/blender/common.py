@@ -84,6 +84,32 @@ def box(name, dimensions, location=(0, 0, 0), mat=None, target="LOD0", bevel=0.0
     return obj
 
 
+def prism(name, points, depth, location=(0, 0, 0), mat=None, target="LOD0", bevel=0.025):
+    """Create a faceted extruded 2D profile for cloth, plates and signage.
+
+    Most of the authoring language is intentionally low-poly, but silhouettes
+    should not be limited to axis-aligned boxes.  This small polygon helper
+    keeps the scripts deterministic while giving capes, coat tails, armour
+    plates and architectural braces an authored outline.
+    """
+    vertices = [(x, y, -depth * 0.5) for x, y in points]
+    vertices += [(x, y, depth * 0.5) for x, y in points]
+    count = len(points)
+    faces = [tuple(range(count - 1, -1, -1)), tuple(range(count, count * 2))]
+    for index in range(count):
+        next_index = (index + 1) % count
+        faces.append((index, next_index, count + next_index, count + index))
+    mesh = bpy.data.meshes.new(f"{name}Mesh")
+    mesh.from_pydata(vertices, [], faces)
+    mesh.update()
+    obj = bpy.data.objects.new(name, mesh)
+    collection(target).objects.link(obj)
+    obj.location = location
+    if mat:
+        apply_style(obj, mat, bevel)
+    return obj
+
+
 def cylinder(name, radius, depth, location=(0, 0, 0), mat=None, target="LOD0", vertices=12):
     bpy.ops.mesh.primitive_cylinder_add(vertices=vertices, radius=radius, depth=depth, location=location)
     obj = bpy.context.object

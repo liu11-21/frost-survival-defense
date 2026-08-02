@@ -18,6 +18,7 @@ from common import (  # noqa: E402
     material,
     orient_for_babylon,
     parent_all,
+    prism,
     reset_scene,
     save_source,
     sphere,
@@ -122,20 +123,20 @@ def build_facility(key, cfg):
         if kind == "crossbowTower":
             for x in (-0.72, 0.72):
                 for z in (-0.72, 0.72): parts.append(box(f"leg.{x}.{z}", (0.18, 1.3, 0.18), (x, 0.85, z), mats["wood"]))
-            parts += [box("deck", (1.8, 0.16, 1.8), (0, 1.58, 0), mats["wood"])]
+            parts += [box("deck", (1.8, 0.16, 1.8), (0, 1.58, 0), mats["wood"]), prism("crossbowShield", [(-0.72, 1.72), (0.72, 1.72), (0.52, 1.38), (-0.52, 1.38)], 0.1, (0, 0, -0.65), mats["metal"], "LOD0", 0.03)]
             attack_pivot(root, mats, key, "crossbow")
         elif kind == "frostTower":
             parts += [cylinder("spire", 2.1, 0.34, (0, 1.35, 0), mats["ice"], "LOD0", 6), torus("ring", 0.9, 0.08, (0, 2.25, 0), mats["metal"]), sphere("crystalCore", 0.25, (0, 2.9, 0), mats["glow"])]
             attack_pivot(root, mats, key, "frost")
         elif kind == "sniperTower":
-            parts += [cylinder("shaft", 3.2, 0.55, (0, 1.9, 0), mats["stone"], "LOD0", 8), box("deck", (1.6, 0.16, 1.6), (0, 3.7, 0), mats["metal"]), box("railA", (1.6, 0.35, 0.08), (0, 3.95, 0.75), mats["dark"]), box("railB", (1.6, 0.35, 0.08), (0, 3.95, -0.75), mats["dark"])]
+            parts += [cylinder("shaft", 3.2, 0.55, (0, 1.9, 0), mats["stone"], "LOD0", 8), box("deck", (1.6, 0.16, 1.6), (0, 3.7, 0), mats["metal"]), box("railA", (1.6, 0.35, 0.08), (0, 3.95, 0.75), mats["dark"]), box("railB", (1.6, 0.35, 0.08), (0, 3.95, -0.75), mats["dark"]), prism("sniperWindbreak", [(-0.62, 3.84), (0.62, 3.84), (0.52, 3.18), (-0.52, 3.18)], 0.08, (0, 0, -0.72), mats["metal"], "LOD0", 0.025)]
             attack_pivot(root, mats, key, "sniper")
         else:
             parts += [box("cradleL", (0.3, 1.0, 1.6), (-0.9, 0.9, 0), mats["metal"]), box("cradleR", (0.3, 1.0, 1.6), (0.9, 0.9, 0), mats["metal"]), sphere("shellRack", 0.32, (-1.1, 0.65, -0.72), mats["accent"])]
             attack_pivot(root, mats, key, "mortar")
         functional += [sphere("productionCore", 0.13, (0, 2.55, 0), mats["glow"])]
     elif kind == "furnace":
-        parts += [cylinder("furnaceBody", 1.8, 2.5, (0, 1.0, 0), mats["stone"], "LOD0", 10), cylinder("coalBowl", 0.35, 1.5, (0, 2.0, 0), mats["dark"], "LOD0", 10), sphere("heatCore", 0.52, (0, 2.05, 0), mats["glow"]), torus("furnaceCrown", 1.8, 0.16, (0, 2.8, 0), mats["accent"])]
+        parts += [cylinder("furnaceBody", 1.8, 2.5, (0, 1.0, 0), mats["stone"], "LOD0", 10), cylinder("coalBowl", 0.35, 1.5, (0, 2.0, 0), mats["dark"], "LOD0", 10), sphere("heatCore", 0.52, (0, 2.05, 0), mats["glow"]), torus("furnaceCrown", 1.8, 0.16, (0, 2.8, 0), mats["accent"]), prism("furnaceFrontGuard", [(-0.85, 1.76), (0.85, 1.76), (0.62, 0.68), (-0.62, 0.68)], 0.12, (0, 0, -1.58), mats["metal"], "LOD0", 0.04), prism("furnaceSnowLip", [(-0.92, 2.48), (0.92, 2.48), (0.8, 2.62), (-0.8, 2.62)], 0.22, (0, 0, 0), mats["snow"], "LOD0", 0.035)]
         for i in range(4):
             angle = i * math.pi * 0.5
             parts.append(box(f"rune.{i}", (0.12, 0.42, 0.06), (math.sin(angle) * 1.28, 1.1, math.cos(angle) * 1.28), mats["glow"]))

@@ -32,6 +32,8 @@ Animation names are canonical (`Idle`, `Walk`, `Run`, `Fire`, `Recoil`,
 Authoring collections are `LOD0`, `LOD1`, `LOD2`, `COLLISION`, `EXPORT`, `RIG`.
 
 Every exported mesh should have applied transforms, weighted/smooth normals,
-reasonable bevels and a clear fallback material. Babylon instantiates a GLB
-through `AssetRegistry`; failed validation automatically returns to the
-procedural model.
+reasonable bevels and a clear fallback material. Use the shared Blender
+`prism` profile helper for capes, armour plates, wall braces and functional
+guards whenever an axis-aligned box would make the silhouette look assembled.
+Babylon instantiates a GLB through `AssetRegistry`; failed validation
+automatically returns to the procedural model.

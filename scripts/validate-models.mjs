@@ -38,6 +38,18 @@ const specs = [
     nodes: ["FurnaceRoot", "heatCore", "furnaceCrown", "emitter", "LOD1", "LOD2"],
     animations: ["Idle", "Operate", "Damaged", "Destroyed"],
   },
+  {
+    key: "resource_tree",
+    path: "public/assets/models/environment/resource_tree.glb",
+    nodes: ["ResourceTreeRoot", "resource_trunk", "resource_canopy0", "resource_canopy1", "resource_canopy2", "resource_snow0", "resource_snow1", "resource_snow2", "resource_stump", "LOD1", "LOD2"],
+    animations: [],
+  },
+  {
+    key: "resource_rock",
+    path: "public/assets/models/environment/resource_rock.glb",
+    nodes: ["ResourceRockRoot", "resource_rock_base", "resource_rock_face", "resource_rock_snow", "resource_ore0", "resource_ore1", "resource_ore2", "resource_rubble", "LOD1", "LOD2"],
+    animations: [],
+  },
 ];
 
 function parseGlb(buffer) {

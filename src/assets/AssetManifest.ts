@@ -70,6 +70,22 @@ export const AUTHORED_ASSET_MANIFEST: readonly AssetSpec[] = [
     requiredAnimations: ["Idle", "Operate", "Damaged", "Destroyed"],
     fallback: "procedural",
   },
+  {
+    key: "resource_tree",
+    rootUrl: "/assets/models/environment/",
+    fileName: "resource_tree.glb",
+    requiredNodes: ["ResourceTreeRoot", "resource_trunk", "resource_canopy0", "resource_canopy1", "resource_canopy2", "resource_snow0", "resource_snow1", "resource_snow2", "resource_stump", "LOD1", "LOD2"],
+    requiredAnimations: [],
+    fallback: "procedural",
+  },
+  {
+    key: "resource_rock",
+    rootUrl: "/assets/models/environment/",
+    fileName: "resource_rock.glb",
+    requiredNodes: ["ResourceRockRoot", "resource_rock_base", "resource_rock_face", "resource_rock_snow", "resource_ore0", "resource_ore1", "resource_ore2", "resource_rubble", "LOD1", "LOD2"],
+    requiredAnimations: [],
+    fallback: "procedural",
+  },
 ];
 
 export function authoredAssetSpec(key: AssetSpec["key"]): AssetSpec {

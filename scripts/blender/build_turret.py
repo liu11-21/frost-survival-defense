@@ -4,7 +4,7 @@ import bpy
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 sys.path.append(HERE)
-from common import reset_scene, material, box, cylinder, sphere, empty, collision_box, parent_all, orient_for_babylon, add_lod_markers, add_simple_animation, save_source, export_glb, torus, cone
+from common import reset_scene, material, box, prism, cylinder, sphere, empty, collision_box, parent_all, orient_for_babylon, add_lod_markers, add_simple_animation, save_source, export_glb, torus, cone
 
 
 def build():
@@ -30,11 +30,15 @@ def build():
         box("supportBraceR", (0.12, 0.8, 0.5), (0.28, 0.9, 0), metal, bevel=0.035),
         box("barrel", (0.24, 0.24, 1.65), (0, 1.25, 0.85), metal, bevel=0.045),
         cone("barrelCowl", 0.19, 0.13, 0.32, (0, 1.25, 0.38), metal, "LOD0", 8),
+        prism("frontMantlet", [(-0.46, 1.52), (0.46, 1.52), (0.34, 0.94), (-0.34, 0.94)], 0.28, (0, 0, 0.34), metal, "LOD0", 0.04),
+        prism("snowMantletCap", [(-0.42, 1.56), (0.42, 1.56), (0.32, 1.48), (-0.32, 1.48)], 0.3, (0, 0, 0.34), snow, "LOD0", 0.025),
         box("recoilPart", (0.4, 0.34, 0.48), (0, 1.25, 0.15), wood, bevel=0.06),
         sphere("muzzle", 0.16, (0, 1.25, 1.68), ember),
         sphere("muzzleLens", 0.08, (0, 1.25, 1.72), glass),
         box("ammoBox", (0.44, 0.35, 0.42), (-0.55, 0.78, 0), snow, bevel=0.05),
         torus("ammoLatch", 0.12, 0.03, (-0.55, 0.95, 0.2), metal, "LOD0"),
+        cylinder("driveGear", 0.22, 0.08, (0.56, 0.62, 0), metal, "LOD0", 10),
+        torus("driveGearTeeth", 0.22, 0.035, (0.56, 0.62, 0), snow, "LOD0"),
     ]
     parent_all(parts, pitch)
     empty("muzzleAnchor", (0, 1.25, 1.68), "EXPORT").parent = pitch

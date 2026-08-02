@@ -4,7 +4,7 @@ import bpy
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 sys.path.append(HERE)
-from common import reset_scene, material, box, cylinder, empty, collision_box, parent_all, orient_for_babylon, add_lod_markers, add_simple_animation, save_source, export_glb, torus, sphere, cone
+from common import reset_scene, material, box, prism, cylinder, empty, collision_box, parent_all, orient_for_babylon, add_lod_markers, add_simple_animation, save_source, export_glb, torus, sphere, cone
 
 
 def build():
@@ -37,6 +37,11 @@ def build():
         door_pivots.append((pivot, direction))
         doors.append(door)
     parts = [left, right, lintel, snowCap, leftTrim, rightTrim]
+    for side in (-1, 1):
+        parts += [
+            prism(f"wallButtress.{side}", [(-0.48, 0.2), (0.48, 0.2), (0.38, 2.55), (-0.38, 2.35)], 0.34, (side * 4.2, 0, 0.72), metal, "LOD0", 0.035),
+            prism(f"wallSnowShoulder.{side}", [(-0.62, 2.45), (0.62, 2.45), (0.48, 2.62), (-0.48, 2.62)], 0.92, (side * 4.2, 0, 0), snow, "LOD0", 0.03),
+        ]
     parent_all(parts, root)
     # Armour bands, bolts and a readable gate crest give the wall a built
     # structure instead of a pair of plain rectangles.
