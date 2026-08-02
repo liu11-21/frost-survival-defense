@@ -175,3 +175,12 @@
 - Re-exported all 42 GLBs with Blender 5.2.0 LTS. Final validation for this
   pass is 42/42 `ok`; v9 is 75/75, v10 is 12/12, typecheck passes, and the
   production build passes with the existing large-chunk warning.
+
+## 2026-08-02 | authored PBR response pass
+
+- Updated the shared Blender Principled material helper with guarded Blender
+  4/5 coat, sheen and specular inputs. Metal/enamel parts now receive tighter
+  highlights while cloth/leather parts keep a softer stylized sheen.
+- Re-exported the complete asset library after the material change and
+  regenerated both review sheets. `art:validate` remains 42/42 `ok`; v9/v10,
+  typecheck and production build were rerun successfully.

@@ -139,6 +139,10 @@ These are explicit follow-up items, not hidden behind the passing validator.
   a bolt magazine, string guide and deck rivets. The furnace gained an inset
   ember bed, grate bars, side buttresses, a service crown and a visible ember
   core.
+- Updated the shared Principled material helper with guarded Blender 4/5 PBR
+  coat, sheen and specular response. Metal and enamel surfaces now carry a
+  tighter highlight while cloth and leather receive a softer sheen; the
+  authored palette and GLB material count remain bounded.
 - The latest Blender batch exports all 42 GLBs. `art:validate` remains 42/42
   `ok`; the review sheets were regenerated after export. v9 (75/75), v10
   (12/12), `npm run typecheck` and `npm run build` all pass.

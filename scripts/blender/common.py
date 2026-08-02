@@ -53,6 +53,22 @@ def material(name, color, roughness=0.75, metallic=0.0, emission=None):
     shader.inputs["Base Color"].default_value = (*color, 1.0)
     shader.inputs["Roughness"].default_value = roughness
     shader.inputs["Metallic"].default_value = metallic
+    # Keep the low-poly palette simple, but give cloth, leather and metal a
+    # physically legible highlight response in both Blender review renders
+    # and Babylon's glTF PBR material.  Blender 4/5 renamed a few Principled
+    # inputs, so use guarded lookups for forward-compatible headless exports.
+    coat_weight = shader.inputs.get("Coat Weight") or shader.inputs.get("Clearcoat")
+    coat_roughness = shader.inputs.get("Coat Roughness") or shader.inputs.get("Clearcoat Roughness")
+    sheen_weight = shader.inputs.get("Sheen Weight") or shader.inputs.get("Sheen")
+    specular_level = shader.inputs.get("Specular IOR Level") or shader.inputs.get("Specular")
+    if coat_weight:
+        coat_weight.default_value = 0.28 if metallic >= 0.5 else (0.10 if roughness < 0.55 else 0.025)
+    if coat_roughness:
+        coat_roughness.default_value = 0.18 if metallic >= 0.5 else 0.32
+    if sheen_weight:
+        sheen_weight.default_value = 0.12 if roughness >= 0.72 else 0.025
+    if specular_level:
+        specular_level.default_value = 0.42 if metallic >= 0.5 else 0.28
     if emission:
         shader.inputs["Emission Color"].default_value = (*emission, 1.0)
         shader.inputs["Emission Strength"].default_value = 2.0
