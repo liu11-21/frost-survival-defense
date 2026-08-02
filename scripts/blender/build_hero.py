@@ -4,7 +4,7 @@ import bpy
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 sys.path.append(HERE)
-from common import reset_scene, material, box, prism, cylinder, sphere, empty, collision_box, parent_all, move_to, orient_for_babylon, add_lod_markers, assign_surface_variants, author_surface_paint, cone, torus, save_source, export_glb
+from common import reset_scene, material, box, prism, cylinder, sphere, ellipsoid, empty, collision_box, parent_all, move_to, orient_for_babylon, add_lod_markers, assign_surface_variants, author_surface_paint, cone, torus, save_source, export_glb
 from build_units import make_skeleton, bind_unit_pieces, add_armature_clip
 
 
@@ -22,7 +22,9 @@ def build():
     root = orient_for_babylon(empty("HeroRoot", target="EXPORT", display="PLAIN_AXES"))
     add_lod_markers(root, "character")
     parts = [
-        box("body", (0.66, 0.85, 0.42), (0, 1.05, 0), cloth, bevel=0.08),
+        # Organic padded volumes keep the hero's coat and limbs from reading
+        # as a stack of bevelled boxes while retaining the existing rig.
+        ellipsoid("body", (0.66, 0.85, 0.42), (0, 1.05, 0), cloth),
         box("coatSkirt", (0.76, 0.24, 0.5), (0, 0.68, -0.01), leather, bevel=0.06),
         box("chestPlate", (0.48, 0.38, 0.08), (0, 1.12, 0.22), metal, bevel=0.045),
         box("chestTrim", (0.52, 0.07, 0.05), (0, 1.28, 0.24), snow, bevel=0.02),
@@ -30,14 +32,14 @@ def build():
         cone("hood", 0.42, 0.2, 0.3, (0, 1.98, 0), snow, "LOD0", 8),
         torus("hoodRim", 0.3, 0.035, (0, 1.83, 0), snow, "LOD0"),
         box("coatTrim", (0.74, 0.12, 0.46), (0, 1.42, 0), snow, bevel=0.04),
-        box("arm.L", (0.18, 0.7, 0.2), (-0.48, 1.1, 0), cloth, bevel=0.05),
-        box("arm.R", (0.18, 0.7, 0.2), (0.48, 1.1, 0), cloth, bevel=0.05),
+        ellipsoid("arm.L", (0.18, 0.7, 0.2), (-0.48, 1.1, 0), cloth),
+        ellipsoid("arm.R", (0.18, 0.7, 0.2), (0.48, 1.1, 0), cloth),
         sphere("glove.L", 0.12, (-0.48, 0.72, 0.02), skin),
         sphere("glove.R", 0.12, (0.48, 0.72, 0.02), skin),
         box("shoulder.L", (0.3, 0.18, 0.3), (-0.46, 1.38, 0), metal, bevel=0.06),
         box("shoulder.R", (0.3, 0.18, 0.3), (0.46, 1.38, 0), metal, bevel=0.06),
-        box("leg.L", (0.22, 0.7, 0.24), (-0.2, 0.42, 0), leather, bevel=0.05),
-        box("leg.R", (0.22, 0.7, 0.24), (0.2, 0.42, 0), leather, bevel=0.05),
+        ellipsoid("leg.L", (0.22, 0.7, 0.24), (-0.2, 0.42, 0), leather),
+        ellipsoid("leg.R", (0.22, 0.7, 0.24), (0.2, 0.42, 0), leather),
         box("boot.L", (0.25, 0.14, 0.42), (-0.2, 0.07, 0.08), metal, bevel=0.05),
         box("boot.R", (0.25, 0.14, 0.42), (0.2, 0.07, 0.08), metal, bevel=0.05),
         box("belt", (0.74, 0.12, 0.48), (0, 0.82, 0), leather, bevel=0.04),

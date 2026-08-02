@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-08-02T13:17:43.038Z",
+  "generatedAt": "2026-08-02T13:23:26.923Z",
   "blenderRequired": true,
   "assets": [
     {
@@ -56,7 +56,7 @@
         "Hit": 54,
         "Death": 54
       },
-      "triangles": 14000,
+      "triangles": 14252,
       "surfaceAttributes": {
         "TEXCOORD_0": true,
         "COLOR_0": true

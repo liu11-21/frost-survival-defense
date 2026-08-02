@@ -406,3 +406,16 @@ remaining gaps are still the primitive-driven topology, procedural 64x64 brush
 layers instead of authored PBR atlases, generic shared acting, and missing
 runtime all-manifest/performance evidence. The next visual priority is a focal
 game-camera pass for hero, warrior, furnace, crossbow tower and turret.
+
+## 2026-08-02｜hero focal refinement
+
+The hero builder now uses explicit low-poly ellipsoid volumes for the padded
+coat body and limbs instead of bevelled boxes. This reduces the mannequin/block
+read while preserving `HeroSkeleton`, weapon/ranged sockets, collision anchor,
+LOD markers and all seven existing clips. The rebuilt
+`public/assets/models/characters/hero.glb` remains `ok` with 123 nodes, one
+skeleton, seven animations and 14,252 triangles.
+
+This is a focused silhouette improvement, not a claim that the hero is final
+hand-authored commercial topology; the remaining cloth folds, facial sculpt,
+PBR maps and bespoke animation acting still need human art direction.

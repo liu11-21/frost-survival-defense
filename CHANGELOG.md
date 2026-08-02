@@ -15,6 +15,11 @@
 - 飛行近戰、飛行精銳射手、飛行轟炸者、飛行空中巨像加入角色專屬翼刃／羽片／背架／炸彈掛架細節；既有骨架、動畫、AI 與 GLB 路徑不變。
 - 直接 Blender 重建角色 GLB 後，`npm run art:validate` 回報 42/42 `ok`；四種飛行敵人仍各具 UnitSkeleton 與 Idle／Walk／Attack／Cast／Hit／Death 動畫。
 
+## 2026-08-02｜主角有機體積精修
+
+- `scripts/blender/build_hero.py` 將主角軀幹、雙臂與雙腿由 bevel box 改為具明確尺寸的低多邊形 ellipsoid，保留原有 HeroSkeleton、socket、碰撞與 7 段動畫。
+- 直接 Blender 5.2.0 LTS 重建 `public/assets/models/characters/hero.glb`；`npm run art:validate` 仍為 42/42 `ok`，主角三角面數為 14,252。
+
 ## 2026-08-02｜主角前向軸執行期校準
 
 - 查明主角的輸入與位移沒有倒置：按住 W 時 `z` 由 `-4.5` 增至 `-2.72`，符合遊戲的 `+Z` 前進約定；預設鏡頭位於主角南側，因此移動時看到背包背面，造成「倒著走」的視覺誤判。
