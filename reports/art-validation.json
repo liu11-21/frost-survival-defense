@@ -1,36 +1,151 @@
 {
-  "generatedAt": "2026-08-02T03:07:48.000Z",
+  "generatedAt": "2026-08-02T05:01:46.673Z",
   "blenderRequired": true,
   "assets": [
     {
       "key": "hero",
-      "status": "blocked",
+      "status": "ok",
       "path": "public/assets/models/characters/hero.glb",
+      "nodes": 34,
+      "meshes": 10,
+      "materials": 5,
+      "skeletons": 1,
+      "rootTransforms": [
+        {
+          "index": 33,
+          "name": "HeroRoot",
+          "translation": [
+            0,
+            0,
+            0
+          ],
+          "scale": [
+            1,
+            1,
+            1
+          ]
+        }
+      ],
+      "bounds": {
+        "min": [
+          -0.3700000047683716,
+          -0.574999988079071,
+          -0.42500001192092896
+        ],
+        "max": [
+          0.3700000047683716,
+          0.574999988079071,
+          0.42500001192092896
+        ]
+      },
+      "animations": [
+        "Idle",
+        "Walk",
+        "Run",
+        "MeleeAttack",
+        "RangedAttack",
+        "Hit",
+        "Death"
+      ],
+      "triangles": 1164,
       "missingNodes": [],
       "missingAnimations": [],
-      "warnings": [
-        "GLB not generated yet; install Blender and run npm run art:export."
-      ]
+      "warnings": []
     },
     {
       "key": "turret_basic",
-      "status": "blocked",
+      "status": "ok",
       "path": "public/assets/models/buildings/turret_basic.glb",
+      "nodes": 11,
+      "meshes": 7,
+      "materials": 5,
+      "skeletons": 0,
+      "rootTransforms": [
+        {
+          "index": 10,
+          "name": "TurretRoot",
+          "translation": [
+            0,
+            0,
+            0
+          ],
+          "scale": [
+            1,
+            1,
+            1
+          ]
+        }
+      ],
+      "bounds": {
+        "min": [
+          -1.25,
+          -0.824999988079071,
+          -1.25
+        ],
+        "max": [
+          1.25,
+          0.824999988079071,
+          1.25
+        ]
+      },
+      "animations": [
+        "Idle",
+        "Aim",
+        "Fire",
+        "Recoil",
+        "Reload"
+      ],
+      "triangles": 792,
       "missingNodes": [],
       "missingAnimations": [],
-      "warnings": [
-        "GLB not generated yet; install Blender and run npm run art:export."
-      ]
+      "warnings": []
     },
     {
       "key": "wall_gate",
-      "status": "blocked",
+      "status": "ok",
       "path": "public/assets/models/buildings/wall_gate.glb",
+      "nodes": 13,
+      "meshes": 7,
+      "materials": 3,
+      "skeletons": 0,
+      "rootTransforms": [
+        {
+          "index": 12,
+          "name": "WallGateRoot",
+          "translation": [
+            0,
+            0,
+            0
+          ],
+          "scale": [
+            1,
+            1,
+            1
+          ]
+        }
+      ],
+      "bounds": {
+        "min": [
+          -2.4000000953674316,
+          -0.7749999761581421,
+          -1.2999999523162842
+        ],
+        "max": [
+          2.4000000953674316,
+          0.7749999761581421,
+          1.2999999523162842
+        ]
+      },
+      "animations": [
+        "GateOpen",
+        "GateClose",
+        "Damaged",
+        "Destroyed"
+      ],
+      "triangles": 980,
       "missingNodes": [],
       "missingAnimations": [],
-      "warnings": [
-        "GLB not generated yet; install Blender and run npm run art:export."
-      ]
+      "warnings": []
     }
   ]
 }

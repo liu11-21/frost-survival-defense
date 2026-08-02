@@ -5,9 +5,27 @@
 - 建立 `assets-source/` Blender 工作區、風格規範、概念圖流程、授權紀錄與可重複執行的英雄／基礎砲塔／城牆閘門建模腳本。
 - 新增 `art:template`、`art:hero`、`art:turret`、`art:wall`、`art:export`、`art:validate` 指令；模型驗證器會輸出 `reports/art-validation.json`，缺少 GLB 時明確標記為 `blocked`。
 - 新增 Babylon `AssetRegistry`／`ModelLoader` 快取、節點與動畫契約驗證、碰撞網格隱藏，以及載入失敗時的程序化模型回退；建築與主角均有 authored visual hook。
-- 已檢查本機 Blender：目前未安裝，因此本次不宣稱已產出任何 GLB 或 `.blend` 二進位檔；安裝 Blender LTS 後執行 `npm run art:export` 即可生成。
+- 初始盤點時 Blender 未安裝；後續已完成 Blender 5.2.0 LTS 官方 ZIP 安裝與 SHA-256 驗證，三個 GLB 已實際產出並通過驗證。
 - 驗證結果：`npm run typecheck`、production build、`node tools/playtest.mjs --suite v9`（75/75）與 `--suite v10`（12/12）通過；`git diff --check` 通過。完整預設 suite 超過本次命令執行時間上限，未將其誤報為通過。
 - 測試說明同步放在 `docs/art/TESTING.md`，涵蓋 Blender 缺失時的 blocked 報告與 GLB 生成後的嚴格驗證。
+- 安裝流程補強 `run-blender.mjs`：依序使用 `BLENDER_PATH`、PATH，再動態搜尋使用者與 Program Files 的 Blender 版本資料夾，避免把單一版本絕對路徑提交進專案。
+- Blender 5.2 相容性修正：動畫改用 `keyframe_insert` 產生 layered Action；砲塔腳本補上 `sphere` helper 匯入，避免依賴 Blender 4 的 `Action.fcurves` 舊 API。
+- GLB 匯出改用 Blender 5.2 的 `use_visible` 與 `NLA_TRACKS`，排除碰撞 Mesh 並保留命名動畫；英雄腳本新增 `HeroSkeleton` 與規格骨骼名稱。
+- 英雄腳本執行時發現並修正遺漏的 `move_to` helper 匯入；未將失敗產物視為成功。
+- 城牆閘門的 `gateCollider` 改為非渲染 anchor，保留 GLB 節點契約並避免碰撞 Mesh 被匯出。
+- 匯出流程不再把重複的 `.blend`／`.blend1` 備份寫入 runtime `public/assets/models/`；來源檔只保留在 `assets-source/blender/`，runtime 目錄只提供 GLB。
+- GLB 驗證器補上骨架數、絕對路徑、占位模型與面數檢查；修正檢查順序後再重新產出報告。
+- 驗證報告再加入根節點平移／縮放與幾何 bounds，讓原點、比例與軸向檢查有可追蹤資料。
+- Babylon runtime contract 改以 `HeroSkeleton` GLB 節點與 JSON `skins` 驗證英雄骨架；避免 Blender 匯出的未綁定骨架被 Babylon importer 丟棄時錯誤回退整個英雄視覺。
+- 重新執行 `art:export` 後，三個 source `.blend` 結構驗證均為 `ok`；production preview 的三個 GLB 回應皆為 HTTP 200，Babylon.js 無未處理錯誤、404 或 authored-contract fallback。
+
+## 2026-08-02｜Blender 安裝與首批 GLB 產出
+
+- winget 已確認官方套件 `BlenderFoundation.Blender`（5.2.0）；因 Delivery Optimization 下載在 5 分鐘內卡住，改用同一 Blender Foundation 官方 Windows ZIP，並以官方 SHA-256 `2d184b...18adc4` 驗證後解壓至使用者層級目錄。
+- `BLENDER_PATH` 已設定為使用者環境變數；`run-blender.mjs` 同時支援 PATH 與常見安裝根目錄搜尋。新終端機會自動讀取使用者變數；目前既有 Codex 子程序則可直接透過 common-root fallback 找到 Blender。
+- `npm run art:template`、`art:hero`、`art:turret`、`art:wall`、`art:export` 均成功；三個 GLB 已產出並通過 `reports/art-validation.json`：hero 45,840 bytes／1 skeleton／7 animations、turret 29,124 bytes／5 animations、wall_gate 33,108 bytes／4 animations。
+- Blender 5.2 API 修正已記錄：使用 layered Action 的 `keyframe_insert`、glTF `use_visible`／`NLA_TRACKS`，並將閘門碰撞改為非渲染 anchor。
+- Babylon.js 實際載入回歸通過：v9 75/75、v10 12/12；`npx tsc --noEmit`、`npm run build` 也通過。專案未定義 `npm test` script。
 
 ## 2026-08-01｜火爐擴張、天空設施與空軍系統
 

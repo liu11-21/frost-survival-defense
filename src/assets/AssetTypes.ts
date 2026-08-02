@@ -10,6 +10,7 @@ export interface AssetSpec {
   /** Nodes that make the Babylon integration contract explicit. */
   requiredNodes: readonly string[];
   requiredAnimations: readonly string[];
+  requiredSkeletons?: number;
   fallback: "procedural";
 }
 
@@ -20,6 +21,7 @@ export interface AssetValidationReport {
   missingNodes: string[];
   missingAnimations: string[];
   meshCount: number;
+  skeletonCount: number;
   warnings: string[];
   error?: string;
 }

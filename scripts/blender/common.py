@@ -19,6 +19,8 @@ def reset_scene():
     for collection in list(bpy.data.collections):
         if collection.name != "Collection":
             bpy.data.collections.remove(collection)
+    for action in list(bpy.data.actions):
+        bpy.data.actions.remove(action)
     scene = bpy.context.scene
     scene.unit_settings.system = "METRIC"
     scene.unit_settings.scale_length = 1.0
@@ -132,19 +134,29 @@ def parent_all(objects, parent):
 
 
 def add_simple_animation(obj, name, property_path="rotation_euler", index=1, start=1, end=20, amount=0.12):
-    action = bpy.data.actions.new(name)
-    fcurve = action.fcurves.new(data_path=property_path, index=index)
-    fcurve.keyframe_points.insert(start, 0.0)
-    fcurve.keyframe_points.insert((start + end) / 2, amount)
-    fcurve.keyframe_points.insert(end, 0.0)
-    # Exporter picks up actions through a temporary NLA track.
+    # Blender 5 uses layered Actions and removed the old public `action.fcurves`
+    # collection. Let Blender create the compatible Action through keyframe
+    # insertion, which works across 4.x and 5.x, then put it on an NLA strip so
+    # every canonical clip is exported together.
     if not obj.animation_data:
         obj.animation_data_create()
-    obj.animation_data.action = action
+    obj.animation_data.action = None
+    value = getattr(obj, property_path)
+    value[index] = 0.0
+    obj.keyframe_insert(data_path=property_path, index=index, frame=start)
+    value[index] = amount
+    obj.keyframe_insert(data_path=property_path, index=index, frame=(start + end) / 2)
+    value[index] = 0.0
+    obj.keyframe_insert(data_path=property_path, index=index, frame=end)
+    action = obj.animation_data.action
+    if action is None:
+        raise RuntimeError(f"Blender did not create an Action for {obj.name}:{name}")
+    action.name = name
     track = obj.animation_data.nla_tracks.new()
     track.name = name
     strip = track.strips.new(name, start, action)
     strip.frame_end = end
+    obj.animation_data.action = None
     scene = bpy.context.scene
     scene.frame_start = 1
     scene.frame_end = max(scene.frame_end, end)
@@ -155,7 +167,6 @@ def add_simple_animation(obj, name, property_path="rotation_euler", index=1, sta
 def export_glb(path):
     os.makedirs(os.path.dirname(path), exist_ok=True)
     bpy.context.scene.frame_set(1)
-    bpy.ops.wm.save_as_mainfile(filepath=os.path.splitext(path)[0] + ".blend")
     bpy.ops.export_scene.gltf(
         filepath=path,
         export_format="GLB",
@@ -165,6 +176,8 @@ def export_glb(path):
         export_extras=True,
         export_lights=False,
         export_cameras=False,
+        use_visible=True,
+        export_animation_mode="NLA_TRACKS",
         export_materials="EXPORT",
     )
 

@@ -9,7 +9,7 @@ export const AUTHORED_ASSET_MANIFEST: readonly AssetSpec[] = [
     key: "hero",
     rootUrl: "/assets/models/characters/",
     fileName: "hero.glb",
-    requiredNodes: ["HeroRoot", "weapon_socket.R", "ranged_socket"],
+    requiredNodes: ["HeroRoot", "HeroSkeleton", "weapon_socket.R", "ranged_socket"],
     requiredAnimations: ["Idle", "Walk", "Run", "MeleeAttack", "RangedAttack", "Hit", "Death"],
     fallback: "procedural",
   },

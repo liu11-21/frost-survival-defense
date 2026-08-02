@@ -27,7 +27,10 @@ def build():
     parent_all(parts, root)
     for x in (-5.0, 5.0):
         cylinder("torch", 0.12, 0.7, (x, 2.25, -0.85), fire, "LOD0", 8).parent = root
-    collision_box("gateCollider", (4.2, 2.4, 1.6), (0, 1.2, 0), root)
+    # Export the logical collider as a non-rendering anchor. Babylon keeps its
+    # deterministic gameplay collision; the GLB contract only needs a stable
+    # node and must not ship a visible collision mesh.
+    empty("gateCollider", (0, 1.2, 0), "COLLISION").parent = root
     empty("friendlyPassTrigger", (0, 0, -1.5), "EXPORT").parent = root
     empty("damageAnchor", (0, 1.6, 0), "EXPORT").parent = root
     empty("fxAnchor", (0, 2.2, 0), "EXPORT").parent = root

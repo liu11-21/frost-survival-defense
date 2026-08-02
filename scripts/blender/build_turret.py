@@ -4,7 +4,7 @@ import bpy
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 sys.path.append(HERE)
-from common import reset_scene, material, box, cylinder, empty, collision_box, parent_all, add_simple_animation, save_source, export_glb
+from common import reset_scene, material, box, cylinder, sphere, empty, collision_box, parent_all, add_simple_animation, save_source, export_glb
 
 
 def build():

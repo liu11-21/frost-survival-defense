@@ -4,7 +4,7 @@ import bpy
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 sys.path.append(HERE)
-from common import reset_scene, material, box, cylinder, sphere, empty, collision_box, parent_all, add_simple_animation, save_source, export_glb
+from common import reset_scene, material, box, cylinder, sphere, empty, collision_box, parent_all, move_to, add_simple_animation, save_source, export_glb
 
 
 def build():
@@ -28,8 +28,23 @@ def build():
         cylinder("weapon", 0.055, 1.15, (0.62, 0.86, 0.16), metal, "LOD0", 8),
     ]
     parent_all(parts, root)
-    for name in ("root", "pelvis", "spine", "chest", "neck", "head", "upper_arm.L", "upper_arm.R", "lower_arm.L", "lower_arm.R", "hand.L", "hand.R", "thigh.L", "thigh.R", "shin.L", "shin.R", "foot.L", "foot.R"):
-        empty(name, target="RIG")
+    bpy.ops.object.armature_add(enter_editmode=True, location=(0, 0, 0))
+    skeleton = bpy.context.object
+    skeleton.name = "HeroSkeleton"
+    skeleton.data.name = "HeroSkeleton"
+    skeleton.parent = root
+    armature = skeleton.data
+    armature.edit_bones.remove(armature.edit_bones[0])
+    previous = None
+    for index, name in enumerate(("root", "pelvis", "spine", "chest", "neck", "head", "upper_arm.L", "upper_arm.R", "lower_arm.L", "lower_arm.R", "hand.L", "hand.R", "thigh.L", "thigh.R", "shin.L", "shin.R", "foot.L", "foot.R")):
+        bone = armature.edit_bones.new(name)
+        bone.head = (0, 0, index * 0.1)
+        bone.tail = (0, 0, index * 0.1 + 0.1)
+        if previous and index < 6:
+            bone.parent = previous
+        previous = bone
+    bpy.ops.object.mode_set(mode="OBJECT")
+    move_to(skeleton, "RIG")
     for name in ("weapon_socket.R", "weapon_socket.L", "ranged_socket", "back_socket"):
         socket = empty(name, (0, 1.1, 0), "RIG")
         socket.parent = root

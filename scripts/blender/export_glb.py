@@ -16,6 +16,8 @@ def export(path):
         export_extras=True,
         export_lights=False,
         export_cameras=False,
+        use_visible=True,
+        export_animation_mode="NLA_TRACKS",
         export_materials="EXPORT",
     )
 

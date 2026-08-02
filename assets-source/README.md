@@ -11,5 +11,6 @@ repeatable examples and export to `public/assets/models/`. Blender is optional
 at runtime: if a GLB is missing or fails its node/animation contract, Babylon
 uses the existing procedural factory.
 
-Current machine status: Blender was not found during this change. Install
-Blender LTS, put it on `PATH` or set `BLENDER_PATH`, then run `npm run art:export`.
+Current machine status: Blender 5.2.0 LTS is installed from the official
+Blender Foundation Windows ZIP under the user profile. `BLENDER_PATH` points to
+its executable; the runtime also searches common Blender installation roots.

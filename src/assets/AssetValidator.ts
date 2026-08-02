@@ -8,6 +8,7 @@ export function validateAssetContainer(spec: AssetSpec, container: AssetContaine
   const animationNames = new Set(container.animationGroups.map((group) => group.name));
   const missingAnimations = spec.requiredAnimations.filter((name) => !animationNames.has(name));
   const warnings: string[] = [];
+  const skeletonCount = container.skeletons.length;
   const collisionMeshes = container.meshes.filter((mesh) => mesh.name.startsWith("COL_") || mesh.name.toLowerCase().includes("collision") || mesh.name.toLowerCase().includes("collider"));
   if (collisionMeshes.some((mesh) => mesh.isVisible || mesh.isEnabled())) {
     warnings.push("COL_ meshes are visible; runtime will hide them before instantiation.");
@@ -17,11 +18,12 @@ export function validateAssetContainer(spec: AssetSpec, container: AssetContaine
   if (container.lights.length > 0) warnings.push("Lights are present; export lights are not required.");
   return {
     key: spec.key,
-    status: missingNodes.length || missingAnimations.length || container.meshes.length === 0 ? "invalid" : "loaded",
+    status: missingNodes.length || missingAnimations.length || container.meshes.length === 0 || skeletonCount < (spec.requiredSkeletons ?? 0) ? "invalid" : "loaded",
     path: `${spec.rootUrl}${spec.fileName}`,
     missingNodes,
     missingAnimations,
     meshCount: container.meshes.length,
+    skeletonCount,
     warnings,
   };
 }

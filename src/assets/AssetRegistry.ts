@@ -82,6 +82,7 @@ export class AssetRegistry {
       missingNodes: [],
       missingAnimations: [],
       meshCount: 0,
+      skeletonCount: 0,
       warnings: ["Procedural fallback active."],
       error,
     });

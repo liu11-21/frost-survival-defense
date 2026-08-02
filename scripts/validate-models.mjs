@@ -3,7 +3,7 @@ import { dirname, resolve } from "node:path";
 
 const root = process.cwd();
 const specs = [
-  { key: "hero", path: "public/assets/models/characters/hero.glb", nodes: ["HeroRoot", "weapon_socket.R", "ranged_socket"], animations: ["Idle", "Walk", "Run", "MeleeAttack", "RangedAttack", "Hit", "Death"] },
+  { key: "hero", path: "public/assets/models/characters/hero.glb", nodes: ["HeroRoot", "HeroSkeleton", "weapon_socket.R", "ranged_socket"], animations: ["Idle", "Walk", "Run", "MeleeAttack", "RangedAttack", "Hit", "Death"], skeletons: 1 },
   { key: "turret_basic", path: "public/assets/models/buildings/turret_basic.glb", nodes: ["TurretRoot", "yawPivot", "pitchPivot", "barrel", "muzzle", "recoilPart"], animations: ["Idle", "Aim", "Fire", "Recoil", "Reload"] },
   { key: "wall_gate", path: "public/assets/models/buildings/wall_gate.glb", nodes: ["WallGateRoot", "gateRoot", "gateDoorLeft", "gateDoorRight", "gateCollider", "friendlyPassTrigger"], animations: ["GateOpen", "GateClose", "Damaged", "Destroyed"] },
 ];
@@ -33,29 +33,53 @@ function validate(spec, glb) {
   const warnings = [];
   const missingNodes = spec.nodes.filter((name) => !names.has(name));
   const missingAnimations = spec.animations.filter((name) => !animations.has(name));
+  const skeletonCount = (json.skins ?? []).length;
   const externalUris = [];
   for (const image of json.images ?? []) if (image.uri) externalUris.push(image.uri);
   for (const buffer of json.buffers ?? []) if (buffer.uri) externalUris.push(buffer.uri);
+  const triangles = (json.meshes ?? []).reduce((sum, mesh) => sum + (mesh.primitives ?? []).reduce((inner, primitive) => {
+    const accessor = json.accessors?.[primitive.indices];
+    return inner + (accessor ? Math.floor((accessor.count ?? 0) / 3) : 0);
+  }, 0), 0);
   if (externalUris.length) warnings.push(`External URIs found: ${externalUris.join(", ")}`);
   if ((json.cameras ?? []).length) warnings.push("Cameras are present in export.");
   if ((json.lights ?? []).length) warnings.push("Lights are present in export.");
+  if (skeletonCount < (spec.skeletons ?? 0)) warnings.push(`Skeleton requirement not met: ${skeletonCount}`);
+  if (/([A-Za-z]:\\|\/Users\/|\/home\/)/.test(JSON.stringify(json))) warnings.push("Absolute filesystem path found in GLB metadata.");
+  if ((json.meshes ?? []).length < 2 || triangles < 24) warnings.push("Asset is too small to be a finished authored model.");
   const collisionNodes = (json.nodes ?? []).filter((node) => {
     const name = String(node.name ?? "").toLowerCase();
     return name.includes("col_") || name.includes("collision") || name.includes("collider");
   });
   if (collisionNodes.some((node) => node.mesh !== undefined)) warnings.push("Collision nodes should not be renderable.");
-  const triangles = (json.meshes ?? []).reduce((sum, mesh) => sum + (mesh.primitives ?? []).reduce((inner, primitive) => {
-    const accessor = json.accessors?.[primitive.indices];
-    return inner + (accessor ? Math.floor((accessor.count ?? 0) / 3) : 0);
-  }, 0), 0);
+  const parentNodes = new Set((json.nodes ?? []).flatMap((node) => node.children ?? []));
+  const rootTransforms = (json.nodes ?? []).map((node, index) => ({
+    index,
+    name: node.name ?? `node.${index}`,
+    translation: node.translation ?? [0, 0, 0],
+    scale: node.scale ?? [1, 1, 1],
+  })).filter((node) => !parentNodes.has(node.index));
+  if (rootTransforms.some((node) => node.scale.some((value) => Math.abs(value - 1) > 0.001))) warnings.push("Root transform has non-unit scale.");
+  const bounds = { min: [Infinity, Infinity, Infinity], max: [-Infinity, -Infinity, -Infinity] };
+  for (const mesh of json.meshes ?? []) for (const primitive of mesh.primitives ?? []) {
+    const accessor = json.accessors?.[primitive.attributes?.POSITION];
+    if (!accessor?.min || !accessor?.max) continue;
+    for (let axis = 0; axis < 3; axis++) {
+      bounds.min[axis] = Math.min(bounds.min[axis], accessor.min[axis]);
+      bounds.max[axis] = Math.max(bounds.max[axis], accessor.max[axis]);
+    }
+  }
   if (triangles > 60000) warnings.push(`Triangle budget exceeded: ${triangles}`);
   return {
     key: spec.key,
-    status: missingNodes.length || missingAnimations.length || externalUris.length ? "invalid" : "ok",
+    status: missingNodes.length || missingAnimations.length || externalUris.length || skeletonCount < (spec.skeletons ?? 0) || warnings.some((warning) => warning.includes("Absolute filesystem") || warning.includes("too small")) ? "invalid" : "ok",
     path: spec.path,
     nodes: (json.nodes ?? []).length,
     meshes: (json.meshes ?? []).length,
     materials: (json.materials ?? []).length,
+    skeletons: skeletonCount,
+    rootTransforms,
+    bounds: bounds.min[0] === Infinity ? null : bounds,
     animations: [...animations],
     triangles,
     missingNodes,
@@ -71,7 +95,7 @@ for (const spec of specs) {
     await stat(path);
     results.push(validate(spec, await readFile(path)));
   } catch (error) {
-    results.push({ key: spec.key, status: "blocked", path: spec.path, missingNodes: [], missingAnimations: [], warnings: [error.code === "ENOENT" ? "GLB not generated yet; install Blender and run npm run art:export." : String(error.message)] });
+    results.push({ key: spec.key, status: "blocked", path: spec.path, missingNodes: [], missingAnimations: [], skeletons: 0, warnings: [error.code === "ENOENT" ? "GLB not generated yet; install Blender and run npm run art:export." : String(error.message)] });
   }
 }
 
