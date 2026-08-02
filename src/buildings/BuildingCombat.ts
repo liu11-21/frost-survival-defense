@@ -72,6 +72,8 @@ function fireSingleBolt(building: Building, ctx: CombatContext): boolean {
   }
 
   const power = building.attackPower * ctx.scaling.towerAttack;
+  building.aimAt(best.position.x, best.position.z);
+  building.pulseRecoil();
   ctx.vfx.burstAt("muzzleFlash", building.position.x, building.position.z, 12);
   const targets = building.isSky
     ? [best, ...visible.filter((candidate) => candidate !== best).sort((a, b) =>
@@ -139,6 +141,8 @@ function fireSlowBolt(building: Building, ctx: CombatContext): boolean {
 
   const radius = def.areaRadius ?? 2;
   const power = building.attackPower * ctx.scaling.towerAttack;
+  building.aimAt(target.position.x, target.position.z);
+  building.pulseRecoil();
   ctx.vfx.burstAt("frostCast", building.position.x, building.position.z, 20);
   ctx.projectiles.fire("frostShard", building.position.x, 1.0, building.position.z, target, (hx, hz) => {
     ctx.areaDamage("ally", hx, hz, radius, power, def.maxAreaTargets ?? 5, (hit) => {

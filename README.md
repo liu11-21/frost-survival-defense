@@ -39,6 +39,24 @@ npm run preview
 
 Requires Node 18+ and a desktop browser with WebGL2 (Chrome, Edge, Firefox).
 
+### Blender → GLB art pipeline
+
+The game keeps its procedural meshes as a safe fallback, while authored assets
+live in `assets-source/blender/` and export to `public/assets/models/`. The
+Babylon `AssetRegistry` validates required nodes and animation names before any
+GLB is instantiated.
+
+```bash
+npm run art:template   # create the metric Blender template
+npm run art:export     # build hero, basic turret and wall/gate GLBs
+npm run art:validate   # write reports/art-validation.json
+```
+
+Blender is optional for development and was not present when this pipeline was
+added. Install Blender LTS, add its executable to `PATH` or set `BLENDER_PATH`,
+then run the commands above. Missing/invalid files are reported and never make
+the game unplayable.
+
 **New here? Pick 教學關卡 from the main menu.** It teaches movement, gathering, building,
 recruiting, furnace upgrades and defending — one task at a time, and it can be skipped or replayed.
 **圖鑑 (Codex)**, also on the main menu, documents every ally, enemy, building, resource and rule

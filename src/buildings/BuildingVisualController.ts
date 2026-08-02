@@ -3,7 +3,11 @@ import { BuildingAnimator } from "../construction/BuildingAnimator";
 import type { BuildingType } from "../data/BuildingDefinitions";
 import type { GameEvents } from "../game/GameEvents";
 import type { MaterialFactory } from "../scene/MaterialFactory";
+import type { AssetInstance } from "../assets/AssetTypes";
+import type { AssetRegistry } from "../assets/AssetRegistry";
+import { findAnimationGroup } from "../assets/AnimationRegistry";
 import { createBuildingVisual } from "./BuildingMeshFactory";
+import type { BuildStageDef } from "../construction/BuildingAnimator";
 
 export type VisualPhase =
   | "constructing"
@@ -40,6 +44,9 @@ export class BuildingVisualController {
   private rootNode: TransformNode;
   private readonly ownedMeshes: Mesh[];
   private readonly stageMeshes: Mesh[][];
+  private authored: AssetInstance | null = null;
+  private readonly authoredKey: "turret_basic" | "wall_gate" | null;
+  private recoilTime = 0;
   private phase: VisualPhase = "constructing";
   private demolishTime = 0;
 
@@ -53,8 +60,12 @@ export class BuildingVisualController {
     private readonly z: number,
     private readonly yaw: number,
     private readonly elevation = 0,
+    private readonly assets?: AssetRegistry,
   ) {
-    const visual = createBuildingVisual(scene, materials, type, x, z, yaw, slotId);
+    this.authoredKey = type === "wall" ? "wall_gate" : type === "tower" ? "turret_basic" : null;
+    const authored = this.authoredKey ? assets?.instantiate(this.authoredKey, `${type}.${slotId}`) ?? null : null;
+    const visual = authored ? authoredVisual(authored, scene, x, z, yaw, elevation) : createBuildingVisual(scene, materials, type, x, z, yaw, slotId);
+    this.authored = authored;
     this.rootNode = visual.root;
     this.rootNode.position.y = elevation;
     this.ownedMeshes = visual.body;
@@ -82,6 +93,11 @@ export class BuildingVisualController {
   update(dt: number): void {
     if (this.phase === "disposed") return;
     this.animator.update(dt);
+    if (this.recoilTime > 0) {
+      this.recoilTime = Math.max(0, this.recoilTime - dt);
+      const recoil = this.authored?.nodes.find((node) => node.name.endsWith(":recoilPart"));
+      if (recoil && "position" in recoil) (recoil as TransformNode).position.z = this.recoilTime > 0 ? -0.12 : 0;
+    }
     if (!this.animator.isFinished) return;
     if (this.phase === "constructing") {
       this.phase = "completed";
@@ -145,9 +161,15 @@ export class BuildingVisualController {
   repair(): void {
     if (this.phase === "disposed") return;
     this.disposeMeshes();
-    this.rootNode.dispose(true, false);
+    this.authored?.dispose();
+    this.authored = null;
+    this.rootNode.dispose(false, false);
 
-    const visual = createBuildingVisual(this.scene, this.materials, this.type, this.x, this.z, this.yaw, this.slotId);
+    const authored = this.authoredKey ? this.assets?.instantiate(this.authoredKey, `${this.type}.${this.slotId}.repair`) ?? null : null;
+    const visual = authored
+      ? authoredVisual(authored, this.scene, this.x, this.z, this.yaw, this.elevation)
+      : createBuildingVisual(this.scene, this.materials, this.type, this.x, this.z, this.yaw, this.slotId);
+    this.authored = authored;
     this.rootNode = visual.root;
     this.rootNode.position.y = this.elevation;
     replaceContents(this.ownedMeshes, visual.body);
@@ -188,7 +210,30 @@ export class BuildingVisualController {
     if (this.phase === "disposed") return;
     this.phase = "disposed";
     this.disposeMeshes();
-    this.rootNode.dispose(true, false);
+    this.authored?.dispose();
+    this.authored = null;
+    this.rootNode.dispose(false, false);
+  }
+
+  /** Optional authored turret hook; procedural buildings simply ignore it. */
+  aimAt(x: number, z: number): void {
+    const pivot = this.authored?.nodes.find((node) => node.name.endsWith(":yawPivot"));
+    if (pivot && "rotation" in pivot) (pivot as TransformNode).rotation.y = Math.atan2(x - this.x, z - this.z) - this.yaw;
+  }
+
+  /** Optional authored recoil hook; the normal Babylon VFX remains active. */
+  pulseRecoil(): void {
+    if (!this.authored) return;
+    const group = findAnimationGroup(this.authored.animationGroups, "Recoil");
+    if (group) group.start(false);
+    this.recoilTime = 0.12;
+  }
+
+  /** Plays the authored friendly gate clip when a wall is built or breached. */
+  setGateOpen(open: boolean): void {
+    if (this.type !== "wall" || !this.authored) return;
+    const group = findAnimationGroup(this.authored.animationGroups, open ? "GateOpen" : "GateClose");
+    group?.start(false);
   }
 
   private disposeMeshes(): void {
@@ -196,6 +241,15 @@ export class BuildingVisualController {
       if (!mesh.isDisposed()) mesh.dispose(false, false);
     }
   }
+}
+
+function authoredVisual(instance: AssetInstance, _scene: Scene, x: number, z: number, yaw: number, elevation: number): { root: TransformNode; stages: BuildStageDef[]; body: Mesh[] } {
+  instance.root.position.set(x, elevation, z);
+  instance.root.rotation.y = yaw;
+  const body = instance.meshes as Mesh[];
+  const anchor = instance.root.position.clone();
+  const stages: BuildStageDef[] = [{ name: "authored", meshes: body, anchor }];
+  return { root: instance.root, stages, body };
 }
 
 function replaceContents<T>(target: T[], next: ReadonlyArray<T>): void {

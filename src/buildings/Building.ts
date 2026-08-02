@@ -12,6 +12,7 @@ import { BuildingVisualController, type VisualIntegrity } from "./BuildingVisual
 import { fireBuilding, tickBuildingCombat, attackIntervalFor } from "./BuildingCombat";
 import type { BuildSlot } from "./BuildSlot";
 import { furnaceFacilityAttackMultiplier, furnaceFacilityHealthMultiplier } from "../data/FurnaceUpgradeConfig";
+import type { AssetRegistry } from "../assets/AssetRegistry";
 
 const KIND_BY_TYPE: Record<BuildingType, TargetKind> = {
   mine: "warehouse",
@@ -74,6 +75,7 @@ export class Building implements Damageable {
     readonly slot: BuildSlot,
     healthMultiplier: number,
     furnaceLevel = 1,
+    assets?: AssetRegistry,
   ) {
     const def = BUILDING_BY_ID.get(type);
     if (!def) throw new Error(`unknown building type ${type}`);
@@ -101,6 +103,7 @@ export class Building implements Damageable {
       slot.z,
       slot.yaw,
       slot.elevation,
+      assets,
     );
   }
 
@@ -135,6 +138,9 @@ export class Building implements Damageable {
   get canBeAttacked(): boolean {
     return this.def.canBeAttacked;
   }
+  aimAt(x: number, z: number): void { this.visual.aimAt(x, z); }
+  pulseRecoil(): void { this.visual.pulseRecoil(); }
+  setGateOpen(open: boolean): void { this.visual.setGateOpen(open); }
   get isComplete(): boolean {
     return this.visual.isFinished;
   }

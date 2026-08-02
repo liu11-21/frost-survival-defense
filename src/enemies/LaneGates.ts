@@ -79,6 +79,9 @@ export class LaneGateManager {
       if (building) gate.blockers.push(building);
       gate.state = building ? (building.isComplete ? "sealed" : "partial") : "open";
       gate.breachTarget = building ?? null;
+      // The gate is an authored visual concern; collision/pathing remains the
+      // existing deterministic wall logic above.
+      building?.setGateOpen(gate.state !== "sealed");
     }
   }
 

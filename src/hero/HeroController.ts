@@ -11,6 +11,7 @@ import { yawFromDirection } from "../util/MathUtil";
 import type { GameCamera } from "../camera/GameCamera";
 import type { PlayerInput } from "../player/PlayerInput";
 import type { HeroStats } from "./HeroStats";
+import type { AssetRegistry } from "../assets/AssetRegistry";
 
 const RETARGET_INTERVAL = 0.35;
 
@@ -64,6 +65,14 @@ export class HeroController implements Damageable {
     this.avatar.animator.onChopHit = () => this.onSwingHit();
   }
 
+  /** Called after the optional GLB preload; no-op while the procedural fallback is active. */
+  applyAuthoredAsset(assets: AssetRegistry): boolean {
+    const instance = assets.instantiate("hero", "hero.player");
+    if (!instance) return false;
+    this.avatar.attachAuthored(instance);
+    return true;
+  }
+
   get position(): Vector3 {
     return this.avatar.position;
   }
@@ -92,7 +101,7 @@ export class HeroController implements Damageable {
     return this.target;
   }
   get facingYaw(): number {
-    return this.avatar.rig.root.rotation.y;
+    return this.avatar.root.rotation.y;
   }
   /** A live combat lock, rather than merely facing a recently-dead target. */
   get isAttacking(): boolean {

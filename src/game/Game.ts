@@ -310,6 +310,14 @@ export class Game {
       this.s.scene.whenReadyAsync(),
       new Promise<void>((resolve) => window.setTimeout(resolve, 5000)),
     ]);
+    // Authored GLBs are optional. The registry records missing/invalid files
+    // and leaves every procedural factory in charge when Blender exports are
+    // not present yet; a slow network cannot block the playable menu forever.
+    await Promise.race([
+      this.s.assets.preload(),
+      new Promise<void>((resolve) => window.setTimeout(resolve, 5000)),
+    ]);
+    this.s.hero.applyAuthoredAsset(this.s.assets);
     hideLoadingScreen();
     this.refitCamera();
     this.s.codex.onClose = () => this.closeCodex();

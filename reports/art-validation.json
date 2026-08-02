@@ -1,0 +1,36 @@
+{
+  "generatedAt": "2026-08-02T03:07:48.000Z",
+  "blenderRequired": true,
+  "assets": [
+    {
+      "key": "hero",
+      "status": "blocked",
+      "path": "public/assets/models/characters/hero.glb",
+      "missingNodes": [],
+      "missingAnimations": [],
+      "warnings": [
+        "GLB not generated yet; install Blender and run npm run art:export."
+      ]
+    },
+    {
+      "key": "turret_basic",
+      "status": "blocked",
+      "path": "public/assets/models/buildings/turret_basic.glb",
+      "missingNodes": [],
+      "missingAnimations": [],
+      "warnings": [
+        "GLB not generated yet; install Blender and run npm run art:export."
+      ]
+    },
+    {
+      "key": "wall_gate",
+      "status": "blocked",
+      "path": "public/assets/models/buildings/wall_gate.glb",
+      "missingNodes": [],
+      "missingAnimations": [],
+      "warnings": [
+        "GLB not generated yet; install Blender and run npm run art:export."
+      ]
+    }
+  ]
+}

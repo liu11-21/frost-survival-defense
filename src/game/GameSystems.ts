@@ -74,6 +74,7 @@ import { DebugPanels, defaultBalanceKnobs, type BalanceKnobs } from "../ui/Debug
 import { HeroSkillHud } from "../ui/HeroSkillHud";
 import { TutorialController } from "../ui/TutorialController";
 import { GameEvents } from "./GameEvents";
+import { AssetRegistry } from "../assets/AssetRegistry";
 
 /**
  * Constructs every subsystem exactly once and holds them. `Game` owns the frame
@@ -82,6 +83,8 @@ import { GameEvents } from "./GameEvents";
 export class GameSystems {
   readonly engine: Engine;
   readonly scene: Scene;
+  /** Authored GLB cache. Missing/invalid assets deliberately fall back to procedural visuals. */
+  readonly assets: AssetRegistry;
   readonly pipeline: DefaultRenderingPipeline;
   readonly events = new GameEvents();
   readonly materials: MaterialFactory;
@@ -162,6 +165,7 @@ export class GameSystems {
     const bundle = createScene(this.engine);
     this.scene = bundle.scene;
     this.pipeline = bundle.pipeline;
+    this.assets = new AssetRegistry(this.scene);
 
     this.materials = new MaterialFactory(this.scene);
     this.lighting = new LightingSetup(this.scene);
@@ -214,6 +218,7 @@ export class GameSystems {
       this.world,
       this.pickups,
       this.collision,
+      this.assets,
     );
     this.buildings.onStructureDamaged = (building) => this.healthBars.reveal(building);
     // SquadManager is built first so its constructor never depends on a
@@ -418,6 +423,7 @@ export class GameSystems {
     this.audio.dispose();
     this.heat.dispose();
     this.materials.dispose();
+    this.assets.dispose();
     this.events.dispose();
     this.scene.dispose();
     this.engine.dispose();

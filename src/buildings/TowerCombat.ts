@@ -43,6 +43,8 @@ export function fireTower(tower: Building, ctx: CombatContext): boolean {
 
   const power = tower.attackPower * ctx.scaling.towerAttack;
   const primary = candidates.find((candidate) => candidate.position.x === bestX && candidate.position.z === bestZ) ?? candidates[0];
+  tower.aimAt(bestX, bestZ);
+  tower.pulseRecoil();
   const previous = comboByTower.get(tower);
   const combo = tower.isSky && previous?.targetId === primary.damageId
     ? Math.min(previous.hits, 10)

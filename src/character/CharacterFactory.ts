@@ -3,6 +3,7 @@ import { MaterialFactory } from "../scene/MaterialFactory";
 import { CharacterAnimator } from "./CharacterAnimator";
 import { createHumanoid, type HumanoidPalette, type HumanoidRig } from "./ProceduralHumanoid";
 import { dampAngle } from "../util/MathUtil";
+import type { AssetInstance } from "../assets/AssetTypes";
 
 export const PALETTES: Record<string, HumanoidPalette> = {
   player: {
@@ -48,6 +49,8 @@ export class CharacterAvatar {
   readonly position: Vector3;
   private _yaw = 0;
   private readonly velocity = new Vector3();
+  private authored: AssetInstance | null = null;
+  private authoredState = "";
 
   constructor(
     scene: Scene,
@@ -62,6 +65,24 @@ export class CharacterAvatar {
 
   get root(): TransformNode {
     return this.rig.root;
+  }
+
+  get renderMeshes(): readonly import("@babylonjs/core").AbstractMesh[] {
+    return this.authored?.meshes ?? this.rig.meshes;
+  }
+
+  /** Replaces only the visible body; movement/collision still use the rig root. */
+  attachAuthored(instance: AssetInstance): void {
+    this.authored?.dispose();
+    this.authored = instance;
+    instance.root.parent = this.rig.root;
+    instance.root.position.set(0, 0, 0);
+    instance.root.rotation.setAll(0);
+    for (const mesh of this.rig.meshes) {
+      mesh.isVisible = false;
+      mesh.setEnabled(false);
+    }
+    this.authoredState = "";
   }
 
   get yaw(): number {
@@ -84,14 +105,29 @@ export class CharacterAvatar {
 
   update(dt: number, speed: number, carryRatio: number): void {
     this.animator.update(dt, speed, carryRatio);
+    this.updateAuthoredAnimation();
   }
 
   setEnabled(enabled: boolean): void {
     this.rig.root.setEnabled(enabled);
+    this.authored?.root.setEnabled(enabled);
   }
 
   dispose(): void {
+    this.authored?.dispose();
+    this.authored = null;
     this.rig.root.dispose(false, true);
+  }
+
+  private updateAuthoredAnimation(): void {
+    if (!this.authored) return;
+    const state = this.animator.currentState;
+    if (state === this.authoredState) return;
+    this.authoredState = state;
+    for (const group of this.authored.animationGroups) group.stop();
+    const name = state === "sprint" ? "Run" : state === "walk" || state === "carryWalk" ? "Walk" : state === "chop" ? "MeleeAttack" : state === "frozen" ? "Hit" : state === "wakeUp" ? "Idle" : "Idle";
+    const group = this.authored.animationGroups.find((candidate) => candidate.name === name || candidate.name.endsWith(`:${name}`));
+    group?.start(name === "Idle" || name === "Walk" || name === "Run", 1);
   }
 }
 

@@ -1,5 +1,14 @@
 # 變更脈絡
 
+## 2026-08-02｜Blender 製作 3D 資產 → GLB → Babylon.js 整合
+
+- 建立 `assets-source/` Blender 工作區、風格規範、概念圖流程、授權紀錄與可重複執行的英雄／基礎砲塔／城牆閘門建模腳本。
+- 新增 `art:template`、`art:hero`、`art:turret`、`art:wall`、`art:export`、`art:validate` 指令；模型驗證器會輸出 `reports/art-validation.json`，缺少 GLB 時明確標記為 `blocked`。
+- 新增 Babylon `AssetRegistry`／`ModelLoader` 快取、節點與動畫契約驗證、碰撞網格隱藏，以及載入失敗時的程序化模型回退；建築與主角均有 authored visual hook。
+- 已檢查本機 Blender：目前未安裝，因此本次不宣稱已產出任何 GLB 或 `.blend` 二進位檔；安裝 Blender LTS 後執行 `npm run art:export` 即可生成。
+- 驗證結果：`npm run typecheck`、production build、`node tools/playtest.mjs --suite v9`（75/75）與 `--suite v10`（12/12）通過；`git diff --check` 通過。完整預設 suite 超過本次命令執行時間上限，未將其誤報為通過。
+- 測試說明同步放在 `docs/art/TESTING.md`，涵蓋 Blender 缺失時的 blocked 報告與 GLB 生成後的嚴格驗證。
+
 ## 2026-08-01｜火爐擴張、天空設施與空軍系統
 
 ### 本節點完成

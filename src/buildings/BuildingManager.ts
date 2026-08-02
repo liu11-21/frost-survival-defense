@@ -23,6 +23,7 @@ import { canDemolish, type DemolishCheck } from "./Demolition";
 import { completeDemolition } from "./DemolitionRunner";
 import { buildVisualReport, revalidateAll, type VisualReportRow } from "./VisualReport";
 import { RebuildQueue } from "./RebuildQueue";
+import type { AssetRegistry } from "../assets/AssetRegistry";
 
 export interface BuildResult {
   ok: boolean;
@@ -64,6 +65,7 @@ export class BuildingManager {
     private readonly world: CombatWorld,
     private readonly pickups: PickupPool,
     private readonly collision: CollisionWorld,
+    private readonly assets?: AssetRegistry,
   ) {
     for (const def of BUILD_SLOTS) this.slots.push(new BuildSlot(def));
   }
@@ -186,6 +188,7 @@ export class BuildingManager {
       slot,
       healthMultiplier,
       this.furnaceLevel,
+      this.assets,
     );
     slot.building = building;
     if (building.def.canBeAttacked) {
