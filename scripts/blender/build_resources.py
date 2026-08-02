@@ -14,6 +14,7 @@ HERE = os.path.dirname(os.path.abspath(__file__))
 sys.path.append(HERE)
 from common import (  # noqa: E402
     add_lod_markers,
+    author_surface_paint,
     box,
     collision_box,
     cone,
@@ -73,6 +74,7 @@ def build_tree():
         torus("resource_stump_ring", 0.24, 0.025, (0, 0.36, 0), bark_dark, "LOD0"),
         sphere("resource_pinecone", 0.10, (-0.28, 1.62, 0.12), bark_dark),
     ]
+    author_surface_paint(parts, seed=59)
     parent_all(parts, root)
     collision_box("COL_Resource", (1.25, 3.1, 1.25), (0, 1.55, 0), root)
     source, output = output_paths("resource_tree")
@@ -106,6 +108,7 @@ def build_rock():
         sphere("resource_snow_lump.L", 0.16, (-0.52, 0.72, -0.20), snow),
         sphere("resource_snow_lump.R", 0.13, (0.42, 0.56, -0.22), snow),
     ]
+    author_surface_paint(parts, seed=61)
     parent_all(parts, root)
     collision_box("COL_Resource", (1.65, 1.3, 1.45), (0, 0.65, 0), root)
     source, output = output_paths("resource_rock")

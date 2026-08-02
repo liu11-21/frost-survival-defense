@@ -210,3 +210,26 @@
 - This remains an authored stylized low-poly pass. Manual UV/layout,
   hand-painted texture breakup, sculpted facial/cloth refinement and final
   commercial art-direction sign-off are still explicitly pending.
+
+## 2026-08-02 | glTF surface contract and hero orientation audit
+
+- Added deterministic planar UVs and `ArtTint` vertex colours to every
+  authored render mesh. The exporter-compatible graph emits `TEXCOORD_0` and
+  `COLOR_0` in all 42 GLBs. A nested packed-texture experiment was removed
+  after it caused Blender's stock exporter to omit the vertex colour channel.
+- Rebuilt the complete library with Blender 5.2.0 LTS: 42 GLBs,
+  27,446,080 bytes total, zero external image URIs; `art:validate` reports
+  42/42 `ok` with no blocked assets. Both review sheets were regenerated.
+- Recorded representative asset contracts: hero 784,876 bytes / 111 nodes /
+  85 meshes / 10 materials / one skeleton / 12,168 triangles / seven clips;
+  turret 281,564 bytes / 33 nodes / 27 meshes / eight materials / 5,272
+  triangles / five clips; wall gate 331,804 bytes / 54 nodes / 44 meshes /
+  seven materials / 5,344 triangles / four clips.
+- Documented the hero movement report: authored face markers and gameplay
+  movement both use local +Z, while the follow camera is on the south
+  (negative-Z) side. Moving toward the furnace therefore shows the hero's
+  back; it is not reversed input or a backwards animation. Runtime
+  face-marker calibration remains fail-safe in `HeroController`.
+- Regression evidence: v9 75/75, v10 12/12, typecheck and production build
+  all pass. The authored stylized low-poly assets still need manual UV,
+  hand-painted texture, sculpted form and final human art-direction review.

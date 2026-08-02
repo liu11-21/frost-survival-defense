@@ -10,6 +10,7 @@ sys.path.append(HERE)
 from common import (  # noqa: E402
     add_simple_animation,
     add_lod_markers,
+    author_surface_paint,
     assign_surface_variants,
     box,
     collision_box,
@@ -494,6 +495,7 @@ def build_facility(key, cfg):
         ("_metal", mats["metalLight"], mats["metal"]),
         ("_accent", mats["snow"], mats["accent"]),
     ])
+    author_surface_paint(parts + functional, seed=sum(ord(char) for char in key))
     parent_all(parts + functional, root)
     collision_box("COL_Building", (2.5, 3.5, 2.5), (0, 1.5, 0), root)
     if kind not in ("mine", "goldMine", "lumberyard", "warehouse", "recruitHall", "autoCollector", "autoRebuilder", "furnace"):

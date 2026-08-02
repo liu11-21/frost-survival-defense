@@ -187,3 +187,35 @@ sculpted facial/cloth forms and final art-direction sign-off remain pending.
 - This is still a stylized authored low-poly presentation pass, not final UV,
   hand-painted texture, hand-sculpted facial/cloth or human art-direction
   sign-off. The manual top-five refinement list above remains open.
+
+## Seventh-pass glTF surface contract and orientation audit (2026-08-02)
+
+- Added deterministic planar `UVMap` data and a restrained `ArtTint` corner
+  colour layer to every authored render mesh. The Blender 5.2 glTF exporter
+  now emits `TEXCOORD_0` and `COLOR_0` for all 42 runtime GLBs without
+  external image URIs. A packed texture experiment was removed because the
+  nested shader graph made Blender drop `COLOR_0`; the shipped graph stays on
+  the exporter-compatible Vertex Color -> Mix -> Base Color path.
+- Rebuilt and exported the full library with Blender 5.2.0 LTS. The direct
+  inventory is 42 GLBs / 27,446,080 bytes; `reports/art-validation.json` is
+  42/42 `ok`, with zero blocked assets, zero external images and no missing
+  `TEXCOORD_0`/`COLOR_0` attributes.
+- Representative contracts: `hero.glb` is 784,876 bytes / 111 nodes / 85
+  meshes / 10 materials / one skeleton / 12,168 triangles / seven clips;
+  `turret_basic.glb` is 281,564 bytes / 33 nodes / 27 meshes / eight
+  materials / 5,272 triangles / five clips; `wall_gate.glb` is 331,804 bytes
+  / 54 nodes / 44 meshes / seven materials / 5,344 triangles / four clips.
+- The hero's authored face markers (`head.nose`, `head.eye.L/R`) point along
+  local +Z, matching `yawFromDirection` and the movement vector. The camera
+  follows from the south (negative Z), so walking north toward the furnace
+  makes the camera see the hero's back. This is a camera-side view, not a
+  reversed input, velocity or animation direction; the runtime front
+  calibration remains in `src/hero/HeroController.ts`.
+- Regression evidence after the pass: v9 75/75, v10 12/12,
+  `npm run typecheck`, and `npm run build` pass. The review sheets were
+  regenerated after the final export.
+
+This contract improves runtime-ready asset data and documents the apparent
+rear-facing view, but it does not close the manual UV layout, hand-painted
+texture, hand-sculpted form or human commercial art-direction sign-off items
+listed above.

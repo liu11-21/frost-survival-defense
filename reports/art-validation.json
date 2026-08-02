@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-08-02T10:43:30.547Z",
+  "generatedAt": "2026-08-02T11:06:55.236Z",
   "blenderRequired": true,
   "assets": [
     {
@@ -56,7 +56,11 @@
         "Hit": 54,
         "Death": 54
       },
-      "triangles": 11288,
+      "triangles": 12168,
+      "surfaceAttributes": {
+        "TEXCOORD_0": true,
+        "COLOR_0": true
+      },
       "lodProxies": {
         "LOD1": 2,
         "LOD2": 2
@@ -115,7 +119,11 @@
         "Recoil": 2,
         "Reload": 1
       },
-      "triangles": 5032,
+      "triangles": 5272,
+      "surfaceAttributes": {
+        "TEXCOORD_0": true,
+        "COLOR_0": true
+      },
       "lodProxies": {
         "LOD1": 2,
         "LOD2": 2
@@ -172,7 +180,11 @@
         "GateOpen": 2,
         "GateClose": 2
       },
-      "triangles": 4864,
+      "triangles": 5344,
+      "surfaceAttributes": {
+        "TEXCOORD_0": true,
+        "COLOR_0": true
+      },
       "lodProxies": {
         "LOD1": 1,
         "LOD2": 1
@@ -233,7 +245,11 @@
         "Hit": 54,
         "Death": 54
       },
-      "triangles": 12956,
+      "triangles": 13196,
+      "surfaceAttributes": {
+        "TEXCOORD_0": true,
+        "COLOR_0": true
+      },
       "lodProxies": {
         "LOD1": 2,
         "LOD2": 2
@@ -294,7 +310,11 @@
         "Hit": 54,
         "Death": 54
       },
-      "triangles": 11740,
+      "triangles": 11980,
+      "surfaceAttributes": {
+        "TEXCOORD_0": true,
+        "COLOR_0": true
+      },
       "lodProxies": {
         "LOD1": 2,
         "LOD2": 2
@@ -355,7 +375,11 @@
         "Hit": 54,
         "Death": 54
       },
-      "triangles": 12108,
+      "triangles": 12348,
+      "surfaceAttributes": {
+        "TEXCOORD_0": true,
+        "COLOR_0": true
+      },
       "lodProxies": {
         "LOD1": 2,
         "LOD2": 2
@@ -416,7 +440,11 @@
         "Hit": 54,
         "Death": 54
       },
-      "triangles": 10708,
+      "triangles": 10948,
+      "surfaceAttributes": {
+        "TEXCOORD_0": true,
+        "COLOR_0": true
+      },
       "lodProxies": {
         "LOD1": 2,
         "LOD2": 2
@@ -477,7 +505,11 @@
         "Hit": 54,
         "Death": 54
       },
-      "triangles": 10904,
+      "triangles": 11304,
+      "surfaceAttributes": {
+        "TEXCOORD_0": true,
+        "COLOR_0": true
+      },
       "lodProxies": {
         "LOD1": 2,
         "LOD2": 2
@@ -538,7 +570,11 @@
         "Hit": 54,
         "Death": 54
       },
-      "triangles": 11740,
+      "triangles": 12060,
+      "surfaceAttributes": {
+        "TEXCOORD_0": true,
+        "COLOR_0": true
+      },
       "lodProxies": {
         "LOD1": 2,
         "LOD2": 2
@@ -599,7 +635,11 @@
         "Hit": 54,
         "Death": 54
       },
-      "triangles": 11528,
+      "triangles": 11768,
+      "surfaceAttributes": {
+        "TEXCOORD_0": true,
+        "COLOR_0": true
+      },
       "lodProxies": {
         "LOD1": 2,
         "LOD2": 2
@@ -660,7 +700,11 @@
         "Hit": 54,
         "Death": 54
       },
-      "triangles": 11928,
+      "triangles": 12168,
+      "surfaceAttributes": {
+        "TEXCOORD_0": true,
+        "COLOR_0": true
+      },
       "lodProxies": {
         "LOD1": 2,
         "LOD2": 2
@@ -721,7 +765,11 @@
         "Hit": 54,
         "Death": 54
       },
-      "triangles": 11880,
+      "triangles": 12200,
+      "surfaceAttributes": {
+        "TEXCOORD_0": true,
+        "COLOR_0": true
+      },
       "lodProxies": {
         "LOD1": 2,
         "LOD2": 2
@@ -782,7 +830,11 @@
         "Hit": 54,
         "Death": 54
       },
-      "triangles": 12132,
+      "triangles": 12372,
+      "surfaceAttributes": {
+        "TEXCOORD_0": true,
+        "COLOR_0": true
+      },
       "lodProxies": {
         "LOD1": 2,
         "LOD2": 2
@@ -843,7 +895,11 @@
         "Hit": 54,
         "Death": 54
       },
-      "triangles": 11152,
+      "triangles": 11392,
+      "surfaceAttributes": {
+        "TEXCOORD_0": true,
+        "COLOR_0": true
+      },
       "lodProxies": {
         "LOD1": 2,
         "LOD2": 2
@@ -904,7 +960,11 @@
         "Hit": 54,
         "Death": 54
       },
-      "triangles": 11684,
+      "triangles": 11924,
+      "surfaceAttributes": {
+        "TEXCOORD_0": true,
+        "COLOR_0": true
+      },
       "lodProxies": {
         "LOD1": 2,
         "LOD2": 2
@@ -965,7 +1025,11 @@
         "Hit": 54,
         "Death": 54
       },
-      "triangles": 11772,
+      "triangles": 12012,
+      "surfaceAttributes": {
+        "TEXCOORD_0": true,
+        "COLOR_0": true
+      },
       "lodProxies": {
         "LOD1": 2,
         "LOD2": 2
@@ -1026,7 +1090,11 @@
         "Hit": 54,
         "Death": 54
       },
-      "triangles": 11516,
+      "triangles": 11836,
+      "surfaceAttributes": {
+        "TEXCOORD_0": true,
+        "COLOR_0": true
+      },
       "lodProxies": {
         "LOD1": 2,
         "LOD2": 2
@@ -1087,7 +1155,11 @@
         "Hit": 54,
         "Death": 54
       },
-      "triangles": 12220,
+      "triangles": 12460,
+      "surfaceAttributes": {
+        "TEXCOORD_0": true,
+        "COLOR_0": true
+      },
       "lodProxies": {
         "LOD1": 2,
         "LOD2": 2
@@ -1148,7 +1220,11 @@
         "Hit": 54,
         "Death": 54
       },
-      "triangles": 11804,
+      "triangles": 12044,
+      "surfaceAttributes": {
+        "TEXCOORD_0": true,
+        "COLOR_0": true
+      },
       "lodProxies": {
         "LOD1": 2,
         "LOD2": 2
@@ -1209,7 +1285,11 @@
         "Hit": 54,
         "Death": 54
       },
-      "triangles": 11080,
+      "triangles": 11400,
+      "surfaceAttributes": {
+        "TEXCOORD_0": true,
+        "COLOR_0": true
+      },
       "lodProxies": {
         "LOD1": 2,
         "LOD2": 2
@@ -1270,7 +1350,11 @@
         "Hit": 54,
         "Death": 54
       },
-      "triangles": 11748,
+      "triangles": 11988,
+      "surfaceAttributes": {
+        "TEXCOORD_0": true,
+        "COLOR_0": true
+      },
       "lodProxies": {
         "LOD1": 2,
         "LOD2": 2
@@ -1331,7 +1415,11 @@
         "Hit": 54,
         "Death": 54
       },
-      "triangles": 12404,
+      "triangles": 12644,
+      "surfaceAttributes": {
+        "TEXCOORD_0": true,
+        "COLOR_0": true
+      },
       "lodProxies": {
         "LOD1": 2,
         "LOD2": 2
@@ -1392,7 +1480,11 @@
         "Hit": 54,
         "Death": 54
       },
-      "triangles": 11180,
+      "triangles": 11580,
+      "surfaceAttributes": {
+        "TEXCOORD_0": true,
+        "COLOR_0": true
+      },
       "lodProxies": {
         "LOD1": 2,
         "LOD2": 2
@@ -1453,7 +1545,11 @@
         "Hit": 54,
         "Death": 54
       },
-      "triangles": 10500,
+      "triangles": 10740,
+      "surfaceAttributes": {
+        "TEXCOORD_0": true,
+        "COLOR_0": true
+      },
       "lodProxies": {
         "LOD1": 2,
         "LOD2": 2
@@ -1514,7 +1610,11 @@
         "Hit": 54,
         "Death": 54
       },
-      "triangles": 12572,
+      "triangles": 12812,
+      "surfaceAttributes": {
+        "TEXCOORD_0": true,
+        "COLOR_0": true
+      },
       "lodProxies": {
         "LOD1": 2,
         "LOD2": 2
@@ -1575,7 +1675,11 @@
         "Hit": 54,
         "Death": 54
       },
-      "triangles": 13772,
+      "triangles": 14012,
+      "surfaceAttributes": {
+        "TEXCOORD_0": true,
+        "COLOR_0": true
+      },
       "lodProxies": {
         "LOD1": 2,
         "LOD2": 2
@@ -1636,7 +1740,11 @@
         "Hit": 54,
         "Death": 54
       },
-      "triangles": 13744,
+      "triangles": 13984,
+      "surfaceAttributes": {
+        "TEXCOORD_0": true,
+        "COLOR_0": true
+      },
       "lodProxies": {
         "LOD1": 2,
         "LOD2": 2
@@ -1697,7 +1805,11 @@
         "Hit": 54,
         "Death": 54
       },
-      "triangles": 17088,
+      "triangles": 17328,
+      "surfaceAttributes": {
+        "TEXCOORD_0": true,
+        "COLOR_0": true
+      },
       "lodProxies": {
         "LOD1": 2,
         "LOD2": 2
@@ -1761,6 +1873,10 @@
         "Destroyed": 1
       },
       "triangles": 6704,
+      "surfaceAttributes": {
+        "TEXCOORD_0": true,
+        "COLOR_0": true
+      },
       "lodProxies": {
         "LOD1": 2,
         "LOD2": 2
@@ -1824,6 +1940,10 @@
         "Destroyed": 1
       },
       "triangles": 6920,
+      "surfaceAttributes": {
+        "TEXCOORD_0": true,
+        "COLOR_0": true
+      },
       "lodProxies": {
         "LOD1": 2,
         "LOD2": 2
@@ -1886,7 +2006,11 @@
         "Damaged": 1,
         "Destroyed": 1
       },
-      "triangles": 7688,
+      "triangles": 7768,
+      "surfaceAttributes": {
+        "TEXCOORD_0": true,
+        "COLOR_0": true
+      },
       "lodProxies": {
         "LOD1": 2,
         "LOD2": 2
@@ -1949,7 +2073,11 @@
         "Damaged": 1,
         "Destroyed": 1
       },
-      "triangles": 5808,
+      "triangles": 5888,
+      "surfaceAttributes": {
+        "TEXCOORD_0": true,
+        "COLOR_0": true
+      },
       "lodProxies": {
         "LOD1": 2,
         "LOD2": 2
@@ -2012,7 +2140,11 @@
         "Damaged": 1,
         "Destroyed": 1
       },
-      "triangles": 6084,
+      "triangles": 6164,
+      "surfaceAttributes": {
+        "TEXCOORD_0": true,
+        "COLOR_0": true
+      },
       "lodProxies": {
         "LOD1": 2,
         "LOD2": 2
@@ -2076,6 +2208,10 @@
         "Destroyed": 1
       },
       "triangles": 6616,
+      "surfaceAttributes": {
+        "TEXCOORD_0": true,
+        "COLOR_0": true
+      },
       "lodProxies": {
         "LOD1": 2,
         "LOD2": 2
@@ -2139,6 +2275,10 @@
         "Destroyed": 1
       },
       "triangles": 6072,
+      "surfaceAttributes": {
+        "TEXCOORD_0": true,
+        "COLOR_0": true
+      },
       "lodProxies": {
         "LOD1": 2,
         "LOD2": 2
@@ -2202,6 +2342,10 @@
         "Destroyed": 1
       },
       "triangles": 8316,
+      "surfaceAttributes": {
+        "TEXCOORD_0": true,
+        "COLOR_0": true
+      },
       "lodProxies": {
         "LOD1": 2,
         "LOD2": 2
@@ -2265,6 +2409,10 @@
         "Destroyed": 1
       },
       "triangles": 6776,
+      "surfaceAttributes": {
+        "TEXCOORD_0": true,
+        "COLOR_0": true
+      },
       "lodProxies": {
         "LOD1": 2,
         "LOD2": 2
@@ -2328,6 +2476,10 @@
         "Destroyed": 1
       },
       "triangles": 5980,
+      "surfaceAttributes": {
+        "TEXCOORD_0": true,
+        "COLOR_0": true
+      },
       "lodProxies": {
         "LOD1": 2,
         "LOD2": 2
@@ -2391,6 +2543,10 @@
         "Destroyed": 1
       },
       "triangles": 5904,
+      "surfaceAttributes": {
+        "TEXCOORD_0": true,
+        "COLOR_0": true
+      },
       "lodProxies": {
         "LOD1": 2,
         "LOD2": 2
@@ -2454,6 +2610,10 @@
         "Destroyed": 1
       },
       "triangles": 11108,
+      "surfaceAttributes": {
+        "TEXCOORD_0": true,
+        "COLOR_0": true
+      },
       "lodProxies": {
         "LOD1": 2,
         "LOD2": 2
@@ -2501,6 +2661,10 @@
       "animations": [],
       "animationChannels": {},
       "triangles": 5288,
+      "surfaceAttributes": {
+        "TEXCOORD_0": true,
+        "COLOR_0": true
+      },
       "lodProxies": {
         "LOD1": 2,
         "LOD2": 2
@@ -2547,7 +2711,11 @@
       },
       "animations": [],
       "animationChannels": {},
-      "triangles": 3336,
+      "triangles": 3436,
+      "surfaceAttributes": {
+        "TEXCOORD_0": true,
+        "COLOR_0": true
+      },
       "lodProxies": {
         "LOD1": 2,
         "LOD2": 2

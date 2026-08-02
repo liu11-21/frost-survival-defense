@@ -81,7 +81,10 @@ def apply_style(obj, mat, bevel=0.04):
     if bevel and obj.type == "MESH":
         modifier = obj.modifiers.new("soft bevel", "BEVEL")
         modifier.width = bevel
-        modifier.segments = 2
+        # Broad silhouette pieces get one extra bevel segment so they catch a
+        # deliberate highlight without turning the whole library into a
+        # subdivision-heavy asset. Small fasteners stay at two segments.
+        modifier.segments = 3 if bevel >= 0.05 else 2
     if obj.type == "MESH":
         for polygon in obj.data.polygons:
             polygon.use_smooth = True
@@ -140,6 +143,99 @@ def assign_surface_variants(objects, families):
                 polygon.material_index = light_slot
             elif polygon.normal.z < -0.72 and polygon.index % 3 == 0:
                 polygon.material_index = dark_slot
+
+
+def author_surface_paint(objects, seed=0):
+    """Author a tiny UV and vertex-paint layer for every render mesh.
+
+    The procedural palette is intentionally restrained: it supplies a soft
+    hand-painted value breakup and edge lift while retaining the existing
+    Principled material as the dominant colour.  Vertex colour is part of the
+    glTF contract (COLOR_0), so Babylon receives the breakup without a runtime
+    shader or an external texture dependency.  A deterministic planar UV map
+    is also created for every part, leaving the assets ready for a future
+    hand-painted atlas rather than shipping unwrapped primitives.
+    """
+    def connect_material(mat):
+        if mat is None or not getattr(mat, "use_nodes", False):
+            return
+        nodes = mat.node_tree.nodes
+        links = mat.node_tree.links
+        shader = nodes.get("Principled BSDF")
+        if shader is None or shader.inputs.get("Base Color") is None:
+            return
+        attr = nodes.get("ArtTint Attribute") or nodes.new("ShaderNodeVertexColor")
+        attr.name = "ArtTint Attribute"
+        attr.label = "Authored surface tint"
+        attr.layer_name = "ArtTint"
+        mix = nodes.get("ArtTint Multiply") or nodes.new("ShaderNodeMix")
+        mix.name = "ArtTint Multiply"
+        mix.label = "Subtle hand-painted value breakup"
+        mix.data_type = "RGBA"
+        mix.blend_type = "MULTIPLY"
+        mix.inputs[0].default_value = 1.0
+        base_input = shader.inputs["Base Color"]
+        # Blender 5's Mix node exposes duplicate A/B sockets for every data
+        # type; RGBA is indices 6/7. Keeping the graph in this canonical form
+        # lets the stock glTF exporter detect COLOR_0 as a base-colour factor.
+        if not mix.inputs[6].is_linked:
+            mix.inputs[6].default_value = base_input.default_value
+        if not mix.inputs[7].is_linked:
+            links.new(attr.outputs["Color"], mix.inputs[7])
+        if not base_input.is_linked or base_input.links[0].from_node != mix:
+            links.new(mix.outputs["Result"], base_input)
+        # Keep this as a single canonical Vertex Color -> Mix -> Base Color
+        # chain.  Blender's stock glTF exporter recognizes that graph as
+        # COLOR_0; nesting a packed brush texture here makes it drop the
+        # vertex attribute even though the material still renders in Blender.
+
+    for object_index, obj in enumerate(objects):
+        if obj.type != "MESH" or not obj.data.polygons:
+            continue
+        mesh = obj.data
+        for material_slot in mesh.materials:
+            connect_material(material_slot)
+        if not mesh.uv_layers:
+            uv_layer = mesh.uv_layers.new(name="UVMap")
+        else:
+            uv_layer = mesh.uv_layers.active or mesh.uv_layers[0]
+        min_x = min(vertex.co.x for vertex in mesh.vertices)
+        max_x = max(vertex.co.x for vertex in mesh.vertices)
+        min_z = min(vertex.co.z for vertex in mesh.vertices)
+        max_z = max(vertex.co.z for vertex in mesh.vertices)
+        span_x = max(max_x - min_x, 1e-4)
+        span_z = max(max_z - min_z, 1e-4)
+        for loop in mesh.loops:
+            uv_layer.data[loop.index].uv = (
+                (mesh.vertices[loop.vertex_index].co.x - min_x) / span_x,
+                (mesh.vertices[loop.vertex_index].co.z - min_z) / span_z,
+            )
+
+        color_layer = mesh.color_attributes.get("ArtTint")
+        if color_layer is None:
+            color_layer = mesh.color_attributes.new(
+                name="ArtTint", type="BYTE_COLOR", domain="CORNER"
+            )
+        for polygon in mesh.polygons:
+            normal = polygon.normal
+            normal_bias = 0.045 if normal.z > 0.55 else (-0.035 if normal.z < -0.55 else 0.0)
+            for loop_index in polygon.loop_indices:
+                # The phase avoids a visible checkerboard while keeping the
+                # result stable across repeated batch exports.
+                phase = ((object_index + 1) * 0.61803398875 + polygon.index * 0.38196601125 + seed) % 1.0
+                variation = 0.965 + phase * 0.055 + normal_bias
+                color_layer.data[loop_index].color = (
+                    max(0.82, min(1.08, variation * 1.02)),
+                    max(0.82, min(1.08, variation)),
+                    max(0.82, min(1.08, variation * 0.98)),
+                    1.0,
+                )
+        # Mark the attribute as the render colour layer. Blender's glTF
+        # exporter distinguishes this from merely having an active layer.
+        try:
+            mesh.color_attributes.render_color_index = mesh.color_attributes.find("ArtTint")
+        except (AttributeError, TypeError):
+            pass
 
 
 def box(name, dimensions, location=(0, 0, 0), mat=None, target="LOD0", bevel=0.04):

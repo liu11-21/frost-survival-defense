@@ -4,7 +4,7 @@ import bpy
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 sys.path.append(HERE)
-from common import reset_scene, material, box, prism, cylinder, sphere, empty, collision_box, parent_all, move_to, orient_for_babylon, add_lod_markers, assign_surface_variants, cone, torus, save_source, export_glb
+from common import reset_scene, material, box, prism, cylinder, sphere, empty, collision_box, parent_all, move_to, orient_for_babylon, add_lod_markers, assign_surface_variants, author_surface_paint, cone, torus, save_source, export_glb
 from build_units import make_skeleton, bind_unit_pieces, add_armature_clip
 
 
@@ -124,6 +124,7 @@ def build():
         ("_metal", metal_light, metal),
         ("_accent", snow, accent),
     ])
+    author_surface_paint(parts, seed=17)
     parent_all(parts, root)
     skeleton = make_skeleton(root)
     skeleton.name = "HeroSkeleton"

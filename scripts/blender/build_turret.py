@@ -4,7 +4,7 @@ import bpy
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 sys.path.append(HERE)
-from common import reset_scene, material, box, prism, cylinder, sphere, empty, collision_box, parent_all, orient_for_babylon, add_lod_markers, add_simple_animation, save_source, export_glb, torus, cone
+from common import reset_scene, material, box, prism, cylinder, sphere, empty, collision_box, parent_all, orient_for_babylon, add_lod_markers, add_simple_animation, author_surface_paint, save_source, export_glb, torus, cone
 
 
 def build():
@@ -47,6 +47,7 @@ def build():
         sphere("supportBoltR", 0.055, (0.24, 0.82, 0.22), snow),
         cone("muzzleCrown", 0.23, 0.16, 0.18, (0, 1.25, 1.68), metal_light, "LOD0", 8),
     ]
+    author_surface_paint(parts, seed=31)
     parent_all(parts, pitch)
     empty("muzzleAnchor", (0, 1.25, 1.68), "EXPORT").parent = pitch
     collision_box("COL_Turret", (2.1, 1.8, 2.1), (0, 0.9, 0), root)

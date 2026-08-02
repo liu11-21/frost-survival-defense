@@ -15,6 +15,7 @@ sys.path.append(HERE)
 from common import (  # noqa: E402
     add_simple_animation,
     add_lod_markers,
+    author_surface_paint,
     assign_surface_variants,
     box,
     collision_box,
@@ -808,6 +809,7 @@ def build_unit(visual, cfg):
         ("_accent", mats["highlight"], mats["accent"]),
         ("_wood", mats["leatherLight"], mats["wood"]),
     ])
+    author_surface_paint(parts, seed=sum(ord(char) for char in visual))
     parent_all(parts, root)
     skeleton = make_skeleton(root)
     bind_unit_pieces(parts, skeleton)

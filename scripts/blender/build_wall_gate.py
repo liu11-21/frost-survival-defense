@@ -4,7 +4,7 @@ import bpy
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 sys.path.append(HERE)
-from common import reset_scene, material, box, prism, cylinder, empty, collision_box, parent_all, orient_for_babylon, add_lod_markers, add_simple_animation, save_source, export_glb, torus, sphere, cone
+from common import reset_scene, material, box, prism, cylinder, empty, collision_box, parent_all, orient_for_babylon, add_lod_markers, add_simple_animation, author_surface_paint, save_source, export_glb, torus, sphere, cone
 
 
 def build():
@@ -48,6 +48,7 @@ def build():
                 box(f"wallCourse.{side}.{index}", (1.5, 0.16, 0.12), (side * 4.2, y, -0.78), stone_light, "LOD0", 0.025),
                 sphere(f"wallCourseBolt.{side}.{index}", 0.045, (side * 4.2, y, -0.92), metal),
             ]
+    author_surface_paint(parts, seed=41)
     parent_all(parts, root)
     # Armour bands, bolts and a readable gate crest give the wall a built
     # structure instead of a pair of plain rectangles.
@@ -65,6 +66,7 @@ def build():
             box(f"doorBand.{side}.upper", (0.92, 0.12, 0.08), (side * 1.25, 1.52, -0.98), metal, "LOD0", 0.02),
             sphere(f"doorHinge.{side}", 0.09, (side * 1.78, 1.24, -0.98), stone_light),
         ]
+    author_surface_paint(parts, seed=43)
     parent_all(parts, root)
     for x in (-5.0, 5.0):
         cylinder("torch", 0.12, 0.7, (x, 2.25, -0.85), fire, "LOD0", 8).parent = root
