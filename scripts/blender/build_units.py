@@ -558,6 +558,166 @@ def add_role_finish(parts, visual, cfg, mats, torso_width, heavy):
             ]
 
 
+def add_tertiary_role_finish(parts, visual, cfg, mats, torso_width, heavy):
+    """Add a final role-specific construction layer to the whole roster.
+
+    The previous role kits establish the broad silhouette.  This layer adds
+    small, authored interfaces that make the weapon, clothing and faction
+    language read from the normal game camera: bow fittings, medical
+    containers, banner stitching, armour joints and enemy hardware.  They are
+    intentionally different per role rather than a universal box overlay.
+    """
+    if visual == "archer":
+        parts += [
+            prism("head.archerHoodPeak", [(-0.22, 1.88), (0.22, 1.88), (0.08, 2.12), (-0.06, 2.05)], 0.06, (0, 0, -0.03), mats["cloth"], "LOD0", 0.012),
+            torus("arm.L.archerBracer", 0.13, 0.028, (-0.42, 0.97, 0.02), mats["metalLight"], "LOD0"),
+            torus("arm.R.archerBracer", 0.13, 0.028, (0.42, 0.97, 0.02), mats["metalLight"], "LOD0"),
+            box("weapon.archerGrip", (0.08, 0.18, 0.08), (0, 0.0, 0.10), mats["leatherLight"], "LOD0", 0.012),
+            *(cone(f"weapon.archerArrowFletch.{i}", 0.028, 0.005, 0.18, (-0.24 + i * 0.12, 1.52, -0.23), mats["highlight"], "LOD0", 5) for i in range(3)),
+        ]
+    elif visual == "shield":
+        parts += [
+            torus("offhand.shieldOuterRim", 0.40, 0.035, (-0.50, 0.90, 0.03), mats["metalLight"], "LOD0"),
+            prism("offhand.shieldChevronInset", [(-0.18, 1.10), (0.0, 0.78), (0.18, 1.10), (0.10, 1.16), (0, 0.92), (-0.10, 1.16)], 0.04, (-0.50, 0, 0.14), mats["snow"], "LOD0", 0.012),
+            box("offhand.shieldStrapPin", (0.09, 0.09, 0.06), (-0.50, 0.72, -0.15), mats["highlight"], "LOD0", 0.012),
+        ]
+    elif visual == "medic":
+        parts += [
+            box("chest.medicHarness", (0.06, 0.56, 0.05), (-0.22, 1.10, 0.28), mats["accent"], "LOD0", 0.012),
+            box("chest.medicHarness.R", (0.06, 0.56, 0.05), (0.22, 1.10, 0.28), mats["accent"], "LOD0", 0.012),
+            *(torus(f"medicBottleRing.{i}", 0.055, 0.018, (-0.30 + i * 0.20, 0.92, 0.25), mats["metalLight"], "LOD0") for i in range(4)),
+            box("medicBackFrame", (0.34, 0.42, 0.05), (0, 1.02, -0.38), mats["metalLight"], "LOD0", 0.014),
+        ]
+    elif visual == "flagbearer":
+        parts += [
+            prism("banner.pennantInset", [(-0.22, 0.86), (0.22, 0.86), (0.12, 0.62), (0.0, 0.72), (-0.14, 0.58)], 0.045, (0.2, 0.70, 0.02), mats["highlight"], "LOD0", 0.01),
+            torus("bannerPoleJoint", 0.07, 0.02, (0.0, 0.34, 0.0), mats["metalLight"], "LOD0"),
+            box("banner.poleFoot", (0.12, 0.10, 0.12), (0.0, 0.04, 0.02), mats["metal"], "LOD0", 0.012),
+            *(sphere(f"banner.stitch.{i}", 0.025, (-0.18 + i * 0.12, 0.92, 0.045), mats["gold"]) for i in range(4)),
+        ]
+    elif visual == "mage":
+        parts += [
+            torus("head.mageHatBand", 0.18, 0.022, (0, 1.92, 0.0), mats["accent"], "LOD0"),
+            *(sphere(f"head.mageRune.{i}", 0.028, (-0.12 + i * 0.12, 1.93, 0.15), mats["glow"]) for i in range(3)),
+            torus("weapon.staffFerrule", 0.09, 0.018, (0, 0.12, 0.0), mats["metalLight"], "LOD0"),
+            *(prism(f"chest.mageHem.{side}", [(-0.18, 0.70), (0.0, 0.66), (0.06, 0.42), (-0.12, 0.48)], 0.04, (side * 0.28, 0, -0.04), mats["clothLight"], "LOD0", 0.01) for side in (-1, 1)),
+        ]
+    elif visual == "assault":
+        parts += [
+            box("chest.assaultPlate.L", (0.18, 0.24, 0.06), (-0.16, 1.18, 0.34), mats["metalLight"], "LOD0", 0.014),
+            box("chest.assaultPlate.R", (0.18, 0.24, 0.06), (0.16, 1.18, 0.34), mats["metalLight"], "LOD0", 0.014),
+            box("leg.L.assaultPouch", (0.16, 0.18, 0.14), (-0.26, 0.58, -0.16), mats["leather"], "LOD0", 0.016),
+            box("leg.R.assaultPouch", (0.16, 0.18, 0.14), (0.26, 0.58, -0.16), mats["leather"], "LOD0", 0.016),
+            torus("head.assaultVisorSeal", 0.23, 0.02, (0, 1.72, 0.27), mats["accent"], "LOD0"),
+        ]
+    elif visual == "engineer":
+        parts += [
+            box("pack.engineerFrame", (0.46, 0.64, 0.06), (0, 1.02, -0.40), mats["metal"], "LOD0", 0.014),
+            torus("pack.engineerValve", 0.10, 0.022, (0.22, 1.12, -0.44), mats["accent"], "LOD0"),
+            box("head.engineerVisor", (0.34, 0.055, 0.05), (0, 1.76, 0.27), mats["glass"], "LOD0", 0.01),
+            torus("weapon.wrenchCollar", 0.09, 0.018, (0, 0.22, 0), mats["metalLight"], "LOD0"),
+        ]
+    elif visual == "musketeer":
+        parts += [
+            box("weapon.musketTriggerGuard", (0.16, 0.18, 0.045), (0, 0.02, 0.36), mats["metalLight"], "LOD0", 0.012),
+            torus("weapon.musketMuzzleRing", 0.07, 0.018, (0, 0.02, 1.22), mats["metalLight"], "LOD0"),
+            box("chest.musketeerStrap", (0.07, 0.72, 0.05), (-0.22, 1.10, 0.28), mats["leatherLight"], "LOD0", 0.012),
+            *(sphere(f"chest.musketeerButton.{i}", 0.025, (0.10, 1.30 - i * 0.12, 0.33), mats["gold"]) for i in range(3)),
+        ]
+    elif visual == "frostmage":
+        parts += [
+            torus("head.frostCrownBand", 0.24, 0.024, (0, 1.78, 0), mats["ice"], "LOD0"),
+            *(cone(f"head.frostCrownShard.{i}", 0.055, 0.008, 0.24, (-0.18 + i * 0.18, 1.98, 0.04), mats["ice"], "LOD0", 6) for i in range(3)),
+            torus("weapon.iceStaffCollar", 0.11, 0.018, (0, 0.10, 0), mats["metalLight"], "LOD0"),
+            *(sphere(f"chest.frostClasp.{i}", 0.035, (-0.16 + i * 0.16, 1.28, 0.30), mats["glow"]) for i in range(3)),
+        ]
+    elif visual == "grunt":
+        parts += [
+            torus("head.gruntBrowRing", 0.22, 0.025, (0, 1.76, 0.18), mats["metal"], "LOD0"),
+            box("chest.gruntRagPatch", (0.24, 0.20, 0.04), (0.22, 1.08, 0.29), mats["highlight"], "LOD0", 0.01),
+            *(sphere(f"weapon.gruntClubStud.{i}", 0.045, (-0.08 + i * 0.08, 0.24, 0.04), mats["metalLight"]) for i in range(3)),
+        ]
+    elif visual == "slinger":
+        parts += [
+            box("head.slingerHoodBand", (0.38, 0.05, 0.16), (0, 1.82, 0.04), mats["accent"], "LOD0", 0.012),
+            torus("weapon.slingGrip", 0.12, 0.02, (0, 0.0, 0.02), mats["metalLight"], "LOD0"),
+            *(sphere(f"pack.slingerPouchStone.{i}", 0.045, (0.22 + i * 0.07, 0.82, 0.24), mats["ice"]) for i in range(3)),
+        ]
+    elif visual == "bruiser":
+        parts += [
+            torus("chest.bruiserShoulderRing.L", 0.18, 0.03, (-0.40, 1.34, 0), mats["metalLight"], "LOD0"),
+            torus("chest.bruiserShoulderRing.R", 0.18, 0.03, (0.40, 1.34, 0), mats["metalLight"], "LOD0"),
+            *(sphere(f"weapon.bruiserKnuckle.{i}", 0.055, (-0.58 + i * 0.16, 0.72, 0.22), mats["accent"]) for i in range(3)),
+        ]
+    elif visual == "marksman":
+        parts += [
+            torus("head.marksmanHoodSeal", 0.22, 0.02, (0, 1.78, 0.05), mats["accent"], "LOD0"),
+            box("weapon.marksmanSightRail", (0.08, 0.08, 0.56), (0.20, 1.18, 0.22), mats["metalLight"], "LOD0", 0.01),
+            *(cone(f"weapon.marksmanFletch.{i}", 0.02, 0.004, 0.24, (-0.22 + i * 0.08, 1.55, -0.24), mats["ice"], "LOD0", 5) for i in range(3)),
+        ]
+    elif visual == "juggernaut":
+        parts += [
+            torus("head.juggernautHelmRim", 0.32, 0.035, (0, 1.72, 0), mats["metalLight"], "LOD0"),
+            *(sphere(f"chest.juggernautPlateBolt.{i}", 0.045, (-0.30 + i * 0.20, 1.14, 0.42), mats["accent"]) for i in range(4)),
+            box("leg.L.juggernautGreave", (0.24, 0.30, 0.06), (-0.13, 0.34, 0.16), mats["metalLight"], "LOD0", 0.014),
+            box("leg.R.juggernautGreave", (0.24, 0.30, 0.06), (0.13, 0.34, 0.16), mats["metalLight"], "LOD0", 0.014),
+        ]
+    elif visual == "bombardier":
+        parts += [
+            torus("pack.bombardierShellRing", 0.26, 0.03, (0, 1.05, -0.30), mats["metalLight"], "LOD0"),
+            *(sphere(f"pack.bombardierFuseCap.{i}", 0.05, (-0.20 + i * 0.20, 1.00, -0.30), mats["glow"]) for i in range(3)),
+            box("chest.bombardierHarness", (0.07, 0.58, 0.05), (-0.24, 1.08, 0.28), mats["accent"], "LOD0", 0.012),
+        ]
+    elif visual == "boss":
+        parts += [
+            torus("head.bossCrownBand", 0.28, 0.03, (0, 1.78, 0), mats["gold"], "LOD0"),
+            *(sphere(f"head.bossCrownRivet.{i}", 0.04, (-0.18 + i * 0.12, 1.96, 0.04), mats["glow"]) for i in range(4)),
+            box("chest.bossMantleClasp", (0.18, 0.16, 0.05), (0, 1.30, 0.33), mats["gold"], "LOD0", 0.012),
+        ]
+    elif visual == "breacher":
+        parts += [
+            torus("head.breacherHelmRing", 0.31, 0.03, (0, 1.72, 0), mats["metalLight"], "LOD0"),
+            *(sphere(f"chest.breacherHarnessBolt.{i}", 0.045, (-0.24 + i * 0.16, 1.16, 0.37), mats["accent"]) for i in range(4)),
+            torus("weapon.ramCollar", 0.16, 0.025, (0, 0.25, 0), mats["metalLight"], "LOD0"),
+        ]
+    elif visual == "icearmor":
+        parts += [
+            torus("head.icearmorCrownBand", 0.26, 0.025, (0, 1.76, 0), mats["ice"], "LOD0"),
+            *(cone(f"chest.icearmorFacet.{i}", 0.06, 0.008, 0.28, (-0.24 + i * 0.16, 1.42, 0.34), mats["ice"], "LOD0", 6) for i in range(4)),
+            box("offhand.icearmorShieldLatch", (0.12, 0.12, 0.06), (-0.50, 0.90, 0.18), mats["metalLight"], "LOD0", 0.012),
+        ]
+    elif visual == "commander":
+        parts += [
+            torus("head.commanderCrownBand", 0.28, 0.03, (0, 1.78, 0), mats["gold"], "LOD0"),
+            box("chest.commanderSashClasp", (0.14, 0.14, 0.05), (0, 1.04, 0.34), mats["gold"], "LOD0", 0.012),
+            *(sphere(f"chest.commanderMedalRivet.{i}", 0.03, (-0.10 + i * 0.10, 1.14, 0.38), mats["glow"]) for i in range(3)),
+        ]
+    elif visual == "bomber":
+        parts += [
+            torus("chest.bomberCoreRim", 0.22, 0.025, (0, 1.02, 0.34), mats["metalLight"], "LOD0"),
+            *(sphere(f"pack.bomberPodLatch.{i}", 0.045, (-0.24 + i * 0.24, 0.82, -0.42), mats["gold"]) for i in range(3)),
+            box("chest.bomberFuseGuard", (0.12, 0.16, 0.04), (0, 1.24, 0.20), mats["metal"], "LOD0", 0.01),
+        ]
+    elif visual == "flyingMelee":
+        parts += [
+            torus("head.flyingMeleeBrow", 0.24, 0.025, (0, 1.76, 0.18), mats["metalLight"], "LOD0"),
+            *(cone(f"wing.-1.flyingMeleeFeather.{i}", 0.05, 0.008, 0.30, (-0.46 - i * 0.14, 1.30 - i * 0.08, -0.14), mats["ice"], "LOD0", 6) for i in range(2)),
+            *(cone(f"wing.1.flyingMeleeFeather.{i}", 0.05, 0.008, 0.30, (0.46 + i * 0.14, 1.30 - i * 0.08, -0.14), mats["ice"], "LOD0", 6) for i in range(2)),
+        ]
+    elif visual == "flyingEliteArcher":
+        parts += [
+            torus("head.flyingEliteVisor", 0.23, 0.022, (0, 1.74, 0.25), mats["glow"], "LOD0"),
+            box("weapon.flyingEliteBowGrip", (0.08, 0.18, 0.08), (0, 0.0, 0.10), mats["leatherLight"], "LOD0", 0.01),
+            *(cone(f"weapon.flyingEliteArrowHead.{i}", 0.025, 0.004, 0.24, (-0.24 + i * 0.12, 1.56, -0.22), mats["metalLight"], "LOD0", 5) for i in range(3)),
+        ]
+    elif visual == "flyingBomber":
+        parts += [
+            torus("head.flyingBomberCoreRing", 0.24, 0.028, (0, 1.72, 0.18), mats["metalLight"], "LOD0"),
+            *(sphere(f"pack.flyingBomberBombLatch.{i}", 0.05, (-0.24 + i * 0.24, 0.80, -0.42), mats["gold"]) for i in range(3)),
+            *(box(f"wing.{side}.flyingBomberSpar", (0.06, 0.06, 0.42), (side * 0.76, 1.20, -0.15), mats["metalLight"], "LOD0", 0.01) for side in (-1, 1)),
+        ]
+
+
 def bind_unit_pieces(parts, skeleton):
     for obj in parts:
         bind_piece(obj, skeleton, bone_for_piece(obj.name))
@@ -815,6 +975,7 @@ def build_unit(visual, cfg):
 
     add_bodycraft_finish(parts, visual, cfg, mats, torso_width, heavy)
     add_role_finish(parts, visual, cfg, mats, torso_width, heavy)
+    add_tertiary_role_finish(parts, visual, cfg, mats, torso_width, heavy)
     add_unit_finish(parts, visual, cfg, mats, torso_width, heavy)
     assign_surface_variants(parts, [
         ("_cloth", mats["clothLight"], mats["cloth"]),
@@ -826,7 +987,7 @@ def build_unit(visual, cfg):
     author_surface_paint(
         parts,
         seed=sum(ord(char) for char in visual),
-        textured=visual in ("warrior", "flyingColossus"),
+        textured=True,
     )
     parent_all(parts, root)
     skeleton = make_skeleton(root)

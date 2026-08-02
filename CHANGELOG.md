@@ -267,3 +267,34 @@
 - This remains an authored stylized low-poly refinement with a deterministic
   packed brush breakup, not a claim of hand-painted UV texturing,
   hand-sculpted forms or final human commercial art-direction sign-off.
+
+## 2026-08-02 | full-roster role construction and embedded brush pass
+
+- Extended the authored construction language from the focal five to the full
+  42-asset library: every ally, enemy and flying unit now receives a
+  role-specific tertiary layer (helmets, straps, pouches, weapon hardware,
+  wing spars or other readable equipment), while every facility receives a
+  functional third layer (service rails, braces, latches, lamps, guides or
+  structural fasteners). The existing skeleton, animation and gameplay socket
+  contracts remain unchanged.
+- Enabled the deterministic packed brush image layer for every authored unit,
+  facility and resource prop. Images remain embedded in the GLBs; the
+  exporter still emits `TEXCOORD_0` and `COLOR_0`, with zero external URIs.
+- Rebuilt the full library with Blender 5.2.0 LTS and regenerated both review
+  sheets. The current inventory is 42 GLBs / 30,989,344 bytes / 487 embedded
+  images. `reports/art-validation.json` is 42/42 `ok`, zero blocked, zero
+  invalid and zero external image or buffer URIs.
+- Confirmed the apparent hero reverse-facing report in the runtime: the
+  authored face markers and `yawFromDirection` both use local +Z, W moves the
+  hero toward +Z, and the follow camera is on the south (-Z) side. The camera
+  therefore sees the hero's back while he walks toward the furnace; input,
+  velocity and walk animation are not reversed. This remains documented in
+  `src/hero/HeroController.ts` and the art audit.
+- Regression evidence after the pass: v9 75/75, v10 12/12,
+  `npm run typecheck`, and `npm run build` pass. The known Vite large-chunk
+  advisory remains informational; `npm test` is not defined in `package.json`.
+
+This is a broader authored stylized low-poly construction and embedded-surface
+pass, not a claim of human hand-painted UV layouts, hand-sculpted forms or
+final commercial art-direction sign-off. Manual review of the remaining
+commercial-art boundary is still open.

@@ -247,3 +247,39 @@ but the preview remains stylized low-poly. Manual UV layout, hand-painted
 texture breakup, hand-sculpted facial/cloth refinement and final human
 commercial art-direction sign-off remain open rather than being implied by
 the validator.
+
+## Ninth-pass full-roster construction and brush surface (2026-08-02)
+
+- The tertiary construction pass now covers every authored asset rather than
+  only the focal review set: 26 character GLBs, 14 facility GLBs and two
+  environment props. Character additions are role-specific equipment and
+  silhouette breaks; facility additions are functional service geometry and
+  structural fasteners. No required node, socket, skeleton or animation
+  contract was removed.
+- All 42 assets now use the same deterministic packed brush-image path in
+  addition to the exporter-safe ArtTint vertex colour path. The GLB inventory
+  is 30,989,344 bytes with 487 embedded images and zero external image or
+  buffer URIs. `reports/art-validation.json` is 42/42 `ok`, with no blocked,
+  invalid, missing UV/colour attributes or warnings.
+- Representative latest contracts are `hero.glb` 910,348 bytes / 123 nodes /
+  97 meshes / 10 materials / one skeleton / 14,000 triangles / seven clips;
+  `turret_basic.glb` 351,956 bytes / 39 nodes / 33 meshes / eight materials /
+  6,104 triangles / five clips; and `wall_gate.glb` 383,896 bytes / 62 nodes /
+  52 meshes / seven materials / 6,180 triangles / four clips. All three have
+  identity root translation and scale, packed images, `TEXCOORD_0`,
+  `COLOR_0` and no external URI.
+- Babylon loading and runtime evidence remains green: v9 75/75 and v10 12/12;
+  TypeScript no-emit and the production build pass. The build still reports
+  the known informational large-chunk advisory. There is no `npm test` script
+  in the current package manifest.
+- Hero orientation was rechecked against the source and live runtime. The
+  face marker (`head.nose` / `head.eye.*`) is on +Z, the movement vector and
+  `yawFromDirection` use +Z, and the camera follows from -Z. The apparent
+  backward walk is the expected rear view of a south-side follow camera, not
+  an inverted movement or animation. Changing it would be a camera/design
+  choice rather than a corrective code patch.
+
+The pass improves construction density and surface breakup across the complete
+roster, but it remains stylized procedural low-poly work. Manual UV layout,
+hand-painted texture authoring, sculpted facial/cloth forms and final human
+commercial art-direction sign-off remain open.

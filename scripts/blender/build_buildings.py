@@ -298,6 +298,79 @@ def add_signature_facility_finish(parts, kind, mats):
             ]
 
 
+def add_tertiary_facility_finish(parts, kind, mats):
+    """Add a final functional prop layer to every facility silhouette."""
+    if kind in ("mine", "goldMine"):
+        parts += [
+            box("mineHeadframe.L", (0.12, 1.25, 0.12), (-0.72, 1.02, 0.18), mats["woodLight"], "LOD0", 0.016),
+            box("mineHeadframe.R", (0.12, 1.25, 0.12), (0.72, 1.02, 0.18), mats["woodLight"], "LOD0", 0.016),
+            box("mineCrossBeam", (1.65, 0.12, 0.12), (0, 1.56, 0.18), mats["metalLight"], "LOD0", 0.014),
+            torus("mineCableGuide", 0.14, 0.022, (0, 1.48, -0.22), mats["metal"], "LOD0"),
+            *(sphere(f"mineWarningLamp.{i}", 0.04, (-0.18 + i * 0.18, 1.78, 0.20), mats["gold" if kind == "goldMine" else "glow"]) for i in range(3)),
+        ]
+    elif kind == "lumberyard":
+        parts += [
+            box("yardSawGuard.L", (0.08, 0.68, 0.08), (-0.72, 1.10, 0.72), mats["metalLight"], "LOD0", 0.014),
+            box("yardSawGuard.R", (0.08, 0.68, 0.08), (0.72, 1.10, 0.72), mats["metalLight"], "LOD0", 0.014),
+            *(cylinder(f"yardLogBand.{i}", 0.22, 0.035, (-0.58 + i * 0.58, 0.56, 0.96), mats["metal"], "LOD0", 8) for i in range(3)),
+            box("yardCraneRail", (1.8, 0.08, 0.08), (0, 1.72, 0.42), mats["metalLight"], "LOD0", 0.012),
+        ]
+    elif kind == "warehouse":
+        parts += [
+            box("warehouseDoorHandle.L", (0.06, 0.16, 0.05), (-0.12, 0.86, -1.30), mats["metalLight"], "LOD0", 0.01),
+            box("warehouseDoorHandle.R", (0.06, 0.16, 0.05), (0.12, 0.86, -1.30), mats["metalLight"], "LOD0", 0.01),
+            *(box(f"warehouseBeamBrace.{i}", (0.08, 0.08, 1.10), (-0.84 + i * 0.56, 1.18, 0.10), mats["woodLight"], "LOD0", 0.012) for i in range(4)),
+            box("warehouseLoadingLip", (1.4, 0.10, 0.16), (0, 0.38, -1.34), mats["metal"], "LOD0", 0.014),
+        ]
+    elif kind == "recruitHall":
+        parts += [
+            box("hallGateArch.L", (0.12, 1.45, 0.12), (-0.70, 1.04, -1.26), mats["woodLight"], "LOD0", 0.018),
+            box("hallGateArch.R", (0.12, 1.45, 0.12), (0.70, 1.04, -1.26), mats["woodLight"], "LOD0", 0.018),
+            prism("hallGateCrest", [(-0.28, 2.06), (0.28, 2.06), (0, 2.34)], 0.06, (0, 0, -1.30), mats["gold"], "LOD0", 0.012),
+            *(sphere(f"hallBannerStud.{i}", 0.04, (-0.22 + i * 0.22, 2.16, -1.36), mats["glow"]) for i in range(3)),
+        ]
+    elif kind == "autoCollector":
+        parts += [
+            *(torus(f"collectorPipeJoint.{side}", 0.10, 0.02, (side * 0.62, 1.92, 0), mats["metalLight"], "LOD0") for side in (-1, 1)),
+            *(box(f"collectorSensorFin.{side}", (0.06, 0.44, 0.24), (side * 0.98, 2.24, 0), mats["glass"], "LOD0", 0.012) for side in (-1, 1)),
+            sphere("collectorCoreCap", 0.14, (0, 2.92, 0), mats["glow"]),
+        ]
+    elif kind == "autoRebuilder":
+        parts += [
+            *(torus(f"rebuilderFrameJoint.{side}", 0.11, 0.024, (side * 0.9, 1.30, 0.9), mats["metalLight"], "LOD0") for side in (-1, 1)),
+            box("rebuilderServiceRail", (1.35, 0.08, 0.08), (0, 1.82, -0.96), mats["metalLight"], "LOD0", 0.012),
+            *(sphere(f"rebuilderStatusLamp.{i}", 0.04, (-0.16 + i * 0.16, 1.56, -1.12), mats["glow"]) for i in range(3)),
+        ]
+    elif kind == "frostTower":
+        parts += [
+            *(torus(f"frostEmitterRing.{i}", 0.24 + i * 0.06, 0.022, (0, 2.10 + i * 0.16, 0), mats["ice"], "LOD0") for i in range(2)),
+            *(cone(f"frostEmitterShard.{i}", 0.07, 0.012, 0.30, (-0.22 + i * 0.22, 2.55, 0.04), mats["ice"], "LOD0", 6) for i in range(3)),
+        ]
+    elif kind == "sniperTower":
+        parts += [
+            box("sniperDeckLip", (1.75, 0.08, 0.12), (0, 3.78, -0.86), mats["metalLight"], "LOD0", 0.014),
+            *(sphere(f"sniperRangeMarker.{i}", 0.04, (-0.42 + i * 0.42, 3.94, 0.84), mats["accent"]) for i in range(3)),
+            torus("sniperScopeGuard", 0.12, 0.022, (0, 3.84, 0.58), mats["metalLight"], "LOD0"),
+        ]
+    elif kind == "mortar":
+        parts += [
+            *(torus(f"mortarWheel.{side}", 0.26, 0.035, (side * 0.72, 0.62, -0.10), mats["metalLight"], "LOD0") for side in (-1, 1)),
+            *(sphere(f"mortarShellLatch.{i}", 0.045, (-0.18 + i * 0.18, 0.76, -0.92), mats["accent"]) for i in range(3)),
+            box("mortarBreechLatch", (0.20, 0.12, 0.06), (0, 1.16, -0.48), mats["metalLight"], "LOD0", 0.012),
+        ]
+    elif kind == "crossbowTower":
+        parts += [
+            *(torus(f"crossbowCableDrum.{side}", 0.10, 0.022, (side * 0.34, 1.52, -0.02), mats["metalLight"], "LOD0") for side in (-1, 1)),
+            box("crossbowDeckLatch", (0.24, 0.08, 0.08), (0, 1.60, -0.82), mats["accent"], "LOD0", 0.012),
+        ]
+    elif kind == "furnace":
+        parts += [
+            *(sphere(f"furnaceMasonryStud.{i}", 0.045, (-0.74 + i * 0.49, 1.06, -1.94), mats["metalLight"]) for i in range(4)),
+            box("furnaceChimneyBrace", (1.25, 0.08, 0.08), (0, 2.86, -0.46), mats["metalLight"], "LOD0", 0.012),
+            *(torus(f"furnaceHeatValve.{side}", 0.10, 0.022, (side * 1.18, 1.94, -0.58), mats["glow"], "LOD0") for side in (-1, 1)),
+        ]
+
+
 def build_facility(key, cfg):
     reset_scene()
     mats = make_materials(key, cfg)
@@ -454,6 +527,7 @@ def build_facility(key, cfg):
 
     add_facility_finish(parts, kind, mats)
     add_signature_facility_finish(parts, kind, mats)
+    add_tertiary_facility_finish(parts, kind, mats)
 
     # Shared authored-art language: layered stone footing, readable fasteners,
     # snow breaks and a small emissive identity mark. These details are kept
@@ -520,7 +594,7 @@ def build_facility(key, cfg):
     author_surface_paint(
         parts + functional,
         seed=sum(ord(char) for char in key),
-        textured=kind in ("furnace", "crossbowTower"),
+        textured=True,
     )
     parent_all(parts + functional, root)
     collision_box("COL_Building", (2.5, 3.5, 2.5), (0, 1.5, 0), root)

@@ -46,8 +46,12 @@ def build():
         sphere("supportBoltL", 0.055, (-0.24, 0.82, 0.22), snow),
         sphere("supportBoltR", 0.055, (0.24, 0.82, 0.22), snow),
         cone("muzzleCrown", 0.23, 0.16, 0.18, (0, 1.25, 1.68), metal_light, "LOD0", 8),
+        torus("housingCollar", 0.30, 0.035, (0, 1.25, 0.30), metal_light, "LOD0"),
+        box("housingVent", (0.22, 0.05, 0.12), (0.42, 1.12, -0.18), metal_light, "LOD0", 0.012),
+        *(sphere(f"housingRivet.{i}", 0.035, (-0.18 + i * 0.18, 1.02, 0.32), snow) for i in range(3)),
+        prism("ammoGuide", [(-0.22, 0.90), (0.22, 0.90), (0.18, 0.58), (-0.18, 0.58)], 0.045, (-0.55, 0, 0.18), metal_light, "LOD0", 0.01),
     ]
-    author_surface_paint(parts, seed=31)
+    author_surface_paint(parts, seed=31, textured=True)
     parent_all(parts, pitch)
     empty("muzzleAnchor", (0, 1.25, 1.68), "EXPORT").parent = pitch
     collision_box("COL_Turret", (2.1, 1.8, 2.1), (0, 0.9, 0), root)

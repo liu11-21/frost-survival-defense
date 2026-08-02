@@ -57,6 +57,8 @@ def build():
         sphere("gateCrestCore", 0.14, (0, 1.95, -1.02), fire),
         cone("gateKeystone", 0.22, 0.08, 0.4, (0, 2.45, -0.88), stone, "LOD0", 6),
         box("gateCrestBand", (1.15, 0.08, 0.08), (0, 1.95, -1.01), stone_light, "LOD0", 0.018),
+        prism("gateCrestInset", [(-0.24, 2.10), (0.24, 2.10), (0.0, 1.72)], 0.045, (0, 0, -1.08), fire, "LOD0", 0.008),
+        box("gateChainGuide", (0.10, 0.90, 0.08), (0, 1.24, -1.05), metal, "LOD0", 0.012),
     ]
     for side in (-1, 1):
         for i, y in enumerate((0.58, 1.45, 2.25)):
@@ -65,8 +67,9 @@ def build():
             box(f"doorBand.{side}.lower", (0.92, 0.12, 0.08), (side * 1.25, 0.72, -0.98), metal, "LOD0", 0.02),
             box(f"doorBand.{side}.upper", (0.92, 0.12, 0.08), (side * 1.25, 1.52, -0.98), metal, "LOD0", 0.02),
             sphere(f"doorHinge.{side}", 0.09, (side * 1.78, 1.24, -0.98), stone_light),
+            *(box(f"doorPlank.{side}.{i}", (0.06, 1.78, 0.08), (side * (0.88 + i * 0.24), 1.10, -1.01), wood, "LOD0", 0.012) for i in range(3)),
         ]
-    author_surface_paint(parts, seed=43)
+    author_surface_paint(parts, seed=43, textured=True)
     parent_all(parts, root)
     for x in (-5.0, 5.0):
         cylinder("torch", 0.12, 0.7, (x, 2.25, -0.85), fire, "LOD0", 8).parent = root
