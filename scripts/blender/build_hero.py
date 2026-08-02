@@ -4,7 +4,7 @@ import bpy
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 sys.path.append(HERE)
-from common import reset_scene, material, box, cylinder, sphere, empty, collision_box, parent_all, move_to, add_simple_animation, save_source, export_glb
+from common import reset_scene, material, box, cylinder, sphere, empty, collision_box, parent_all, move_to, orient_for_babylon, add_simple_animation, save_source, export_glb
 
 
 def build():
@@ -14,7 +14,7 @@ def build():
     metal = material("MAT_hero_metal", (0.22, 0.28, 0.36), 0.28, 0.85)
     skin = material("MAT_hero_skin", (0.65, 0.36, 0.22), 0.88)
     snow = material("MAT_hero_snow", (0.78, 0.9, 1.0), 0.7)
-    root = empty("HeroRoot", target="EXPORT", display="CUBE")
+    root = orient_for_babylon(empty("HeroRoot", target="EXPORT", display="CUBE"))
     parts = [
         box("body", (0.66, 0.85, 0.42), (0, 1.05, 0), cloth),
         sphere("head", 0.3, (0, 1.75, 0), skin),

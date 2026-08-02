@@ -127,6 +127,18 @@ def root(name):
     return empty(name, (0, 0, 0), "EXPORT", "CUBE")
 
 
+def orient_for_babylon(obj):
+    """Convert the script's Y-up authoring coordinates to Babylon Y-up.
+
+    Blender stores scenes Z-up. The baseline scripts intentionally describe
+    gameplay dimensions in Y-up coordinates, so the authored root needs this
+    quarter-turn before glTF export; otherwise the imported character lies on
+    its side and appears to move backwards.
+    """
+    obj.rotation_euler.x = math.pi * 0.5
+    return obj
+
+
 def parent_all(objects, parent):
     for obj in objects:
         if obj != parent:

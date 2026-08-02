@@ -2,6 +2,9 @@
 
 ## 2026-08-02｜Blender 製作 3D 資產 → GLB → Babylon.js 整合
 
+- 追查主角移動時倒向問題：Blender 是 Z-up，而基線腳本以 Y-up 建模；新增 `orient_for_babylon` 根節點校正，並對英雄 authored visual 加入半圈視覺偏移，讓其前向與遊戲 +Z 移動語意一致。
+- 同一軸向校正同步套用至 `TurretRoot` 與 `WallGateRoot`，避免三個 Blender authored asset 在 Babylon 中出現側躺或軸向不一致。
+- 軸向修正後重新執行 `art:export`／`art:validate`、`npx tsc --noEmit`、production build、v10（12/12）與 v9（75/75）；production preview 三個 GLB 仍為 HTTP 200 且無 authored fallback。
 - 建立 `assets-source/` Blender 工作區、風格規範、概念圖流程、授權紀錄與可重複執行的英雄／基礎砲塔／城牆閘門建模腳本。
 - 新增 `art:template`、`art:hero`、`art:turret`、`art:wall`、`art:export`、`art:validate` 指令；模型驗證器會輸出 `reports/art-validation.json`，缺少 GLB 時明確標記為 `blocked`。
 - 新增 Babylon `AssetRegistry`／`ModelLoader` 快取、節點與動畫契約驗證、碰撞網格隱藏，以及載入失敗時的程序化模型回退；建築與主角均有 authored visual hook。

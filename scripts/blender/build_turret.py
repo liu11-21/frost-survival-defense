@@ -4,7 +4,7 @@ import bpy
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 sys.path.append(HERE)
-from common import reset_scene, material, box, cylinder, sphere, empty, collision_box, parent_all, add_simple_animation, save_source, export_glb
+from common import reset_scene, material, box, cylinder, sphere, empty, collision_box, parent_all, orient_for_babylon, add_simple_animation, save_source, export_glb
 
 
 def build():
@@ -14,7 +14,7 @@ def build():
     wood = material("MAT_turret_wood", (0.32, 0.16, 0.07), 0.88)
     snow = material("MAT_turret_snow", (0.8, 0.92, 1.0), 0.65)
     ember = material("MAT_turret_ember", (1.0, 0.23, 0.04), 0.45, 0.0, (1.0, 0.08, 0.01))
-    root = empty("TurretRoot", target="EXPORT", display="CUBE")
+    root = orient_for_babylon(empty("TurretRoot", target="EXPORT", display="CUBE"))
     yaw = empty("yawPivot", (0, 1.1, 0), "EXPORT", "CUBE")
     yaw.parent = root
     pitch = empty("pitchPivot", (0, 0.2, 0), "EXPORT", "CUBE")

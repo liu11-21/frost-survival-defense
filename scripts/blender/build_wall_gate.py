@@ -4,7 +4,7 @@ import bpy
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 sys.path.append(HERE)
-from common import reset_scene, material, box, cylinder, empty, collision_box, parent_all, add_simple_animation, save_source, export_glb
+from common import reset_scene, material, box, cylinder, empty, collision_box, parent_all, orient_for_babylon, add_simple_animation, save_source, export_glb
 
 
 def build():
@@ -13,7 +13,7 @@ def build():
     wood = material("MAT_wall_wood", (0.3, 0.13, 0.05), 0.9)
     snow = material("MAT_wall_snow", (0.78, 0.9, 1.0), 0.68)
     fire = material("MAT_wall_fire", (1.0, 0.26, 0.04), 0.4, 0.0, (1.0, 0.08, 0.01))
-    root = empty("WallGateRoot", target="EXPORT", display="CUBE")
+    root = orient_for_babylon(empty("WallGateRoot", target="EXPORT", display="CUBE"))
     left = box("wallLeft", (4.8, 2.6, 1.5), (-4.2, 1.3, 0), stone)
     right = box("wallRight", (4.8, 2.6, 1.5), (4.2, 1.3, 0), stone)
     lintel = box("gateLintel", (3.6, 0.55, 1.55), (0, 2.45, 0), stone)
