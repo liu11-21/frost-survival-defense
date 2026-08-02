@@ -10,19 +10,22 @@ from build_units import make_skeleton, bind_unit_pieces, add_armature_clip
 
 def build():
     reset_scene()
-    cloth = material("MAT_hero_cloth", (0.18, 0.3, 0.55), 0.9)
-    leather = material("MAT_hero_leather", (0.2, 0.08, 0.035), 0.82)
-    metal = material("MAT_hero_metal", (0.22, 0.28, 0.36), 0.28, 0.85)
-    metal_light = material("MAT_hero_metal_light", (0.48, 0.62, 0.78), 0.2, 0.9)
-    skin = material("MAT_hero_skin", (0.65, 0.36, 0.22), 0.88)
-    cloth_dark = material("MAT_hero_cloth_dark", (0.08, 0.14, 0.28), 0.94)
-    snow = material("MAT_hero_snow", (0.78, 0.9, 1.0), 0.7)
-    glow = material("MAT_hero_glow", (0.3, 0.78, 1.0), 0.24, 0.0, (0.18, 0.62, 1.0))
-    accent = material("MAT_hero_accent", (0.45, 0.78, 1.0), 0.35, 0.5)
+    # H5 iteration 2: a cooler cloth/leather split and tighter metal value
+    # range improve readability under the night-blue game lighting without
+    # changing the established ten-material budget.
+    cloth = material("MAT_hero_cloth", (0.16, 0.28, 0.52), 0.84)
+    leather = material("MAT_hero_leather", (0.24, 0.09, 0.038), 0.70)
+    metal = material("MAT_hero_metal", (0.20, 0.27, 0.36), 0.22, 0.93)
+    metal_light = material("MAT_hero_metal_light", (0.52, 0.68, 0.84), 0.14, 0.96)
+    skin = material("MAT_hero_skin", (0.68, 0.38, 0.24), 0.80)
+    cloth_dark = material("MAT_hero_cloth_dark", (0.06, 0.12, 0.26), 0.88)
+    snow = material("MAT_hero_snow", (0.82, 0.93, 1.0), 0.58)
+    glow = material("MAT_hero_glow", (0.26, 0.74, 1.0), 0.18, 0.0, (0.16, 0.58, 1.0))
+    accent = material("MAT_hero_accent", (0.40, 0.74, 1.0), 0.28, 0.62)
     root = orient_for_babylon(empty("HeroRoot", target="EXPORT", display="PLAIN_AXES"))
-    root["commercialStage"] = "H4"
+    root["commercialStage"] = "H5"
     root["commercialIteration"] = 2
-    root["weaponReview"] = "sharpened blade edges, ranged stock/bolt, socket guides and axis metadata"
+    root["materialReview"] = "cool palette contrast, calibrated emission and regenerated packed brush texture"
     add_lod_markers(root, "character")
     parts = [
         # H1 iteration 1: a wider padded torso, slightly lower centre of
@@ -201,7 +204,10 @@ def build():
         ("_metal", metal_light, metal),
         ("_accent", snow, accent),
     ])
-    author_surface_paint(parts, seed=17, textured=True)
+    glow_shader = glow.node_tree.nodes.get("Principled BSDF")
+    if glow_shader and glow_shader.inputs.get("Emission Strength"):
+        glow_shader.inputs["Emission Strength"].default_value = 2.6
+    author_surface_paint(parts, seed=53, textured=True)
     parent_all(parts, root)
     skeleton = make_skeleton(root)
     skeleton.name = "HeroSkeleton"
