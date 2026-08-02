@@ -14,8 +14,10 @@ HERE = os.path.dirname(os.path.abspath(__file__))
 sys.path.append(HERE)
 from common import (  # noqa: E402
     add_simple_animation,
+    add_lod_markers,
     box,
     collision_box,
+    cone,
     cylinder,
     empty,
     material,
@@ -26,6 +28,7 @@ from common import (  # noqa: E402
     save_source,
     sphere,
     torus,
+    vertical_cylinder,
     export_glb,
 )
 
@@ -131,6 +134,122 @@ def add_crest(root, kind, mats):
     return parts
 
 
+def make_skeleton(root):
+    """Create a small production-friendly segmented rig for the authored unit.
+
+    The visible meshes are intentionally separate low-poly pieces. Binding each
+    piece to a named bone keeps the assets inexpensive while still giving the
+    GLB real pose animation instead of a root-only turntable clip.
+    """
+    bpy.ops.object.armature_add(enter_editmode=True, location=(0, 0, 0))
+    skeleton = bpy.context.object
+    skeleton.name = "UnitSkeleton"
+    skeleton.data.name = "UnitSkeleton"
+    skeleton.parent = root
+    skeleton.location = (0, 0, 0)
+    armature = skeleton.data
+    armature.edit_bones.remove(armature.edit_bones[0])
+    specs = [
+        ("root", (0, 0.0, 0), (0, 0.22, 0), None),
+        ("pelvis", (0, 0.50, 0), (0, 0.76, 0), "root"),
+        ("spine", (0, 0.76, 0), (0, 1.04, 0), "pelvis"),
+        ("chest", (0, 1.04, 0), (0, 1.34, 0), "spine"),
+        ("neck", (0, 1.42, 0), (0, 1.58, 0), "chest"),
+        ("head", (0, 1.55, 0), (0, 1.82, 0), "neck"),
+        ("upper_arm.L", (-0.28, 1.27, 0), (-0.50, 1.06, 0), "chest"),
+        ("lower_arm.L", (-0.50, 1.06, 0), (-0.51, 0.84, 0), "upper_arm.L"),
+        ("hand.L", (-0.51, 0.84, 0), (-0.51, 0.72, 0), "lower_arm.L"),
+        ("upper_arm.R", (0.28, 1.27, 0), (0.50, 1.06, 0), "chest"),
+        ("lower_arm.R", (0.50, 1.06, 0), (0.51, 0.84, 0), "upper_arm.R"),
+        ("hand.R", (0.51, 0.84, 0), (0.51, 0.72, 0), "lower_arm.R"),
+        ("thigh.L", (-0.13, 0.58, 0), (-0.13, 0.30, 0), "pelvis"),
+        ("shin.L", (-0.13, 0.30, 0), (-0.13, 0.08, 0), "thigh.L"),
+        ("foot.L", (-0.13, 0.08, 0), (-0.13, 0.02, 0.18), "shin.L"),
+        ("thigh.R", (0.13, 0.58, 0), (0.13, 0.30, 0), "pelvis"),
+        ("shin.R", (0.13, 0.30, 0), (0.13, 0.08, 0), "thigh.R"),
+        ("foot.R", (0.13, 0.08, 0), (0.13, 0.02, 0.18), "shin.R"),
+    ]
+    for name, head, tail, parent_name in specs:
+        bone = armature.edit_bones.new(name)
+        bone.head = head
+        bone.tail = tail
+        if parent_name:
+            bone.parent = armature.edit_bones[parent_name]
+            bone.use_connect = False
+    bpy.ops.object.mode_set(mode="OBJECT")
+    move_to(skeleton, "RIG")
+    return skeleton
+
+
+def bind_piece(obj, skeleton, bone_name):
+    """Bone-parent a rigid low-poly piece without changing its rest pose."""
+    world = obj.matrix_world.copy()
+    obj.parent = skeleton
+    obj.parent_type = "BONE"
+    obj.parent_bone = bone_name
+    obj.matrix_world = world
+
+
+def bone_for_piece(name):
+    lower = name.lower()
+    if lower.startswith(("arm.l", "shoulder.l", "pauldron.l", "glove.l", "wing.-1")):
+        return "upper_arm.L"
+    if lower.startswith(("arm.r", "shoulder.r", "pauldron.r", "glove.r", "wing.1")):
+        return "upper_arm.R"
+    if lower.startswith(("leg.l", "knee.l")):
+        return "thigh.L"
+    if lower.startswith(("leg.r", "knee.r")):
+        return "thigh.R"
+    if lower.startswith("boot.l"):
+        return "foot.L"
+    if lower.startswith("boot.r"):
+        return "foot.R"
+    if lower.startswith(("weapon.", "pouch", "banner.")):
+        return "hand.R"
+    if lower.startswith(("offhand.", "shield.")):
+        return "hand.L"
+    if lower.startswith(("head", "crest.")):
+        return "head"
+    if lower.startswith(("torso", "belt", "cape", "pack", "medic", "chest", "ramframe", "ramtip", "core", "ice", "tool")):
+        return "chest"
+    if lower.startswith("wing."):
+        return "chest"
+    return "spine"
+
+
+def bind_unit_pieces(parts, skeleton):
+    for obj in parts:
+        bind_piece(obj, skeleton, bone_for_piece(obj.name))
+
+
+def add_armature_clip(skeleton, name, end, poses):
+    """Add a named NLA clip to the segmented armature."""
+    if not skeleton.animation_data:
+        skeleton.animation_data_create()
+    skeleton.animation_data.action = None
+    for pose_bone in skeleton.pose.bones:
+        pose_bone.rotation_mode = "XYZ"
+        pose_bone.rotation_euler = (0, 0, 0)
+        pose_bone.location = (0, 0, 0)
+    for frame, pose in poses:
+        bpy.context.scene.frame_set(frame)
+        for bone_name, rotation in pose.items():
+            pose_bone = skeleton.pose.bones.get(bone_name)
+            if not pose_bone:
+                continue
+            pose_bone.rotation_euler = rotation
+            pose_bone.keyframe_insert(data_path="rotation_euler", frame=frame)
+    action = skeleton.animation_data.action
+    if action is None:
+        raise RuntimeError(f"Blender did not create an armature Action for {skeleton.name}:{name}")
+    action.name = name
+    track = skeleton.animation_data.nla_tracks.new()
+    track.name = name
+    strip = track.strips.new(name, 1, action)
+    strip.frame_end = end
+    skeleton.animation_data.action = None
+
+
 def build_unit(visual, cfg):
     reset_scene()
     body_color = cfg["body"]
@@ -147,14 +266,36 @@ def build_unit(visual, cfg):
         "dark": material(f"MAT_{visual}_dark", (0.045, 0.05, 0.08), 0.62, 0.35),
     }
     root = orient_for_babylon(empty("UnitRoot", target="EXPORT", display="CUBE"))
+    add_lod_markers(root)
     parts = []
-    parts += [box("torso", (0.52 if cfg["armor"] in ("heavy", "iceArmor", "batteringRam", "wingsHeavy") else 0.44, 0.62, 0.34), (0, 0.98, 0), mats["cloth"])]
-    parts += [box("belt", (0.55, 0.09, 0.38), (0, 0.67, 0), mats["leather"])]
-    parts += [sphere("head", 0.28, (0, 1.7, 0), mats["skin"])]
-    parts += [box("leg.L", (0.18, 0.55, 0.2), (-0.13, 0.38, 0), mats["leather"]), box("leg.R", (0.18, 0.55, 0.2), (0.13, 0.38, 0), mats["leather"])]
-    parts += [box("boot.L", (0.22, 0.12, 0.32), (-0.13, 0.08, 0.06), mats["dark"]), box("boot.R", (0.22, 0.12, 0.32), (0.13, 0.08, 0.06), mats["dark"])]
-    parts += [box("arm.L", (0.17, 0.58, 0.18), (-0.38, 1.02, 0), mats["cloth"]), box("arm.R", (0.17, 0.58, 0.18), (0.38, 1.02, 0), mats["cloth"])]
-    parts += [box("shoulder.L", (0.25, 0.15, 0.27), (-0.34, 1.28, 0), mats["accent"]), box("shoulder.R", (0.25, 0.15, 0.27), (0.34, 1.28, 0), mats["accent"])]
+    heavy = cfg["armor"] in ("heavy", "iceArmor", "batteringRam", "wingsHeavy")
+    torso_width = 0.54 if heavy else 0.46
+    parts += [box("torso", (torso_width, 0.62, 0.34), (0, 0.98, 0), mats["cloth"])]
+    # Layered cloth, leather and metal keep the silhouette readable at the
+    # game's normal zoom instead of looking like a single coloured primitive.
+    parts += [
+        box("tunicHem", (torso_width * 1.05, 0.14, 0.38), (0, 0.69, 0), mats["leather"], bevel=0.05),
+        box("belt", (torso_width * 1.08, 0.09, 0.4), (0, 0.78, 0.01), mats["accent"], bevel=0.035),
+        box("beltBuckle", (0.12, 0.12, 0.06), (0, 0.78, 0.22), mats["metal"], bevel=0.025),
+        box("chestPanel", (torso_width * 0.72, 0.28, 0.07), (0, 1.05, 0.19), mats["accent"], bevel=0.035),
+        vertical_cylinder("neckGuard", 0.12, 0.16, (0, 1.38, 0), mats["leather"], "LOD0", 8),
+        sphere("head", 0.28, (0, 1.7, 0), mats["skin"]),
+        box("faceStripe", (0.2, 0.06, 0.035), (0, 1.71, 0.25), mats["accent"], bevel=0.02),
+    ]
+    parts += [
+        box("leg.L", (0.18, 0.55, 0.2), (-0.13, 0.38, 0), mats["leather"], bevel=0.045),
+        box("leg.R", (0.18, 0.55, 0.2), (0.13, 0.38, 0), mats["leather"], bevel=0.045),
+        box("knee.L", (0.2, 0.16, 0.22), (-0.13, 0.27, 0.08), mats["accent"], bevel=0.035),
+        box("knee.R", (0.2, 0.16, 0.22), (0.13, 0.27, 0.08), mats["accent"], bevel=0.035),
+        box("boot.L", (0.22, 0.12, 0.38), (-0.13, 0.08, 0.08), mats["dark"], bevel=0.045),
+        box("boot.R", (0.22, 0.12, 0.38), (0.13, 0.08, 0.08), mats["dark"], bevel=0.045),
+        box("arm.L", (0.17, 0.58, 0.18), (-0.38, 1.02, 0), mats["cloth"], bevel=0.045),
+        box("arm.R", (0.17, 0.58, 0.18), (0.38, 1.02, 0), mats["cloth"], bevel=0.045),
+        sphere("glove.L", 0.11, (-0.38, 0.72, 0.02), mats["skin"]),
+        sphere("glove.R", 0.11, (0.38, 0.72, 0.02), mats["skin"]),
+        box("shoulder.L", (0.27, 0.17, 0.3), (-0.34, 1.28, 0), mats["accent"], bevel=0.06),
+        box("shoulder.R", (0.27, 0.17, 0.3), (0.34, 1.28, 0), mats["accent"], bevel=0.06),
+    ]
     parts += add_crest(root, cfg["crest"], mats)
     parts += build_weapon(root, cfg["weapon"], mats, "weapon")
 
@@ -188,29 +329,42 @@ def build_unit(visual, cfg):
         parts += [box("ramFrame", (0.8, 0.24, 0.2), (0, 1.0, 0.28), mats["metal"]), sphere("ramTip", 0.2, (0, 1.0, 0.62), mats["accent"])]
 
     parent_all(parts, root)
-    bpy.ops.object.armature_add(enter_editmode=True, location=(0, 0, 0))
-    skeleton = bpy.context.object
-    skeleton.name = "UnitSkeleton"
-    skeleton.data.name = "UnitSkeleton"
-    skeleton.parent = root
-    armature = skeleton.data
-    armature.edit_bones.remove(armature.edit_bones[0])
-    previous = None
-    for index, name in enumerate(("root", "pelvis", "spine", "chest", "neck", "head", "upper_arm.L", "upper_arm.R", "lower_arm.L", "lower_arm.R", "hand.L", "hand.R", "thigh.L", "thigh.R", "shin.L", "shin.R", "foot.L", "foot.R")):
-        bone = armature.edit_bones.new(name)
-        bone.head = (0, index * 0.1, 0)
-        bone.tail = (0, index * 0.1 + 0.1, 0)
-        if previous and index < 6:
-            bone.parent = previous
-        previous = bone
-    bpy.ops.object.mode_set(mode="OBJECT")
-    move_to(skeleton, "RIG")
+    skeleton = make_skeleton(root)
+    bind_unit_pieces(parts, skeleton)
     for name in ("weapon_socket", "ranged_socket", "attackAnchor", "banner_socket"):
         socket = empty(name, (0, 1.1, 0.2), "RIG")
         socket.parent = root
     collision_box("COL_Unit", (0.8, 1.9, 0.8), (0, 0.95, 0), root)
-    for name, amount, end in (("Idle", 0.035, 24), ("Walk", 0.14, 24), ("Attack", -0.42, 18), ("Cast", 0.52, 22), ("Hit", -0.18, 12), ("Death", -0.9, 20)):
-        add_simple_animation(root, name, amount=amount, end=end)
+    add_armature_clip(skeleton, "Idle", 24, [
+        (1, {}),
+        (12, {"chest": (0.025, 0, 0), "head": (0, 0.025, 0)}),
+        (24, {}),
+    ])
+    add_armature_clip(skeleton, "Walk", 24, [
+        (1, {"upper_arm.L": (0.32, 0, 0), "upper_arm.R": (-0.32, 0, 0), "thigh.L": (-0.45, 0, 0), "thigh.R": (0.45, 0, 0), "chest": (0.04, 0, 0)}),
+        (7, {"upper_arm.L": (-0.32, 0, 0), "upper_arm.R": (0.32, 0, 0), "thigh.L": (0.45, 0, 0), "thigh.R": (-0.45, 0, 0), "chest": (-0.02, 0, 0)}),
+        (13, {"upper_arm.L": (0.32, 0, 0), "upper_arm.R": (-0.32, 0, 0), "thigh.L": (-0.45, 0, 0), "thigh.R": (0.45, 0, 0), "chest": (0.04, 0, 0)}),
+        (24, {}),
+    ])
+    add_armature_clip(skeleton, "Attack", 18, [
+        (1, {"upper_arm.R": (-0.9, 0, 0), "lower_arm.R": (-0.55, 0, 0), "chest": (-0.12, 0, 0)}),
+        (8, {"upper_arm.R": (1.25, 0, 0), "lower_arm.R": (0.5, 0, 0), "chest": (0.22, 0, 0)}),
+        (18, {}),
+    ])
+    add_armature_clip(skeleton, "Cast", 22, [
+        (1, {"upper_arm.R": (-1.15, 0, 0), "upper_arm.L": (-0.6, 0, 0), "head": (-0.1, 0, 0)}),
+        (11, {"upper_arm.R": (-2.2, 0, 0), "upper_arm.L": (-1.1, 0, 0), "head": (-0.18, 0, 0)}),
+        (22, {}),
+    ])
+    add_armature_clip(skeleton, "Hit", 12, [
+        (1, {"chest": (-0.18, 0, 0), "head": (0.12, 0, 0)}),
+        (12, {}),
+    ])
+    add_armature_clip(skeleton, "Death", 20, [
+        (1, {}),
+        (12, {"root": (1.25, 0, 0), "chest": (0.35, 0, 0), "upper_arm.L": (0.7, 0, 0), "upper_arm.R": (0.7, 0, 0)}),
+        (20, {"root": (1.45, 0, 0), "chest": (0.5, 0, 0), "upper_arm.L": (1.1, 0, 0), "upper_arm.R": (1.1, 0, 0)}),
+    ])
     source = os.path.abspath(os.path.join(HERE, "..", "..", "assets-source", "blender", "characters", f"{visual}.blend"))
     output = os.path.abspath(os.path.join(HERE, "..", "..", "public", "assets", "models", "characters", f"{visual}.glb"))
     save_source(source)

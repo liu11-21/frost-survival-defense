@@ -3,4 +3,5 @@ dist/
 playtest-shots/
 *.local
 __pycache__/
+*.blend1
 .DS_Store

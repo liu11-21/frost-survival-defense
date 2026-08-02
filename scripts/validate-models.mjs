@@ -10,32 +10,32 @@ const UNIT_KEYS = [
 const ECONOMY_KEYS = ["mine", "gold_mine", "lumberyard", "warehouse", "recruit_hall", "auto_collector", "auto_rebuilder"];
 const ATTACK_KEYS = ["crossbow_tower", "frost_tower", "sniper_tower", "mortar"];
 const specs = [
-  { key: "hero", path: "public/assets/models/characters/hero.glb", nodes: ["HeroRoot", "HeroSkeleton", "weapon_socket.R", "ranged_socket"], animations: ["Idle", "Walk", "Run", "MeleeAttack", "RangedAttack", "Hit", "Death"], skeletons: 1 },
-  { key: "turret_basic", path: "public/assets/models/buildings/turret_basic.glb", nodes: ["TurretRoot", "yawPivot", "pitchPivot", "barrel", "muzzle", "recoilPart"], animations: ["Idle", "Aim", "Fire", "Recoil", "Reload"] },
-  { key: "wall_gate", path: "public/assets/models/buildings/wall_gate.glb", nodes: ["WallGateRoot", "gateRoot", "gateDoorLeft", "gateDoorRight", "gateCollider", "friendlyPassTrigger"], animations: ["GateOpen", "GateClose", "Damaged", "Destroyed"] },
+  { key: "hero", path: "public/assets/models/characters/hero.glb", nodes: ["HeroRoot", "HeroSkeleton", "weapon_socket.R", "ranged_socket", "LOD1", "LOD2"], animations: ["Idle", "Walk", "Run", "MeleeAttack", "RangedAttack", "Hit", "Death"], skeletons: 1 },
+  { key: "turret_basic", path: "public/assets/models/buildings/turret_basic.glb", nodes: ["TurretRoot", "yawPivot", "pitchPivot", "barrel", "muzzle", "recoilPart", "LOD1", "LOD2"], animations: ["Idle", "Aim", "Fire", "Recoil", "Reload"] },
+  { key: "wall_gate", path: "public/assets/models/buildings/wall_gate.glb", nodes: ["WallGateRoot", "gateRoot", "gateDoorLeft", "gateDoorRight", "gateCollider", "friendlyPassTrigger", "LOD1", "LOD2"], animations: ["GateOpen", "GateClose", "Damaged", "Destroyed"] },
   ...UNIT_KEYS.map((key) => ({
     key,
     path: `public/assets/models/characters/${key}.glb`,
-    nodes: ["UnitRoot", "UnitSkeleton", "weapon_socket", "attackAnchor"],
+    nodes: ["UnitRoot", "UnitSkeleton", "weapon_socket", "attackAnchor", "LOD1", "LOD2"],
     animations: ["Idle", "Walk", "Attack", "Cast", "Hit", "Death"],
     skeletons: 1,
   })),
   ...ECONOMY_KEYS.map((key) => ({
     key,
     path: `public/assets/models/buildings/${key}.glb`,
-    nodes: ["BuildingRoot", "productionCore", "workPart"],
+    nodes: ["BuildingRoot", "productionCore", "workPart", "LOD1", "LOD2"],
     animations: ["Idle", "Operate", "Damaged", "Destroyed"],
   })),
   ...ATTACK_KEYS.map((key) => ({
     key,
     path: `public/assets/models/buildings/${key}.glb`,
-    nodes: ["BuildingRoot", "yawPivot", "pitchPivot", "barrel", "muzzle", "recoilPart"],
+    nodes: ["BuildingRoot", "yawPivot", "pitchPivot", "barrel", "muzzle", "recoilPart", "LOD1", "LOD2"],
     animations: ["Idle", "Aim", "Fire", "Recoil", "Damaged", "Destroyed"],
   })),
   {
     key: "furnace",
     path: "public/assets/models/buildings/furnace.glb",
-    nodes: ["FurnaceRoot", "heatCore", "furnaceCrown", "emitter"],
+    nodes: ["FurnaceRoot", "heatCore", "furnaceCrown", "emitter", "LOD1", "LOD2"],
     animations: ["Idle", "Operate", "Damaged", "Destroyed"],
   },
 ];
@@ -61,7 +61,8 @@ function parseGlb(buffer) {
 function validate(spec, glb) {
   const { json } = parseGlb(glb);
   const names = new Set((json.nodes ?? []).map((node) => node.name).filter(Boolean));
-  const animations = new Set((json.animations ?? []).map((animation) => animation.name).filter(Boolean));
+  const animationRecords = (json.animations ?? []).filter((animation) => animation.name);
+  const animations = new Set(animationRecords.map((animation) => animation.name));
   const warnings = [];
   const missingNodes = spec.nodes.filter((name) => !names.has(name));
   const missingAnimations = spec.animations.filter((name) => !animations.has(name));
@@ -77,6 +78,7 @@ function validate(spec, glb) {
   if ((json.cameras ?? []).length) warnings.push("Cameras are present in export.");
   if ((json.lights ?? []).length) warnings.push("Lights are present in export.");
   if (skeletonCount < (spec.skeletons ?? 0)) warnings.push(`Skeleton requirement not met: ${skeletonCount}`);
+  if (animationRecords.some((animation) => !(animation.channels?.length))) warnings.push("Animation clip has no channels.");
   if (/([A-Za-z]:\\|\/Users\/|\/home\/)/.test(JSON.stringify(json))) warnings.push("Absolute filesystem path found in GLB metadata.");
   if ((json.meshes ?? []).length < 2 || triangles < 24) warnings.push("Asset is too small to be a finished authored model.");
   const collisionNodes = (json.nodes ?? []).filter((node) => {
@@ -113,6 +115,7 @@ function validate(spec, glb) {
     rootTransforms,
     bounds: bounds.min[0] === Infinity ? null : bounds,
     animations: [...animations],
+    animationChannels: Object.fromEntries(animationRecords.map((animation) => [animation.name, animation.channels?.length ?? 0])),
     triangles,
     missingNodes,
     missingAnimations,

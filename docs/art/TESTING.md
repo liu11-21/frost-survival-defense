@@ -20,3 +20,9 @@ validator. The v6 suite covers engineer repair, unit lifecycle and pooled
 combat; v9 covers HUD, skills and facility behaviour; v10 covers ground/sky
 slot unlocks and flying enemies. The complete default playtest also includes
 the longer v8 build/rebuild endurance simulation.
+
+The validator also checks the authored LOD marker nodes (`LOD1`/`LOD2`), unit
+skeleton presence, non-empty animation channels, root unit scale, collision
+mesh exclusion, triangle budget, and absence of external or absolute paths.
+For a visual review, run the two Blender preview scripts documented in the
+README and inspect the generated PNGs before calling an asset commercial-ready.

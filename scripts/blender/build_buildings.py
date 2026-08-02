@@ -9,6 +9,7 @@ HERE = os.path.dirname(os.path.abspath(__file__))
 sys.path.append(HERE)
 from common import (  # noqa: E402
     add_simple_animation,
+    add_lod_markers,
     box,
     collision_box,
     cylinder,
@@ -21,6 +22,7 @@ from common import (  # noqa: E402
     save_source,
     sphere,
     torus,
+    vertical_cylinder,
 )
 
 
@@ -51,6 +53,8 @@ def make_materials(key, cfg):
         "glow": material(f"MAT_{key}_glow", cfg["accent"], 0.22, 0, cfg["accent"]),
         "ice": material(f"MAT_{key}_ice", (0.5, 0.86, 1.0), 0.2, 0.18, (0.22, 0.7, 1.0)),
         "gold": material(f"MAT_{key}_gold", (1.0, 0.55, 0.08), 0.24, 0.78, (0.8, 0.25, 0.03)),
+        "snow": material(f"MAT_{key}_snow", (0.8, 0.9, 0.98), 0.78),
+        "glass": material(f"MAT_{key}_glass", (0.18, 0.58, 0.9), 0.12, 0.12, (0.08, 0.32, 0.75)),
     }
 
 
@@ -79,6 +83,7 @@ def build_facility(key, cfg):
     mats = make_materials(key, cfg)
     root_name = "FurnaceRoot" if cfg["kind"] == "furnace" else "BuildingRoot"
     root = orient_for_babylon(empty(root_name, target="EXPORT", display="CUBE"))
+    add_lod_markers(root)
     parts = []
     functional = []
     kind = cfg["kind"]
@@ -136,6 +141,62 @@ def build_facility(key, cfg):
             parts.append(box(f"rune.{i}", (0.12, 0.42, 0.06), (math.sin(angle) * 1.28, 1.1, math.cos(angle) * 1.28), mats["glow"]))
         functional += [empty("workPart", (0, 2.05, 0), "EXPORT", "CUBE"), empty("productionCore", (0, 2.05, 0), "EXPORT", "CUBE"), empty("emitter", (0, 2.55, 0), "EXPORT", "PLAIN_AXES")]
 
+    # Shared authored-art language: layered stone footing, readable fasteners,
+    # snow breaks and a small emissive identity mark. These details are kept
+    # lightweight but remove the flat "one primitive per building" read.
+    parts += [
+        torus("plinthTrim", 0.91 if kind not in ("warehouse", "recruitHall") else 1.12, 0.055, (0, 0.31, 0), mats["metal"], "LOD0"),
+        torus("plinthSnow", 0.82 if kind not in ("warehouse", "recruitHall") else 1.05, 0.045, (0, 0.38, 0), mats["snow"], "LOD0"),
+        sphere("identityLamp", 0.11, (0, 1.15, -0.88), mats["glow"]),
+    ]
+    for i, angle in enumerate((0.25, 1.8, 3.35, 4.9)):
+        x, z = math.sin(angle) * 0.86, math.cos(angle) * 0.86
+        parts.append(sphere(f"plinthBolt.{i}", 0.055, (x, 0.42, z), mats["metal"]))
+    if kind in ("mine", "goldMine"):
+        # A readable pulley and cable make the shaft functional at a glance.
+        parts += [
+            torus("pulley", 0.22, 0.045, (0, 1.58, -0.02), mats["metal"], "LOD0"),
+            vertical_cylinder("cable", 0.025, 0.9, (0, 1.18, -0.02), mats["dark"], "LOD0", 6),
+            sphere("oreHighlight", 0.08, (0.62, 0.58, 0.58), mats["glow"]),
+        ]
+    elif kind == "lumberyard":
+        parts += [
+            torus("sawGuard", 0.56, 0.045, (0, 0.95, 0.73), mats["snow"], "LOD0"),
+            box("sawToothBar", (1.05, 0.08, 0.08), (0, 1.0, 0.73), mats["metal"], "LOD0", 0.025),
+            box("signBoard", (0.9, 0.42, 0.06), (0, 1.48, -0.86), mats["accent"], "LOD0", 0.06),
+        ]
+    elif kind == "warehouse":
+        parts += [
+            box("doorFrameL", (0.1, 1.42, 0.16), (-0.62, 0.85, -1.23), mats["metal"], "LOD0", 0.035),
+            box("doorFrameR", (0.1, 1.42, 0.16), (0.62, 0.85, -1.23), mats["metal"], "LOD0", 0.035),
+            box("warehouseSign", (1.28, 0.32, 0.08), (0, 1.92, -1.16), mats["accent"], "LOD0", 0.055),
+        ]
+    elif kind == "recruitHall":
+        parts += [
+            box("hallSign", (1.5, 0.4, 0.08), (0, 2.04, -1.2), mats["accent"], "LOD0", 0.06),
+            sphere("hallLanternL", 0.12, (-0.8, 1.52, -1.22), mats["glow"]),
+            sphere("hallLanternR", 0.12, (0.8, 1.52, -1.22), mats["glow"]),
+        ]
+    elif kind in ("autoCollector", "autoRebuilder"):
+        for x in (-0.55, 0.55):
+            parts += [
+                vertical_cylinder(f"pipe.{x}", 0.045, 1.3, (x, 1.2, -0.35), mats["metal"], "LOD0", 7),
+                sphere(f"pipeLamp.{x}", 0.1, (x, 1.9, -0.35), mats["glow"]),
+            ]
+    elif kind in ("crossbowTower", "frostTower", "sniperTower", "mortar"):
+        # Bolted handrails / ice emitters distinguish the attack facility from
+        # the economy props even before it acquires a firing animation.
+        parts += [
+            torus("attackTrim", 0.56, 0.05, (0, 1.05, 0), mats["accent"], "LOD0"),
+            sphere("ammoLamp", 0.1, (0, 1.35, -0.56), mats["glow"]),
+        ]
+    elif kind == "furnace":
+        parts += [
+            cylinder("chimney", 0.42, 0.9, (0, 2.95, 0), mats["stone"], "LOD0", 10),
+            torus("chimneyCap", 0.48, 0.08, (0, 3.38, 0), mats["snow"], "LOD0"),
+            sphere("flameCrown", 0.24, (0, 2.72, 0), mats["glow"]),
+        ]
+
     parent_all(parts + functional, root)
     collision_box("COL_Building", (2.5, 3.5, 2.5), (0, 1.5, 0), root)
     if kind not in ("mine", "goldMine", "lumberyard", "warehouse", "recruitHall", "autoCollector", "autoRebuilder", "furnace"):
@@ -144,6 +205,16 @@ def build_facility(key, cfg):
     # play the specific subset they understand without special-casing assets.
     for name, amount, end in (("Idle", 0.025, 24), ("Operate", 0.14, 20), ("Aim", 0.1, 16), ("Fire", -0.18, 12), ("Recoil", -0.2, 12), ("Damaged", 0.16, 14), ("Destroyed", -0.5, 18)):
         add_simple_animation(root, name, amount=amount, end=end)
+    # Also key the functional sub-part so the authored clips visibly operate
+    # in Babylon. The root clips above preserve a stable contract for assets
+    # without a moving sub-part; these channels are merged by the glTF exporter
+    # under the same named animation groups.
+    motion = next((obj for obj in functional if obj.type in ("MESH", "EMPTY")), root)
+    add_simple_animation(motion, "Operate", property_path="rotation_euler", index=2, amount=0.22, end=20)
+    add_simple_animation(motion, "Fire", property_path="scale", index=0, amount=1.08, end=12)
+    recoil = next((obj for obj in bpy.context.scene.objects if obj.name == "recoilPart"), None)
+    if recoil:
+        add_simple_animation(recoil, "Recoil", property_path="location", index=2, amount=-0.16, end=12)
     source = os.path.abspath(os.path.join(HERE, "..", "..", "assets-source", "blender", "buildings", f"{key}.blend"))
     output = os.path.abspath(os.path.join(HERE, "..", "..", "public", "assets", "models", "buildings", f"{key}.glb"))
     save_source(source)

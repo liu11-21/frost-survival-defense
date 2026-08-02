@@ -94,6 +94,30 @@ def cylinder(name, radius, depth, location=(0, 0, 0), mat=None, target="LOD0", v
     return obj
 
 
+def cone(name, radius_bottom, radius_top, depth, location=(0, 0, 0), mat=None, target="LOD0", vertices=8):
+    """A faceted cone used for readable armour, boots and architectural caps."""
+    bpy.ops.mesh.primitive_cone_add(
+        vertices=vertices,
+        radius1=radius_bottom,
+        radius2=radius_top,
+        depth=depth,
+        location=location,
+    )
+    obj = bpy.context.object
+    obj.name = name
+    move_to(obj, target)
+    if mat:
+        apply_style(obj, mat, min(0.04, radius_bottom * 0.16))
+    return obj
+
+
+def vertical_cylinder(name, radius, depth, location=(0, 0, 0), mat=None, target="LOD0", vertices=8):
+    """Cylinder whose long axis is Y, matching the authoring convention."""
+    obj = cylinder(name, radius, depth, location, mat, target, vertices)
+    obj.rotation_euler.x = math.pi * 0.5
+    return obj
+
+
 def sphere(name, radius, location=(0, 0, 0), mat=None, target="LOD0"):
     bpy.ops.mesh.primitive_ico_sphere_add(subdivisions=2, radius=radius, location=location)
     obj = bpy.context.object
@@ -135,6 +159,20 @@ def collision_box(name, dimensions, location=(0, 0, 0), parent=None):
 
 def root(name):
     return empty(name, (0, 0, 0), "EXPORT", "CUBE")
+
+
+def add_lod_markers(root_obj):
+    """Export stable LOD contract nodes and authored screen-size metadata.
+
+    The runtime can attach Babylon LOD meshes later without renaming nodes;
+    keeping the markers in every GLB makes that switch data-driven and gives
+    the asset validator a concrete place to enforce the contract.
+    """
+    for level, coverage in ((1, 0.35), (2, 0.12)):
+        marker = empty(f"LOD{level}", (0, 0, 0), "EXPORT", "PLAIN_AXES")
+        marker.parent = root_obj
+        marker["screenCoverage"] = coverage
+        marker["generatedFrom"] = "LOD0-authored"
 
 
 def orient_for_babylon(obj):

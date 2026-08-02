@@ -4,7 +4,8 @@ import bpy
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 sys.path.append(HERE)
-from common import reset_scene, material, box, cylinder, sphere, empty, collision_box, parent_all, move_to, orient_for_babylon, add_simple_animation, save_source, export_glb
+from common import reset_scene, material, box, cylinder, sphere, empty, collision_box, parent_all, move_to, orient_for_babylon, add_lod_markers, cone, torus, save_source, export_glb
+from build_units import make_skeleton, bind_unit_pieces, add_armature_clip
 
 
 def build():
@@ -14,43 +15,58 @@ def build():
     metal = material("MAT_hero_metal", (0.22, 0.28, 0.36), 0.28, 0.85)
     skin = material("MAT_hero_skin", (0.65, 0.36, 0.22), 0.88)
     snow = material("MAT_hero_snow", (0.78, 0.9, 1.0), 0.7)
+    glow = material("MAT_hero_glow", (0.3, 0.78, 1.0), 0.24, 0.0, (0.18, 0.62, 1.0))
+    accent = material("MAT_hero_accent", (0.45, 0.78, 1.0), 0.35, 0.5)
     root = orient_for_babylon(empty("HeroRoot", target="EXPORT", display="CUBE"))
+    add_lod_markers(root)
     parts = [
-        box("body", (0.66, 0.85, 0.42), (0, 1.05, 0), cloth),
+        box("body", (0.66, 0.85, 0.42), (0, 1.05, 0), cloth, bevel=0.08),
+        box("coatSkirt", (0.76, 0.24, 0.5), (0, 0.68, -0.01), leather, bevel=0.06),
+        box("chestPlate", (0.48, 0.38, 0.08), (0, 1.12, 0.22), metal, bevel=0.045),
+        box("chestTrim", (0.52, 0.07, 0.05), (0, 1.28, 0.24), snow, bevel=0.02),
         sphere("head", 0.3, (0, 1.75, 0), skin),
-        box("hood", (0.72, 0.24, 0.56), (0, 1.98, 0), snow),
-        box("coatTrim", (0.74, 0.12, 0.46), (0, 1.42, 0), snow),
-        box("arm.L", (0.18, 0.7, 0.2), (-0.48, 1.1, 0), cloth),
-        box("arm.R", (0.18, 0.7, 0.2), (0.48, 1.1, 0), cloth),
-        box("leg.L", (0.22, 0.7, 0.24), (-0.2, 0.42, 0), leather),
-        box("leg.R", (0.22, 0.7, 0.24), (0.2, 0.42, 0), leather),
-        box("belt", (0.74, 0.12, 0.48), (0, 0.82, 0), leather),
+        cone("hood", 0.42, 0.2, 0.3, (0, 1.98, 0), snow, "LOD0", 8),
+        torus("hoodRim", 0.3, 0.035, (0, 1.83, 0), snow, "LOD0"),
+        box("coatTrim", (0.74, 0.12, 0.46), (0, 1.42, 0), snow, bevel=0.04),
+        box("arm.L", (0.18, 0.7, 0.2), (-0.48, 1.1, 0), cloth, bevel=0.05),
+        box("arm.R", (0.18, 0.7, 0.2), (0.48, 1.1, 0), cloth, bevel=0.05),
+        sphere("glove.L", 0.12, (-0.48, 0.72, 0.02), skin),
+        sphere("glove.R", 0.12, (0.48, 0.72, 0.02), skin),
+        box("shoulder.L", (0.3, 0.18, 0.3), (-0.46, 1.38, 0), metal, bevel=0.06),
+        box("shoulder.R", (0.3, 0.18, 0.3), (0.46, 1.38, 0), metal, bevel=0.06),
+        box("leg.L", (0.22, 0.7, 0.24), (-0.2, 0.42, 0), leather, bevel=0.05),
+        box("leg.R", (0.22, 0.7, 0.24), (0.2, 0.42, 0), leather, bevel=0.05),
+        box("boot.L", (0.25, 0.14, 0.42), (-0.2, 0.07, 0.08), metal, bevel=0.05),
+        box("boot.R", (0.25, 0.14, 0.42), (0.2, 0.07, 0.08), metal, bevel=0.05),
+        box("belt", (0.74, 0.12, 0.48), (0, 0.82, 0), leather, bevel=0.04),
+        box("beltSigil", (0.13, 0.13, 0.05), (0, 0.82, 0.24), glow, bevel=0.02),
         cylinder("weapon", 0.055, 1.15, (0.62, 0.86, 0.16), metal, "LOD0", 8),
+        sphere("weaponGem", 0.1, (0.62, 1.44, 0.16), glow),
     ]
     parent_all(parts, root)
-    bpy.ops.object.armature_add(enter_editmode=True, location=(0, 0, 0))
-    skeleton = bpy.context.object
+    skeleton = make_skeleton(root)
     skeleton.name = "HeroSkeleton"
     skeleton.data.name = "HeroSkeleton"
-    skeleton.parent = root
-    armature = skeleton.data
-    armature.edit_bones.remove(armature.edit_bones[0])
-    previous = None
-    for index, name in enumerate(("root", "pelvis", "spine", "chest", "neck", "head", "upper_arm.L", "upper_arm.R", "lower_arm.L", "lower_arm.R", "hand.L", "hand.R", "thigh.L", "thigh.R", "shin.L", "shin.R", "foot.L", "foot.R")):
-        bone = armature.edit_bones.new(name)
-        bone.head = (0, 0, index * 0.1)
-        bone.tail = (0, 0, index * 0.1 + 0.1)
-        if previous and index < 6:
-            bone.parent = previous
-        previous = bone
-    bpy.ops.object.mode_set(mode="OBJECT")
-    move_to(skeleton, "RIG")
+    bind_unit_pieces(parts, skeleton)
     for name in ("weapon_socket.R", "weapon_socket.L", "ranged_socket", "back_socket"):
         socket = empty(name, (0, 1.1, 0), "RIG")
         socket.parent = root
     collision_box("COL_Hero", (0.75, 1.85, 0.75), (0, 0.95, 0), root)
-    for name, amount in (("Idle", 0.04), ("Walk", 0.16), ("Run", 0.25), ("MeleeAttack", 0.7), ("RangedAttack", 0.45), ("Hit", -0.2), ("Death", -0.8)):
-        add_simple_animation(root, name, amount=amount, end=24 if name in ("Idle", "Walk", "Run") else 16)
+    add_armature_clip(skeleton, "Idle", 24, [(1, {}), (12, {"chest": (0.025, 0, 0), "head": (0, 0.025, 0)}), (24, {})])
+    add_armature_clip(skeleton, "Walk", 24, [
+        (1, {"upper_arm.L": (0.35, 0, 0), "upper_arm.R": (-0.35, 0, 0), "thigh.L": (-0.5, 0, 0), "thigh.R": (0.5, 0, 0)}),
+        (8, {"upper_arm.L": (-0.35, 0, 0), "upper_arm.R": (0.35, 0, 0), "thigh.L": (0.5, 0, 0), "thigh.R": (-0.5, 0, 0)}),
+        (24, {}),
+    ])
+    add_armature_clip(skeleton, "Run", 18, [
+        (1, {"upper_arm.L": (0.65, 0, 0), "upper_arm.R": (-0.65, 0, 0), "thigh.L": (-0.75, 0, 0), "thigh.R": (0.75, 0, 0), "chest": (0.1, 0, 0)}),
+        (6, {"upper_arm.L": (-0.65, 0, 0), "upper_arm.R": (0.65, 0, 0), "thigh.L": (0.75, 0, 0), "thigh.R": (-0.75, 0, 0), "chest": (0.1, 0, 0)}),
+        (18, {}),
+    ])
+    add_armature_clip(skeleton, "MeleeAttack", 16, [(1, {"upper_arm.R": (-1.0, 0, 0), "lower_arm.R": (-0.6, 0, 0)}), (7, {"upper_arm.R": (1.4, 0, 0), "lower_arm.R": (0.5, 0, 0), "chest": (0.2, 0, 0)}), (16, {})])
+    add_armature_clip(skeleton, "RangedAttack", 16, [(1, {"upper_arm.R": (-0.8, 0, 0), "upper_arm.L": (-0.5, 0, 0)}), (8, {"upper_arm.R": (-1.7, 0, 0), "upper_arm.L": (-1.1, 0, 0), "head": (-0.15, 0, 0)}), (16, {})])
+    add_armature_clip(skeleton, "Hit", 12, [(1, {"chest": (-0.2, 0, 0), "head": (0.12, 0, 0)}), (12, {})])
+    add_armature_clip(skeleton, "Death", 20, [(1, {}), (12, {"root": (1.25, 0, 0), "chest": (0.4, 0, 0), "upper_arm.L": (0.8, 0, 0), "upper_arm.R": (0.8, 0, 0)}), (20, {"root": (1.45, 0, 0), "chest": (0.5, 0, 0), "upper_arm.L": (1.1, 0, 0), "upper_arm.R": (1.1, 0, 0)})])
     source = os.path.abspath(os.path.join(HERE, "..", "..", "assets-source", "blender", "characters", "hero.blend"))
     output = os.path.abspath(os.path.join(HERE, "..", "..", "public", "assets", "models", "characters", "hero.glb"))
     save_source(source)

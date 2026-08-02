@@ -60,3 +60,18 @@
 - 將 `art:export` 批次流程擴充為主角、既有設施、25 個角色、12 個新設施與火爐的完整匯出；README／藝術驗證說明同步列出分批指令與 v6／v9／v10 回歸範圍。
 - 修正戰鬥角色 GLB 與程序化模型的 pooled rig 邊界：使用 authored 角色時，重用小隊與護甲破壞流程不會重新啟用隱藏的程序化零件造成雙重模型。
 - 本次批次後回歸：v6 49/49、v9 75/75、v10 12/12；完整預設 playtest 在 v8 的長時間策略耐久段超過 420 秒未回傳，因此不宣稱完整套件通過，需另行縮短或拆分該耐久測試。
+
+## 2026-08-02 — authored asset quality pass
+
+- Rebuilt the shared unit authoring pass for all 25 non-hero allies/enemies: layered cloth/leather/metal materials, role-specific silhouette details, faction accents, joints, gloves, armour plates and equipment details are now exported from Blender rather than relying on the pooled runtime boxes.
+- Replaced unit root-only clips with a real `UnitSkeleton` pose rig. Each unit exports six named clips (`Idle`, `Walk`, `Attack`, `Cast`, `Hit`, `Death`) with 54 bone animation channels and Babylon continues to select them through `CombatAnimator`.
+- Added `LOD1`/`LOD2` authored contract markers with screen-coverage metadata to every hero, unit and facility GLB, plus stricter validator checks for marker nodes and non-empty animation channels.
+- Added layered facility detailing across economy buildings, attack towers and the furnace: snow/metal plinth trims, bolts, lamps, pulley/cable, saw guard, doors/signage, pipes, attack rings, chimney and flame crown. Functional parts now receive `Operate`/`Fire`/`Recoil` motion channels while preserving yaw/pitch/muzzle/recoil nodes.
+- Updated the Blender runner to retry official Windows Blender through `cmd.exe` when a managed Node process returns `EPERM`; the existing `BLENDER_PATH` / PATH / common-root lookup order remains unchanged.
+- Added deterministic unit/facility art-review render scripts and documented the visual review boundary. Generated source `.blend` and public GLB files with the complete `npm run art:export` batch using Blender 5.2.0 LTS.
+- Re-ran `npm run art:validate`: 40/40 assets `ok`, no blocked/invalid results, no external URIs, no collision meshes, root scales unit, and triangle budgets remain below 60k. Character clips now expose 54 channels each; facility functional clips expose two channels where applicable.
+- Removed Blender `.blend1` backup files from the workspace and ignored future backups; they are not authored deliverables.
+
+- Raised the three baseline assets to the same authored standard: the hero now uses the segmented skeleton with seven 54-channel clips and layered coat/armour/sigil details; the basic turret gained bevelled support braces, barrel cowl, muzzle lens, ammo latch and recoil channels; the gate gained snow caps, armour bands, keystone/crest details and independent left/right door pivots for `GateOpen`/`GateClose`.
+- Re-exported and revalidated the complete library after the baseline pass: all 40 assets remain `ok`; `hero.glb` is 48 nodes / 22 meshes / 2,756 triangles, and `wall_gate.glb` exports two-channel independent gate clips.
+- Regression after the re-export: v6 49/49, v9 75/75, v10 12/12; `npm run typecheck` and escalated production `npm run build` pass. The default endurance playtest remains a separately tracked long-running v8 check and is not claimed as a fresh full-suite pass.

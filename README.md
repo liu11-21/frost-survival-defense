@@ -46,6 +46,12 @@ live in `assets-source/blender/` and export to `public/assets/models/`. The
 Babylon `AssetRegistry` validates required nodes and animation names before any
 GLB is instantiated.
 
+The current authored pass uses one shared stylized low-poly language: layered
+cloth/leather/metal materials, role-specific silhouettes, socket and functional
+nodes, real segmented unit skeletons, named Idle/Walk/Attack/Cast/Hit/Death
+clips, and exported `LOD1`/`LOD2` markers. Runtime still keeps the procedural
+renderer as a fail-safe when a GLB is missing or fails its contract.
+
 ```bash
 npm run art:template   # create the metric Blender template
 npm run art:hero       # build the authored hero GLB
@@ -56,6 +62,16 @@ npm run art:buildings  # batch-build economy, defense and furnace GLBs
 npm run art:export     # run the complete hero + facility + unit export batch
 npm run art:validate   # write reports/art-validation.json
 ```
+
+For an offline art review, Blender can also render the deterministic sheets:
+
+```bash
+blender --background --python scripts/blender/render_asset_previews.py
+blender --background --python scripts/blender/render_facility_previews.py
+```
+
+The sheets are written under `reports/art-previews/`; they are review aids, not
+runtime assets.
 
 Blender remains optional at runtime, but this machine now has Blender 5.2.0 LTS
 installed from the official Blender Foundation Windows ZIP. `BLENDER_PATH` is

@@ -37,12 +37,26 @@ function findBlender() {
 }
 
 const blender = findBlender();
-const probe = spawnSync(blender, ["--version"], { encoding: "utf8" });
+function invokeBlender(blenderPath, blenderArgs, options = {}) {
+  const direct = spawnSync(blenderPath, blenderArgs, options);
+  // Some managed Windows installations allow blender.exe from PowerShell but
+  // reject a direct Node child process with EPERM. Going through cmd.exe keeps
+  // the official executable and arguments unchanged; it is not a shell script
+  // or an alternate Blender binary, just the Windows process launcher.
+  if (process.platform === "win32" && direct.error?.code === "EPERM") {
+    const quote = (value) => /[\s&()^|<>]/.test(value) ? `"${value.replaceAll('"', '""')}"` : value;
+    const command = [quote(blenderPath), ...blenderArgs.map(quote)].join(" ");
+    return spawnSync("cmd.exe", ["/d", "/s", "/c", command], options);
+  }
+  return direct;
+}
+
+const probe = invokeBlender(blender, ["--version"], { encoding: "utf8" });
 if (probe.status !== 0) {
   console.error("Blender was not found. Install Blender LTS from https://www.blender.org/download/ or set BLENDER_PATH to blender.exe.");
   console.error("Windows example: $env:BLENDER_PATH='C:\\Program Files\\Blender Foundation\\Blender 4.x\\blender.exe'");
   process.exit(2);
 }
 
-const result = spawnSync(blender, ["--background", "--python", join(process.cwd(), script), "--", ...args], { stdio: "inherit" });
+const result = invokeBlender(blender, ["--background", "--python", join(process.cwd(), script), "--", ...args], { stdio: "inherit" });
 process.exit(result.status ?? 1);
