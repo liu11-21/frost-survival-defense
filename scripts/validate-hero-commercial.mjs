@@ -5,6 +5,7 @@ const root = process.cwd();
 const sourceRelative = "assets-source/blender/characters/hero.blend";
 const glbRelative = "public/assets/models/characters/hero.glb";
 const evidenceRootRelative = "reports/art-previews/hero-commercial";
+const runtimePerfRelative = `${evidenceRootRelative}/runtime-perf.json`;
 const requiredNodes = ["HeroRoot", "HeroSkeleton", "weapon_socket.R", "ranged_socket", "LOD1", "LOD2"];
 const requiredAnimations = ["Idle", "Walk", "Run", "MeleeAttack", "RangedAttack", "Hit", "Death"];
 const stages = ["H1", "H2", "H3", "H4", "H5", "H6"];
@@ -217,6 +218,29 @@ async function auditStageEvidence() {
   };
 }
 
+async function auditRuntimePerf() {
+  try {
+    const runtime = await readJson(runtimePerfRelative);
+    const perf = runtime.perf ?? {};
+    return {
+      present: true,
+      scene: runtime.scene ?? null,
+      sourceIndicator: runtime.sourceIndicator ?? null,
+      perf,
+      consoleErrors: runtime.consoleErrors ?? [],
+      pageErrors: runtime.pageErrors ?? [],
+      valid: runtime.scene === "Babylon formal uiVerification scene" &&
+        runtime.sourceIndicator === "Hero Model Source: GLB" &&
+        Number.isFinite(perf.drawCalls) && perf.drawCalls > 0 &&
+        Number.isFinite(perf.activeMeshes) && perf.activeMeshes > 0 &&
+        (runtime.consoleErrors ?? []).length === 0 &&
+        (runtime.pageErrors ?? []).length === 0,
+    };
+  } catch (error) {
+    return { present: false, valid: false, error: String(error.message ?? error) };
+  }
+}
+
 const sourcePath = resolve(root, sourceRelative);
 const glbPath = resolve(root, glbRelative);
 const sourceStat = await stat(sourcePath);
@@ -224,10 +248,12 @@ const glb = await readFile(glbPath);
 const sourceBytes = await readFile(sourcePath);
 const audit = buildAudit(glb, sourceBytes);
 const stageEvidence = await auditStageEvidence();
+const runtimePerf = await auditRuntimePerf();
 const finalChecks = {
   sourceArtifact: sourceStat.isFile() && sourceBytes.length > 20_000,
   ...audit.checks,
   stageEvidence: stageEvidence.allStagesHaveTwoIterations && stageEvidence.allFormalBabylonEvidence && stageEvidence.allScreenshotsPresent && stageEvidence.allMetricsValid,
+  runtimePerf: runtimePerf.valid,
 };
 const output = {
   generatedAt: new Date().toISOString(),
@@ -244,7 +270,8 @@ const output = {
     reloadIterations: stages.length * 2,
     requiredAnimations: requiredAnimations,
     loadBehavior: "Each H1-H6 iteration has a formal Babylon uiVerification reload screenshot; the existing runtime gate retries authored preload before settling on procedural fallback.",
-    liveDrawCallCounter: "not captured in this static contract report; renderPrimitiveCount is recorded above",
+    perfCapture: runtimePerf,
+    liveDrawCallCounter: runtimePerf.valid ? "captured in reports/art-previews/hero-commercial/runtime-perf.json" : "not captured",
   },
 };
 const outputPath = resolve(root, evidenceRootRelative, "final-contract.json");

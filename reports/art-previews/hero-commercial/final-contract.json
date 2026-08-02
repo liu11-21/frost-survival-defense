@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-08-02T16:28:57.202Z",
+  "generatedAt": "2026-08-02T16:49:29.607Z",
   "asset": "hero",
   "sourcePath": "assets-source/blender/characters/hero.blend",
   "glbPath": "public/assets/models/characters/hero.glb",
@@ -24,7 +24,8 @@
     "triangleBudget": true,
     "materialBudget": true,
     "rootExtras": true,
-    "stageEvidence": true
+    "stageEvidence": true,
+    "runtimePerf": true
   },
   "artifact": {
     "status": "pass",
@@ -823,6 +824,25 @@
       "Death"
     ],
     "loadBehavior": "Each H1-H6 iteration has a formal Babylon uiVerification reload screenshot; the existing runtime gate retries authored preload before settling on procedural fallback.",
-    "liveDrawCallCounter": "not captured in this static contract report; renderPrimitiveCount is recorded above"
+    "perfCapture": {
+      "present": true,
+      "scene": "Babylon formal uiVerification scene",
+      "sourceIndicator": "Hero Model Source: GLB",
+      "perf": {
+        "drawCalls": 131,
+        "activeMeshes": 59,
+        "totalVertices": 198469,
+        "renderMs": 12,
+        "frameMs": 12.299999952316284,
+        "fps": 3.5298270383265837,
+        "avgFps5s": 35.27336861411801,
+        "qualityLevel": "high",
+        "totalUnits": 0
+      },
+      "consoleErrors": [],
+      "pageErrors": [],
+      "valid": true
+    },
+    "liveDrawCallCounter": "captured in reports/art-previews/hero-commercial/runtime-perf.json"
   }
 }

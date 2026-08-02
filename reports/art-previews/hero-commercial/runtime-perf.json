@@ -1,0 +1,19 @@
+{
+  "capturedAt": "2026-08-02T16:47:02.565Z",
+  "url": "http://127.0.0.1:5181/?uiVerification=1",
+  "scene": "Babylon formal uiVerification scene",
+  "sourceIndicator": "Hero Model Source: GLB",
+  "perf": {
+    "drawCalls": 131,
+    "activeMeshes": 59,
+    "totalVertices": 198469,
+    "renderMs": 12,
+    "frameMs": 12.299999952316284,
+    "fps": 3.5298270383265837,
+    "avgFps5s": 35.27336861411801,
+    "qualityLevel": "high",
+    "totalUnits": 0
+  },
+  "consoleErrors": [],
+  "pageErrors": []
+}
