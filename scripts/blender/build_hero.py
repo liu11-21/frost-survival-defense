@@ -20,9 +20,9 @@ def build():
     glow = material("MAT_hero_glow", (0.3, 0.78, 1.0), 0.24, 0.0, (0.18, 0.62, 1.0))
     accent = material("MAT_hero_accent", (0.45, 0.78, 1.0), 0.35, 0.5)
     root = orient_for_babylon(empty("HeroRoot", target="EXPORT", display="PLAIN_AXES"))
-    root["commercialStage"] = "H3"
+    root["commercialStage"] = "H4"
     root["commercialIteration"] = 2
-    root["identityReview"] = "layered visor lens, asymmetric hood pin, mask bridge and badge contrast"
+    root["weaponReview"] = "sharpened blade edges, ranged stock/bolt, socket guides and axis metadata"
     add_lod_markers(root, "character")
     parts = [
         # H1 iteration 1: a wider padded torso, slightly lower centre of
@@ -178,6 +178,22 @@ def build():
         prism("heroHoodPin", [(-0.06, 2.12), (0.10, 2.16), (0.07, 2.02), (-0.08, 2.03)], 0.04, (0.24, 0, -0.22), metal_light, "LOD0", 0.008),
         prism("heroShoulderBadge", [(-0.13, 1.52), (0.13, 1.52), (0.11, 1.36), (-0.11, 1.36)], 0.045, (-0.50, 0, 0.235), accent, "LOD0", 0.010),
         sphere("heroBadgeGem", 0.035, (-0.50, 1.44, 0.27), glow),
+        # H4 iteration 1: the hero carries a readable melee blade and a
+        # compact ranged assembly.  Both are authored meshes so the runtime
+        # sockets have a visible, testable destination.
+        box("weapon.rangedBody", (0.18, 0.44, 0.16), (0.38, 1.18, -0.20), leather, "LOD0", 0.025),
+        torus("weapon.rangedGuard", 0.13, 0.022, (0.38, 1.18, -0.29), metal_light, "LOD0"),
+        cylinder("weapon.rangedBarrel", 0.035, 0.48, (0.38, 1.42, -0.20), metal, "LOD0", 8),
+        box("weapon.rangedSight", (0.05, 0.10, 0.05), (0.38, 1.39, -0.20), glow, "LOD0", 0.008),
+        sphere("weapon.rangedMuzzle", 0.045, (0.38, 1.67, -0.20), glow),
+        # H4 iteration 2: edge strips and a visible stock/bolt finish the
+        # ranged silhouette while socket guides document the attachment axes.
+        prism("weapon.bladeEdge.L", [(-0.086, 0.26), (-0.02, 0.28), (0.0, 1.16), (-0.035, 1.02)], 0.035, (0.62, 0, 0.255), accent, "LOD0", 0.006),
+        prism("weapon.bladeEdge.R", [(0.02, 0.28), (0.086, 0.26), (0.035, 1.02), (0.0, 1.16)], 0.035, (0.62, 0, 0.255), accent, "LOD0", 0.006),
+        box("weapon.rangedStock", (0.20, 0.16, 0.20), (0.38, 0.96, -0.20), leather, "LOD0", 0.018),
+        cylinder("weapon.rangedBolt", 0.016, 0.36, (0.38, 1.58, -0.20), metal_light, "LOD0", 6),
+        torus("weapon.socketGuide.R", 0.07, 0.012, (0.62, 0.78, 0.20), glow, "LOD0"),
+        torus("weapon.socketGuide.ranged", 0.06, 0.010, (0.38, 1.34, -0.20), glow, "LOD0"),
     ]
     assign_surface_variants(parts, [
         ("_cloth", snow, cloth),
@@ -191,8 +207,17 @@ def build():
     skeleton.name = "HeroSkeleton"
     skeleton.data.name = "HeroSkeleton"
     bind_unit_pieces(parts, skeleton)
-    for name in ("weapon_socket.R", "weapon_socket.L", "ranged_socket", "back_socket"):
-        socket = empty(name, (0, 1.1, 0), "RIG")
+    socket_positions = {
+        "weapon_socket.R": (0.62, 0.78, 0.20),
+        "weapon_socket.L": (-0.50, 0.82, 0.16),
+        "ranged_socket": (0.38, 1.34, -0.20),
+        "back_socket": (0.0, 1.08, -0.48),
+    }
+    for name, position in socket_positions.items():
+        socket = empty(name, position, "RIG")
+        socket["socketKind"] = "ranged" if name == "ranged_socket" else "weapon"
+        socket["forwardAxis"] = "+Y"
+        socket["contractVersion"] = "hero-h4"
         socket.parent = root
     collision_box("COL_Hero", (0.82, 1.9, 0.82), (0, 0.95, 0), root)
     add_armature_clip(skeleton, "Idle", 24, [(1, {}), (12, {"chest": (0.025, 0, 0), "head": (0, 0.025, 0)}), (24, {})])

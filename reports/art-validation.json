@@ -1,20 +1,20 @@
 {
-  "generatedAt": "2026-08-02T16:04:12.388Z",
+  "generatedAt": "2026-08-02T16:07:23.022Z",
   "blenderRequired": true,
   "assets": [
     {
       "key": "hero",
       "status": "ok",
       "path": "public/assets/models/characters/hero.glb",
-      "sizeBytes": 1306828,
-      "nodes": 148,
-      "meshes": 122,
+      "sizeBytes": 1442912,
+      "nodes": 159,
+      "meshes": 133,
       "materials": 10,
       "textures": 9,
       "skeletons": 1,
       "rootTransforms": [
         {
-          "index": 147,
+          "index": 158,
           "name": "HeroRoot",
           "translation": [
             0,
@@ -58,9 +58,9 @@
         "Hit": 54,
         "Death": 54
       },
-      "triangles": 17648,
+      "triangles": 19716,
       "lodTriangles": {
-        "LOD0": 17104,
+        "LOD0": 19172,
         "LOD1": 300,
         "LOD2": 244
       },
