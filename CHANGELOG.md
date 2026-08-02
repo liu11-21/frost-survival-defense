@@ -139,3 +139,11 @@
 ## 2026-08-02 | authored asset integration correction
 
 - Fixed the auto-collector detail pass so both collector arms are parented under the facility root before GLB export; this removes stray root transforms and keeps Babylon hierarchy inspection deterministic.
+
+## 2026-08-02 | authored asset silhouette refinement
+
+- Added a new Blender geometry pass for the hero, warrior and flying colossus: tapered torso shells, coat tails, face/hood planes, armour guards, a profiled weapon, wing ribs, chest shell, brow, tail and claws.
+- Added mechanical readability to the crossbow tower (shaped stock, bolt rail/head and draw wheels) and construction detail to the furnace (door assembly, flue, collar, cap and chimney blocks).
+- Applied the shared torso-front/back shell treatment and light-metal material separation to the remaining authored unit library without changing Babylon skeleton, animation or functional-node contracts.
+- Re-exported all 42 source `.blend` files and runtime `.glb` files with Blender 5.2.0 LTS. `npm run art:validate` remains 42/42 `ok` with no blocked or invalid assets.
+- Refreshed the character and facility review sheets. Visual review remains an honest production checkpoint: these are authored stylized low-poly assets, not a final hand-sculpted/texture-painted commercial pack.

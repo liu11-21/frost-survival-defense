@@ -67,18 +67,25 @@ corresponding authored file passes validation.
 
 ## Latest authored refinement
 
-- `hero.glb`: face focal points, lapels, a hand-bound grip/blade/guard/gem set,
-  and head-bone mapping for the authored facial pieces.
-- `warrior.glb`: layered breastplate, collar, shoulder guards, chest seal and
-  a readable scabbard silhouette; the sword blade now has a tapered profile,
-  fuller and pommel.
-- `flyingColossus.glb`: mirrored multi-panel wing membranes, wing spars,
-  mantle, horns, eyes and knee guards.
+- `hero.glb`: face focal points, cheek and hood planes, a tapered chest shell,
+  split coat tails, straps, guarded legs and a hand-bound grip/blade/guard/gem
+  set; all authored facial pieces remain mapped to the head bone.
+- `warrior.glb`: layered breastplate, tapered shared torso shell, abdomen,
+  hip guards, rivets, collar, shoulder guards, chest seal and readable
+  scabbard silhouette; the sword blade now has a tapered profile, fuller and
+  pommel.
+- `flyingColossus.glb`: mirrored multi-panel wing membranes, wing spars and
+  ribs, chest shell, brow, mantle, horns, eyes, tail, claws and knee guards.
 - `furnace.glb`: alternating masonry courses, recessed fire chamber, rim,
-  and three authored flame tongues; all new parts are parented under
-  `FurnaceRoot` so their placement follows the building instance.
-- `crossbow_tower.glb`: shaped bow limbs, string, grip, winch and diagonal
-  deck braces; braces remain under `BuildingRoot`.
+  door frame/handle, flue, collar, cap and chimney blocks; all new parts are
+  parented under `FurnaceRoot` so their placement follows the building
+  instance.
+- `crossbow_tower.glb`: shaped bow limbs, string, grip, winch, stock profile,
+  bolt rail/head, draw wheels and diagonal deck braces; braces remain under
+  `BuildingRoot`.
+- All other character GLBs now receive the shared tapered torso-front shell,
+  back yoke and light-metal material separation without changing their
+  `UnitSkeleton` or animation contracts.
 - All 26 character GLBs: added collar and jaw planes, waist and chest seams,
   cuffs, boot soles/rivets, faction badges, weapon grip wraps and role-specific
   shoulder hardware. Flying units now use layered membrane panels and wing

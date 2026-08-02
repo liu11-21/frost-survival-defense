@@ -13,7 +13,9 @@ def build():
     cloth = material("MAT_hero_cloth", (0.18, 0.3, 0.55), 0.9)
     leather = material("MAT_hero_leather", (0.2, 0.08, 0.035), 0.82)
     metal = material("MAT_hero_metal", (0.22, 0.28, 0.36), 0.28, 0.85)
+    metal_light = material("MAT_hero_metal_light", (0.48, 0.62, 0.78), 0.2, 0.9)
     skin = material("MAT_hero_skin", (0.65, 0.36, 0.22), 0.88)
+    cloth_dark = material("MAT_hero_cloth_dark", (0.08, 0.14, 0.28), 0.94)
     snow = material("MAT_hero_snow", (0.78, 0.9, 1.0), 0.7)
     glow = material("MAT_hero_glow", (0.3, 0.78, 1.0), 0.24, 0.0, (0.18, 0.62, 1.0))
     accent = material("MAT_hero_accent", (0.45, 0.78, 1.0), 0.35, 0.5)
@@ -81,6 +83,22 @@ def build():
         sphere("bootRivet.R", 0.035, (0.2, 0.10, 0.27), accent),
         box("weapon.WrapA", (0.1, 0.055, 0.11), (0.62, 0.70, 0.16), accent, "LOD0", 0.012),
         box("weapon.WrapB", (0.1, 0.055, 0.11), (0.62, 0.80, 0.16), accent, "LOD0", 0.012),
+        # A tapered torso shell, split coat tails and articulated guards give
+        # the hero a readable human construction instead of a stack of cubes.
+        prism("chest.heroShell", [(-0.34, 1.36), (0.34, 1.36), (0.27, 0.94), (0.08, 0.84), (-0.08, 0.84), (-0.27, 0.94)], 0.14, (0, 0, 0.27), metal, "LOD0", 0.028),
+        prism("coatTail.L", [(-0.36, 1.06), (-0.04, 1.06), (-0.10, 0.45), (-0.28, 0.34), (-0.50, 0.54)], 0.10, (-0.02, 0, -0.25), cloth_dark, "LOD0", 0.028),
+        prism("coatTail.R", [(0.04, 1.06), (0.36, 1.06), (0.50, 0.54), (0.28, 0.34), (0.10, 0.45)], 0.10, (0.02, 0, -0.25), leather, "LOD0", 0.028),
+        prism("chest.heroStrap", [(-0.29, 1.34), (-0.20, 1.34), (0.23, 0.92), (0.14, 0.90)], 0.05, (0, 0, 0.35), metal_light, "LOD0", 0.012),
+        prism("chest.heroStrapR", [(0.20, 1.34), (0.29, 1.34), (-0.14, 0.90), (-0.23, 0.92)], 0.05, (0, 0, 0.35), metal_light, "LOD0", 0.012),
+        prism("head.cheek.L", [(-0.16, 1.76), (-0.04, 1.82), (-0.06, 1.63), (-0.15, 1.66)], 0.08, (0, 0, 0.28), skin, "LOD0", 0.016),
+        prism("head.cheek.R", [(0.04, 1.82), (0.16, 1.76), (0.15, 1.66), (0.06, 1.63)], 0.08, (0, 0, 0.28), skin, "LOD0", 0.016),
+        prism("head.hoodPanel.L", [(-0.34, 2.06), (-0.06, 2.08), (-0.16, 1.78), (-0.36, 1.86)], 0.12, (0, 0, -0.18), snow, "LOD0", 0.02),
+        prism("head.hoodPanel.R", [(0.06, 2.08), (0.34, 2.06), (0.36, 1.86), (0.16, 1.78)], 0.12, (0, 0, -0.18), snow, "LOD0", 0.02),
+        prism("leg.L.guard", [(-0.12, 0.52), (0.08, 0.52), (0.10, 0.28), (-0.10, 0.28)], 0.09, (-0.2, 0, 0.22), metal_light, "LOD0", 0.018),
+        prism("leg.R.guard", [(-0.08, 0.52), (0.12, 0.52), (0.10, 0.28), (-0.10, 0.28)], 0.09, (0.2, 0, 0.22), metal_light, "LOD0", 0.018),
+        prism("weapon.bladeProfile", [(-0.075, 0.18), (0.075, 0.18), (0.10, 0.98), (0.0, 1.22), (-0.10, 0.98)], 0.10, (0.62, 0.0, 0.18), metal_light, "LOD0", 0.014),
+        prism("weapon.fuller", [(-0.022, 0.30), (0.022, 0.30), (0.036, 1.02), (0.0, 1.10), (-0.036, 1.02)], 0.018, (0.62, 0.0, 0.235), glow, "LOD0", 0.006),
+        sphere("weapon.pommel", 0.08, (0.62, 0.58, 0.16), metal_light),
     ]
     parent_all(parts, root)
     skeleton = make_skeleton(root)

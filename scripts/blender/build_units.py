@@ -233,6 +233,16 @@ def add_unit_finish(parts, visual, cfg, mats, torso_width, heavy):
     shell = mats["metal"] if heavy else mats["accent"]
     parts += [
         prism(
+            "torsoFrontShell",
+            [(-torso_width * 0.48, 1.30), (torso_width * 0.48, 1.30), (torso_width * 0.39, 0.92), (0.10, 0.79), (-0.10, 0.79), (-torso_width * 0.39, 0.92)],
+            0.10,
+            (0, 0, 0.24),
+            shell,
+            "LOD0",
+            0.025,
+        ),
+        prism("torsoBackYoke", [(-torso_width * 0.46, 1.28), (torso_width * 0.46, 1.28), (torso_width * 0.32, 1.02), (-torso_width * 0.32, 1.02)], 0.08, (0, 0, -0.20), mats["clothLight"], "LOD0", 0.018),
+        prism(
             "collarFront",
             [(-0.22, 1.42), (0.22, 1.42), (0.16, 1.26), (0, 1.20), (-0.16, 1.26)],
             0.12,
@@ -329,6 +339,7 @@ def build_unit(visual, cfg):
         "cloth": material(f"MAT_{visual}_cloth", body_color, 0.86),
         "leather": material(f"MAT_{visual}_leather", tuple(max(0.02, c * 0.52) for c in body_color), 0.9),
         "metal": material(f"MAT_{visual}_metal", (0.34, 0.4, 0.5), 0.3, 0.85),
+        "metalLight": material(f"MAT_{visual}_metalLight", (0.56, 0.66, 0.78), 0.2, 0.9),
         "skin": material(f"MAT_{visual}_skin", (0.62, 0.38, 0.28) if cfg["faction"] == "enemy" else (0.78, 0.58, 0.42), 0.78),
         "accent": material(f"MAT_{visual}_accent", accent_color, 0.42, 0.35),
         "highlight": material(f"MAT_{visual}_highlight", tuple(min(1.0, c * 1.18 + 0.08) for c in accent_color), 0.34, 0.4),
@@ -410,6 +421,11 @@ def build_unit(visual, cfg):
             torus("warriorChestSeal", 0.1, 0.025, (0, 1.12, 0.34), mats["glow"], "LOD0"),
             box("warriorScabbard", (0.1, 0.72, 0.12), (-0.28, 1.02, -0.22), mats["leather"], "LOD0", 0.025),
             box("warriorScabbardCap", (0.14, 0.08, 0.16), (-0.28, 0.66, -0.22), mats["metal"], "LOD0", 0.018),
+            prism("warriorAbdomen", [(-0.18, 1.03), (0.18, 1.03), (0.14, 0.82), (0, 0.76), (-0.14, 0.82)], 0.12, (0, 0, 0.24), mats["metalLight"], "LOD0", 0.022),
+            prism("warriorHipGuard.L", [(-0.16, 0.88), (0.04, 0.88), (0.12, 0.62), (-0.10, 0.66)], 0.11, (-0.34, 0, 0.12), mats["metal"], "LOD0", 0.02),
+            prism("warriorHipGuard.R", [(-0.04, 0.88), (0.16, 0.88), (0.10, 0.66), (-0.12, 0.62)], 0.11, (0.34, 0, 0.12), mats["metal"], "LOD0", 0.02),
+            sphere("warriorRivet.L", 0.045, (-0.20, 1.18, 0.35), mats["highlight"]),
+            sphere("warriorRivet.R", 0.045, (0.20, 1.18, 0.35), mats["highlight"]),
         ]
 
     # Distinctive focal pieces make the role readable even when the held prop
@@ -490,7 +506,18 @@ def build_unit(visual, cfg):
                 sphere("head.colossusEye.R", 0.06, (0.1, 1.74, 0.3), mats["glow"]),
                 prism("colossusKneeGuard.L", [(-0.12, 0.44), (0.12, 0.44), (0.08, 0.2), (-0.12, 0.2)], 0.12, (-0.16, 0, 0.2), mats["metal"], "LOD0", 0.018),
                 prism("colossusKneeGuard.R", [(-0.12, 0.44), (0.12, 0.44), (0.12, 0.2), (-0.08, 0.2)], 0.12, (0.16, 0, 0.2), mats["metal"], "LOD0", 0.018),
+                prism("colossusChestShell", [(-0.44, 1.50), (0.44, 1.50), (0.34, 0.90), (0, 0.76), (-0.34, 0.90)], 0.18, (0, 0, 0.27), mats["metalLight"], "LOD0", 0.03),
+                prism("colossusBrow", [(-0.30, 1.86), (0.30, 1.86), (0.22, 1.68), (-0.22, 1.68)], 0.20, (0, 0, 0.30), mats["metal"], "LOD0", 0.025),
+                prism("colossusTail", [(-0.26, 0.78), (0.26, 0.78), (0.50, 0.24), (0.0, 0.06), (-0.50, 0.24)], 0.10, (0, 0, -0.32), mats["cloth"], "LOD0", 0.025),
+                cone("colossusClaw.L", 0.11, 0.015, 0.34, (-0.28, 0.12, 0.24), mats["metalLight"], "LOD0", 6),
+                cone("colossusClaw.R", 0.11, 0.015, 0.34, (0.28, 0.12, 0.24), mats["metalLight"], "LOD0", 6),
             ]
+            for side in (-1, 1):
+                label = "L" if side < 0 else "R"
+                for rib, (x, y, z) in enumerate(((0.44, 1.30, -0.23), (0.62, 1.19, -0.24), (0.78, 1.08, -0.25))):
+                    rib_obj = box(f"wingRib.{label}.{rib}", (0.035, 0.035, 0.62), (side * x, y, z), mats["metalLight"], "LOD0", 0.008)
+                    rib_obj.rotation_euler.y = side * math.pi * (0.26 + rib * 0.06)
+                    parts.append(rib_obj)
     if armor == "batteringRam":
         parts += [box("ramFrame", (0.8, 0.24, 0.2), (0, 1.0, 0.28), mats["metal"]), sphere("ramTip", 0.2, (0, 1.0, 0.62), mats["accent"])]
 

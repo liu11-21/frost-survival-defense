@@ -1,18 +1,18 @@
 {
-  "generatedAt": "2026-08-02T09:41:06.546Z",
+  "generatedAt": "2026-08-02T09:50:23.524Z",
   "blenderRequired": true,
   "assets": [
     {
       "key": "hero",
       "status": "ok",
       "path": "public/assets/models/characters/hero.glb",
-      "nodes": 84,
-      "meshes": 58,
-      "materials": 8,
+      "nodes": 98,
+      "meshes": 72,
+      "materials": 10,
       "skeletons": 1,
       "rootTransforms": [
         {
-          "index": 83,
+          "index": 97,
           "name": "HeroRoot",
           "translation": [
             0,
@@ -30,7 +30,7 @@
         "min": [
           -0.604046106338501,
           -0.75,
-          -1.9800000190734863
+          -2.0785748958587646
         ],
         "max": [
           0.604046106338501,
@@ -56,7 +56,7 @@
         "Hit": 54,
         "Death": 54
       },
-      "triangles": 7908,
+      "triangles": 9464,
       "lodProxies": {
         "LOD1": 2,
         "LOD2": 2
@@ -185,13 +185,13 @@
       "key": "warrior",
       "status": "ok",
       "path": "public/assets/models/characters/warrior.glb",
-      "nodes": 93,
-      "meshes": 67,
-      "materials": 12,
+      "nodes": 100,
+      "meshes": 74,
+      "materials": 13,
       "skeletons": 1,
       "rootTransforms": [
         {
-          "index": 92,
+          "index": 99,
           "name": "UnitRoot",
           "translation": [
             0,
@@ -233,7 +233,7 @@
         "Hit": 54,
         "Death": 54
       },
-      "triangles": 8264,
+      "triangles": 9016,
       "lodProxies": {
         "LOD1": 2,
         "LOD2": 2
@@ -246,13 +246,13 @@
       "key": "shield",
       "status": "ok",
       "path": "public/assets/models/characters/shield.glb",
-      "nodes": 86,
-      "meshes": 60,
+      "nodes": 88,
+      "meshes": 62,
       "materials": 13,
       "skeletons": 1,
       "rootTransforms": [
         {
-          "index": 85,
+          "index": 87,
           "name": "UnitRoot",
           "translation": [
             0,
@@ -294,7 +294,7 @@
         "Hit": 54,
         "Death": 54
       },
-      "triangles": 7688,
+      "triangles": 7928,
       "lodProxies": {
         "LOD1": 2,
         "LOD2": 2
@@ -307,9 +307,70 @@
       "key": "archer",
       "status": "ok",
       "path": "public/assets/models/characters/archer.glb",
+      "nodes": 85,
+      "meshes": 59,
+      "materials": 13,
+      "skeletons": 1,
+      "rootTransforms": [
+        {
+          "index": 84,
+          "name": "UnitRoot",
+          "translation": [
+            0,
+            0,
+            0
+          ],
+          "scale": [
+            1,
+            1,
+            1
+          ]
+        }
+      ],
+      "bounds": {
+        "min": [
+          -0.43356087803840637,
+          -0.75,
+          -1.8300000429153442
+        ],
+        "max": [
+          0.43356087803840637,
+          0.75,
+          0.4508700966835022
+        ]
+      },
+      "animations": [
+        "Idle",
+        "Walk",
+        "Attack",
+        "Cast",
+        "Hit",
+        "Death"
+      ],
+      "animationChannels": {
+        "Idle": 54,
+        "Walk": 54,
+        "Attack": 54,
+        "Cast": 54,
+        "Hit": 54,
+        "Death": 54
+      },
+      "triangles": 7596,
+      "lodProxies": {
+        "LOD1": 2,
+        "LOD2": 2
+      },
+      "missingNodes": [],
+      "missingAnimations": [],
+      "warnings": []
+    },
+    {
+      "key": "medic",
+      "status": "ok",
+      "path": "public/assets/models/characters/medic.glb",
       "nodes": 83,
       "meshes": 57,
-      "materials": 13,
+      "materials": 12,
       "skeletons": 1,
       "rootTransforms": [
         {
@@ -355,68 +416,7 @@
         "Hit": 54,
         "Death": 54
       },
-      "triangles": 7356,
-      "lodProxies": {
-        "LOD1": 2,
-        "LOD2": 2
-      },
-      "missingNodes": [],
-      "missingAnimations": [],
-      "warnings": []
-    },
-    {
-      "key": "medic",
-      "status": "ok",
-      "path": "public/assets/models/characters/medic.glb",
-      "nodes": 81,
-      "meshes": 55,
-      "materials": 12,
-      "skeletons": 1,
-      "rootTransforms": [
-        {
-          "index": 80,
-          "name": "UnitRoot",
-          "translation": [
-            0,
-            0,
-            0
-          ],
-          "scale": [
-            1,
-            1,
-            1
-          ]
-        }
-      ],
-      "bounds": {
-        "min": [
-          -0.43356087803840637,
-          -0.75,
-          -1.8300000429153442
-        ],
-        "max": [
-          0.43356087803840637,
-          0.75,
-          0.4508700966835022
-        ]
-      },
-      "animations": [
-        "Idle",
-        "Walk",
-        "Attack",
-        "Cast",
-        "Hit",
-        "Death"
-      ],
-      "animationChannels": {
-        "Idle": 54,
-        "Walk": 54,
-        "Attack": 54,
-        "Cast": 54,
-        "Hit": 54,
-        "Death": 54
-      },
-      "triangles": 6588,
+      "triangles": 6828,
       "lodProxies": {
         "LOD1": 2,
         "LOD2": 2
@@ -429,13 +429,13 @@
       "key": "flagbearer",
       "status": "ok",
       "path": "public/assets/models/characters/flagbearer.glb",
-      "nodes": 81,
-      "meshes": 55,
+      "nodes": 83,
+      "meshes": 57,
       "materials": 13,
       "skeletons": 1,
       "rootTransforms": [
         {
-          "index": 80,
+          "index": 82,
           "name": "UnitRoot",
           "translation": [
             0,
@@ -477,7 +477,7 @@
         "Hit": 54,
         "Death": 54
       },
-      "triangles": 6628,
+      "triangles": 6868,
       "lodProxies": {
         "LOD1": 2,
         "LOD2": 2
@@ -490,13 +490,13 @@
       "key": "mage",
       "status": "ok",
       "path": "public/assets/models/characters/mage.glb",
-      "nodes": 83,
-      "meshes": 57,
+      "nodes": 85,
+      "meshes": 59,
       "materials": 13,
       "skeletons": 1,
       "rootTransforms": [
         {
-          "index": 82,
+          "index": 84,
           "name": "UnitRoot",
           "translation": [
             0,
@@ -538,7 +538,7 @@
         "Hit": 54,
         "Death": 54
       },
-      "triangles": 7648,
+      "triangles": 7888,
       "lodProxies": {
         "LOD1": 2,
         "LOD2": 2
@@ -551,13 +551,13 @@
       "key": "assault",
       "status": "ok",
       "path": "public/assets/models/characters/assault.glb",
-      "nodes": 88,
-      "meshes": 62,
+      "nodes": 90,
+      "meshes": 64,
       "materials": 12,
       "skeletons": 1,
       "rootTransforms": [
         {
-          "index": 87,
+          "index": 89,
           "name": "UnitRoot",
           "translation": [
             0,
@@ -599,7 +599,7 @@
         "Hit": 54,
         "Death": 54
       },
-      "triangles": 7428,
+      "triangles": 7668,
       "lodProxies": {
         "LOD1": 2,
         "LOD2": 2
@@ -612,13 +612,13 @@
       "key": "engineer",
       "status": "ok",
       "path": "public/assets/models/characters/engineer.glb",
-      "nodes": 81,
-      "meshes": 55,
+      "nodes": 83,
+      "meshes": 57,
       "materials": 12,
       "skeletons": 1,
       "rootTransforms": [
         {
-          "index": 80,
+          "index": 82,
           "name": "UnitRoot",
           "translation": [
             0,
@@ -660,7 +660,7 @@
         "Hit": 54,
         "Death": 54
       },
-      "triangles": 7432,
+      "triangles": 7672,
       "lodProxies": {
         "LOD1": 2,
         "LOD2": 2
@@ -673,13 +673,13 @@
       "key": "musketeer",
       "status": "ok",
       "path": "public/assets/models/characters/musketeer.glb",
-      "nodes": 88,
-      "meshes": 62,
+      "nodes": 90,
+      "meshes": 64,
       "materials": 13,
       "skeletons": 1,
       "rootTransforms": [
         {
-          "index": 87,
+          "index": 89,
           "name": "UnitRoot",
           "translation": [
             0,
@@ -721,7 +721,7 @@
         "Hit": 54,
         "Death": 54
       },
-      "triangles": 7712,
+      "triangles": 7952,
       "lodProxies": {
         "LOD1": 2,
         "LOD2": 2
@@ -734,13 +734,13 @@
       "key": "frostmage",
       "status": "ok",
       "path": "public/assets/models/characters/frostmage.glb",
-      "nodes": 86,
-      "meshes": 60,
+      "nodes": 88,
+      "meshes": 62,
       "materials": 13,
       "skeletons": 1,
       "rootTransforms": [
         {
-          "index": 85,
+          "index": 87,
           "name": "UnitRoot",
           "translation": [
             0,
@@ -782,7 +782,7 @@
         "Hit": 54,
         "Death": 54
       },
-      "triangles": 7544,
+      "triangles": 7784,
       "lodProxies": {
         "LOD1": 2,
         "LOD2": 2
@@ -795,13 +795,13 @@
       "key": "grunt",
       "status": "ok",
       "path": "public/assets/models/characters/grunt.glb",
-      "nodes": 85,
-      "meshes": 59,
+      "nodes": 87,
+      "meshes": 61,
       "materials": 12,
       "skeletons": 1,
       "rootTransforms": [
         {
-          "index": 84,
+          "index": 86,
           "name": "UnitRoot",
           "translation": [
             0,
@@ -843,7 +843,7 @@
         "Hit": 54,
         "Death": 54
       },
-      "triangles": 7048,
+      "triangles": 7288,
       "lodProxies": {
         "LOD1": 2,
         "LOD2": 2
@@ -856,13 +856,13 @@
       "key": "slinger",
       "status": "ok",
       "path": "public/assets/models/characters/slinger.glb",
-      "nodes": 84,
-      "meshes": 58,
+      "nodes": 86,
+      "meshes": 60,
       "materials": 11,
       "skeletons": 1,
       "rootTransforms": [
         {
-          "index": 83,
+          "index": 85,
           "name": "UnitRoot",
           "translation": [
             0,
@@ -904,7 +904,7 @@
         "Hit": 54,
         "Death": 54
       },
-      "triangles": 7496,
+      "triangles": 7736,
       "lodProxies": {
         "LOD1": 2,
         "LOD2": 2
@@ -917,13 +917,13 @@
       "key": "bruiser",
       "status": "ok",
       "path": "public/assets/models/characters/bruiser.glb",
-      "nodes": 89,
-      "meshes": 63,
+      "nodes": 91,
+      "meshes": 65,
       "materials": 12,
       "skeletons": 1,
       "rootTransforms": [
         {
-          "index": 88,
+          "index": 90,
           "name": "UnitRoot",
           "translation": [
             0,
@@ -965,7 +965,7 @@
         "Hit": 54,
         "Death": 54
       },
-      "triangles": 7788,
+      "triangles": 8060,
       "lodProxies": {
         "LOD1": 2,
         "LOD2": 2
@@ -978,13 +978,13 @@
       "key": "marksman",
       "status": "ok",
       "path": "public/assets/models/characters/marksman.glb",
-      "nodes": 84,
-      "meshes": 58,
+      "nodes": 86,
+      "meshes": 60,
       "materials": 12,
       "skeletons": 1,
       "rootTransforms": [
         {
-          "index": 83,
+          "index": 85,
           "name": "UnitRoot",
           "translation": [
             0,
@@ -1026,7 +1026,7 @@
         "Hit": 54,
         "Death": 54
       },
-      "triangles": 7504,
+      "triangles": 7744,
       "lodProxies": {
         "LOD1": 2,
         "LOD2": 2
@@ -1039,13 +1039,13 @@
       "key": "juggernaut",
       "status": "ok",
       "path": "public/assets/models/characters/juggernaut.glb",
-      "nodes": 89,
-      "meshes": 63,
+      "nodes": 91,
+      "meshes": 65,
       "materials": 12,
       "skeletons": 1,
       "rootTransforms": [
         {
-          "index": 88,
+          "index": 90,
           "name": "UnitRoot",
           "translation": [
             0,
@@ -1087,7 +1087,7 @@
         "Hit": 54,
         "Death": 54
       },
-      "triangles": 8152,
+      "triangles": 8424,
       "lodProxies": {
         "LOD1": 2,
         "LOD2": 2
@@ -1100,13 +1100,13 @@
       "key": "bombardier",
       "status": "ok",
       "path": "public/assets/models/characters/bombardier.glb",
-      "nodes": 84,
-      "meshes": 58,
+      "nodes": 86,
+      "meshes": 60,
       "materials": 12,
       "skeletons": 1,
       "rootTransforms": [
         {
-          "index": 83,
+          "index": 85,
           "name": "UnitRoot",
           "translation": [
             0,
@@ -1148,7 +1148,7 @@
         "Hit": 54,
         "Death": 54
       },
-      "triangles": 7632,
+      "triangles": 7872,
       "lodProxies": {
         "LOD1": 2,
         "LOD2": 2
@@ -1161,13 +1161,13 @@
       "key": "boss",
       "status": "ok",
       "path": "public/assets/models/characters/boss.glb",
-      "nodes": 85,
-      "meshes": 59,
+      "nodes": 87,
+      "meshes": 61,
       "materials": 12,
       "skeletons": 1,
       "rootTransforms": [
         {
-          "index": 84,
+          "index": 86,
           "name": "UnitRoot",
           "translation": [
             0,
@@ -1209,7 +1209,7 @@
         "Hit": 54,
         "Death": 54
       },
-      "triangles": 7088,
+      "triangles": 7328,
       "lodProxies": {
         "LOD1": 2,
         "LOD2": 2
@@ -1222,13 +1222,13 @@
       "key": "breacher",
       "status": "ok",
       "path": "public/assets/models/characters/breacher.glb",
-      "nodes": 85,
-      "meshes": 59,
+      "nodes": 87,
+      "meshes": 61,
       "materials": 12,
       "skeletons": 1,
       "rootTransforms": [
         {
-          "index": 84,
+          "index": 86,
           "name": "UnitRoot",
           "translation": [
             0,
@@ -1270,7 +1270,7 @@
         "Hit": 54,
         "Death": 54
       },
-      "triangles": 7440,
+      "triangles": 7712,
       "lodProxies": {
         "LOD1": 2,
         "LOD2": 2
@@ -1283,13 +1283,13 @@
       "key": "icearmor",
       "status": "ok",
       "path": "public/assets/models/characters/icearmor.glb",
-      "nodes": 90,
-      "meshes": 64,
+      "nodes": 92,
+      "meshes": 66,
       "materials": 13,
       "skeletons": 1,
       "rootTransforms": [
         {
-          "index": 89,
+          "index": 91,
           "name": "UnitRoot",
           "translation": [
             0,
@@ -1331,7 +1331,7 @@
         "Hit": 54,
         "Death": 54
       },
-      "triangles": 7896,
+      "triangles": 8168,
       "lodProxies": {
         "LOD1": 2,
         "LOD2": 2
@@ -1344,13 +1344,13 @@
       "key": "commander",
       "status": "ok",
       "path": "public/assets/models/characters/commander.glb",
-      "nodes": 83,
-      "meshes": 57,
+      "nodes": 85,
+      "meshes": 59,
       "materials": 12,
       "skeletons": 1,
       "rootTransforms": [
         {
-          "index": 82,
+          "index": 84,
           "name": "UnitRoot",
           "translation": [
             0,
@@ -1392,7 +1392,7 @@
         "Hit": 54,
         "Death": 54
       },
-      "triangles": 6872,
+      "triangles": 7112,
       "lodProxies": {
         "LOD1": 2,
         "LOD2": 2
@@ -1405,13 +1405,13 @@
       "key": "bomber",
       "status": "ok",
       "path": "public/assets/models/characters/bomber.glb",
-      "nodes": 79,
-      "meshes": 53,
+      "nodes": 81,
+      "meshes": 55,
       "materials": 11,
       "skeletons": 1,
       "rootTransforms": [
         {
-          "index": 78,
+          "index": 80,
           "name": "UnitRoot",
           "translation": [
             0,
@@ -1453,7 +1453,7 @@
         "Hit": 54,
         "Death": 54
       },
-      "triangles": 6344,
+      "triangles": 6584,
       "lodProxies": {
         "LOD1": 2,
         "LOD2": 2
@@ -1466,13 +1466,13 @@
       "key": "flyingMelee",
       "status": "ok",
       "path": "public/assets/models/characters/flyingMelee.glb",
-      "nodes": 98,
-      "meshes": 72,
+      "nodes": 100,
+      "meshes": 74,
       "materials": 13,
       "skeletons": 1,
       "rootTransforms": [
         {
-          "index": 97,
+          "index": 99,
           "name": "UnitRoot",
           "translation": [
             0,
@@ -1514,7 +1514,7 @@
         "Hit": 54,
         "Death": 54
       },
-      "triangles": 8436,
+      "triangles": 8676,
       "lodProxies": {
         "LOD1": 2,
         "LOD2": 2
@@ -1527,13 +1527,13 @@
       "key": "flyingEliteArcher",
       "status": "ok",
       "path": "public/assets/models/characters/flyingEliteArcher.glb",
-      "nodes": 97,
-      "meshes": 71,
+      "nodes": 99,
+      "meshes": 73,
       "materials": 13,
       "skeletons": 1,
       "rootTransforms": [
         {
-          "index": 96,
+          "index": 98,
           "name": "UnitRoot",
           "translation": [
             0,
@@ -1575,7 +1575,7 @@
         "Hit": 54,
         "Death": 54
       },
-      "triangles": 8852,
+      "triangles": 9092,
       "lodProxies": {
         "LOD1": 2,
         "LOD2": 2
@@ -1588,13 +1588,13 @@
       "key": "flyingBomber",
       "status": "ok",
       "path": "public/assets/models/characters/flyingBomber.glb",
-      "nodes": 97,
-      "meshes": 71,
+      "nodes": 99,
+      "meshes": 73,
       "materials": 13,
       "skeletons": 1,
       "rootTransforms": [
         {
-          "index": 96,
+          "index": 98,
           "name": "UnitRoot",
           "translation": [
             0,
@@ -1636,7 +1636,7 @@
         "Hit": 54,
         "Death": 54
       },
-      "triangles": 8992,
+      "triangles": 9232,
       "lodProxies": {
         "LOD1": 2,
         "LOD2": 2
@@ -1649,13 +1649,13 @@
       "key": "flyingColossus",
       "status": "ok",
       "path": "public/assets/models/characters/flyingColossus.glb",
-      "nodes": 113,
-      "meshes": 87,
-      "materials": 13,
+      "nodes": 126,
+      "meshes": 100,
+      "materials": 14,
       "skeletons": 1,
       "rootTransforms": [
         {
-          "index": 112,
+          "index": 125,
           "name": "UnitRoot",
           "translation": [
             0,
@@ -1673,7 +1673,7 @@
         "min": [
           -0.8129198551177979,
           -0.75,
-          -1.8300000429153442
+          -1.8600000143051147
         ],
         "max": [
           0.8129198551177979,
@@ -1697,7 +1697,7 @@
         "Hit": 54,
         "Death": 54
       },
-      "triangles": 10492,
+      "triangles": 12120,
       "lodProxies": {
         "LOD1": 2,
         "LOD2": 2
@@ -2151,13 +2151,13 @@
       "key": "crossbow_tower",
       "status": "ok",
       "path": "public/assets/models/buildings/crossbow_tower.glb",
-      "nodes": 45,
-      "meshes": 38,
-      "materials": 10,
+      "nodes": 50,
+      "meshes": 43,
+      "materials": 11,
       "skeletons": 0,
       "rootTransforms": [
         {
-          "index": 44,
+          "index": 49,
           "name": "BuildingRoot",
           "translation": [
             0,
@@ -2201,7 +2201,7 @@
         "Damaged": 1,
         "Destroyed": 1
       },
-      "triangles": 6052,
+      "triangles": 7132,
       "lodProxies": {
         "LOD1": 2,
         "LOD2": 2
@@ -2403,13 +2403,13 @@
       "key": "furnace",
       "status": "ok",
       "path": "public/assets/models/buildings/furnace.glb",
-      "nodes": 66,
-      "meshes": 60,
+      "nodes": 76,
+      "meshes": 70,
       "materials": 9,
       "skeletons": 0,
       "rootTransforms": [
         {
-          "index": 65,
+          "index": 75,
           "name": "FurnaceRoot",
           "translation": [
             0,
@@ -2453,7 +2453,7 @@
         "Damaged": 1,
         "Destroyed": 1
       },
-      "triangles": 9168,
+      "triangles": 10712,
       "lodProxies": {
         "LOD1": 2,
         "LOD2": 2

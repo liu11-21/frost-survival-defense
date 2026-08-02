@@ -72,12 +72,17 @@ def attack_pivot(root, mats, key, style):
     if style == "crossbow":
         parts = [
             box("barrel", (0.16, 0.16, 1.2), (0, 0, 0.35), mats["wood"]),
+            prism("stockProfile", [(-0.16, -0.10), (0.16, -0.10), (0.11, 0.20), (-0.08, 0.34)], 0.16, (0, 0, 0.20), mats["woodLight"], "LOD0", 0.018),
             prism("limb.L", [(-0.48, 0.06), (-0.24, 0.15), (0.02, 0.1), (-0.06, -0.02), (-0.3, -0.1)], 0.12, (-0.35, 0, 0.02), mats["accent"], "LOD0", 0.015),
             prism("limb.R", [(-0.02, 0.1), (0.24, 0.15), (0.48, 0.06), (0.3, -0.1), (0.06, -0.02)], 0.12, (0.35, 0, 0.02), mats["accent"], "LOD0", 0.015),
             box("bowGrip", (0.14, 0.18, 0.18), (0, 0, 0.04), mats["metal"], "LOD0", 0.025),
             box("bowString", (0.035, 0.035, 0.95), (0, 0.02, 0.02), mats["dark"], "LOD0", 0.008),
+            box("boltRail", (0.10, 0.08, 1.05), (0, 0.10, 0.56), mats["metalLight"], "LOD0", 0.012),
+            sphere("boltHead", 0.065, (0, 0.10, 1.15), mats["glow"]),
             torus("winch", 0.16, 0.04, (0, -0.04, 0.44), mats["metal"], "LOD0"),
             cylinder("winchAxle", 0.035, 0.42, (0, -0.04, 0.44), mats["accent"], "LOD0", 8),
+            torus("drawWheel.L", 0.12, 0.025, (-0.34, 0.02, 0.04), mats["metalLight"], "LOD0"),
+            torus("drawWheel.R", 0.12, 0.025, (0.34, 0.02, 0.04), mats["metalLight"], "LOD0"),
         ]
     elif style == "frost":
         parts = [cylinder("barrel", 0.9, 0.16, (0, 0, 0.32), mats["ice"], "LOD0", 6), torus("frostRing", 0.3, 0.05, (0, 0.25, 0.2), mats["metal"])]
@@ -280,6 +285,9 @@ def build_facility(key, cfg):
             prism("furnaceSnowLip", [(-0.92, 2.48), (0.92, 2.48), (0.8, 2.62), (-0.8, 2.62)], 0.22, (0, 0, 0), mats["snow"], "LOD0", 0.035),
             prism("fireChamberInset", [(-0.58, 1.72), (0.58, 1.72), (0.48, 1.08), (-0.48, 1.08)], 0.08, (0, 0, -1.73), mats["dark"], "LOD0", 0.02),
             prism("fireChamberRim", [(-0.7, 1.8), (0.7, 1.8), (0.58, 0.98), (-0.58, 0.98)], 0.07, (0, 0, -1.79), mats["metal"], "LOD0", 0.018),
+            prism("furnaceDoorFrame", [(-0.72, 1.86), (0.72, 1.86), (0.66, 0.82), (-0.66, 0.82)], 0.10, (0, 0, -1.82), mats["stoneLight"], "LOD0", 0.024),
+            box("furnaceDoorBar", (0.96, 0.10, 0.10), (0, 1.22, -1.91), mats["metalLight"], "LOD0", 0.018),
+            sphere("furnaceDoorHandle", 0.09, (0, 1.22, -1.99), mats["accent"]),
         ]
         # Hand-built masonry courses break the cylinder into a believable
         # load-bearing shell. Small alternating blocks preserve the low-poly
@@ -297,6 +305,16 @@ def build_facility(key, cfg):
         for i in range(4):
             angle = i * math.pi * 0.5
             parts.append(box(f"rune.{i}", (0.12, 0.42, 0.06), (math.sin(angle) * 1.28, 1.1, math.cos(angle) * 1.28), mats["glow"]))
+        # The upper furnace silhouette reads as a built chimney, not a single
+        # smooth cylinder: alternating cap blocks and a dark flue create a
+        # clear heat-exhaust structure from the gameplay camera.
+        parts += [
+            cylinder("chimneyFlue", 0.72, 1.0, (0, 3.12, 0.02), mats["dark"], "LOD0", 8),
+            torus("chimneyCollar", 0.78, 0.08, (0, 3.54, 0.02), mats["metalLight"], "LOD0"),
+            cone("chimneyCap", 0.86, 0.62, 0.28, (0, 3.70, 0.02), mats["stoneLight"], "LOD0", 8),
+        ]
+        for index, angle in enumerate((0.0, math.pi * 0.5, math.pi, math.pi * 1.5)):
+            parts.append(box(f"chimneyBlock.{index}", (0.42, 0.26, 0.24), (math.sin(angle) * 0.72, 2.92, math.cos(angle) * 0.72), mats["stoneLight"], "LOD0", 0.025))
         functional += [empty("workPart", (0, 2.05, 0), "EXPORT", "CUBE"), empty("productionCore", (0, 2.05, 0), "EXPORT", "CUBE"), empty("emitter", (0, 2.55, 0), "EXPORT", "PLAIN_AXES")]
 
     add_facility_finish(parts, kind, mats)
