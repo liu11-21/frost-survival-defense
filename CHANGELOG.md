@@ -389,3 +389,17 @@ commercial art-direction sign-off remain open.
 The commercial-art goal therefore remains open. The next priority is a full
 roster review sheet plus manual-quality focal passes for hero, warrior,
 flyingColossus, furnace and crossbow/turret before claiming display readiness.
+
+## 2026-08-02 | visual-effects implementation checkpoint
+
+- Stopped the visual-effects/material expansion at the safe write boundary.
+- Fixed the full-roster Blender review tool so imported assets are centered by
+  their visible mesh bounds; this removes misleading off-center placement for
+  assets with authored root offsets without changing shipped GLBs or runtime
+  transforms.
+- Re-rendered `reports/art-previews/unit-roster-full.png` and
+  `reports/art-previews/facility-roster-full.png`; the Blender startup Cube is
+  cleared before import and both sheets now show the complete authored roster.
+- No new effect type, material framework, asset family, or refactor was added
+  after this checkpoint. Remaining commercial-art gaps stay documented in the
+  art-quality audit.

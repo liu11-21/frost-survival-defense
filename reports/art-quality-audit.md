@@ -419,3 +419,18 @@ skeleton, seven animations and 14,252 triangles.
 This is a focused silhouette improvement, not a claim that the hero is final
 hand-authored commercial topology; the remaining cloth folds, facial sculpt,
 PBR maps and bespoke animation acting still need human art direction.
+
+## Checkpoint: 2026-08-02 visual-effects implementation
+
+The visual-effects/material expansion was stopped at a safe write boundary.
+The full-roster review script now centers each imported asset from its visible
+mesh bounds, so authored root offsets no longer make `flyingColossus` or
+`turret_basic` appear misleadingly displaced in the QA sheets. The Blender
+startup Cube is cleared before import. Both complete review sheets were
+regenerated and written to `reports/art-previews/`.
+
+This is a QA-only correction: no shipped GLB, runtime transform, new effect
+type, material framework, asset family, or refactor was added at the stop
+boundary. The commercial-art goal remains open for primitive-driven topology,
+hand-authored PBR maps, bespoke animation acting, runtime all-manifest proof,
+and performance profiling.

@@ -139,6 +139,23 @@ def import_asset(path, location, scale):
     before = set(bpy.data.objects)
     bpy.ops.import_scene.gltf(filepath=path)
     imported = [obj for obj in bpy.data.objects if obj not in before]
+    # Some authored roots intentionally carry a gameplay-facing offset. For a
+    # catalogue cell, use the visible LOD0 bounds as the review anchor so a
+    # valid asset cannot appear clipped or in a neighbouring cell.
+    visible_meshes = []
+    for obj in imported:
+        if obj.type != "MESH":
+            continue
+        base_name = obj.name.split(":")[-1]
+        if base_name.startswith("LOD1_PROXY") or base_name.startswith("LOD2_PROXY"):
+            continue
+        visible_meshes.append(obj)
+    bounds = []
+    for obj in visible_meshes:
+        bounds.extend(obj.matrix_world @ Vector(corner) for corner in obj.bound_box)
+    review_center = Vector((0, 0, 0))
+    if bounds:
+        review_center = (Vector((min(point.x for point in bounds), min(point.y for point in bounds), min(point.z for point in bounds))) + Vector((max(point.x for point in bounds), max(point.y for point in bounds), max(point.z for point in bounds)))) * 0.5
     # GLTF exports can contain several top-level mesh objects even when the
     # source scene had a semantic Root empty.  Wrap every top-level imported
     # object in a review-only parent so the complete asset moves as one unit.
@@ -151,7 +168,11 @@ def import_asset(path, location, scale):
         matrix = obj.matrix_world.copy()
         obj.parent = placement
         obj.matrix_world = matrix
-    placement.location = location
+    placement.location = (
+        location[0] - review_center.x * scale,
+        location[1] - review_center.y * scale,
+        location[2] - review_center.z * scale,
+    )
     placement.scale = (scale, scale, scale)
     print(f"PLACED {os.path.basename(path)} objects={len(imported)} top_level={len(top_level)} loc={tuple(round(v, 2) for v in location)}")
     for obj in imported:
