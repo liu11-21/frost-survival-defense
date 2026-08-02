@@ -15,7 +15,7 @@ def build():
     snow = material("MAT_wall_snow", (0.78, 0.9, 1.0), 0.68)
     fire = material("MAT_wall_fire", (1.0, 0.26, 0.04), 0.4, 0.0, (1.0, 0.08, 0.01))
     metal = material("MAT_wall_metal", (0.16, 0.2, 0.27), 0.3, 0.9)
-    root = orient_for_babylon(empty("WallGateRoot", target="EXPORT", display="CUBE"))
+    root = orient_for_babylon(empty("WallGateRoot", target="EXPORT", display="PLAIN_AXES"))
     add_lod_markers(root, "wall")
     left = box("wallLeft", (4.8, 2.6, 1.5), (-4.2, 1.3, 0), stone, bevel=0.08)
     right = box("wallRight", (4.8, 2.6, 1.5), (4.2, 1.3, 0), stone, bevel=0.08)
@@ -24,11 +24,11 @@ def build():
     leftTrim = box("wallTrimLeft", (4.9, 0.12, 1.62), (-4.2, 2.55, 0), snow, bevel=0.035)
     rightTrim = box("wallTrimRight", (4.9, 0.12, 1.62), (4.2, 2.55, 0), snow, bevel=0.035)
     doors = []
-    gate_root = empty("gateRoot", (0, 0, 0), "EXPORT", "CUBE")
+    gate_root = empty("gateRoot", (0, 0, 0), "EXPORT", "PLAIN_AXES")
     gate_root.parent = root
     door_pivots = []
     for name, x, direction in (("gateDoorLeft", -1.25, 1), ("gateDoorRight", 1.25, -1)):
-        pivot = empty(f"{name}Pivot", (x, 0, -0.82), "EXPORT", "CUBE")
+        pivot = empty(f"{name}Pivot", (x, 0, -0.82), "EXPORT", "PLAIN_AXES")
         pivot.parent = gate_root
         door = box(name, (1.2, 2.1, 0.25), (x, 1.1, -0.82), wood, bevel=0.05)
         door.parent = pivot

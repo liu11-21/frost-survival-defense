@@ -470,7 +470,7 @@ def collision_box(name, dimensions, location=(0, 0, 0), parent=None):
 
 
 def root(name):
-    return empty(name, (0, 0, 0), "EXPORT", "CUBE")
+    return empty(name, (0, 0, 0), "EXPORT", "PLAIN_AXES")
 
 
 def add_lod_markers(root_obj, asset_kind="building"):
@@ -598,6 +598,19 @@ def add_simple_animation(obj, name, property_path="rotation_euler", index=1, sta
 
 def export_glb(path):
     os.makedirs(os.path.dirname(path), exist_ok=True)
+    # Blender's background startup scene can leave its default, unparented
+    # mesh named ``Cube`` in the export collection.  It is not part of any
+    # authored asset and becomes a white placeholder in Babylon/contact-sheet
+    # previews.  Remove only this exact orphan; named authored box pieces and
+    # collision meshes are preserved.
+    stray_defaults = [
+        obj for obj in bpy.data.objects
+        if obj.type == "MESH" and obj.name == "Cube" and obj.parent is None
+    ]
+    for obj in stray_defaults:
+        bpy.data.objects.remove(obj, do_unlink=True)
+    if stray_defaults:
+        print(f"Removed {len(stray_defaults)} unparented default Cube mesh(es) before GLB export")
     bpy.context.scene.frame_set(1)
     bpy.ops.export_scene.gltf(
         filepath=path,

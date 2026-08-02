@@ -365,3 +365,23 @@ The remaining difficulty is visual quality, not file existence:
 The five manual-quality priorities remain hero, warrior, flyingColossus,
 furnace and crossbow/turret. The latest geometry pass is an improvement, not a
 claim that these assets have reached final hand-authored commercial quality.
+
+## Checkpoint: 2026-08-02 visual-effects implementation
+
+Work was intentionally stopped at a safe checkpoint. The in-progress complete
+character roster preview finished writing to
+`reports/art-previews/unit-roster-full.png`; the facility roster preview was
+not started. No additional effect type, material framework, asset family, or
+refactor was added after the stop request.
+
+The authored sources and GLBs completed before the checkpoint were preserved.
+Export roots and animation/control pivots now use non-rendering plain-axis
+empties, preventing helper cubes from appearing as art. Direct Blender 5.2.0
+LTS export completed, while the Node Blender wrapper is still environment-
+blocked by Windows `spawnSync ... EPERM` in this managed session.
+
+Verification at this checkpoint: `npm run typecheck` passed and `npm run build`
+passed with one elevated retry; Vite continues to emit the existing large
+chunk advisory. Commercial-art sign-off remains open for the unresolved
+primitive-driven topology, authored texture-map, bespoke animation, runtime
+all-manifest, and performance-review gaps documented above.

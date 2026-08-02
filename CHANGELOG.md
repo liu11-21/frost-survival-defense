@@ -1,5 +1,13 @@
 # 變更脈絡
 
+## 2026-08-02｜visual-effects implementation checkpoint
+
+- 按使用者要求在安全位置停止視覺資產擴充；未啟動設施全名單預覽，也未新增新的特效類型、材質框架、資產家族或重構。
+- 已完成當時正在寫入的全角色預覽：`reports/art-previews/unit-roster-full.png`。
+- 保留並重建本次停止前已完成的 Blender 來源與 GLB；匯出根節點及動畫控制 pivot 改用不渲染的 `PLAIN_AXES`，避免控制用 Cube 出現在畫面。
+- 直接使用 Blender 5.2.0 LTS 完成匯出；受管控 Windows 的 Node wrapper 仍因 `spawnSync ... EPERM` 無法啟動子程序。
+- `npm run typecheck` 通過；`npm run build` 在一次提高權限重跑後通過，仍有既有的大型 chunk 警告。
+
 ## 2026-08-02｜主角前向軸執行期校準
 
 - 查明主角的輸入與位移沒有倒置：按住 W 時 `z` 由 `-4.5` 增至 `-2.72`，符合遊戲的 `+Z` 前進約定；預設鏡頭位於主角南側，因此移動時看到背包背面，造成「倒著走」的視覺誤判。

@@ -19,7 +19,7 @@ def build():
     snow = material("MAT_hero_snow", (0.78, 0.9, 1.0), 0.7)
     glow = material("MAT_hero_glow", (0.3, 0.78, 1.0), 0.24, 0.0, (0.18, 0.62, 1.0))
     accent = material("MAT_hero_accent", (0.45, 0.78, 1.0), 0.35, 0.5)
-    root = orient_for_babylon(empty("HeroRoot", target="EXPORT", display="CUBE"))
+    root = orient_for_babylon(empty("HeroRoot", target="EXPORT", display="PLAIN_AXES"))
     add_lod_markers(root, "character")
     parts = [
         box("body", (0.66, 0.85, 0.42), (0, 1.05, 0), cloth, bevel=0.08),

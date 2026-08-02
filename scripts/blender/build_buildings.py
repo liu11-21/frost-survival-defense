@@ -67,9 +67,9 @@ def make_materials(key, cfg):
 
 
 def attack_pivot(root, mats, key, style):
-    yaw = empty("yawPivot", (0, 1.35, 0), "EXPORT", "CUBE")
+    yaw = empty("yawPivot", (0, 1.35, 0), "EXPORT", "PLAIN_AXES")
     yaw.parent = root
-    pitch = empty("pitchPivot", (0, 0.0, 0), "EXPORT", "CUBE")
+    pitch = empty("pitchPivot", (0, 0.0, 0), "EXPORT", "PLAIN_AXES")
     pitch.parent = yaw
     if style == "crossbow":
         parts = [
@@ -99,7 +99,7 @@ def attack_pivot(root, mats, key, style):
     else:
         parts = [cylinder("barrel", 1.5 if style == "mortar" else 1.0, 0.38 if style == "mortar" else 0.22, (0, 0, 0.5), mats["dark"], "LOD0", 8), sphere("muzzle", 0.14, (0, 0, 1.24), mats["glow"])]
     parent_all(parts, pitch)
-    recoil = empty("recoilPart", (0, 0, 0), "EXPORT", "CUBE")
+    recoil = empty("recoilPart", (0, 0, 0), "EXPORT", "PLAIN_AXES")
     recoil.parent = pitch
     empty("muzzle", (0, 0, 1.3), "EXPORT", "PLAIN_AXES").parent = pitch
     return yaw, pitch, recoil
@@ -375,7 +375,7 @@ def build_facility(key, cfg):
     reset_scene()
     mats = make_materials(key, cfg)
     root_name = "FurnaceRoot" if cfg["kind"] == "furnace" else "BuildingRoot"
-    root = orient_for_babylon(empty(root_name, target="EXPORT", display="CUBE"))
+    root = orient_for_babylon(empty(root_name, target="EXPORT", display="PLAIN_AXES"))
     add_lod_markers(root, "building")
     parts = []
     functional = []
@@ -405,7 +405,7 @@ def build_facility(key, cfg):
             cylinder("sawWheel", 0.1, 1.0, (0, 0.95, 0.72), mats["metal"], "LOD0", 12),
             box("logStack", (2.0, 0.32, 0.4), (0, 0.52, 0.9), mats["wood"]),
         ]
-        functional += [empty("workPart", (0, 1.0, 0.7), "EXPORT", "CUBE"), torus("productionCore", 0.34, 0.06, (0, 1.0, 0.72), mats["accent"])]
+        functional += [empty("workPart", (0, 1.0, 0.7), "EXPORT", "PLAIN_AXES"), torus("productionCore", 0.34, 0.06, (0, 1.0, 0.72), mats["accent"])]
     elif kind == "warehouse":
         parts += [
             box("warehouseBody", (2.7, 1.8, 2.3), (0, 1.0, 0), mats["wood"]),
@@ -435,7 +435,7 @@ def build_facility(key, cfg):
             prism("collectorGuard", [(-0.72, 1.35), (0.72, 1.35), (0.58, 2.0), (-0.58, 2.0)], 0.12, (0, 0, -0.46), mats["stoneDark"], "LOD0", 0.025),
             box("hopper", (0.7, 0.4, 0.7), (0, 2.7, 0), mats["dark"]),
         ]
-        functional += [empty("workPart", (0, 2.05, 0), "EXPORT", "CUBE"), sphere("productionCore", 0.22, (0, 2.7, 0), mats["glow"])]
+        functional += [empty("workPart", (0, 2.05, 0), "EXPORT", "PLAIN_AXES"), sphere("productionCore", 0.22, (0, 2.7, 0), mats["glow"])]
     elif kind == "autoRebuilder":
         for x in (-0.9, 0.9):
             for z in (-0.9, 0.9): parts.append(box(f"frame.{x}.{z}", (0.18, 2.0, 0.18), (x, 1.15, z), mats["metal"]))
@@ -445,7 +445,7 @@ def build_facility(key, cfg):
             cylinder("craneCore", 0.65, 0.6, (0, 1.35, 0), mats["accent"], "LOD0", 8),
             box("jib", (0.16, 0.16, 2.5), (0, 2.72, 0.65), mats["metal"]),
         ]
-        functional += [empty("workPart", (0, 1.35, 0), "EXPORT", "CUBE"), sphere("productionCore", 0.18, (0, 2.9, 0.0), mats["glow"])]
+        functional += [empty("workPart", (0, 1.35, 0), "EXPORT", "PLAIN_AXES"), sphere("productionCore", 0.18, (0, 2.9, 0.0), mats["glow"])]
     elif kind in ("crossbowTower", "frostTower", "sniperTower", "mortar"):
         if kind == "crossbowTower":
             for x in (-0.72, 0.72):
@@ -523,7 +523,7 @@ def build_facility(key, cfg):
             prism("furnaceWindowInner", [(-0.42, 1.56), (0.42, 1.56), (0.34, 1.20), (-0.34, 1.20)], 0.045, (0, 0, -1.93), mats["glow"], "LOD0", 0.01),
             *(sphere(f"furnaceCrownBolt.{i}", 0.045, (math.sin(i * math.pi * 0.5) * 1.12, 2.66, math.cos(i * math.pi * 0.5) * 1.12), mats["metalLight"]) for i in range(4)),
         ]
-        functional += [empty("workPart", (0, 2.05, 0), "EXPORT", "CUBE"), empty("productionCore", (0, 2.05, 0), "EXPORT", "CUBE"), empty("emitter", (0, 2.55, 0), "EXPORT", "PLAIN_AXES")]
+        functional += [empty("workPart", (0, 2.05, 0), "EXPORT", "PLAIN_AXES"), empty("productionCore", (0, 2.05, 0), "EXPORT", "PLAIN_AXES"), empty("emitter", (0, 2.55, 0), "EXPORT", "PLAIN_AXES")]
 
     add_facility_finish(parts, kind, mats)
     add_signature_facility_finish(parts, kind, mats)

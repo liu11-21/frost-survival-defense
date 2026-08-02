@@ -16,7 +16,7 @@ def build():
     material("MAT_wood", (0.32, 0.16, 0.07), 0.88)
     material("MAT_snow", (0.78, 0.9, 1.0), 0.68)
     material("MAT_ice", (0.25, 0.72, 0.95), 0.3, 0.15, (0.08, 0.35, 0.5))
-    empty("EXPORT_ROOT", target="EXPORT", display="CUBE")
+    empty("EXPORT_ROOT", target="EXPORT", display="PLAIN_AXES")
     scene = bpy.context.scene
     scene.camera = None
     path = os.path.join(os.path.dirname(HERE), "..", "assets-source", "blender", "templates", "game_asset_template.blend")

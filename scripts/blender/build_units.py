@@ -774,7 +774,9 @@ def build_unit(visual, cfg):
         "wood": material(f"MAT_{visual}_wood", (0.38, 0.2, 0.1), 0.86),
         "dark": material(f"MAT_{visual}_dark", (0.045, 0.05, 0.08), 0.62, 0.35),
     }
-    root = orient_for_babylon(empty("UnitRoot", target="EXPORT", display="CUBE"))
+    # A CUBE empty is exported by Blender's glTF exporter as a visible mesh;
+    # keep the semantic root non-renderable in the GLB.
+    root = orient_for_babylon(empty("UnitRoot", target="EXPORT", display="PLAIN_AXES"))
     add_lod_markers(root, "character")
     parts = []
     heavy = cfg["armor"] in ("heavy", "iceArmor", "batteringRam", "wingsHeavy")

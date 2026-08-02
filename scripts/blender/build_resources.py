@@ -47,7 +47,7 @@ def build_tree():
     needle_light = material("MAT_resource_tree_needle_light", (0.14, 0.38, 0.26), 0.88)
     snow = material("MAT_resource_tree_snow", (0.76, 0.9, 0.98), 0.68)
     glow = material("MAT_resource_tree_ice", (0.28, 0.78, 1.0), 0.28, 0.08, (0.1, 0.45, 0.9))
-    root = orient_for_babylon(empty("ResourceTreeRoot", target="EXPORT", display="CUBE"))
+    root = orient_for_babylon(empty("ResourceTreeRoot", target="EXPORT", display="PLAIN_AXES"))
     add_lod_markers(root, "building")
     parts = [
         cylinder("resource_trunk", 0.25, 1.55, (0, 0.78, 0), bark, "LOD0", 8),
@@ -89,7 +89,7 @@ def build_rock():
     rock_dark = material("MAT_resource_rock_dark", (0.16, 0.19, 0.25), 0.98)
     snow = material("MAT_resource_rock_snow", (0.78, 0.9, 0.98), 0.68)
     ore = material("MAT_resource_ore", (0.25, 0.72, 1.0), 0.3, 0.2, (0.08, 0.38, 1.0))
-    root = orient_for_babylon(empty("ResourceRockRoot", target="EXPORT", display="CUBE"))
+    root = orient_for_babylon(empty("ResourceRockRoot", target="EXPORT", display="PLAIN_AXES"))
     add_lod_markers(root, "building")
     parts = [
         prism("resource_rock_base", [(-0.82, 0.12), (-0.5, 0.7), (0.18, 0.88), (0.84, 0.42), (0.58, 0.12)], 1.25, (0, 0, 0), rock, "LOD0", 0.05),
