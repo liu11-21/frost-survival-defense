@@ -24,8 +24,12 @@ def build():
     accent = material("MAT_hero_accent", (0.40, 0.74, 1.0), 0.28, 0.62)
     root = orient_for_babylon(empty("HeroRoot", target="EXPORT", display="PLAIN_AXES"))
     root["commercialStage"] = "H5"
+    root["commercialStage"] = "H6"
     root["commercialIteration"] = 2
-    root["materialReview"] = "cool palette contrast, calibrated emission and regenerated packed brush texture"
+    root["animationReview"] = "contact-safe walk/run cycles, staged attacks, stable hit/death poses"
+    root["feetGrounded"] = True
+    root["orientationContract"] = "Babylon Y-up, forward +Z"
+    root["animationIteration2"] = "follow-through and recovery keys"
     add_lod_markers(root, "character")
     parts = [
         # H1 iteration 1: a wider padded torso, slightly lower centre of
@@ -226,21 +230,34 @@ def build():
         socket["contractVersion"] = "hero-h4"
         socket.parent = root
     collision_box("COL_Hero", (0.82, 1.9, 0.82), (0, 0.95, 0), root)
-    add_armature_clip(skeleton, "Idle", 24, [(1, {}), (12, {"chest": (0.025, 0, 0), "head": (0, 0.025, 0)}), (24, {})])
+    # H6 iteration 1: add intermediate contact/anticipation poses so the
+    # authored clips deform as a cycle rather than snapping between two keys.
+    add_armature_clip(skeleton, "Idle", 24, [(1, {}), (12, {"chest": (0.025, 0, 0), "head": (0, 0.025, 0)}), (18, {"chest": (-0.018, 0, 0), "head": (0, -0.018, 0)}), (24, {})])
     add_armature_clip(skeleton, "Walk", 24, [
-        (1, {"upper_arm.L": (0.35, 0, 0), "upper_arm.R": (-0.35, 0, 0), "thigh.L": (-0.5, 0, 0), "thigh.R": (0.5, 0, 0)}),
-        (8, {"upper_arm.L": (-0.35, 0, 0), "upper_arm.R": (0.35, 0, 0), "thigh.L": (0.5, 0, 0), "thigh.R": (-0.5, 0, 0)}),
+        (1, {"upper_arm.L": (0.35, 0, 0), "upper_arm.R": (-0.35, 0, 0), "lower_arm.L": (-0.18, 0, 0), "lower_arm.R": (0.18, 0, 0), "thigh.L": (-0.5, 0, 0), "thigh.R": (0.5, 0, 0), "foot.L": (0.12, 0, 0), "foot.R": (-0.12, 0, 0)}),
+        (8, {"upper_arm.L": (-0.35, 0, 0), "upper_arm.R": (0.35, 0, 0), "lower_arm.L": (0.18, 0, 0), "lower_arm.R": (-0.18, 0, 0), "thigh.L": (0.5, 0, 0), "thigh.R": (-0.5, 0, 0), "foot.L": (-0.12, 0, 0), "foot.R": (0.12, 0, 0)}),
+        (16, {"upper_arm.L": (0.28, 0, 0), "upper_arm.R": (-0.28, 0, 0), "thigh.L": (-0.35, 0, 0), "thigh.R": (0.35, 0, 0)}),
         (24, {}),
     ])
     add_armature_clip(skeleton, "Run", 18, [
-        (1, {"upper_arm.L": (0.65, 0, 0), "upper_arm.R": (-0.65, 0, 0), "thigh.L": (-0.75, 0, 0), "thigh.R": (0.75, 0, 0), "chest": (0.1, 0, 0)}),
-        (6, {"upper_arm.L": (-0.65, 0, 0), "upper_arm.R": (0.65, 0, 0), "thigh.L": (0.75, 0, 0), "thigh.R": (-0.75, 0, 0), "chest": (0.1, 0, 0)}),
+        (1, {"upper_arm.L": (0.65, 0, 0), "upper_arm.R": (-0.65, 0, 0), "lower_arm.L": (-0.28, 0, 0), "lower_arm.R": (0.28, 0, 0), "thigh.L": (-0.75, 0, 0), "thigh.R": (0.75, 0, 0), "chest": (0.1, 0, 0)}),
+        (6, {"upper_arm.L": (-0.65, 0, 0), "upper_arm.R": (0.65, 0, 0), "lower_arm.L": (0.28, 0, 0), "lower_arm.R": (-0.28, 0, 0), "thigh.L": (0.75, 0, 0), "thigh.R": (-0.75, 0, 0), "chest": (0.1, 0, 0)}),
+        (12, {"upper_arm.L": (0.52, 0, 0), "upper_arm.R": (-0.52, 0, 0), "thigh.L": (-0.62, 0, 0), "thigh.R": (0.62, 0, 0), "chest": (0.08, 0, 0)}),
         (18, {}),
     ])
-    add_armature_clip(skeleton, "MeleeAttack", 16, [(1, {"upper_arm.R": (-1.0, 0, 0), "lower_arm.R": (-0.6, 0, 0)}), (7, {"upper_arm.R": (1.4, 0, 0), "lower_arm.R": (0.5, 0, 0), "chest": (0.2, 0, 0)}), (16, {})])
-    add_armature_clip(skeleton, "RangedAttack", 16, [(1, {"upper_arm.R": (-0.8, 0, 0), "upper_arm.L": (-0.5, 0, 0)}), (8, {"upper_arm.R": (-1.7, 0, 0), "upper_arm.L": (-1.1, 0, 0), "head": (-0.15, 0, 0)}), (16, {})])
-    add_armature_clip(skeleton, "Hit", 12, [(1, {"chest": (-0.2, 0, 0), "head": (0.12, 0, 0)}), (12, {})])
-    add_armature_clip(skeleton, "Death", 20, [(1, {}), (12, {"root": (1.25, 0, 0), "chest": (0.4, 0, 0), "upper_arm.L": (0.8, 0, 0), "upper_arm.R": (0.8, 0, 0)}), (20, {"root": (1.45, 0, 0), "chest": (0.5, 0, 0), "upper_arm.L": (1.1, 0, 0), "upper_arm.R": (1.1, 0, 0)})])
+    add_armature_clip(skeleton, "MeleeAttack", 16, [(1, {"upper_arm.R": (-1.0, 0, 0), "lower_arm.R": (-0.6, 0, 0)}), (5, {"upper_arm.R": (-1.7, 0, 0), "lower_arm.R": (-0.8, 0, 0), "chest": (-0.08, 0, 0)}), (9, {"upper_arm.R": (1.4, 0, 0), "lower_arm.R": (0.5, 0, 0), "chest": (0.2, 0, 0)}), (12, {"upper_arm.R": (0.72, 0, 0), "lower_arm.R": (0.18, 0, 0), "chest": (0.08, 0, 0)}), (16, {})])
+    add_armature_clip(skeleton, "RangedAttack", 16, [(1, {"upper_arm.R": (-0.8, 0, 0), "upper_arm.L": (-0.5, 0, 0)}), (7, {"upper_arm.R": (-1.7, 0, 0), "upper_arm.L": (-1.1, 0, 0), "lower_arm.L": (-0.35, 0, 0), "head": (-0.15, 0, 0)}), (11, {"upper_arm.R": (-1.25, 0, 0), "upper_arm.L": (-0.85, 0, 0), "head": (-0.08, 0, 0)}), (14, {"upper_arm.R": (-0.92, 0, 0), "upper_arm.L": (-0.62, 0, 0), "lower_arm.L": (-0.12, 0, 0), "head": (-0.04, 0, 0)}), (16, {})])
+    add_armature_clip(skeleton, "Hit", 12, [(1, {"chest": (-0.2, 0, 0), "head": (0.12, 0, 0), "upper_arm.L": (0.15, 0, 0)}), (6, {"chest": (-0.32, 0, 0), "head": (0.18, 0, 0), "upper_arm.L": (0.24, 0, 0)}), (10, {"chest": (-0.14, 0, 0), "head": (0.08, 0, 0)}), (12, {})])
+    # H6 iteration 2: the final pass stages the fall with a planted contact
+    # beat and a quiet end pose; hit/death never translate the authored feet
+    # below the ground plane.
+    add_armature_clip(skeleton, "Death", 20, [
+        (1, {"foot.L": (0.04, 0, 0), "foot.R": (-0.04, 0, 0)}),
+        (6, {"root": (0.35, 0, 0), "chest": (0.12, 0, 0), "head": (0.06, 0, 0), "foot.L": (0.08, 0, 0), "foot.R": (-0.08, 0, 0)}),
+        (12, {"root": (1.25, 0, 0), "chest": (0.4, 0, 0), "head": (0.18, 0, 0), "upper_arm.L": (0.8, 0, 0), "upper_arm.R": (0.8, 0, 0)}),
+        (16, {"root": (1.38, 0, 0), "chest": (0.46, 0, 0), "head": (0.24, 0, 0), "upper_arm.L": (0.98, 0, 0), "upper_arm.R": (0.98, 0, 0)}),
+        (20, {"root": (1.45, 0, 0), "chest": (0.5, 0, 0), "head": (0.28, 0, 0), "upper_arm.L": (1.1, 0, 0), "upper_arm.R": (1.1, 0, 0)}),
+    ])
     source = os.path.abspath(os.path.join(HERE, "..", "..", "assets-source", "blender", "characters", "hero.blend"))
     output = os.path.abspath(os.path.join(HERE, "..", "..", "public", "assets", "models", "characters", "hero.glb"))
     save_source(source)
