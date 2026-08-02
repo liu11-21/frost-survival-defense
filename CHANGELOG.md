@@ -8,6 +8,13 @@
 - 直接使用 Blender 5.2.0 LTS 完成匯出；受管控 Windows 的 Node wrapper 仍因 `spawnSync ... EPERM` 無法啟動子程序。
 - `npm run typecheck` 通過；`npm run build` 在一次提高權限重跑後通過，仍有既有的大型 chunk 警告。
 
+## 2026-08-02｜全名單 QA 與飛行敵人精修批次
+
+- 修正 `scripts/blender/render_full_roster_previews.py` 未呼叫 `clear_scene()` 的問題；兩張全名單預覽不再混入 Blender 預設 Cube。
+- 完成 14 個設施的全名單預覽，以及重新輸出 26 個角色的全名單預覽，作為後續美術分級依據。
+- 飛行近戰、飛行精銳射手、飛行轟炸者、飛行空中巨像加入角色專屬翼刃／羽片／背架／炸彈掛架細節；既有骨架、動畫、AI 與 GLB 路徑不變。
+- 直接 Blender 重建角色 GLB 後，`npm run art:validate` 回報 42/42 `ok`；四種飛行敵人仍各具 UnitSkeleton 與 Idle／Walk／Attack／Cast／Hit／Death 動畫。
+
 ## 2026-08-02｜主角前向軸執行期校準
 
 - 查明主角的輸入與位移沒有倒置：按住 W 時 `z` 由 `-4.5` 增至 `-2.72`，符合遊戲的 `+Z` 前進約定；預設鏡頭位於主角南側，因此移動時看到背包背面，造成「倒著走」的視覺誤判。

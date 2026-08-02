@@ -924,6 +924,32 @@ def build_unit(visual, cfg):
         for side in (-1, 1):
             parts += [box(f"wing.{side}.inner", (span, 0.1, 0.35), (side * 0.48, 1.15, -0.04), mats["accent"]), box(f"wing.{side}.outer", (span * 0.72, 0.08, 0.24), (side * 0.95, 1.12, -0.04), mats["ice"])]
             parts.append(prism(f"wing.{side}.feather", [(-0.1, 1.45), (0.42, 1.32), (0.64, 1.08), (0.18, 1.16)], 0.07, (side * 0.58, 0, -0.06), mats["ice"], "LOD0", 0.018))
+        # The three regular flying enemies share the same rig, but their
+        # harness and wing hardware now carry a role-specific silhouette:
+        # melee uses swept blades, the elite archer uses layered feather
+        # vanes, and the bomber carries a visible payload cradle.  These are
+        # small authored pieces rather than colour-only variants.
+        if visual == "flyingMelee":
+            parts += [
+                box("flightHarness", (0.58, 0.16, 0.08), (0, 1.14, 0.24), mats["metal"], "LOD0", 0.02),
+                torus("flightHarnessRing", 0.18, 0.028, (0, 1.12, 0.30), mats["highlight"], "LOD0"),
+                *(prism(f"wing.{side}.sweptBlade", [(x * side, y) for x, y in ((-0.10, 1.42), (0.22, 1.52), (0.68, 1.18), (0.42, 1.08))], 0.055, (0, 0, -0.14), mats["accent"], "LOD0", 0.012) for side in (-1, 1)),
+                *(cone(f"wing.{side}.talon", 0.075, 0.012, 0.28, (side * 0.38, 0.48, 0.22), mats["metalLight"], "LOD0", 6) for side in (-1, 1)),
+            ]
+        elif visual == "flyingEliteArcher":
+            parts += [
+                box("flightHarness", (0.54, 0.14, 0.08), (0, 1.14, 0.23), mats["leatherLight"], "LOD0", 0.018),
+                torus("flightHarnessRing", 0.17, 0.024, (0, 1.14, 0.30), mats["glow"], "LOD0"),
+                *(prism(f"wing.{side}.featherVane.{index}", [(x * side, y) for x, y in ((-0.08, 1.42), (0.18, 1.54 - index * 0.08), (0.52, 1.20 - index * 0.08), (0.18, 1.12 - index * 0.06))], 0.04, (0, 0, -0.13 - index * 0.02), mats["clothLight" if index == 0 else "ice"], "LOD0", 0.01) for side in (-1, 1) for index in range(2)),
+                *(cone(f"weapon.flyingEliteArrow.{index}", 0.025, 0.004, 0.26, (-0.18 + index * 0.18, 1.46, -0.26), mats["metalLight"], "LOD0", 5) for index in range(3)),
+            ]
+        elif visual == "flyingBomber":
+            parts += [
+                box("flightHarness", (0.64, 0.18, 0.10), (0, 1.10, 0.24), mats["metal"], "LOD0", 0.022),
+                torus("payloadFrame", 0.28, 0.04, (0, 0.92, -0.28), mats["metalLight"], "LOD0"),
+                *(sphere(f"payloadBomb.{index}", 0.11, (-0.22 + index * 0.22, 0.72, -0.38), mats["gold"]) for index in range(3)),
+                *(box(f"wing.{side}.bombSpar", (0.06, 0.08, 0.56), (side * 0.76, 1.20, -0.14), mats["metalLight"], "LOD0", 0.012) for side in (-1, 1)),
+            ]
         if visual == "flyingColossus":
             # The boss uses a three-panel membrane and a rigid spar on each
             # wing so the flying silhouette reads as a creature, not two flat

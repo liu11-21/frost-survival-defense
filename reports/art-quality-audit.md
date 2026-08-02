@@ -385,3 +385,24 @@ passed with one elevated retry; Vite continues to emit the existing large
 chunk advisory. Commercial-art sign-off remains open for the unresolved
 primitive-driven topology, authored texture-map, bespoke animation, runtime
 all-manifest, and performance-review gaps documented above.
+
+## 2026-08-02｜full-roster QA and flying-enemy refinement
+
+The complete facility sheet is now rendered at
+`reports/art-previews/facility-roster-full.png`, and the complete character
+sheet was regenerated at `reports/art-previews/unit-roster-full.png`. The review
+script now clears Blender's startup scene before importing assets; the previous
+white default Cube was a QA artifact, not a shipped mesh.
+
+The four flying enemy GLBs received a focused silhouette pass in
+`scripts/blender/build_units.py`: flying melee has swept wing blades and talons,
+the elite archer has layered feather vanes and arrow heads, the flying bomber
+has a payload frame and bomb cradle, and the flying colossus keeps its existing
+heavy membrane treatment. The shared UnitSkeleton and six unit clips remain
+intact. `reports/art-validation.json` is 42/42 `ok` after the rebuild.
+
+This is a measurable improvement, not final commercial-art sign-off. The
+remaining gaps are still the primitive-driven topology, procedural 64x64 brush
+layers instead of authored PBR atlases, generic shared acting, and missing
+runtime all-manifest/performance evidence. The next visual priority is a focal
+game-camera pass for hero, warrior, furnace, crossbow tower and turret.

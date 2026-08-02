@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-08-02T12:04:02.125Z",
+  "generatedAt": "2026-08-02T13:17:43.038Z",
   "blenderRequired": true,
   "assets": [
     {
@@ -1562,13 +1562,13 @@
       "key": "flyingMelee",
       "status": "ok",
       "path": "public/assets/models/characters/flyingMelee.glb",
-      "nodes": 134,
-      "meshes": 108,
+      "nodes": 140,
+      "meshes": 114,
       "materials": 14,
       "skeletons": 1,
       "rootTransforms": [
         {
-          "index": 133,
+          "index": 139,
           "name": "UnitRoot",
           "translation": [
             0,
@@ -1610,7 +1610,7 @@
         "Hit": 54,
         "Death": 54
       },
-      "triangles": 14368,
+      "triangles": 15380,
       "surfaceAttributes": {
         "TEXCOORD_0": true,
         "COLOR_0": true
@@ -1627,13 +1627,13 @@
       "key": "flyingEliteArcher",
       "status": "ok",
       "path": "public/assets/models/characters/flyingEliteArcher.glb",
-      "nodes": 137,
-      "meshes": 111,
+      "nodes": 146,
+      "meshes": 120,
       "materials": 14,
       "skeletons": 1,
       "rootTransforms": [
         {
-          "index": 136,
+          "index": 145,
           "name": "UnitRoot",
           "translation": [
             0,
@@ -1675,7 +1675,7 @@
         "Hit": 54,
         "Death": 54
       },
-      "triangles": 15460,
+      "triangles": 16784,
       "surfaceAttributes": {
         "TEXCOORD_0": true,
         "COLOR_0": true
@@ -1692,13 +1692,13 @@
       "key": "flyingBomber",
       "status": "ok",
       "path": "public/assets/models/characters/flyingBomber.glb",
-      "nodes": 138,
-      "meshes": 112,
+      "nodes": 145,
+      "meshes": 119,
       "materials": 15,
       "skeletons": 1,
       "rootTransforms": [
         {
-          "index": 137,
+          "index": 144,
           "name": "UnitRoot",
           "translation": [
             0,
@@ -1740,7 +1740,7 @@
         "Hit": 54,
         "Death": 54
       },
-      "triangles": 15356,
+      "triangles": 16280,
       "surfaceAttributes": {
         "TEXCOORD_0": true,
         "COLOR_0": true

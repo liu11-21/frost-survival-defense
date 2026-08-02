@@ -164,6 +164,10 @@ def import_asset(path, location, scale):
 
 
 def render(kind):
+    # Blender's background factory scene still contains the startup Cube.
+    # Remove it before adding review lights/grid so the contact sheet cannot
+    # mistake a default object for an authored asset.
+    clear_scene()
     names = UNITS if kind == "units" else BUILDINGS
     columns = 5 if kind == "units" else 4
     rows = int(math.ceil(len(names) / columns))
