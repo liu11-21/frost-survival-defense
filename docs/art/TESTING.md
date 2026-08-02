@@ -21,7 +21,10 @@ combat; v9 covers HUD, skills and facility behaviour; v10 covers ground/sky
 slot unlocks and flying enemies. The complete default playtest also includes
 the longer v8 build/rebuild endurance simulation.
 
-The validator also checks the authored LOD marker nodes (`LOD1`/`LOD2`), unit
+The validator also checks the authored LOD marker nodes (`LOD1`/`LOD2`) and
+their exported `LOD1_PROXY`/`LOD2_PROXY` mesh geometry. Babylon's
+`ModelLoader` hides those proxies near the camera and switches the complete
+authored mesh set at the 18/34 world-unit distance tiers. It also checks unit
 skeleton presence, non-empty animation channels, root unit scale, collision
 mesh exclusion, triangle budget, and absence of external or absolute paths.
 For a visual review, run the two Blender preview scripts documented in the

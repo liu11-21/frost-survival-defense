@@ -61,6 +61,14 @@ function parseGlb(buffer) {
 function validate(spec, glb) {
   const { json } = parseGlb(glb);
   const names = new Set((json.nodes ?? []).map((node) => node.name).filter(Boolean));
+  const lodProxyNodes = (json.nodes ?? []).filter((node) => {
+    const name = String(node.name ?? "");
+    return (name.startsWith("LOD1_PROXY") || name.startsWith("LOD2_PROXY")) && node.mesh !== undefined;
+  });
+  const lodProxies = {
+    LOD1: lodProxyNodes.filter((node) => String(node.name).startsWith("LOD1_PROXY")).length,
+    LOD2: lodProxyNodes.filter((node) => String(node.name).startsWith("LOD2_PROXY")).length,
+  };
   const animationRecords = (json.animations ?? []).filter((animation) => animation.name);
   const animations = new Set(animationRecords.map((animation) => animation.name));
   const warnings = [];
@@ -81,6 +89,7 @@ function validate(spec, glb) {
   if (animationRecords.some((animation) => !(animation.channels?.length))) warnings.push("Animation clip has no channels.");
   if (/([A-Za-z]:\\|\/Users\/|\/home\/)/.test(JSON.stringify(json))) warnings.push("Absolute filesystem path found in GLB metadata.");
   if ((json.meshes ?? []).length < 2 || triangles < 24) warnings.push("Asset is too small to be a finished authored model.");
+  if (lodProxies.LOD1 < 1 || lodProxies.LOD2 < 1) warnings.push("LOD1/LOD2 proxy geometry is missing.");
   const collisionNodes = (json.nodes ?? []).filter((node) => {
     const name = String(node.name ?? "").toLowerCase();
     return name.includes("col_") || name.includes("collision") || name.includes("collider");
@@ -106,7 +115,7 @@ function validate(spec, glb) {
   if (triangles > 60000) warnings.push(`Triangle budget exceeded: ${triangles}`);
   return {
     key: spec.key,
-    status: missingNodes.length || missingAnimations.length || externalUris.length || skeletonCount < (spec.skeletons ?? 0) || warnings.some((warning) => warning.includes("Absolute filesystem") || warning.includes("too small")) ? "invalid" : "ok",
+    status: missingNodes.length || missingAnimations.length || externalUris.length || skeletonCount < (spec.skeletons ?? 0) || lodProxies.LOD1 < 1 || lodProxies.LOD2 < 1 || warnings.some((warning) => warning.includes("Absolute filesystem") || warning.includes("too small")) ? "invalid" : "ok",
     path: spec.path,
     nodes: (json.nodes ?? []).length,
     meshes: (json.meshes ?? []).length,
@@ -117,6 +126,7 @@ function validate(spec, glb) {
     animations: [...animations],
     animationChannels: Object.fromEntries(animationRecords.map((animation) => [animation.name, animation.channels?.length ?? 0])),
     triangles,
+    lodProxies,
     missingNodes,
     missingAnimations,
     warnings,

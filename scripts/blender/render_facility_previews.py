@@ -25,9 +25,9 @@ def setup():
     scene.render.resolution_percentage = 100
     scene.render.image_settings.file_format = "PNG"
     scene.world.color = (0.012, 0.018, 0.035)
-    bpy.ops.object.camera_add(location=(9.5, 7.0, 12.0))
+    bpy.ops.object.camera_add(location=(10.5, 7.5, 16.0))
     camera = bpy.context.object
-    camera.data.lens = 56
+    camera.data.lens = 44
     look_at(camera, (0, 1.2, 0))
     scene.camera = camera
     for location, energy, color, size in [
@@ -58,13 +58,17 @@ def import_asset(path, location):
         root.location = location
         root.scale = (1.25, 1.25, 1.25)
     for obj in imported:
-        if obj.type == "MESH": obj.hide_set(False)
+        if obj.type == "MESH":
+            base_name = obj.name.split(":")[-1]
+            is_proxy = base_name.startswith("LOD1_PROXY") or base_name.startswith("LOD2_PROXY")
+            obj.hide_set(is_proxy)
+            obj.hide_render = is_proxy
 
 
 def main():
     clear()
     scene = setup()
-    items = [("furnace", (-2.9, 0, -1.5)), ("crossbow_tower", (2.9, 0, -1.5)), ("recruit_hall", (-2.9, 0, 2.0)), ("auto_rebuilder", (2.9, 0, 2.0))]
+    items = [("furnace", (-2.5, 0, -1.35)), ("crossbow_tower", (2.5, 0, -1.35)), ("recruit_hall", (-2.5, 0, 1.75)), ("auto_rebuilder", (2.5, 0, 1.75))]
     for key, location in items:
         import_asset(os.path.join(ROOT, "public", "assets", "models", "buildings", f"{key}.glb"), location)
     os.makedirs(os.path.dirname(OUT), exist_ok=True)

@@ -266,7 +266,7 @@ def build_unit(visual, cfg):
         "dark": material(f"MAT_{visual}_dark", (0.045, 0.05, 0.08), 0.62, 0.35),
     }
     root = orient_for_babylon(empty("UnitRoot", target="EXPORT", display="CUBE"))
-    add_lod_markers(root)
+    add_lod_markers(root, "character")
     parts = []
     heavy = cfg["armor"] in ("heavy", "iceArmor", "batteringRam", "wingsHeavy")
     torso_width = 0.54 if heavy else 0.46

@@ -15,7 +15,7 @@ def build():
     fire = material("MAT_wall_fire", (1.0, 0.26, 0.04), 0.4, 0.0, (1.0, 0.08, 0.01))
     metal = material("MAT_wall_metal", (0.16, 0.2, 0.27), 0.3, 0.9)
     root = orient_for_babylon(empty("WallGateRoot", target="EXPORT", display="CUBE"))
-    add_lod_markers(root)
+    add_lod_markers(root, "wall")
     left = box("wallLeft", (4.8, 2.6, 1.5), (-4.2, 1.3, 0), stone, bevel=0.08)
     right = box("wallRight", (4.8, 2.6, 1.5), (4.2, 1.3, 0), stone, bevel=0.08)
     lintel = box("gateLintel", (3.6, 0.55, 1.55), (0, 2.45, 0), stone, bevel=0.08)

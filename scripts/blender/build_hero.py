@@ -18,7 +18,7 @@ def build():
     glow = material("MAT_hero_glow", (0.3, 0.78, 1.0), 0.24, 0.0, (0.18, 0.62, 1.0))
     accent = material("MAT_hero_accent", (0.45, 0.78, 1.0), 0.35, 0.5)
     root = orient_for_babylon(empty("HeroRoot", target="EXPORT", display="CUBE"))
-    add_lod_markers(root)
+    add_lod_markers(root, "character")
     parts = [
         box("body", (0.66, 0.85, 0.42), (0, 1.05, 0), cloth, bevel=0.08),
         box("coatSkirt", (0.76, 0.24, 0.5), (0, 0.68, -0.01), leather, bevel=0.06),

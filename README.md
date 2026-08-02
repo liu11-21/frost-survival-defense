@@ -49,8 +49,9 @@ GLB is instantiated.
 The current authored pass uses one shared stylized low-poly language: layered
 cloth/leather/metal materials, role-specific silhouettes, socket and functional
 nodes, real segmented unit skeletons, named Idle/Walk/Attack/Cast/Hit/Death
-clips, and exported `LOD1`/`LOD2` markers. Runtime still keeps the procedural
-renderer as a fail-safe when a GLB is missing or fails its contract.
+clips, and exported `LOD1`/`LOD2` proxy meshes. Babylon switches the complete
+authored body to those low-poly silhouettes at distance; the procedural
+renderer remains a fail-safe when a GLB is missing or fails its contract.
 
 ```bash
 npm run art:template   # create the metric Blender template

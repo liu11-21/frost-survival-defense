@@ -161,18 +161,78 @@ def root(name):
     return empty(name, (0, 0, 0), "EXPORT", "CUBE")
 
 
-def add_lod_markers(root_obj):
-    """Export stable LOD contract nodes and authored screen-size metadata.
+def add_lod_markers(root_obj, asset_kind="building"):
+    """Add exported LOD marker nodes and real low-poly proxy meshes.
 
-    The runtime can attach Babylon LOD meshes later without renaming nodes;
-    keeping the markers in every GLB makes that switch data-driven and gives
-    the asset validator a concrete place to enforce the contract.
+    LOD0 remains the authored model.  LOD1/LOD2 are deliberately small,
+    silhouette-readable meshes that are switched by Babylon at distance.  The
+    proxies are kept in their own collections and prefixed so the runtime can
+    exclude them from the authored-body list while still validating/exporting
+    them as part of the GLB contract.
     """
+    proxy_mat = material("MAT_LODProxy", (0.18, 0.24, 0.34), 0.92, 0.05)
     for level, coverage in ((1, 0.35), (2, 0.12)):
         marker = empty(f"LOD{level}", (0, 0, 0), "EXPORT", "PLAIN_AXES")
         marker.parent = root_obj
         marker["screenCoverage"] = coverage
         marker["generatedFrom"] = "LOD0-authored"
+        marker["proxyGeometry"] = True
+        if asset_kind == "character":
+            body = cylinder(
+                f"LOD{level}_PROXY_body",
+                0.42 if level == 1 else 0.46,
+                1.35 if level == 1 else 1.5,
+                (0, 0.84, 0),
+                proxy_mat,
+                f"LOD{level}",
+                8 if level == 1 else 6,
+            )
+            head = sphere(
+                f"LOD{level}_PROXY_head",
+                0.27 if level == 1 else 0.3,
+                (0, 1.68, 0),
+                proxy_mat,
+                f"LOD{level}",
+            )
+            body["lodLevel"] = level
+            head["lodLevel"] = level
+            body.parent = marker
+            head.parent = marker
+        elif asset_kind == "wall":
+            wall = box(
+                f"LOD{level}_PROXY_wall",
+                (3.2 if level == 1 else 2.7, 1.7 if level == 1 else 1.45, 0.65),
+                (0, 0.88, 0),
+                proxy_mat,
+                f"LOD{level}",
+                bevel=0.06 if level == 1 else 0.02,
+            )
+            wall["lodLevel"] = level
+            wall.parent = marker
+        else:
+            base = cylinder(
+                f"LOD{level}_PROXY_base",
+                1.35 if level == 1 else 1.45,
+                1.55 if level == 1 else 1.75,
+                (0, 0.78, 0),
+                proxy_mat,
+                f"LOD{level}",
+                8 if level == 1 else 6,
+            )
+            cap = cone(
+                f"LOD{level}_PROXY_cap",
+                1.15 if level == 1 else 1.28,
+                0.7 if level == 1 else 0.55,
+                0.65 if level == 1 else 0.5,
+                (0, 1.88, 0),
+                proxy_mat,
+                f"LOD{level}",
+                8 if level == 1 else 6,
+            )
+            base["lodLevel"] = level
+            cap["lodLevel"] = level
+            base.parent = marker
+            cap.parent = marker
 
 
 def orient_for_babylon(obj):

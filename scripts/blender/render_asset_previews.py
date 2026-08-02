@@ -42,9 +42,9 @@ def setup():
     scene.render.image_settings.file_format = "PNG"
     scene.render.film_transparent = False
     scene.world.color = (0.012, 0.018, 0.035)
-    bpy.ops.object.camera_add(location=(7.5, 5.1, 9.4))
+    bpy.ops.object.camera_add(location=(9.5, 5.8, 14.8))
     camera = bpy.context.object
-    camera.data.lens = 58
+    camera.data.lens = 46
     look_at(camera, (0, 1.0, 0))
     scene.camera = camera
     bpy.ops.object.light_add(type="AREA", location=(2.5, 7, 4))
@@ -76,7 +76,10 @@ def import_asset(path, location):
         root.scale = (1.65, 1.65, 1.65)
     for obj in imported:
         if obj.type == "MESH":
-            obj.hide_set(False)
+            base_name = obj.name.split(":")[-1]
+            is_proxy = base_name.startswith("LOD1_PROXY") or base_name.startswith("LOD2_PROXY")
+            obj.hide_set(is_proxy)
+            obj.hide_render = is_proxy
     return imported
 
 
@@ -85,9 +88,9 @@ def main():
     setup()
     paths = [
         ("warrior", (0, 0, 0)),
-        ("mage", (2.5, 0, 0)),
-        ("musketeer", (-2.5, 0, 0)),
-        ("flyingColossus", (0, 0, -2.8)),
+        ("mage", (2.2, 0, 0)),
+        ("musketeer", (-2.2, 0, 0)),
+        ("flyingColossus", (0, 0, -2.4)),
     ]
     for key, location in paths:
         import_asset(os.path.join(ROOT, "public", "assets", "models", "characters", f"{key}.glb"), location)

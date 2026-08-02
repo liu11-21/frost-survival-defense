@@ -83,7 +83,7 @@ def build_facility(key, cfg):
     mats = make_materials(key, cfg)
     root_name = "FurnaceRoot" if cfg["kind"] == "furnace" else "BuildingRoot"
     root = orient_for_babylon(empty(root_name, target="EXPORT", display="CUBE"))
-    add_lod_markers(root)
+    add_lod_markers(root, "building")
     parts = []
     functional = []
     kind = cfg["kind"]

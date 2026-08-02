@@ -1,5 +1,13 @@
 # 變更脈絡
 
+## 2026-08-02｜實際 LOD 代理網格與 Babylon 距離切換
+
+- 將所有英雄、兵種、城門、設施與火爐的 `LOD1`／`LOD2` 從空標記補成可匯出的低面數代理幾何；角色使用身體＋頭部輪廓，建築使用基座＋頂蓋輪廓，城門使用獨立牆體代理。
+- `ModelLoader` 現在在每個實例上依活動相機距離切換整組 LOD：18 世界單位切到 LOD1、34 世界單位切到 LOD2；近距離恢復完整 LOD0，且釋放實例時移除觀察器。
+- `art:validate` 新增代理網格存在性與數量檢查，`reports/art-validation.json` 已重新產生為 40/40 `ok`，每個資產均有 LOD1/LOD2 代理。
+- 同步更新 README 與美術測試說明，保留程序化 fallback；本次重新匯出使用官方 Blender 5.2.0 LTS，並清理自動產生的 `.blend1` 備份。
+- 修正兩張 Blender 美術檢視表的取景與代理遮蔽：改用較寬視角完整呈現四個資產，並在 LOD0 品質檢視時隱藏 LOD1/LOD2 代理，避免 QA 圖把遠距離代理誤當成正式模型。
+
 ## 2026-08-02｜Blender 製作 3D 資產 → GLB → Babylon.js 整合
 
 - 追查主角移動時倒向問題：Blender 是 Z-up，而基線腳本以 Y-up 建模；新增 `orient_for_babylon` 根節點校正，並對英雄 authored visual 加入半圈視覺偏移，讓其前向與遊戲 +Z 移動語意一致。

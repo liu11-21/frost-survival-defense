@@ -16,7 +16,7 @@ def build():
     ember = material("MAT_turret_ember", (1.0, 0.23, 0.04), 0.45, 0.0, (1.0, 0.08, 0.01))
     glass = material("MAT_turret_glass", (0.16, 0.58, 1.0), 0.12, 0.12, (0.05, 0.25, 0.7))
     root = orient_for_babylon(empty("TurretRoot", target="EXPORT", display="CUBE"))
-    add_lod_markers(root)
+    add_lod_markers(root, "building")
     yaw = empty("yawPivot", (0, 1.1, 0), "EXPORT", "CUBE")
     yaw.parent = root
     pitch = empty("pitchPivot", (0, 0.2, 0), "EXPORT", "CUBE")
