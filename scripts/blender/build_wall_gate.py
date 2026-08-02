@@ -10,6 +10,7 @@ from common import reset_scene, material, box, prism, cylinder, empty, collision
 def build():
     reset_scene()
     stone = material("MAT_wall_stone", (0.34, 0.38, 0.45), 0.95)
+    stone_light = material("MAT_wall_stone_light", (0.52, 0.58, 0.68), 0.88)
     wood = material("MAT_wall_wood", (0.3, 0.13, 0.05), 0.9)
     snow = material("MAT_wall_snow", (0.78, 0.9, 1.0), 0.68)
     fire = material("MAT_wall_fire", (1.0, 0.26, 0.04), 0.4, 0.0, (1.0, 0.08, 0.01))
@@ -42,6 +43,11 @@ def build():
             prism(f"wallButtress.{side}", [(-0.48, 0.2), (0.48, 0.2), (0.38, 2.55), (-0.38, 2.35)], 0.34, (side * 4.2, 0, 0.72), metal, "LOD0", 0.035),
             prism(f"wallSnowShoulder.{side}", [(-0.62, 2.45), (0.62, 2.45), (0.48, 2.62), (-0.48, 2.62)], 0.92, (side * 4.2, 0, 0), snow, "LOD0", 0.03),
         ]
+        for index, y in enumerate((0.55, 1.2, 1.85)):
+            parts += [
+                box(f"wallCourse.{side}.{index}", (1.5, 0.16, 0.12), (side * 4.2, y, -0.78), stone_light, "LOD0", 0.025),
+                sphere(f"wallCourseBolt.{side}.{index}", 0.045, (side * 4.2, y, -0.92), metal),
+            ]
     parent_all(parts, root)
     # Armour bands, bolts and a readable gate crest give the wall a built
     # structure instead of a pair of plain rectangles.
@@ -49,10 +55,16 @@ def build():
         torus("gateCrest", 0.42, 0.07, (0, 1.95, -0.98), metal, "LOD0"),
         sphere("gateCrestCore", 0.14, (0, 1.95, -1.02), fire),
         cone("gateKeystone", 0.22, 0.08, 0.4, (0, 2.45, -0.88), stone, "LOD0", 6),
+        box("gateCrestBand", (1.15, 0.08, 0.08), (0, 1.95, -1.01), stone_light, "LOD0", 0.018),
     ]
     for side in (-1, 1):
         for i, y in enumerate((0.58, 1.45, 2.25)):
             parts.append(sphere(f"wallBolt.{side}.{i}", 0.07, (side * 4.2, y, -0.82), metal))
+        parts += [
+            box(f"doorBand.{side}.lower", (0.92, 0.12, 0.08), (side * 1.25, 0.72, -0.98), metal, "LOD0", 0.02),
+            box(f"doorBand.{side}.upper", (0.92, 0.12, 0.08), (side * 1.25, 1.52, -0.98), metal, "LOD0", 0.02),
+            sphere(f"doorHinge.{side}", 0.09, (side * 1.78, 1.24, -0.98), stone_light),
+        ]
     parent_all(parts, root)
     for x in (-5.0, 5.0):
         cylinder("torch", 0.12, 0.7, (x, 2.25, -0.85), fire, "LOD0", 8).parent = root

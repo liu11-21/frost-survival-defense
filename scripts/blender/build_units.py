@@ -196,29 +196,96 @@ def bind_piece(obj, skeleton, bone_name):
 
 def bone_for_piece(name):
     lower = name.lower()
-    if lower.startswith(("arm.l", "shoulder.l", "pauldron.l", "glove.l", "wing.-1")):
+    if lower.startswith(("arm.l", "armpanel.l", "wristband.l", "shoulder.l", "pauldron.l", "glove.l", "wing.-1")):
         return "upper_arm.L"
-    if lower.startswith(("arm.r", "shoulder.r", "pauldron.r", "glove.r", "wing.1")):
+    if lower.startswith(("arm.r", "armpanel.r", "wristband.r", "shoulder.r", "pauldron.r", "glove.r", "wing.1")):
         return "upper_arm.R"
     if lower.startswith(("leg.l", "knee.l")):
         return "thigh.L"
     if lower.startswith(("leg.r", "knee.r")):
         return "thigh.R"
-    if lower.startswith("boot.l"):
+    if lower.startswith(("boot.l", "bootsolo.l")):
         return "foot.L"
-    if lower.startswith("boot.r"):
+    if lower.startswith(("boot.r", "bootsolo.r")):
         return "foot.R"
     if lower.startswith(("weapon.", "pouch", "banner.")):
         return "hand.R"
     if lower.startswith(("offhand.", "shield.")):
         return "hand.L"
-    if lower.startswith(("head", "crest.", "helmet", "face")):
+    if lower.startswith(("head", "ear.", "crest.", "helmet", "face", "jaw")):
         return "head"
     if lower.startswith(("torso", "belt", "cape", "pack", "medic", "chest", "ramframe", "ramtip", "core", "ice", "tool")):
         return "chest"
     if lower.startswith("wing."):
         return "chest"
     return "spine"
+
+
+def add_unit_finish(parts, visual, cfg, mats, torso_width, heavy):
+    """Add a shared finish layer without changing the rig contract.
+
+    The base kit stays inexpensive, while this pass adds authored seams,
+    cuffs, facial planes, boot contact and asymmetric hardware so the units
+    read as constructed characters rather than a torso made from boxes.
+    Every piece remains a separate rigid part and is bound by the existing
+    segmented armature below.
+    """
+    shell = mats["metal"] if heavy else mats["accent"]
+    parts += [
+        prism(
+            "collarFront",
+            [(-0.22, 1.42), (0.22, 1.42), (0.16, 1.26), (0, 1.20), (-0.16, 1.26)],
+            0.12,
+            (0, 0, 0.20),
+            shell,
+            "LOD0",
+            0.02,
+        ),
+        box("waistSash", (torso_width * 0.86, 0.065, 0.43), (0, 0.87, 0.20), mats["leatherLight"], "LOD0", 0.018),
+        box("chestSeam", (0.045, 0.32, 0.035), (0, 1.02, 0.255), mats["highlight"], "LOD0", 0.012),
+        prism("chinGuard", [(-0.14, 1.69), (0.14, 1.69), (0.10, 1.58), (-0.10, 1.58)], 0.11, (0, 0, 0.215), mats["dark"], "LOD0", 0.016),
+        sphere("ear.L", 0.065, (-0.275, 1.70, 0.0), mats["skin"]),
+        sphere("ear.R", 0.065, (0.275, 1.70, 0.0), mats["skin"]),
+    ]
+    for side in (-1, 1):
+        label = "L" if side < 0 else "R"
+        parts += [
+            box(f"armPanel.{label}", (0.12, 0.34, 0.045), (side * 0.39, 1.12, 0.16), mats["clothLight"], "LOD0", 0.018),
+            torus(f"wristBand.{label}", 0.105, 0.023, (side * 0.39, 0.84, 0.01), mats["metal"], "LOD0"),
+            box(f"bootSole.{label}", (0.25, 0.06, 0.43), (side * 0.13, 0.035, 0.12), mats["dark"], "LOD0", 0.02),
+            sphere(f"bootRivet.{label}", 0.035, (side * 0.13, 0.10, 0.25), mats["highlight"]),
+        ]
+
+    if cfg["faction"] == "ally":
+        parts += [
+            prism("allyShoulderTrim", [(-0.44, 1.40), (0.44, 1.40), (0.32, 1.32), (-0.32, 1.32)], 0.045, (0, 0, 0.17), mats["snow"], "LOD0", 0.012),
+            box("allyBadge", (0.16, 0.16, 0.045), (0, 1.11, 0.30), mats["glow"], "LOD0", 0.018),
+        ]
+    else:
+        parts += [
+            prism("enemyShoulderTrim", [(-0.42, 1.38), (0.42, 1.38), (0.30, 1.26), (-0.30, 1.26)], 0.05, (0, 0, 0.16), mats["dark"], "LOD0", 0.014),
+            sphere("enemyCoreStud", 0.07, (0, 1.11, 0.30), mats["glow"]),
+        ]
+
+    if cfg["weapon"] in ("sword", "dagger", "club", "shieldClub", "ram"):
+        parts += [
+            box("weaponWrapA", (0.11, 0.055, 0.12), (0.38, 0.69, 0.18), mats["leatherLight"], "LOD0", 0.012),
+            box("weaponWrapB", (0.11, 0.055, 0.12), (0.38, 0.78, 0.18), mats["leatherLight"], "LOD0", 0.012),
+        ]
+    if cfg["armor"] in ("heavy", "iceArmor", "wingsHeavy"):
+        for side in (-1, 1):
+            label = "L" if side < 0 else "R"
+            parts.append(cone(f"shoulderSpike.{label}", 0.075, 0.018, 0.23, (side * 0.42, 1.50, 0.04), mats["accent"], "LOD0", 6))
+
+    if cfg["armor"] in ("wings", "wingsHeavy"):
+        # Layered membrane panels replace the flat bar read for every flying
+        # unit, not only the colossus.
+        for side in (-1, 1):
+            for index, scale in enumerate((0.72, 0.54, 0.36)):
+                points = [(0.0, 1.46), (0.34 * scale, 1.35), (0.52 * scale, 1.10), (0.18 * scale, 1.17)]
+                mirrored = [(x * side, y) for x, y in points]
+                parts.append(prism(f"wing.{side}.panel{index}", mirrored, 0.045, (0, 0, -0.15 - index * 0.03), mats["ice" if index else "cloth"], "LOD0", 0.012))
+            parts.append(sphere(f"wing.{side}.joint", 0.09, (side * 0.36, 1.27, -0.12), mats["metal"]))
 
 
 def bind_unit_pieces(parts, skeleton):
@@ -264,6 +331,10 @@ def build_unit(visual, cfg):
         "metal": material(f"MAT_{visual}_metal", (0.34, 0.4, 0.5), 0.3, 0.85),
         "skin": material(f"MAT_{visual}_skin", (0.62, 0.38, 0.28) if cfg["faction"] == "enemy" else (0.78, 0.58, 0.42), 0.78),
         "accent": material(f"MAT_{visual}_accent", accent_color, 0.42, 0.35),
+        "highlight": material(f"MAT_{visual}_highlight", tuple(min(1.0, c * 1.18 + 0.08) for c in accent_color), 0.34, 0.4),
+        "clothLight": material(f"MAT_{visual}_clothLight", tuple(min(1.0, c * 1.18 + 0.05) for c in body_color), 0.82),
+        "leatherLight": material(f"MAT_{visual}_leatherLight", tuple(min(1.0, c * 0.78 + 0.08) for c in body_color), 0.76),
+        "snow": material(f"MAT_{visual}_snow", (0.78, 0.90, 0.98), 0.72),
         "glow": material(f"MAT_{visual}_glow", accent_color, 0.25, 0.0, accent_color),
         "ice": material(f"MAT_{visual}_ice", (0.55, 0.86, 1.0), 0.24, 0.15, (0.25, 0.7, 1.0)),
         "wood": material(f"MAT_{visual}_wood", (0.38, 0.2, 0.1), 0.86),
@@ -423,6 +494,7 @@ def build_unit(visual, cfg):
     if armor == "batteringRam":
         parts += [box("ramFrame", (0.8, 0.24, 0.2), (0, 1.0, 0.28), mats["metal"]), sphere("ramTip", 0.2, (0, 1.0, 0.62), mats["accent"])]
 
+    add_unit_finish(parts, visual, cfg, mats, torso_width, heavy)
     parent_all(parts, root)
     skeleton = make_skeleton(root)
     bind_unit_pieces(parts, skeleton)

@@ -6,6 +6,14 @@
 - `HeroController` 載入 authored `hero.glb` 後，改以 `head.nose`／眼睛標記相對於 GLB 根節點的位置，自動決定是否需要 180° 校正；不再把單一匯出版本的角度寫死。
 - 目前 `hero.glb` 的臉部標記位於根節點 `+Z`，執行期校正結果為 `0°`；移動、碰撞與攻擊邏輯維持不變。
 
+## 2026-08-02｜全資產第三輪 Blender 精修與批次重建
+
+- 共享角色資產加入領口／下顎／腰封／胸線、袖口、靴底鉚釘、陣營徽記、武器握把纏帶與重裝肩部硬體；飛行敵人改用分層翼膜與翼根關節，維持既有 UnitSkeleton 與六段動畫契約。
+- 全部 12 種通用設施加入基座施工層、維修面板、固定件，以及礦井絞盤、伐木鋸座、倉庫窗格、自動收集臂、修復吊索、塔台硬體與火爐熱管等功能結構。
+- 基準砲塔補上炮管環、砲口冠、支架螺栓；城牆／門補上砌石層、門甲帶與鉸鏈片，保留 `yawPivot`、`pitchPivot`、`muzzle`、`recoilPart`、門樞與碰撞節點。
+- 樹木與礦石資源補上枝節、針葉環、樹樁環、岩石切面與礦脈框，並透過正式 `npm run art:export` 完整重建 42 個 GLB 與對應 `.blend` 原始資產。
+- `reports/art-quality-audit.md` 更新為第三輪審查結果；仍明確標記手工雕刻、拓撲、貼圖與材質破碎度尚未完成商業美術簽核，沒有把通過驗證誤稱為商業級完成。
+
 ## 2026-08-02｜角色與核心設施第二輪精修
 
 - 主角加入臉部焦點、翻領與手部綁定的武器握柄／劍身／護手／寶石；戰士加入分層胸甲、肩甲、胸章、劍鞘與錐形劍刃；飛行巨像加入多片翼膜、翼骨、披肩、角、眼睛與膝甲。
@@ -127,3 +135,7 @@
 - Raised the three baseline assets to the same authored standard: the hero now uses the segmented skeleton with seven 54-channel clips and layered coat/armour/sigil details; the basic turret gained bevelled support braces, barrel cowl, muzzle lens, ammo latch and recoil channels; the gate gained snow caps, armour bands, keystone/crest details and independent left/right door pivots for `GateOpen`/`GateClose`.
 - Re-exported and revalidated the complete library after the baseline pass: all 40 assets remain `ok`; `hero.glb` is 48 nodes / 22 meshes / 2,756 triangles, and `wall_gate.glb` exports two-channel independent gate clips.
 - Regression after the re-export: v6 49/49, v9 75/75, v10 12/12; `npm run typecheck` and escalated production `npm run build` pass. The default endurance playtest remains a separately tracked long-running v8 check and is not claimed as a fresh full-suite pass.
+
+## 2026-08-02 | authored asset integration correction
+
+- Fixed the auto-collector detail pass so both collector arms are parented under the facility root before GLB export; this removes stray root transforms and keeps Babylon hierarchy inspection deterministic.

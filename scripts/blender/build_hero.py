@@ -63,6 +63,25 @@ def build():
         prism("lapel.L", [(-0.22, 1.38), (0.02, 1.38), (0.08, 1.08), (-0.18, 1.14)], 0.05, (-0.14, 0, 0.27), accent, "LOD0", 0.015),
         prism("lapel.R", [(-0.02, 1.38), (0.22, 1.38), (0.18, 1.14), (-0.08, 1.08)], 0.05, (0.14, 0, 0.27), accent, "LOD0", 0.015),
     ]
+    # Third-pass finish details: a shaped jaw, layered hood seam, coat
+    # closures and boot contact pieces give the hero a designed silhouette at
+    # the normal gameplay camera instead of a stack of primitives.
+    parts += [
+        prism("jawGuard", [(-0.16, 1.72), (0.16, 1.72), (0.12, 1.57), (-0.12, 1.57)], 0.08, (0, 0, 0.25), leather, "LOD0", 0.018),
+        torus("hoodSeam", 0.33, 0.022, (0, 1.86, 0.01), accent, "LOD0"),
+        prism("hoodBack", [(-0.32, 1.98), (0.32, 1.98), (0.25, 1.72), (-0.25, 1.72)], 0.12, (0, 0, -0.19), snow, "LOD0", 0.022),
+        box("coatClosure", (0.065, 0.46, 0.045), (0, 1.08, 0.29), accent, "LOD0", 0.012),
+        sphere("coatButton.1", 0.035, (0, 1.25, 0.31), glow),
+        sphere("coatButton.2", 0.035, (0, 1.08, 0.31), glow),
+        prism("beltPouch.L", [(-0.16, 0.92), (0.02, 0.92), (0.03, 0.72), (-0.14, 0.72)], 0.14, (-0.42, 0, -0.01), leather, "LOD0", 0.018),
+        prism("beltPouch.R", [(-0.02, 0.92), (0.16, 0.92), (0.14, 0.72), (-0.03, 0.72)], 0.14, (0.42, 0, -0.01), leather, "LOD0", 0.018),
+        box("bootSole.L", (0.27, 0.06, 0.44), (-0.2, 0.03, 0.15), metal, "LOD0", 0.02),
+        box("bootSole.R", (0.27, 0.06, 0.44), (0.2, 0.03, 0.15), metal, "LOD0", 0.02),
+        sphere("bootRivet.L", 0.035, (-0.2, 0.10, 0.27), accent),
+        sphere("bootRivet.R", 0.035, (0.2, 0.10, 0.27), accent),
+        box("weapon.WrapA", (0.1, 0.055, 0.11), (0.62, 0.70, 0.16), accent, "LOD0", 0.012),
+        box("weapon.WrapB", (0.1, 0.055, 0.11), (0.62, 0.80, 0.16), accent, "LOD0", 0.012),
+    ]
     parent_all(parts, root)
     skeleton = make_skeleton(root)
     skeleton.name = "HeroSkeleton"

@@ -11,6 +11,7 @@ def build():
     reset_scene()
     stone = material("MAT_turret_stone", (0.32, 0.36, 0.43), 0.93)
     metal = material("MAT_turret_iron", (0.12, 0.16, 0.22), 0.3, 0.9)
+    metal_light = material("MAT_turret_iron_light", (0.42, 0.5, 0.6), 0.22, 0.92)
     wood = material("MAT_turret_wood", (0.32, 0.16, 0.07), 0.88)
     snow = material("MAT_turret_snow", (0.8, 0.92, 1.0), 0.65)
     ember = material("MAT_turret_ember", (1.0, 0.23, 0.04), 0.45, 0.0, (1.0, 0.08, 0.01))
@@ -39,6 +40,12 @@ def build():
         torus("ammoLatch", 0.12, 0.03, (-0.55, 0.95, 0.2), metal, "LOD0"),
         cylinder("driveGear", 0.22, 0.08, (0.56, 0.62, 0), metal, "LOD0", 10),
         torus("driveGearTeeth", 0.22, 0.035, (0.56, 0.62, 0), snow, "LOD0"),
+        box("basePanel", (1.4, 0.08, 0.7), (0, 0.46, -0.72), metal, "LOD0", 0.035),
+        torus("barrelBandRear", 0.17, 0.035, (0, 1.25, 0.58), metal_light, "LOD0"),
+        torus("barrelBandFront", 0.18, 0.035, (0, 1.25, 1.30), metal_light, "LOD0"),
+        sphere("supportBoltL", 0.055, (-0.24, 0.82, 0.22), snow),
+        sphere("supportBoltR", 0.055, (0.24, 0.82, 0.22), snow),
+        cone("muzzleCrown", 0.23, 0.16, 0.18, (0, 1.25, 1.68), metal_light, "LOD0", 8),
     ]
     parent_all(parts, pitch)
     empty("muzzleAnchor", (0, 1.25, 1.68), "EXPORT").parent = pitch

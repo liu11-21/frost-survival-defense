@@ -53,6 +53,7 @@ def make_materials(key, cfg):
         "woodLight": material(f"MAT_{key}_woodLight", (0.56, 0.31, 0.12), 0.82),
         "darkwood": material(f"MAT_{key}_darkwood", (0.2, 0.11, 0.06), 0.9),
         "metal": material(f"MAT_{key}_metal", (0.32, 0.39, 0.48), 0.28, 0.86),
+        "metalLight": material(f"MAT_{key}_metalLight", (0.55, 0.64, 0.74), 0.22, 0.9),
         "dark": material(f"MAT_{key}_dark", (0.05, 0.06, 0.08), 0.58, 0.5),
         "accent": material(f"MAT_{key}_accent", cfg["accent"], 0.38, 0.25),
         "glow": material(f"MAT_{key}_glow", cfg["accent"], 0.22, 0, cfg["accent"]),
@@ -89,6 +90,85 @@ def attack_pivot(root, mats, key, style):
     recoil.parent = pitch
     empty("muzzle", (0, 0, 1.3), "EXPORT", "PLAIN_AXES").parent = pitch
     return yaw, pitch, recoil
+
+
+def add_facility_finish(parts, kind, mats):
+    """Add a construction/detail layer shared by the facility library."""
+    parts += [
+        torus("foundationCourse", 0.94 if kind not in ("warehouse", "recruitHall") else 1.2, 0.055, (0, 0.48, 0), mats["metalLight"], "LOD0"),
+        box("servicePlate", (0.72, 0.045, 0.045), (0, 0.78, -1.12), mats["metalLight"], "LOD0", 0.01),
+        sphere("serviceBolt.L", 0.045, (-0.38, 0.80, -1.14), mats["accent"]),
+        sphere("serviceBolt.R", 0.045, (0.38, 0.80, -1.14), mats["accent"]),
+    ]
+
+    if kind in ("mine", "goldMine"):
+        parts += [
+            box("derrickBrace.L", (0.09, 0.12, 1.45), (-0.43, 1.04, -0.02), mats["woodLight"], "LOD0", 0.02),
+            box("derrickBrace.R", (0.09, 0.12, 1.45), (0.43, 1.04, -0.02), mats["woodLight"], "LOD0", 0.02),
+            torus("winchDrum", 0.18, 0.045, (0, 1.43, -0.78), mats["metalLight"], "LOD0"),
+            sphere("oreChunkA", 0.12, (-0.22, 0.48, 0.54), mats["gold" if kind == "goldMine" else "ice"]),
+            sphere("oreChunkB", 0.09, (0.12, 0.42, 0.64), mats["gold" if kind == "goldMine" else "ice"]),
+        ]
+    elif kind == "lumberyard":
+        parts += [
+            cylinder("logEnd.L", 0.22, 0.10, (-0.6, 0.56, 0.92), mats["woodLight"], "LOD0", 10),
+            cylinder("logEnd.R", 0.22, 0.10, (0.6, 0.56, 0.92), mats["woodLight"], "LOD0", 10),
+            box("beamJoin", (1.7, 0.10, 0.10), (0, 1.42, 0.54), mats["metalLight"], "LOD0", 0.018),
+            torus("sawHub", 0.12, 0.035, (0, 0.95, 0.72), mats["accent"], "LOD0"),
+        ]
+    elif kind in ("warehouse", "recruitHall"):
+        for side in (-1, 1):
+            parts += [
+                box(f"timberFrame.{side}", (0.12, 1.25, 0.12), (side * 1.05, 1.02, -0.98), mats["woodLight"], "LOD0", 0.025),
+                box(f"window.{side}", (0.38, 0.42, 0.045), (side * 0.78, 1.40, -1.16), mats["glass"], "LOD0", 0.02),
+                sphere(f"windowLamp.{side}", 0.055, (side * 0.78, 1.18, -1.20), mats["glow"]),
+            ]
+    elif kind == "autoCollector":
+        for side in (-1, 1):
+            arm = box(f"collectorArm.{side}", (0.10, 0.10, 1.8), (side * 0.62, 2.05, 0), mats["metalLight"], "LOD0", 0.018)
+            arm.rotation_euler.y = side * math.pi * 0.20
+            parts += [arm, sphere(f"collectorJoint.{side}", 0.11, (side * 0.62, 2.05, 0), mats["accent"])]
+    elif kind == "autoRebuilder":
+        parts += [
+            torus("craneBearing", 0.72, 0.055, (0, 1.38, 0), mats["metalLight"], "LOD0"),
+            sphere("repairHead", 0.18, (0, 2.70, 1.85), mats["glow"]),
+            vertical_cylinder("repairCable", 0.028, 1.4, (0, 2.0, 1.86), mats["dark"], "LOD0", 6),
+        ]
+    elif kind == "crossbowTower":
+        parts += [
+            torus("bowPivotRing", 0.34, 0.045, (0, 1.62, 0.05), mats["metalLight"], "LOD0"),
+            sphere("stringAnchor.L", 0.06, (-0.48, 1.64, -0.60), mats["accent"]),
+            sphere("stringAnchor.R", 0.06, (0.48, 1.64, -0.60), mats["accent"]),
+        ]
+    elif kind == "frostTower":
+        for side in (-1, 1):
+            parts += [
+                cone(f"iceShard.{side}", 0.12, 0.025, 0.58, (side * 0.46, 2.15, 0.02), mats["ice"], "LOD0", 6),
+                torus(f"iceBand.{side}", 0.20, 0.025, (side * 0.46, 2.08, 0.02), mats["metalLight"], "LOD0"),
+            ]
+    elif kind == "sniperTower":
+        parts += [
+            box("ladderRail.L", (0.08, 1.3, 0.08), (-0.55, 2.55, -0.88), mats["metalLight"], "LOD0", 0.015),
+            box("ladderRail.R", (0.08, 1.3, 0.08), (0.55, 2.55, -0.88), mats["metalLight"], "LOD0", 0.015),
+            *(box(f"ladderStep.{i}", (1.1, 0.06, 0.06), (0, 2.05 + i * 0.26, -0.88), mats["metal"], "LOD0", 0.012) for i in range(4)),
+        ]
+    elif kind == "mortar":
+        parts += [
+            torus("shellBelt", 0.44, 0.045, (0, 1.18, 0), mats["metalLight"], "LOD0"),
+            sphere("shellA", 0.10, (-0.34, 0.70, -0.74), mats["accent"]),
+            sphere("shellB", 0.10, (-0.10, 0.70, -0.84), mats["accent"]),
+            sphere("shellC", 0.10, (0.14, 0.70, -0.74), mats["accent"]),
+        ]
+    elif kind == "furnace":
+        parts += [
+            torus("heatRingLower", 1.18, 0.07, (0, 1.05, 0), mats["metalLight"], "LOD0"),
+            torus("heatRingUpper", 1.40, 0.06, (0, 2.22, 0), mats["accent"], "LOD0"),
+        ]
+        for side in (-1, 1):
+            parts += [
+                box(f"furnacePipe.{side}", (0.11, 1.3, 0.11), (side * 1.18, 1.52, -0.48), mats["metal"], "LOD0", 0.025),
+                sphere(f"furnaceValve.{side}", 0.10, (side * 1.18, 1.94, -0.48), mats["glow"]),
+            ]
 
 
 def build_facility(key, cfg):
@@ -218,6 +298,8 @@ def build_facility(key, cfg):
             angle = i * math.pi * 0.5
             parts.append(box(f"rune.{i}", (0.12, 0.42, 0.06), (math.sin(angle) * 1.28, 1.1, math.cos(angle) * 1.28), mats["glow"]))
         functional += [empty("workPart", (0, 2.05, 0), "EXPORT", "CUBE"), empty("productionCore", (0, 2.05, 0), "EXPORT", "CUBE"), empty("emitter", (0, 2.55, 0), "EXPORT", "PLAIN_AXES")]
+
+    add_facility_finish(parts, kind, mats)
 
     # Shared authored-art language: layered stone footing, readable fasteners,
     # snow breaks and a small emissive identity mark. These details are kept

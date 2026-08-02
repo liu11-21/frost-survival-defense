@@ -1,8 +1,8 @@
 # Art quality audit
 
 Generated during the 2026-08-02 authored-asset iteration. The latest pass adds
-targeted second-round silhouette and functional-detail refinements to the five
-highest-risk assets while preserving the runtime contract. This report
+shared third-round silhouette, construction and material-layer refinements to
+the complete character/facility library while preserving the runtime contract. This report
 separates the runtime contract (which is machine-validated) from the visual
 commercial-art sign-off (which still needs a human art review).
 
@@ -65,7 +65,7 @@ corresponding authored file passes validation.
 | resource_tree | `public/assets/models/environment/resource_tree.glb` | staged canopy/snow/stump meshes |
 | resource_rock | `public/assets/models/environment/resource_rock.glb` | staged ore/body/remains meshes |
 
-## Latest targeted refinement
+## Latest authored refinement
 
 - `hero.glb`: face focal points, lapels, a hand-bound grip/blade/guard/gem set,
   and head-bone mapping for the authored facial pieces.
@@ -79,14 +79,28 @@ corresponding authored file passes validation.
   `FurnaceRoot` so their placement follows the building instance.
 - `crossbow_tower.glb`: shaped bow limbs, string, grip, winch and diagonal
   deck braces; braces remain under `BuildingRoot`.
+- All 26 character GLBs: added collar and jaw planes, waist and chest seams,
+  cuffs, boot soles/rivets, faction badges, weapon grip wraps and role-specific
+  shoulder hardware. Flying units now use layered membrane panels and wing
+  joints instead of only flat bars.
+- All 12 general facility GLBs: added foundation courses, service plates,
+  fasteners and role-specific construction details such as mine winches,
+  lumber saw hubs, warehouse windows, collector arms, repair cables, tower
+  hardware and furnace heat pipes.
+- `turret_basic.glb` and `wall_gate.glb`: added barrel bands, muzzle crown,
+  support bolts, masonry courses, gate armour bands and hinge plates while
+  preserving the existing pivot/collider node names.
+- `resource_tree.glb` and `resource_rock.glb`: added branch collars, needle
+  rings, stump rings, rock facets and ore-vein frames for the resident resource
+  props.
 
 ## Still not a commercial-art sign-off
 
 The shared pass now adds authored silhouette panels, props, bevels, snow/metal
-separation and functional structure. The targeted second pass improves the
-five assets above, but this is still a stylized procedural Blender authoring
-pass rather than a hand-sculpted, retopologized and texture-painted production
-pack. The five assets most in need of manual refinement remain:
+separation, functional structure and a consistent material hierarchy across all
+42 assets. This is still a stylized procedural Blender authoring pass rather
+than a hand-sculpted, retopologized and texture-painted production pack. The
+five assets most in need of manual refinement remain:
 
 1. `hero.glb` — hand-shaped face, coat folds, weapon/hand contact and texture breakup.
 2. `warrior.glb` — replace the broad torso block with sculpted layered armour and a fitted sword grip.
