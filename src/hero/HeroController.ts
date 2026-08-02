@@ -131,6 +131,12 @@ export class HeroController implements Damageable {
   get facingYaw(): number {
     return this.avatar.root.rotation.y;
   }
+  get modelSource(): "GLB" | "procedural" {
+    return this.avatar.modelSource;
+  }
+  get authoredAnimationNames(): readonly string[] {
+    return this.avatar.authoredAnimationNames;
+  }
   /** A live combat lock, rather than merely facing a recently-dead target. */
   get isAttacking(): boolean {
     return this._alive && this.target?.alive === true && !this.outOfRange(this.target);
@@ -303,6 +309,7 @@ export class HeroController implements Damageable {
     this.attackTimer = this.stats.attackInterval;
     this.gatherSwing = false;
     this.avatar.animator.strikeOnce();
+    this.avatar.playAuthoredAttack(this.inMelee ? "MeleeAttack" : "RangedAttack");
     if (this.inMelee) {
       this.meleeSlow = 0.28;
       this.ctx.vfx.sound("heroMelee", 0.6, 0.9 + Math.random() * 0.2);

@@ -51,6 +51,7 @@ export class CharacterAvatar {
   private readonly velocity = new Vector3();
   private authored: AssetInstance | null = null;
   private authoredState = "";
+  private authoredAttack: "MeleeAttack" | "RangedAttack" | null = null;
 
   constructor(
     scene: Scene,
@@ -71,6 +72,15 @@ export class CharacterAvatar {
     return this.authored?.meshes ?? this.rig.meshes;
   }
 
+  /** The visible source is exposed for the runtime verification panel and test API. */
+  get modelSource(): "GLB" | "procedural" {
+    return this.authored ? "GLB" : "procedural";
+  }
+
+  get authoredAnimationNames(): readonly string[] {
+    return this.authored?.animationGroups.map((group) => group.name) ?? [];
+  }
+
   /** Replaces only the visible body; movement/collision still use the rig root. */
   attachAuthored(instance: AssetInstance): void {
     this.authored?.dispose();
@@ -83,6 +93,15 @@ export class CharacterAvatar {
       mesh.setEnabled(false);
     }
     this.authoredState = "";
+    this.authoredAttack = null;
+  }
+
+  /** Starts one authored attack clip while the shared procedural pose drives timing. */
+  playAuthoredAttack(name: "MeleeAttack" | "RangedAttack"): void {
+    if (!this.authored) return;
+    this.authoredAttack = name;
+    this.authoredState = "";
+    this.updateAuthoredAnimation();
   }
 
   get yaw(): number {
@@ -122,10 +141,12 @@ export class CharacterAvatar {
   private updateAuthoredAnimation(): void {
     if (!this.authored) return;
     const state = this.animator.currentState;
-    if (state === this.authoredState) return;
-    this.authoredState = state;
+    if (state !== "chop") this.authoredAttack = null;
+    const name = this.authoredAttack ?? (state === "sprint" ? "Run" : state === "walk" || state === "carryWalk" ? "Walk" : state === "chop" ? "MeleeAttack" : state === "frozen" ? "Hit" : state === "wakeUp" ? "Idle" : "Idle");
+    const stateKey = `${state}:${name}`;
+    if (stateKey === this.authoredState) return;
+    this.authoredState = stateKey;
     for (const group of this.authored.animationGroups) group.stop();
-    const name = state === "sprint" ? "Run" : state === "walk" || state === "carryWalk" ? "Walk" : state === "chop" ? "MeleeAttack" : state === "frozen" ? "Hit" : state === "wakeUp" ? "Idle" : "Idle";
     const group = this.authored.animationGroups.find((candidate) => candidate.name === name || candidate.name.endsWith(`:${name}`));
     group?.start(name === "Idle" || name === "Walk" || name === "Run", 1);
   }

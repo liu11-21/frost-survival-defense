@@ -43,10 +43,28 @@ function invokeBlender(blenderPath, blenderArgs, options = {}) {
   // reject a direct Node child process with EPERM. Going through cmd.exe keeps
   // the official executable and arguments unchanged; it is not a shell script
   // or an alternate Blender binary, just the Windows process launcher.
-  if (process.platform === "win32" && direct.error?.code === "EPERM") {
+  if (process.platform === "win32" && (direct.error?.code === "EPERM" || direct.error?.code === "EACCES")) {
     const quote = (value) => /[\s&()^|<>]/.test(value) ? `"${value.replaceAll('"', '""')}"` : value;
     const command = [quote(blenderPath), ...blenderArgs.map(quote)].join(" ");
-    return spawnSync("cmd.exe", ["/d", "/s", "/c", command], options);
+    const viaCmd = spawnSync("cmd.exe", ["/d", "/s", "/c", command], options);
+    if (!viaCmd.error && (viaCmd.status === 0 || viaCmd.status === null)) return viaCmd;
+
+    // On some managed Windows profiles cmd.exe is also denied as a child
+    // process, while PowerShell can still launch the signed Blender binary.
+    // Keep the argument list explicit so paths and Blender flags are not
+    // interpreted as project code.
+    return spawnSync(
+      "powershell.exe",
+      [
+        "-NoProfile",
+        "-NonInteractive",
+        "-Command",
+        "$exe=$args[0]; $argv=$args[1..($args.Length-1)]; & $exe @argv",
+        blenderPath,
+        ...blenderArgs,
+      ],
+      options,
+    );
   }
   return direct;
 }

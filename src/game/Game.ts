@@ -313,12 +313,21 @@ export class Game {
     // Authored GLBs are optional. The registry records missing/invalid files
     // and leaves every procedural factory in charge when Blender exports are
     // not present yet; a slow network cannot block the playable menu forever.
+    const authoredPreload = this.s.assets.preload();
     await Promise.race([
-      this.s.assets.preload(),
+      authoredPreload,
       new Promise<void>((resolve) => window.setTimeout(resolve, 5000)),
     ]);
     this.s.nodes.attachAuthoredAssets(this.s.assets);
-    this.s.hero.applyAuthoredAsset(this.s.assets);
+    const heroApplied = this.s.hero.applyAuthoredAsset(this.s.assets);
+    if (!heroApplied) {
+      // A slow authored preload is not a permanent procedural decision. Once
+      // the manifest finishes, retry the Hero attachment exactly once so the
+      // formal scene converges to the GLB source without blocking the menu.
+      void authoredPreload.then(() => {
+        if (this.s.hero.modelSource !== "GLB") this.s.hero.applyAuthoredAsset(this.s.assets);
+      });
+    }
     this.s.furnace.applyAuthoredAsset(this.s.assets);
     hideLoadingScreen();
     this.refitCamera();
