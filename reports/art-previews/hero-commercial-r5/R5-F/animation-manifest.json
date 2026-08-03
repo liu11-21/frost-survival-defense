@@ -1,0 +1,56 @@
+{
+  "stage": "R5-F",
+  "kind": "authored-animation-key-poses",
+  "source": "assets-source/blender/characters/hero.blend",
+  "clips": [
+    {
+      "name": "Idle",
+      "frame": 8,
+      "stripStart": 1.0,
+      "stripEnd": 24.0,
+      "file": "D:\\codex\\\u904a\u6232\u958b\u767c\\reports\\art-previews\\hero-commercial-r5\\R5-F\\animation-idle.png"
+    },
+    {
+      "name": "Walk",
+      "frame": 8,
+      "stripStart": 1.0,
+      "stripEnd": 24.0,
+      "file": "D:\\codex\\\u904a\u6232\u958b\u767c\\reports\\art-previews\\hero-commercial-r5\\R5-F\\animation-walk.png"
+    },
+    {
+      "name": "Run",
+      "frame": 6,
+      "stripStart": 1.0,
+      "stripEnd": 18.0,
+      "file": "D:\\codex\\\u904a\u6232\u958b\u767c\\reports\\art-previews\\hero-commercial-r5\\R5-F\\animation-run.png"
+    },
+    {
+      "name": "MeleeAttack",
+      "frame": 9,
+      "stripStart": 1.0,
+      "stripEnd": 16.0,
+      "file": "D:\\codex\\\u904a\u6232\u958b\u767c\\reports\\art-previews\\hero-commercial-r5\\R5-F\\animation-melee.png"
+    },
+    {
+      "name": "RangedAttack",
+      "frame": 7,
+      "stripStart": 1.0,
+      "stripEnd": 16.0,
+      "file": "D:\\codex\\\u904a\u6232\u958b\u767c\\reports\\art-previews\\hero-commercial-r5\\R5-F\\animation-ranged.png"
+    },
+    {
+      "name": "Hit",
+      "frame": 6,
+      "stripStart": 1.0,
+      "stripEnd": 12.0,
+      "file": "D:\\codex\\\u904a\u6232\u958b\u767c\\reports\\art-previews\\hero-commercial-r5\\R5-F\\animation-hit.png"
+    },
+    {
+      "name": "Death",
+      "frame": 16,
+      "stripStart": 1.0,
+      "stripEnd": 20.0,
+      "file": "D:\\codex\\\u904a\u6232\u958b\u767c\\reports\\art-previews\\hero-commercial-r5\\R5-F\\animation-death.png"
+    }
+  ]
+}

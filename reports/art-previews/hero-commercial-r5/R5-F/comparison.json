@@ -1,0 +1,55 @@
+{
+  "stage": "R5-F",
+  "status": "animation-review-ready",
+  "artIterations": 1,
+  "scope": "Existing Hero locomotion and combat animation clips only",
+  "baseline": {
+    "glbBytes": 4027500,
+    "sourceBlendBytes": 677504,
+    "lod0": { "triangles": 19064, "renderMeshes": 15 },
+    "lod1": { "triangles": 7324, "renderMeshes": 8, "renderPrimitives": 8 },
+    "lod2": { "triangles": 2656, "renderMeshes": 6, "renderPrimitives": 6 },
+    "materials": 4,
+    "embeddedTextures": 1,
+    "skeletonBones": 18,
+    "animationClips": 7
+  },
+  "current": {
+    "glbBytes": 4034616,
+    "sourceBlendBytes": 678791,
+    "lod0": { "triangles": 19064, "renderMeshes": 15 },
+    "lod1": { "triangles": 7324, "renderMeshes": 8, "renderPrimitives": 8 },
+    "lod2": { "triangles": 2656, "renderMeshes": 6, "renderPrimitives": 6 },
+    "materials": 4,
+    "embeddedTextures": 1,
+    "skeletonBones": 18,
+    "animationClips": 7,
+    "animationInputKeys": {
+      "Idle": 174,
+      "Walk": 328,
+      "Run": 236,
+      "MeleeAttack": 206,
+      "RangedAttack": 220,
+      "Hit": 178,
+      "Death": 288
+    }
+  },
+  "animationChanges": {
+    "locomotion": "Walk and Run gain counterbalanced chest/head cadence, clearer foot phase and a more deliberate forward lean",
+    "idle": "Idle gains restrained pelvis/chest breathing and a small head response while returning cleanly to rest",
+    "combat": "MeleeAttack and RangedAttack gain anticipation, recoil and recovery keys with off-hand/head counterbalance",
+    "damage": "Hit and Death preserve named clips while adding pelvis/leg follow-through to the existing reaction arcs",
+    "contract": "No new animation names; Idle, Walk, Run, MeleeAttack, RangedAttack, Hit and Death remain present"
+  },
+  "evidence": [
+    "animation-idle.png",
+    "animation-walk.png",
+    "animation-run.png",
+    "animation-melee.png",
+    "animation-ranged.png",
+    "animation-hit.png",
+    "animation-death.png",
+    "animation-manifest.json"
+  ],
+  "humanReviewNote": "These stills document key poses and clip continuity only. Commercial animation quality remains a human artist decision."
+}

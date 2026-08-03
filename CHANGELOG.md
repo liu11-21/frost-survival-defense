@@ -7,6 +7,13 @@
 - Added evidence-only material review plates under `reports/art-previews/hero-commercial-r5/R5-E/` and recorded the R5-D comparison in `comparison.json`.
 - Static Hero validation and the full authored asset validation remain passing. Commercial art quality remains a human artist decision.
 
+## 2026-08-03 | Hero-R5 F locomotion and combat animation checkpoint
+
+- Tuned the existing seven Hero clips in place: Idle breathing, Walk/Run cadence and counterbalance, melee/ranged anticipation and recoil, and Hit/Death follow-through.
+- Preserved the seven required names, 18-bone skeleton, LOD geometry and four-material/one-atlas contract; no new animation system or gameplay hook was added.
+- Added evidence-only key-pose renders and `comparison.json` under `reports/art-previews/hero-commercial-r5/R5-F/`.
+- Static Hero validation and the full authored asset validation remain passing. Commercial animation quality remains a human artist decision.
+
 ## 2026-08-03｜Hero-R5 A proportions and silhouette checkpoint
 
 - 以現有連續 loop 網格為基礎完成 R5-A 比例校正：縮小頭盔冠部、拉長軀幹、收斂肩線與腰線、延長腿部並保留厚實救援靴，背包同步改為略寬但更薄的輪廓。

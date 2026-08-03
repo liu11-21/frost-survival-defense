@@ -1214,17 +1214,18 @@ def build():
     root["heroMeshPass"] = "R4-D-production-lods"
     root["heroMeshContract"] = "15 LOD0 meshes plus production LOD1/LOD2 identity forms from the mid-poly loop base"
     root["heroR4Stage"] = "R4-D"
-    root["heroR5Stage"] = "R5-E"
-    root["heroR5Scope"] = "production material palette and painted atlas"
+    root["heroR5Stage"] = "R5-F"
+    root["heroR5Scope"] = "locomotion and combat animation polish"
     root["topologyMethod"] = "authored anatomical and garment edge-loop lofts; no subdivision modifier"
     root["lod0TargetTriangles"] = "16000-25000"
     root["lod1TargetTriangles"] = "6000-10000"
     root["lod2TargetTriangles"] = "1500-3500"
     root["lodBuildMethod"] = "production authored loop reductions from R4-B mid-poly volumes"
-    root["animationReview"] = "R3-E weighted body envelopes with contact-safe locomotion and staged combat poses"
+    root["animationReview"] = "R5-F weighted body envelopes with contact-safe locomotion, anticipation and combat follow-through"
     root["feetGrounded"] = True
     root["orientationContract"] = "Babylon Y-up, forward +Z"
     root["animationIteration2"] = "follow-through and recovery keys"
+    root["animationIteration3"] = "R5-F locomotion cadence, counterbalance and combat anticipation"
     root["skinningPass"] = "R3-E-weighted-deformation"
 
     parts = _build_mesh_parts(mats)
@@ -1249,45 +1250,51 @@ def build():
         socket.parent = root
     collision_box("COL_Hero", (0.82, 1.9, 0.82), (0, 0.95, 0), root)
 
-    add_armature_clip(skeleton, "Idle", 24, [(1, {}), (12, {"chest": (0.025, 0, 0), "head": (0, 0.025, 0)}), (18, {"chest": (-0.018, 0, 0), "head": (0, -0.018, 0)}), (24, {})])
+    add_armature_clip(skeleton, "Idle", 24, [
+        (1, {"pelvis": (0.008, 0.0, 0.0), "chest": (0.012, 0.0, 0.0)}),
+        (8, {"pelvis": (-0.012, 0.0, 0.0), "chest": (0.032, 0.0, 0.0), "head": (0.0, 0.018, 0.0)}),
+        (14, {"pelvis": (0.006, 0.0, 0.0), "chest": (-0.020, 0.0, 0.0), "head": (0.0, -0.014, 0.0)}),
+        (20, {"pelvis": (-0.006, 0.0, 0.0), "chest": (-0.004, 0.0, 0.0)}),
+        (24, {})
+    ])
     add_armature_clip(skeleton, "Walk", 24, [
-        (1, {"upper_arm.L": (0.35, 0, 0), "upper_arm.R": (-0.35, 0, 0), "lower_arm.L": (-0.18, 0, 0), "lower_arm.R": (0.18, 0, 0), "thigh.L": (-0.5, 0, 0), "thigh.R": (0.5, 0, 0), "foot.L": (0.12, 0, 0), "foot.R": (-0.12, 0, 0)}),
-        (8, {"upper_arm.L": (-0.35, 0, 0), "upper_arm.R": (0.35, 0, 0), "lower_arm.L": (0.18, 0, 0), "lower_arm.R": (-0.18, 0, 0), "thigh.L": (0.5, 0, 0), "thigh.R": (-0.5, 0, 0), "foot.L": (-0.12, 0, 0), "foot.R": (0.12, 0, 0)}),
-        (16, {"upper_arm.L": (0.28, 0, 0), "upper_arm.R": (-0.28, 0, 0), "thigh.L": (-0.35, 0, 0), "thigh.R": (0.35, 0, 0)}),
+        (1, {"upper_arm.L": (0.38, 0, 0), "upper_arm.R": (-0.38, 0, 0), "lower_arm.L": (-0.20, 0, 0), "lower_arm.R": (0.20, 0, 0), "thigh.L": (-0.54, 0, 0), "thigh.R": (0.54, 0, 0), "foot.L": (0.15, 0, 0), "foot.R": (-0.15, 0, 0), "chest": (0.045, 0, 0), "head": (-0.02, 0, 0)}),
+        (8, {"upper_arm.L": (-0.38, 0, 0), "upper_arm.R": (0.38, 0, 0), "lower_arm.L": (0.20, 0, 0), "lower_arm.R": (-0.20, 0, 0), "thigh.L": (0.54, 0, 0), "thigh.R": (-0.54, 0, 0), "foot.L": (-0.15, 0, 0), "foot.R": (0.15, 0, 0), "chest": (-0.028, 0, 0), "head": (0.015, 0, 0)}),
+        (16, {"upper_arm.L": (0.30, 0, 0), "upper_arm.R": (-0.30, 0, 0), "lower_arm.L": (-0.10, 0, 0), "lower_arm.R": (0.10, 0, 0), "thigh.L": (-0.40, 0, 0), "thigh.R": (0.40, 0, 0), "chest": (0.025, 0, 0)}),
         (24, {}),
     ])
     add_armature_clip(skeleton, "Run", 18, [
-        (1, {"upper_arm.L": (0.65, 0, 0), "upper_arm.R": (-0.65, 0, 0), "lower_arm.L": (-0.28, 0, 0), "lower_arm.R": (0.28, 0, 0), "thigh.L": (-0.75, 0, 0), "thigh.R": (0.75, 0, 0), "chest": (0.1, 0, 0)}),
-        (6, {"upper_arm.L": (-0.65, 0, 0), "upper_arm.R": (0.65, 0, 0), "lower_arm.L": (0.28, 0, 0), "lower_arm.R": (-0.28, 0, 0), "thigh.L": (0.75, 0, 0), "thigh.R": (-0.75, 0, 0), "chest": (0.1, 0, 0)}),
-        (12, {"upper_arm.L": (0.52, 0, 0), "upper_arm.R": (-0.52, 0, 0), "thigh.L": (-0.62, 0, 0), "thigh.R": (0.62, 0, 0), "chest": (0.08, 0, 0)}),
+        (1, {"upper_arm.L": (0.70, 0, 0), "upper_arm.R": (-0.70, 0, 0), "lower_arm.L": (-0.30, 0, 0), "lower_arm.R": (0.30, 0, 0), "thigh.L": (-0.82, 0, 0), "thigh.R": (0.82, 0, 0), "chest": (0.14, 0, 0), "head": (-0.06, 0, 0)}),
+        (6, {"upper_arm.L": (-0.70, 0, 0), "upper_arm.R": (0.70, 0, 0), "lower_arm.L": (0.30, 0, 0), "lower_arm.R": (-0.30, 0, 0), "thigh.L": (0.82, 0, 0), "thigh.R": (-0.82, 0, 0), "chest": (0.10, 0, 0), "head": (-0.03, 0, 0)}),
+        (12, {"upper_arm.L": (0.56, 0, 0), "upper_arm.R": (-0.56, 0, 0), "lower_arm.L": (-0.16, 0, 0), "lower_arm.R": (0.16, 0, 0), "thigh.L": (-0.66, 0, 0), "thigh.R": (0.66, 0, 0), "chest": (0.11, 0, 0), "head": (-0.04, 0, 0)}),
         (18, {}),
     ])
     add_armature_clip(skeleton, "MeleeAttack", 16, [
-        (1, {"upper_arm.R": (-0.85, 0.0, -0.10), "lower_arm.R": (-0.55, 0.0, 0.08), "hand.R": (-0.20, 0.0, 0.0), "chest": (0.04, 0.0, -0.04)}),
-        (5, {"upper_arm.R": (-1.65, 0.0, -0.18), "lower_arm.R": (-0.85, 0.0, 0.16), "hand.R": (-0.42, 0.0, 0.04), "chest": (-0.14, 0.0, -0.10), "pelvis": (0.08, 0.0, 0.0)}),
-        (9, {"upper_arm.R": (1.35, 0.0, 0.22), "lower_arm.R": (0.62, 0.0, -0.12), "hand.R": (0.38, 0.0, -0.04), "chest": (0.26, 0.0, 0.16), "pelvis": (-0.06, 0.0, 0.0)}),
-        (12, {"upper_arm.R": (0.68, 0.0, 0.12), "lower_arm.R": (0.20, 0.0, -0.04), "hand.R": (0.12, 0.0, 0.0), "chest": (0.10, 0.0, 0.06)}),
+        (1, {"upper_arm.R": (-0.90, 0.0, -0.12), "lower_arm.R": (-0.58, 0.0, 0.10), "hand.R": (-0.22, 0.0, 0.0), "upper_arm.L": (0.16, 0.0, 0.06), "head": (0.08, 0.0, -0.04), "chest": (0.06, 0.0, -0.05)}),
+        (5, {"upper_arm.R": (-1.72, 0.0, -0.20), "lower_arm.R": (-0.92, 0.0, 0.18), "hand.R": (-0.46, 0.0, 0.05), "upper_arm.L": (0.28, 0.0, 0.10), "head": (0.14, 0.0, -0.07), "chest": (-0.16, 0.0, -0.12), "pelvis": (0.10, 0.0, 0.0)}),
+        (9, {"upper_arm.R": (1.42, 0.0, 0.24), "lower_arm.R": (0.66, 0.0, -0.14), "hand.R": (0.42, 0.0, -0.05), "upper_arm.L": (-0.18, 0.0, -0.05), "head": (-0.12, 0.0, 0.04), "chest": (0.30, 0.0, 0.18), "pelvis": (-0.08, 0.0, 0.0)}),
+        (12, {"upper_arm.R": (0.72, 0.0, 0.13), "lower_arm.R": (0.22, 0.0, -0.05), "hand.R": (0.14, 0.0, 0.0), "upper_arm.L": (-0.06, 0.0, 0.0), "head": (-0.04, 0.0, 0.02), "chest": (0.12, 0.0, 0.07)}),
         (16, {})
     ])
     add_armature_clip(skeleton, "RangedAttack", 16, [
-        (1, {"upper_arm.R": (-0.72, 0.0, -0.06), "upper_arm.L": (-0.44, 0.0, 0.06), "lower_arm.L": (-0.18, 0.0, 0.04), "hand.R": (-0.12, 0.0, 0.0)}),
-        (7, {"upper_arm.R": (-1.58, 0.0, -0.14), "upper_arm.L": (-1.04, 0.0, 0.10), "lower_arm.L": (-0.42, 0.0, 0.06), "lower_arm.R": (-0.26, 0.0, 0.04), "hand.R": (-0.34, 0.0, 0.0), "head": (-0.18, 0.0, 0.0), "chest": (-0.08, 0.0, -0.06)}),
-        (11, {"upper_arm.R": (-1.18, 0.0, -0.08), "upper_arm.L": (-0.82, 0.0, 0.06), "lower_arm.L": (-0.30, 0.0, 0.04), "lower_arm.R": (-0.16, 0.0, 0.02), "hand.R": (-0.18, 0.0, 0.0), "head": (-0.08, 0.0, 0.0), "chest": (-0.03, 0.0, -0.02)}),
-        (14, {"upper_arm.R": (-0.86, 0.0, -0.04), "upper_arm.L": (-0.58, 0.0, 0.03), "lower_arm.L": (-0.14, 0.0, 0.02), "hand.R": (-0.10, 0.0, 0.0), "head": (-0.03, 0.0, 0.0)}),
+        (1, {"upper_arm.R": (-0.76, 0.0, -0.08), "upper_arm.L": (-0.48, 0.0, 0.07), "lower_arm.L": (-0.20, 0.0, 0.05), "lower_arm.R": (-0.08, 0.0, 0.02), "hand.R": (-0.14, 0.0, 0.0), "head": (-0.06, 0.0, 0.0), "chest": (-0.02, 0.0, -0.02)}),
+        (7, {"upper_arm.R": (-1.64, 0.0, -0.16), "upper_arm.L": (-1.10, 0.0, 0.11), "lower_arm.L": (-0.46, 0.0, 0.07), "lower_arm.R": (-0.30, 0.0, 0.05), "hand.R": (-0.38, 0.0, 0.0), "head": (-0.21, 0.0, 0.0), "chest": (-0.10, 0.0, -0.07), "pelvis": (0.04, 0.0, 0.0)}),
+        (11, {"upper_arm.R": (-1.22, 0.0, -0.09), "upper_arm.L": (-0.86, 0.0, 0.07), "lower_arm.L": (-0.33, 0.0, 0.05), "lower_arm.R": (-0.18, 0.0, 0.03), "hand.R": (-0.20, 0.0, 0.0), "head": (-0.10, 0.0, 0.0), "chest": (-0.04, 0.0, -0.03), "pelvis": (0.02, 0.0, 0.0)}),
+        (14, {"upper_arm.R": (-0.88, 0.0, -0.05), "upper_arm.L": (-0.60, 0.0, 0.04), "lower_arm.L": (-0.16, 0.0, 0.02), "hand.R": (-0.11, 0.0, 0.0), "head": (-0.04, 0.0, 0.0), "chest": (-0.01, 0.0, 0.0)}),
         (16, {})
     ])
     add_armature_clip(skeleton, "Hit", 12, [
-        (1, {"chest": (-0.16, 0.0, 0.06), "pelvis": (-0.04, 0.0, 0.0), "head": (0.10, 0.0, 0.04), "upper_arm.L": (0.12, 0.0, 0.08), "upper_arm.R": (-0.08, 0.0, -0.04)}),
-        (6, {"chest": (-0.34, 0.0, 0.12), "pelvis": (-0.08, 0.0, 0.0), "head": (0.20, 0.0, 0.08), "upper_arm.L": (0.26, 0.0, 0.14), "upper_arm.R": (-0.18, 0.0, -0.08), "lower_arm.L": (0.12, 0.0, 0.06)}),
-        (10, {"chest": (-0.14, 0.0, 0.05), "head": (0.08, 0.0, 0.03), "upper_arm.L": (0.10, 0.0, 0.04), "upper_arm.R": (-0.06, 0.0, -0.02)}),
+        (1, {"chest": (-0.18, 0.0, 0.07), "pelvis": (-0.05, 0.0, 0.0), "head": (0.12, 0.0, 0.05), "upper_arm.L": (0.14, 0.0, 0.09), "upper_arm.R": (-0.10, 0.0, -0.05), "thigh.L": (-0.08, 0.0, 0.0), "thigh.R": (0.05, 0.0, 0.0)}),
+        (6, {"chest": (-0.38, 0.0, 0.14), "pelvis": (-0.10, 0.0, 0.0), "head": (0.23, 0.0, 0.09), "upper_arm.L": (0.30, 0.0, 0.16), "upper_arm.R": (-0.20, 0.0, -0.09), "lower_arm.L": (0.14, 0.0, 0.07), "thigh.L": (-0.14, 0.0, 0.0), "thigh.R": (0.09, 0.0, 0.0)}),
+        (10, {"chest": (-0.16, 0.0, 0.06), "pelvis": (-0.03, 0.0, 0.0), "head": (0.09, 0.0, 0.03), "upper_arm.L": (0.11, 0.0, 0.05), "upper_arm.R": (-0.07, 0.0, -0.03)}),
         (12, {})
     ])
     add_armature_clip(skeleton, "Death", 20, [
-        (1, {"foot.L": (0.04, 0, 0), "foot.R": (-0.04, 0, 0)}),
-        (6, {"root": (0.35, 0, 0), "chest": (0.12, 0, 0), "head": (0.06, 0, 0), "foot.L": (0.08, 0, 0), "foot.R": (-0.08, 0, 0)}),
-        (12, {"root": (1.25, 0, 0), "chest": (0.4, 0, 0), "head": (0.18, 0, 0), "upper_arm.L": (0.8, 0, 0), "upper_arm.R": (0.8, 0, 0)}),
-        (16, {"root": (1.38, 0, 0), "chest": (0.46, 0, 0), "head": (0.24, 0, 0), "upper_arm.L": (0.98, 0, 0), "upper_arm.R": (0.98, 0, 0)}),
-        (20, {"root": (1.45, 0, 0), "chest": (0.5, 0, 0), "head": (0.28, 0, 0), "upper_arm.L": (1.1, 0, 0), "upper_arm.R": (1.1, 0, 0)}),
+        (1, {"foot.L": (0.04, 0, 0), "foot.R": (-0.04, 0, 0), "pelvis": (0.02, 0, 0)}),
+        (6, {"root": (0.35, 0, 0), "pelvis": (0.10, 0, 0), "chest": (0.14, 0, 0), "head": (0.08, 0, 0), "foot.L": (0.08, 0, 0), "foot.R": (-0.08, 0, 0)}),
+        (12, {"root": (1.25, 0, 0), "pelvis": (0.28, 0, 0), "chest": (0.44, 0, 0), "head": (0.20, 0, 0), "upper_arm.L": (0.84, 0, 0), "upper_arm.R": (0.84, 0, 0), "thigh.L": (-0.12, 0, 0), "thigh.R": (0.10, 0, 0)}),
+        (16, {"root": (1.38, 0, 0), "pelvis": (0.38, 0, 0), "chest": (0.52, 0, 0), "head": (0.27, 0, 0), "upper_arm.L": (1.02, 0, 0), "upper_arm.R": (1.02, 0, 0), "thigh.L": (-0.18, 0, 0), "thigh.R": (0.14, 0, 0)}),
+        (20, {"root": (1.45, 0, 0), "pelvis": (0.42, 0, 0), "chest": (0.56, 0, 0), "head": (0.31, 0, 0), "upper_arm.L": (1.14, 0, 0), "upper_arm.R": (1.14, 0, 0), "thigh.L": (-0.20, 0, 0), "thigh.R": (0.16, 0, 0)}),
     ])
 
     collapse_hero_material_slots(parts + lod_parts, mats)

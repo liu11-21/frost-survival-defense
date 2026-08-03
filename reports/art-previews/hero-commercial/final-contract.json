@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-08-03T15:27:14.696Z",
+  "generatedAt": "2026-08-03T15:42:58.095Z",
   "asset": "hero",
   "sourcePath": "assets-source/blender/characters/hero.blend",
   "glbPath": "public/assets/models/characters/hero.glb",
@@ -33,7 +33,7 @@
   "artifact": {
     "status": "pass",
     "glb": {
-      "bytes": 4027500,
+      "bytes": 4034616,
       "assetVersion": "2.0",
       "nodes": 53,
       "meshes": 27,
@@ -83,17 +83,18 @@
             "heroMeshPass": "R4-D-production-lods",
             "heroMeshContract": "15 LOD0 meshes plus production LOD1/LOD2 identity forms from the mid-poly loop base",
             "heroR4Stage": "R4-D",
-            "heroR5Stage": "R5-E",
-            "heroR5Scope": "production material palette and painted atlas",
+            "heroR5Stage": "R5-F",
+            "heroR5Scope": "locomotion and combat animation polish",
             "topologyMethod": "authored anatomical and garment edge-loop lofts; no subdivision modifier",
             "lod0TargetTriangles": "16000-25000",
             "lod1TargetTriangles": "6000-10000",
             "lod2TargetTriangles": "1500-3500",
             "lodBuildMethod": "production authored loop reductions from R4-B mid-poly volumes",
-            "animationReview": "R3-E weighted body envelopes with contact-safe locomotion and staged combat poses",
+            "animationReview": "R5-F weighted body envelopes with contact-safe locomotion, anticipation and combat follow-through",
             "feetGrounded": true,
             "orientationContract": "Babylon Y-up, forward +Z",
             "animationIteration2": "follow-through and recovery keys",
+            "animationIteration3": "R5-F locomotion cadence, counterbalance and combat anticipation",
             "skinningPass": "R3-E-weighted-deformation",
             "heroSurfacePass": "R3-D-1024-hero-atlas",
             "heroAtlasResolution": 1024,
@@ -107,17 +108,18 @@
         "heroMeshPass": "R4-D-production-lods",
         "heroMeshContract": "15 LOD0 meshes plus production LOD1/LOD2 identity forms from the mid-poly loop base",
         "heroR4Stage": "R4-D",
-        "heroR5Stage": "R5-E",
-        "heroR5Scope": "production material palette and painted atlas",
+        "heroR5Stage": "R5-F",
+        "heroR5Scope": "locomotion and combat animation polish",
         "topologyMethod": "authored anatomical and garment edge-loop lofts; no subdivision modifier",
         "lod0TargetTriangles": "16000-25000",
         "lod1TargetTriangles": "6000-10000",
         "lod2TargetTriangles": "1500-3500",
         "lodBuildMethod": "production authored loop reductions from R4-B mid-poly volumes",
-        "animationReview": "R3-E weighted body envelopes with contact-safe locomotion and staged combat poses",
+        "animationReview": "R5-F weighted body envelopes with contact-safe locomotion, anticipation and combat follow-through",
         "feetGrounded": true,
         "orientationContract": "Babylon Y-up, forward +Z",
         "animationIteration2": "follow-through and recovery keys",
+        "animationIteration3": "R5-F locomotion cadence, counterbalance and combat anticipation",
         "skinningPass": "R3-E-weighted-deformation",
         "heroSurfacePass": "R3-D-1024-hero-atlas",
         "heroAtlasResolution": 1024,
@@ -166,7 +168,7 @@
           "name": "Idle",
           "channels": 54,
           "samplers": 54,
-          "totalInputKeys": 152,
+          "totalInputKeys": 174,
           "maxSamplerKeys": 24,
           "durationSeconds": 1,
           "targetPaths": [
@@ -179,7 +181,7 @@
           "name": "Walk",
           "channels": 54,
           "samplers": 54,
-          "totalInputKeys": 284,
+          "totalInputKeys": 328,
           "maxSamplerKeys": 24,
           "durationSeconds": 1,
           "targetPaths": [
@@ -192,7 +194,7 @@
           "name": "Run",
           "channels": 54,
           "samplers": 54,
-          "totalInputKeys": 220,
+          "totalInputKeys": 236,
           "maxSamplerKeys": 18,
           "durationSeconds": 0.75,
           "targetPaths": [
@@ -205,7 +207,7 @@
           "name": "MeleeAttack",
           "channels": 54,
           "samplers": 54,
-          "totalInputKeys": 178,
+          "totalInputKeys": 206,
           "maxSamplerKeys": 16,
           "durationSeconds": 0.6666666666666666,
           "targetPaths": [
@@ -218,7 +220,7 @@
           "name": "RangedAttack",
           "channels": 54,
           "samplers": 54,
-          "totalInputKeys": 206,
+          "totalInputKeys": 220,
           "maxSamplerKeys": 16,
           "durationSeconds": 0.6666666666666666,
           "targetPaths": [
@@ -231,7 +233,7 @@
           "name": "Hit",
           "channels": 54,
           "samplers": 54,
-          "totalInputKeys": 158,
+          "totalInputKeys": 178,
           "maxSamplerKeys": 12,
           "durationSeconds": 0.5,
           "targetPaths": [
@@ -244,7 +246,7 @@
           "name": "Death",
           "channels": 54,
           "samplers": 54,
-          "totalInputKeys": 234,
+          "totalInputKeys": 288,
           "maxSamplerKeys": 20,
           "durationSeconds": 0.8333333333333334,
           "targetPaths": [
@@ -259,7 +261,7 @@
       "renderableCollisionNodes": []
     },
     "source": {
-      "bytes": 677504,
+      "bytes": 678791,
       "exists": true
     },
     "checks": {
