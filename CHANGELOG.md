@@ -485,3 +485,16 @@ flyingColossus, furnace and crossbow/turret before claiming display readiness.
   `reports/art-previews/hero-commercial-r4/R4-A/`. R4-A remains a geometry
   foundation checkpoint; clothing, deformation validation and production LODs
   are deferred to R4-B through R4-D.
+
+## 2026-08-03 | Hero-R4 B commercial clothing and equipment forms
+
+- Replaced the flat R3 survival-gear profile with four authored looped forms:
+  jacket shell, joined shoulder/chest armor, shaped rear backpack/flap, and
+  helmet shell. The second pass corrected rear placement, pack depth and the
+  chest-plate footprint after clay review.
+- LOD0 now measures 10,486 vertices / 20,852 triangles across 15 render meshes
+  and 15 glTF primitives. Material slots were deliberately consolidated to
+  four exported primary materials while retaining the single 1024 atlas.
+- Added Blender review evidence under
+  `reports/art-previews/hero-commercial-r4/R4-B/`; deformation and production
+  LOD validation remain R4-C/R4-D work.

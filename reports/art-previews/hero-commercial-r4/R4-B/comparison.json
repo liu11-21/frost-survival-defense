@@ -1,0 +1,55 @@
+{
+  "stage": "R4-B",
+  "iteration": 2,
+  "source": "Blender clay/topology review",
+  "baseline": {
+    "commit": "f49f566",
+    "lod0Vertices": 8126,
+    "lod0Triangles": 16124,
+    "lod0RenderMeshes": 12,
+    "lod0GlbPrimitives": 31,
+    "glbBytes": 2793212,
+    "glbMaterials": 7
+  },
+  "current": {
+    "lod0Vertices": 10486,
+    "lod0Triangles": 20852,
+    "lod0RenderMeshes": 15,
+    "lod0GlbPrimitives": 15,
+    "glbBytes": 3199820,
+    "glbMaterials": 4,
+    "atlas": "HERO_ATLAS_1024",
+    "skeletonBones": 18,
+    "animationClips": 7,
+    "armatureModifiers": 15,
+    "smoothWeightBinding": true,
+    "newMeshGroups": [
+      "coat.heroJacket",
+      "armor.heroPlates",
+      "pack.heroSurvival",
+      "helmet.heroShell"
+    ]
+  },
+  "deltas": {
+    "lod0Vertices": 2360,
+    "lod0Triangles": 4728,
+    "lod0RenderMeshes": 3,
+    "lod0GlbPrimitives": -16,
+    "glbBytes": 406608,
+    "glbMaterials": -3
+  },
+  "review": {
+    "clay": [
+      "clay-front.png",
+      "clay-side.png",
+      "clay-back.png",
+      "clay-three-quarter.png"
+    ],
+    "textured": [
+      "textured-front.png",
+      "textured-close-up.png"
+    ],
+    "perspective": "gameplay.png"
+  },
+  "humanReviewNote": "R4-B establishes thickness and readable survival equipment forms, but the atlas remains a technical review atlas and the remaining commercial quality decision is human."
+}

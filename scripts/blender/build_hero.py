@@ -97,6 +97,56 @@ def _loft_mesh(name, rings, segments, materials, origin=(0.0, 0.0, 0.0), target=
     return _mesh_object(name, vertices, faces, materials, material_indices, origin, target, smooth=True)
 
 
+def _multi_loft_mesh(name, volumes, materials, target="LOD0"):
+    """Combine several authored loop volumes into one render mesh.
+
+    R4 clothing uses this for the two shoulder caps, chest plate and backpack
+    so those forms share one mesh/material contract without reverting to a
+    forest of floating primitive objects.
+    """
+    vertices = []
+    faces = []
+    material_indices = []
+    for volume in volumes:
+        rings = volume["rings"]
+        segments = volume.get("segments", 32)
+        override = volume.get("override")
+        offset = len(vertices)
+        for y, radius_x, radius_z, center_x, center_z, _ in rings:
+            for segment in range(segments):
+                theta = math.tau * segment / segments
+                vertices.append((
+                    center_x + radius_x * math.cos(theta),
+                    y,
+                    center_z + radius_z * math.sin(theta),
+                ))
+        faces.append(tuple(offset + segment for segment in range(segments - 1, -1, -1)))
+        material_indices.append(rings[0][5])
+        for ring_index in range(len(rings) - 1):
+            current = rings[ring_index]
+            following = rings[ring_index + 1]
+            for segment in range(segments):
+                next_segment = (segment + 1) % segments
+                face = (
+                    offset + ring_index * segments + segment,
+                    offset + ring_index * segments + next_segment,
+                    offset + (ring_index + 1) * segments + next_segment,
+                    offset + (ring_index + 1) * segments + segment,
+                )
+                faces.append(face)
+                center_x = sum(vertices[index][0] for index in face) / 4.0
+                center_y = sum(vertices[index][1] for index in face) / 4.0
+                center_z = sum(vertices[index][2] for index in face) / 4.0
+                material_indices.append(
+                    override(ring_index, segment, center_x, center_y, center_z, current, following)
+                    if override else current[5]
+                )
+        top_start = offset + (len(rings) - 1) * segments
+        faces.append(tuple(top_start + segment for segment in range(segments)))
+        material_indices.append(rings[-1][5])
+    return _mesh_object(name, vertices, faces, materials, material_indices, target=target, smooth=True)
+
+
 def _profile_mesh(name, components, materials, origin=(0.0, 0.0, 0.0), target="LOD0"):
     """Extrude several designed 2D profiles into one equipment mesh.
 
@@ -484,28 +534,116 @@ def _build_mesh_parts(mats):
         override=head_override,
     )
 
-    # One consolidated survival-gear mesh carries the jacket collar, shoulder
-    # yoke, front harness, utility pouches, and a structured backpack. Keeping
-    # these panels in one object preserves the mesh budget while making the
-    # clothing read front/side/back instead of as floating stickers.
-    gear = _profile_mesh(
+    # R4-B clothing is built as a few rounded loop meshes: a jacket shell,
+    # joined shoulder/chest armor, a shaped backpack and a helmet shell. This
+    # replaces the old flat profile collection while staying within the
+    # 8–16 render-object budget.
+    jacket = _loft_mesh(
+        "coat.heroJacket",
+        [
+            (0.58, 0.43, 0.34, 0.00, -0.01, 0),
+            (0.64, 0.46, 0.35, 0.00, 0.00, 0),
+            (0.70, 0.46, 0.35, 0.00, 0.00, 0),
+            (0.76, 0.40, 0.32, 0.00, 0.00, 0),
+            (0.82, 0.36, 0.30, 0.00, 0.00, 0),
+            (0.88, 0.34, 0.29, 0.00, 0.00, 0),
+            (0.94, 0.36, 0.30, 0.00, 0.00, 0),
+            (1.00, 0.40, 0.32, 0.00, 0.01, 0),
+            (1.06, 0.45, 0.34, 0.00, 0.01, 0),
+            (1.12, 0.50, 0.36, 0.00, 0.02, 0),
+            (1.18, 0.54, 0.38, 0.00, 0.02, 0),
+            (1.24, 0.57, 0.39, 0.00, 0.02, 0),
+            (1.30, 0.59, 0.40, 0.00, 0.02, 0),
+            (1.36, 0.58, 0.39, 0.00, 0.02, 0),
+            (1.42, 0.54, 0.36, 0.00, 0.02, 0),
+            (1.48, 0.46, 0.32, 0.00, 0.01, 0),
+            (1.53, 0.38, 0.27, 0.00, 0.00, 0),
+        ],
+        48,
+        [mats["cloth"], mats["leather"]],
+    )
+
+    def armor_override(_ring_index, segment, _center_x, center_y, center_z, _current, _following):
+        # Keep the chest plate/front-facing shoulder caps in metal while the
+        # underside remains leather for a readable layered silhouette.
+        if center_y > 0.16 and 0.98 <= center_y <= 1.38 and segment % 5 in (0, 1):
+            return 1
+        if abs(center_z) > 0.18 and 1.22 <= center_y <= 1.46:
+            return 1
+        return 0
+
+    armor = _multi_loft_mesh(
+        "armor.heroPlates",
+        [
+            {"segments": 32, "override": armor_override, "rings": [
+                (1.24, 0.23, 0.23, -0.56, 0.01, 1),
+                (1.29, 0.27, 0.25, -0.56, 0.01, 1),
+                (1.35, 0.29, 0.26, -0.56, 0.01, 1),
+                (1.41, 0.27, 0.24, -0.54, 0.01, 1),
+                (1.46, 0.21, 0.20, -0.51, 0.01, 1),
+            ]},
+            {"segments": 32, "override": armor_override, "rings": [
+                (1.24, 0.23, 0.23, 0.56, 0.01, 1),
+                (1.29, 0.27, 0.25, 0.56, 0.01, 1),
+                (1.35, 0.29, 0.26, 0.56, 0.01, 1),
+                (1.41, 0.27, 0.24, 0.54, 0.01, 1),
+                (1.46, 0.21, 0.20, 0.51, 0.01, 1),
+            ]},
+            {"segments": 40, "override": armor_override, "rings": [
+                (1.03, 0.31, 0.11, 0.00, -0.33, 1),
+                (1.08, 0.35, 0.12, 0.00, -0.34, 1),
+                (1.14, 0.38, 0.13, 0.00, -0.35, 1),
+                (1.20, 0.39, 0.13, 0.00, -0.35, 1),
+                (1.26, 0.36, 0.12, 0.00, -0.34, 1),
+                (1.31, 0.29, 0.10, 0.00, -0.33, 1),
+            ]},
+        ],
+        [mats["cloth"], mats["metal"]],
+    )
+
+    pack = _multi_loft_mesh(
         "pack.heroSurvival",
         [
-            # Backpack shell, visible from the rear and three-quarter views.
-            ([(-0.30, 1.34), (0.30, 1.34), (0.33, 0.88), (0.22, 0.72), (-0.22, 0.72), (-0.33, 0.88)], 0.42, 0.30, 0),
-            ([(-0.22, 1.34), (0.22, 1.34), (0.20, 1.24), (-0.20, 1.24)], 0.59, 0.07, 0),
-            # Padded shoulder yoke and high collar.
-            ([(-0.48, 1.44), (-0.18, 1.52), (0.18, 1.52), (0.48, 1.44), (0.38, 1.31), (-0.38, 1.31)], 0.02, 0.18, 0),
-            ([(-0.22, 1.52), (0.22, 1.52), (0.18, 1.39), (-0.18, 1.39)], -0.19, 0.10, 0),
-            # Cross-body harness straps and central buckle.
-            ([(-0.34, 1.38), (-0.25, 1.40), (-0.08, 0.84), (-0.17, 0.82)], -0.29, 0.07, 0),
-            ([(0.34, 1.38), (0.25, 1.40), (0.08, 0.84), (0.17, 0.82)], -0.29, 0.07, 0),
-            ([(-0.11, 1.12), (0.11, 1.12), (0.12, 0.98), (-0.12, 0.98)], -0.32, 0.08, 0),
-            # Side utility pouches give the silhouette a readable survival kit.
-            ([(-0.48, 1.04), (-0.36, 1.06), (-0.34, 0.82), (-0.48, 0.80)], -0.16, 0.16, 0),
-            ([(0.48, 1.04), (0.36, 1.06), (0.34, 0.82), (0.48, 0.80)], -0.16, 0.16, 0),
+            {"segments": 40, "rings": [
+                (0.70, 0.25, 0.16, 0.00, 0.42, 1),
+                (0.76, 0.32, 0.19, 0.00, 0.43, 1),
+                (0.84, 0.35, 0.21, 0.00, 0.44, 1),
+                (0.94, 0.36, 0.22, 0.00, 0.44, 1),
+                (1.04, 0.36, 0.22, 0.00, 0.44, 1),
+                (1.14, 0.35, 0.21, 0.00, 0.44, 1),
+                (1.24, 0.32, 0.19, 0.00, 0.43, 1),
+                (1.34, 0.27, 0.16, 0.00, 0.42, 1),
+                (1.40, 0.20, 0.12, 0.00, 0.41, 1),
+            ]},
+            {"segments": 32, "rings": [
+                (1.30, 0.24, 0.10, 0.00, 0.58, 0),
+                (1.36, 0.27, 0.11, 0.00, 0.58, 0),
+                (1.42, 0.22, 0.09, 0.00, 0.57, 0),
+                (1.46, 0.14, 0.06, 0.00, 0.55, 0),
+            ]},
         ],
-        [mats["leather"]],
+        [mats["leather"], mats["cloth"]],
+    )
+
+    helmet = _loft_mesh(
+        "helmet.heroShell",
+        [
+            (1.55, 0.26, 0.24, 0.00, 0.00, 0),
+            (1.60, 0.32, 0.29, 0.00, 0.00, 0),
+            (1.68, 0.37, 0.34, 0.00, 0.00, 0),
+            (1.76, 0.39, 0.36, 0.00, 0.00, 0),
+            (1.84, 0.39, 0.36, 0.00, 0.00, 0),
+            (1.92, 0.38, 0.35, 0.00, 0.00, 0),
+            (2.00, 0.36, 0.33, 0.00, 0.00, 0),
+            (2.08, 0.33, 0.30, 0.00, 0.00, 0),
+            (2.16, 0.29, 0.26, 0.00, -0.01, 0),
+            (2.23, 0.22, 0.20, 0.00, -0.01, 0),
+            (2.28, 0.13, 0.13, 0.00, -0.01, 0),
+            (2.31, 0.04, 0.05, 0.00, -0.01, 0),
+        ],
+        48,
+        [mats["cloth"], mats["accent"]],
+        override=lambda _ring, _segment, _x, y, _z, current, _following: 1 if 1.72 <= y <= 1.90 else current[5],
     )
 
     # A single head-bound mesh gives the Hero a readable goggle band and two
@@ -578,7 +716,7 @@ def _build_mesh_parts(mats):
         [mats["leather"], mats["metal"], mats["metal_light"], mats["glow"]],
         origin=(0.38, 1.02, -0.20),
     )
-    return [body, head, face_marker, gear, goggles, *arm_parts, *leg_parts, cape, melee, ranged]
+    return [body, head, face_marker, jacket, armor, pack, helmet, goggles, *arm_parts, *leg_parts, cape, melee, ranged]
 
 
 def _hero_atlas_materials(mats):
@@ -766,6 +904,14 @@ def _hero_vertex_weights(object_name, position):
         if y >= 1.05:
             return pair("chest", "spine", (y - 1.05) / 0.38)
         return pair("spine", "pelvis", max(0.0, min(1.0, (y - 0.36) / 0.69)))
+    if name.startswith("coat."):
+        if y >= 1.12:
+            return pair("chest", "spine", (y - 1.12) / 0.34)
+        return pair("spine", "pelvis", max(0.0, min(1.0, (y - 0.58) / 0.54)))
+    if name.startswith("helmet."):
+        return [("head", 1.0)]
+    if name.startswith("armor."):
+        return pair("chest", "spine", max(0.0, min(1.0, (y - 1.0) / 0.42)))
     if name.startswith("pack."):
         if y >= 1.14:
             return pair("chest", "spine", (y - 1.14) / 0.30)
@@ -814,22 +960,48 @@ def bind_hero_weighted(parts, skeleton):
         obj["skinBinding"] = "R3-E-weighted-envelope"
 
 
+def collapse_hero_material_slots(objects, mats):
+    """Keep one primary slot per authored mesh while retaining four materials.
+
+    The previous pass duplicated several semantic aliases on every mesh,
+    which inflated glTF primitive count without adding visible structure. R4-B
+    assigns one intentional surface family per mesh; vertex colour and the
+    shared atlas still provide the controlled value breakup.
+    """
+    for obj in objects:
+        if obj.type != "MESH":
+            continue
+        name = obj.name.lower()
+        if "goggle" in name or name.startswith("head.nose"):
+            primary = mats["accent"]
+        elif "weapon" in name or "armor" in name:
+            primary = mats["metal"]
+        elif "pack" in name or name.startswith("leg."):
+            primary = mats["leather"]
+        else:
+            primary = mats["cloth"]
+        obj.data.materials.clear()
+        obj.data.materials.append(primary)
+        for polygon in obj.data.polygons:
+            polygon.material_index = 0
+
+
 def build():
     reset_scene()
     mats = {
         "cloth": material("MAT_hero_cloth", (0.16, 0.28, 0.52), 0.84),
         "leather": material("MAT_hero_leather", (0.24, 0.09, 0.038), 0.70),
         "metal": material("MAT_hero_metal", (0.20, 0.27, 0.36), 0.22, 0.93),
-        "metal_light": material("MAT_hero_metal_light", (0.52, 0.68, 0.84), 0.14, 0.96),
-        "skin": material("MAT_hero_skin", (0.68, 0.38, 0.24), 0.80),
-        "cloth_dark": material("MAT_hero_cloth_dark", (0.06, 0.12, 0.26), 0.88),
-        "snow": material("MAT_hero_snow", (0.82, 0.93, 1.0), 0.58),
-        "glow": material("MAT_hero_glow", (0.26, 0.74, 1.0), 0.18, 0.0, (0.16, 0.58, 1.0)),
         "accent": material("MAT_hero_accent", (0.40, 0.74, 1.0), 0.28, 0.62),
     }
-    # Keep the lighter metal palette name available to the mesh authoring
-    # code, while exporting one shared metal material for the atlas budget.
+    # R4-B keeps four primary material slots. These semantic aliases let the
+    # existing mesh authoring code retain its regions without exporting a
+    # separate slot for every colour role.
     mats["metal_light"] = mats["metal"]
+    mats["skin"] = mats["cloth"]
+    mats["cloth_dark"] = mats["cloth"]
+    mats["snow"] = mats["cloth"]
+    mats["glow"] = mats["accent"]
     glow_shader = mats["glow"].node_tree.nodes.get("Principled BSDF")
     if glow_shader and glow_shader.inputs.get("Emission Strength"):
         glow_shader.inputs["Emission Strength"].default_value = 2.6
@@ -839,10 +1011,10 @@ def build():
     # this pass is a topology rebuild, not a new H1-H6 claim.
     root["commercialStage"] = "H6"
     root["commercialIteration"] = 2
-    root["heroMeshPass"] = "R4-A-mid-poly-body-foundation"
-    root["heroMeshContract"] = "12 LOD0 meshes; anatomical loop topology with continuous torso, limbs and helmet"
-    root["heroR4Stage"] = "R4-A"
-    root["topologyMethod"] = "authored anatomical edge-loop lofts; no subdivision modifier"
+    root["heroMeshPass"] = "R4-B-commercial-clothing-equipment"
+    root["heroMeshContract"] = "15 LOD0 meshes; mid-poly body with continuous jacket, armor, backpack and helmet forms"
+    root["heroR4Stage"] = "R4-B"
+    root["topologyMethod"] = "authored anatomical and garment edge-loop lofts; no subdivision modifier"
     root["lod0TargetTriangles"] = "16000-25000"
     root["animationReview"] = "R3-E weighted body envelopes with contact-safe locomotion and staged combat poses"
     root["feetGrounded"] = True
@@ -913,6 +1085,7 @@ def build():
         (20, {"root": (1.45, 0, 0), "chest": (0.5, 0, 0), "head": (0.28, 0, 0), "upper_arm.L": (1.1, 0, 0), "upper_arm.R": (1.1, 0, 0)}),
     ])
 
+    collapse_hero_material_slots(parts + lod_parts, mats)
     # Keep the packed surface/vertex colour contract while applying it only
     # to this Hero asset. No other character or facility is regenerated.
     author_surface_paint(parts + lod_parts, seed=53, textured=False)
