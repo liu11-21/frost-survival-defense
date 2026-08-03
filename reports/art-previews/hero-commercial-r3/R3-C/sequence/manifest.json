@@ -1,0 +1,5 @@
+{
+  "captureMode": "heroReview=1",
+  "description": "Continuous runtime frames in order: Idle -> Walk -> Run -> MeleeAttack -> RangedAttack -> Hit -> Death.",
+  "frames": []
+}

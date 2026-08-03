@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-08-03T03:20:00.636Z",
+  "generatedAt": "2026-08-03T03:31:26.000Z",
   "asset": "hero",
   "sourcePath": "assets-source/blender/characters/hero.blend",
   "glbPath": "public/assets/models/characters/hero.glb",
@@ -31,10 +31,10 @@
   "artifact": {
     "status": "pass",
     "glb": {
-      "bytes": 326648,
+      "bytes": 342300,
       "assetVersion": "2.0",
-      "nodes": 44,
-      "meshes": 18,
+      "nodes": 46,
+      "meshes": 20,
       "materials": 9,
       "textures": 9,
       "skeletons": 1,
@@ -57,7 +57,7 @@
       },
       "roots": [
         {
-          "index": 43,
+          "index": 45,
           "name": "HeroRoot",
           "translation": [
             0,
@@ -78,8 +78,8 @@
           "extras": {
             "commercialStage": "H6",
             "commercialIteration": 2,
-            "heroMeshPass": "R3-B-commercial-body-proportions",
-            "heroMeshContract": "10 LOD0 meshes; pinched waist, separated feet, identity-preserving LOD1/LOD2",
+            "heroMeshPass": "R3-C-commercial-clothing-and-identity",
+            "heroMeshContract": "12 LOD0 meshes; continuous body plus consolidated survival gear and goggles",
             "animationReview": "existing contact-safe walk/run cycles, staged attacks, stable hit/death poses",
             "feetGrounded": true,
             "orientationContract": "Babylon Y-up, forward +Z",
@@ -90,26 +90,35 @@
       "rootExtras": {
         "commercialStage": "H6",
         "commercialIteration": 2,
-        "heroMeshPass": "R3-B-commercial-body-proportions",
-        "heroMeshContract": "10 LOD0 meshes; pinched waist, separated feet, identity-preserving LOD1/LOD2",
+        "heroMeshPass": "R3-C-commercial-clothing-and-identity",
+        "heroMeshContract": "12 LOD0 meshes; continuous body plus consolidated survival gear and goggles",
         "animationReview": "existing contact-safe walk/run cycles, staged attacks, stable hit/death poses",
         "feetGrounded": true,
         "orientationContract": "Babylon Y-up, forward +Z",
         "animationIteration2": "follow-through and recovery keys"
       },
-      "triangles": 1696,
+      "triangles": 1868,
       "lodTriangles": {
-        "LOD0": 1224,
+        "LOD0": 1396,
         "LOD1": 268,
         "LOD2": 204
       },
-      "renderPrimitiveCount": 52,
+      "renderPrimitiveCount": 51,
       "lodRenderPrimitives": {
-        "LOD0": 32,
+        "LOD0": 31,
         "LOD1": 10,
         "LOD2": 10
       },
       "images": [
+        {
+          "name": "ART_PAINT_MAT_hero_glow",
+          "mimeType": "image/png",
+          "resolution": {
+            "width": 64,
+            "height": 64
+          },
+          "embedded": true
+        },
         {
           "name": "ART_PAINT_MAT_hero_skin",
           "mimeType": "image/png",
@@ -121,15 +130,6 @@
         },
         {
           "name": "ART_PAINT_MAT_hero_cloth_dark",
-          "mimeType": "image/png",
-          "resolution": {
-            "width": 64,
-            "height": 64
-          },
-          "embedded": true
-        },
-        {
-          "name": "ART_PAINT_MAT_hero_glow",
           "mimeType": "image/png",
           "resolution": {
             "width": 64,
@@ -290,7 +290,7 @@
       "renderableCollisionNodes": []
     },
     "source": {
-      "bytes": 193389,
+      "bytes": 196846,
       "exists": true
     },
     "checks": {

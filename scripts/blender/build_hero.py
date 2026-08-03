@@ -235,8 +235,8 @@ def _build_mesh_parts(mats):
         if 0.92 <= center_y <= 1.34 and center_z > 0.22 and abs(center_x) < 0.40:
             return 2
         if 1.02 <= center_y <= 1.30 and center_z > 0.30 and abs(center_x) < 0.12:
-            return 6
-        return current[5]
+            return 2
+        return 0 if current[5] > 2 else current[5]
 
     body = _loft_mesh(
         "chest.heroBody",
@@ -247,7 +247,7 @@ def _build_mesh_parts(mats):
             (1.10, 0.40, 0.30, 0.0, 0.01, 0),
             (1.30, 0.48, 0.33, 0.0, 0.02, 2),
             (1.43, 0.51, 0.32, 0.0, 0.01, 0),
-            (1.50, 0.37, 0.27, 0.0, 0.00, 5),
+            (1.50, 0.37, 0.27, 0.0, 0.00, 0),
         ],
         20,
         body_mats,
@@ -261,7 +261,7 @@ def _build_mesh_parts(mats):
             if 1.71 <= center_y <= 1.79 and abs(center_x) < 0.13 and abs(center_z) > 0.24:
                 return 3
             return 2
-        return current[5]
+        return current[5] if current[5] < 4 else 3
 
     head = _loft_mesh(
         "head.heroHead",
@@ -269,14 +269,51 @@ def _build_mesh_parts(mats):
             (1.50, 0.25, 0.24, 0.0, 0.00, 0),
             (1.64, 0.30, 0.28, 0.0, 0.00, 0),
             (1.82, 0.34, 0.30, 0.0, 0.00, 0),
-            (1.98, 0.33, 0.29, 0.0, 0.00, 4),
-            (2.12, 0.23, 0.22, 0.0, -0.01, 4),
-            (2.22, 0.07, 0.08, 0.0, -0.02, 5),
+            (1.98, 0.33, 0.29, 0.0, 0.00, 3),
+            (2.12, 0.23, 0.22, 0.0, -0.01, 3),
+            (2.22, 0.07, 0.08, 0.0, -0.02, 3),
         ],
         20,
-        [mats["skin"], mats["snow"], mats["cloth_dark"], mats["glow"], mats["accent"]],
+        [mats["skin"], mats["snow"], mats["cloth_dark"], mats["accent"]],
         origin=(0.0, 1.78, 0.0),
         override=head_override,
+    )
+
+    # One consolidated survival-gear mesh carries the jacket collar, shoulder
+    # yoke, front harness, utility pouches, and a structured backpack. Keeping
+    # these panels in one object preserves the mesh budget while making the
+    # clothing read front/side/back instead of as floating stickers.
+    gear = _profile_mesh(
+        "pack.heroSurvival",
+        [
+            # Backpack shell, visible from the rear and three-quarter views.
+            ([(-0.30, 1.34), (0.30, 1.34), (0.33, 0.88), (0.22, 0.72), (-0.22, 0.72), (-0.33, 0.88)], 0.42, 0.30, 0),
+            ([(-0.22, 1.34), (0.22, 1.34), (0.20, 1.24), (-0.20, 1.24)], 0.59, 0.07, 0),
+            # Padded shoulder yoke and high collar.
+            ([(-0.48, 1.44), (-0.18, 1.52), (0.18, 1.52), (0.48, 1.44), (0.38, 1.31), (-0.38, 1.31)], 0.02, 0.18, 0),
+            ([(-0.22, 1.52), (0.22, 1.52), (0.18, 1.39), (-0.18, 1.39)], -0.19, 0.10, 0),
+            # Cross-body harness straps and central buckle.
+            ([(-0.34, 1.38), (-0.25, 1.40), (-0.08, 0.84), (-0.17, 0.82)], -0.29, 0.07, 0),
+            ([(0.34, 1.38), (0.25, 1.40), (0.08, 0.84), (0.17, 0.82)], -0.29, 0.07, 0),
+            ([(-0.11, 1.12), (0.11, 1.12), (0.12, 0.98), (-0.12, 0.98)], -0.32, 0.08, 0),
+            # Side utility pouches give the silhouette a readable survival kit.
+            ([(-0.48, 1.04), (-0.36, 1.06), (-0.34, 0.82), (-0.48, 0.80)], -0.16, 0.16, 0),
+            ([(0.48, 1.04), (0.36, 1.06), (0.34, 0.82), (0.48, 0.80)], -0.16, 0.16, 0),
+        ],
+        [mats["leather"]],
+    )
+
+    # A single head-bound mesh gives the Hero a readable goggle band and two
+    # lenses without returning to the old collection of tiny primitives.
+    goggles = _profile_mesh(
+        "head.goggles",
+        [
+            ([(-0.27, 1.82), (-0.04, 1.82), (-0.04, 1.67), (-0.27, 1.67)], -0.275, 0.08, 0),
+            ([(0.04, 1.82), (0.27, 1.82), (0.27, 1.67), (0.04, 1.67)], -0.275, 0.08, 0),
+            ([(-0.29, 1.86), (0.29, 1.86), (0.29, 1.91), (-0.29, 1.91)], 0.02, 0.07, 0),
+            ([(-0.05, 1.77), (0.05, 1.77), (0.05, 1.70), (-0.05, 1.70)], -0.30, 0.06, 0),
+        ],
+        [mats["glow"]],
     )
     # A small authored nose marker keeps HeroController's fail-safe facing
     # calibration working after the mesh consolidation.  It is intentionally
@@ -348,7 +385,7 @@ def _build_mesh_parts(mats):
         [mats["leather"], mats["metal"], mats["metal_light"], mats["glow"]],
         origin=(0.38, 1.02, -0.20),
     )
-    return [body, head, face_marker, *arm_parts, *leg_parts, cape, melee, ranged]
+    return [body, head, face_marker, gear, goggles, *arm_parts, *leg_parts, cape, melee, ranged]
 
 
 def build():
@@ -373,8 +410,8 @@ def build():
     # this pass is a topology rebuild, not a new H1-H6 claim.
     root["commercialStage"] = "H6"
     root["commercialIteration"] = 2
-    root["heroMeshPass"] = "R3-B-commercial-body-proportions"
-    root["heroMeshContract"] = "10 LOD0 meshes; pinched waist, separated feet, identity-preserving LOD1/LOD2"
+    root["heroMeshPass"] = "R3-C-commercial-clothing-and-identity"
+    root["heroMeshContract"] = "12 LOD0 meshes; continuous body plus consolidated survival gear and goggles"
     root["animationReview"] = "existing contact-safe walk/run cycles, staged attacks, stable hit/death poses"
     root["feetGrounded"] = True
     root["orientationContract"] = "Babylon Y-up, forward +Z"

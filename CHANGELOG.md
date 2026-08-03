@@ -427,3 +427,13 @@ flyingColossus, furnace and crossbow/turret before claiming display readiness.
 - Added R3-B Babylon runtime evidence under
   `reports/art-previews/hero-commercial-r3/R3-B/`; clothing, UV/materials, and
   weighted deformation remain subsequent stages.
+## 2026-08-03 | Hero-R3 C clothing and survival identity
+
+- Added two purposeful Hero meshes: a consolidated chest-bound survival pack/
+  harness/yoke/pouch mesh and a head-bound goggle band/lens mesh.
+- Corrected the first pass's overly broad flat gear panel, verified front/back
+  placement in Babylon, and consolidated new material slots to keep LOD0 at
+  31 render primitives (below the 32 ceiling).
+- Added R3-C runtime review evidence under
+  `reports/art-previews/hero-commercial-r3/R3-C/`; UV atlas/material rebuild and
+  weighted deformation remain later stages.

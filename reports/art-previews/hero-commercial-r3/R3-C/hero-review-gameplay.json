@@ -1,0 +1,48 @@
+{
+  "captureId": "hero-review-gameplay",
+  "capturedAt": "2026-08-03T03:31:03.082Z",
+  "url": "http://127.0.0.1:5181?heroReview=1",
+  "screenshot": "reports/art-previews/hero-commercial-r3/R3-C/hero-review-gameplay.png",
+  "captureMode": "heroReview=1",
+  "cameraMode": "gameplay",
+  "animation": "Idle",
+  "lod": 0,
+  "modelSource": "GLB",
+  "heroWorldPosition": {
+    "x": 0,
+    "y": 0,
+    "z": 0
+  },
+  "screenSpaceBoundingBox": {
+    "x": 492.892,
+    "y": 251.93,
+    "width": 134.108,
+    "height": 180.935,
+    "right": 627,
+    "bottom": 432.865
+  },
+  "viewport": {
+    "width": 1120,
+    "height": 630
+  },
+  "uiOccluded": false,
+  "uiPanel": {
+    "x": 866,
+    "y": 16,
+    "width": 238,
+    "height": 347.625
+  },
+  "authoredVisibleMeshCount": 31,
+  "proceduralVisibleMeshCount": 0,
+  "drawCalls": 34,
+  "drawCallsThisFrame": 34,
+  "drawCallsAvg120": 34,
+  "activeMeshes": 32,
+  "fps": 222.222,
+  "fpsAvg5s": 132.013,
+  "frameTimeP50": 4.9,
+  "frameTimeP95": 24.9,
+  "visibleMeshes": 31,
+  "visibleVertices": 2619,
+  "visibleTriangles": 1396
+}

@@ -1,0 +1,27 @@
+{
+  "stage": "R3-C",
+  "scope": "Consolidated clothing, survival gear, and identity meshes",
+  "before": {
+    "sourceCommit": "1fd6a2f",
+    "lod0AuthoredObjects": 10,
+    "lod0RenderPrimitives": 32,
+    "lod0Triangles": 1224,
+    "note": "body and weapon silhouette without a structured pack, harness, or goggles"
+  },
+  "after": {
+    "lod0AuthoredObjects": 12,
+    "lod0RenderPrimitives": 31,
+    "lod0Triangles": 1396,
+    "glbBytes": 342300,
+    "materials": 9,
+    "newMeshes": ["pack.heroSurvival", "head.goggles"],
+    "note": "purposeful gear meshes were consolidated and material slots reduced to stay under the 32-primitive ceiling"
+  },
+  "runtimeContract": {
+    "captureMode": "heroReview=1",
+    "modelSource": "GLB",
+    "proceduralVisibleMeshCount": 0,
+    "evidence": "twelve runtime PNG/JSON pairs in this directory"
+  },
+  "humanReview": "Commercial visual quality remains a human review decision; this stage records the authored scope and mesh budget."
+}
