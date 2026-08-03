@@ -196,8 +196,11 @@ def _cape_mesh(name, origin, materials, target="LOD0", detail=4):
         for y, width, z in levels:
             for column in range(columns):
                 fraction = column / (columns - 1) - 0.5
+                level_shift = -0.035 if y < 0.80 else 0.018
+                slit_offset = -0.020 if column == 0 and y < 0.72 else 0.0
+                local_x = fraction * width + level_shift + slit_offset
                 local_z = z + (0.035 if column == 1 else 0.0) * back
-                vertices.append((fraction * width - origin[0], y - origin[1], local_z - origin[2] + back * 0.025))
+                vertices.append((local_x - origin[0], y - origin[1], local_z - origin[2] + back * 0.025))
     faces = []
     material_indices = []
     stride = len(levels) * columns
@@ -395,8 +398,8 @@ def _add_hero_lods(root, mats):
         return marker
 
     def jacket_rings(level):
-        source = _r4_body_rings()
-        return sample(source[4:22], 10 if level == 1 else 6)
+        source = _r5_jacket_rings()
+        return sample(source, 10 if level == 1 else 6)
 
     def armor_rings():
         # A compact chest bib exposes the waist and leaves the shoulder line
@@ -505,6 +508,17 @@ def _add_hero_lods(root, mats):
                 {"rings": jacket_rings(level), "segments": gear_segments},
                 {"rings": armor_rings(), "segments": gear_segments},
                 {"rings": pack_rings(level), "segments": gear_segments},
+                {"rings": [
+                    (1.18, 0.18, 0.18, -0.48, 0.02, 2),
+                    (1.28, 0.23, 0.21, -0.50, 0.02, 2),
+                    (1.39, 0.20, 0.19, -0.47, 0.02, 2),
+                    (1.48, 0.13, 0.14, -0.42, 0.02, 2),
+                ], "segments": max(12, gear_segments // 2)},
+                {"rings": [
+                    (0.78, 0.030, 0.030, -0.16, 0.34, 1),
+                    (1.04, 0.032, 0.032, -0.16, 0.34, 1),
+                    (1.30, 0.028, 0.028, -0.16, 0.34, 1),
+                ], "segments": max(10, gear_segments // 2)},
             ],
             [mats["cloth"], mats["leather"], mats["metal"]],
             target=target,
@@ -580,10 +594,34 @@ def _build_mesh_parts(mats):
     # joined shoulder/chest armor, a shaped backpack and a helmet shell. This
     # replaces the old flat profile collection while staying within the
     # 8–16 render-object budget.
-    jacket = _loft_mesh(
+    jacket = _multi_loft_mesh(
         "coat.heroJacket",
-        _r5_jacket_rings(),
-        48,
+        [
+            {"segments": 48, "rings": _r5_jacket_rings()},
+            # Raised collar/fur volume: it is part of the jacket mesh rather
+            # than a floating accessory, so the shoulder-to-neck transition
+            # remains continuous in close-up and in the LOD reductions.
+            {"segments": 28, "rings": [
+                (1.47, 0.22, 0.23, 0.00, 0.00, 1),
+                (1.52, 0.28, 0.26, 0.00, 0.00, 1),
+                (1.58, 0.30, 0.27, 0.00, 0.00, 1),
+                (1.63, 0.24, 0.22, 0.00, 0.00, 1),
+            ]},
+            # Leather placket and belt strip are narrow elongated volumes in
+            # the shared coat mesh, avoiding extra render objects.
+            {"segments": 12, "rings": [
+                (0.90, 0.032, 0.032, -0.075, 0.285, 1),
+                (1.06, 0.034, 0.034, -0.075, 0.285, 1),
+                (1.22, 0.034, 0.034, -0.075, 0.285, 1),
+                (1.43, 0.028, 0.030, -0.075, 0.280, 1),
+            ]},
+            {"segments": 32, "rings": [
+                (0.84, 0.31, 0.255, 0.00, 0.015, 1),
+                (0.88, 0.34, 0.27, 0.00, 0.015, 1),
+                (0.93, 0.33, 0.26, 0.00, 0.015, 1),
+                (0.97, 0.29, 0.24, 0.00, 0.015, 1),
+            ]},
+        ],
         [mats["cloth"], mats["leather"]],
     )
 
@@ -600,18 +638,18 @@ def _build_mesh_parts(mats):
         "armor.heroPlates",
         [
             {"segments": 32, "override": armor_override, "rings": [
-                (1.24, 0.17, 0.18, -0.45, 0.01, 1),
-                (1.30, 0.21, 0.20, -0.45, 0.01, 1),
-                (1.36, 0.23, 0.21, -0.44, 0.01, 1),
-                (1.42, 0.21, 0.19, -0.43, 0.01, 1),
-                (1.48, 0.16, 0.16, -0.41, 0.01, 1),
+                (1.20, 0.20, 0.20, -0.48, 0.02, 1),
+                (1.27, 0.25, 0.23, -0.50, 0.02, 1),
+                (1.35, 0.27, 0.24, -0.49, 0.02, 1),
+                (1.43, 0.25, 0.22, -0.47, 0.02, 1),
+                (1.50, 0.18, 0.17, -0.44, 0.02, 1),
             ]},
             {"segments": 32, "override": armor_override, "rings": [
-                (1.24, 0.17, 0.18, 0.46, 0.01, 1),
-                (1.30, 0.21, 0.20, 0.46, 0.01, 1),
-                (1.36, 0.23, 0.21, 0.45, 0.01, 1),
-                (1.42, 0.21, 0.19, 0.44, 0.01, 1),
-                (1.48, 0.16, 0.16, 0.42, 0.01, 1),
+                (1.24, 0.14, 0.16, 0.43, 0.02, 1),
+                (1.30, 0.17, 0.18, 0.43, 0.02, 1),
+                (1.36, 0.18, 0.19, 0.42, 0.02, 1),
+                (1.42, 0.17, 0.17, 0.40, 0.02, 1),
+                (1.48, 0.13, 0.14, 0.37, 0.02, 1),
             ]},
             {"segments": 40, "override": armor_override, "rings": [
                 (1.06, 0.25, 0.075, 0.00, -0.27, 1),
@@ -620,6 +658,12 @@ def _build_mesh_parts(mats):
                 (1.22, 0.34, 0.095, 0.00, -0.29, 1),
                 (1.28, 0.31, 0.085, 0.00, -0.27, 1),
                 (1.32, 0.25, 0.065, 0.00, -0.24, 1),
+            ]},
+            {"segments": 24, "override": armor_override, "rings": [
+                (1.12, 0.075, 0.12, -0.67, -0.01, 1),
+                (1.22, 0.090, 0.14, -0.69, -0.01, 1),
+                (1.34, 0.085, 0.13, -0.67, -0.01, 1),
+                (1.43, 0.055, 0.10, -0.62, -0.01, 1),
             ]},
         ],
         [mats["cloth"], mats["metal"]],
@@ -644,6 +688,20 @@ def _build_mesh_parts(mats):
                 (1.36, 0.25, 0.10, 0.00, 0.62, 0),
                 (1.42, 0.20, 0.08, 0.00, 0.61, 0),
                 (1.46, 0.13, 0.055, 0.00, 0.58, 0),
+            ]},
+            # Two integrated load-bearing straps and one offset utility canister
+            # give the rear pack a functional silhouette without adding meshes.
+            {"segments": 12, "rings": [
+                (0.76, 0.035, 0.035, -0.17, 0.34, 0),
+                (0.94, 0.038, 0.038, -0.17, 0.34, 0),
+                (1.14, 0.038, 0.038, -0.17, 0.34, 0),
+                (1.34, 0.030, 0.030, -0.17, 0.34, 0),
+            ]},
+            {"segments": 20, "rings": [
+                (0.80, 0.085, 0.075, 0.18, 0.57, 0),
+                (0.88, 0.105, 0.085, 0.18, 0.58, 0),
+                (1.08, 0.105, 0.085, 0.18, 0.58, 0),
+                (1.16, 0.075, 0.065, 0.18, 0.56, 0),
             ]},
         ],
         [mats["leather"], mats["cloth"]],
@@ -1080,6 +1138,8 @@ def build():
     root["heroMeshPass"] = "R4-D-production-lods"
     root["heroMeshContract"] = "15 LOD0 meshes plus production LOD1/LOD2 identity forms from the mid-poly loop base"
     root["heroR4Stage"] = "R4-D"
+    root["heroR5Stage"] = "R5-B"
+    root["heroR5Scope"] = "survival clothing and equipment layering"
     root["topologyMethod"] = "authored anatomical and garment edge-loop lofts; no subdivision modifier"
     root["lod0TargetTriangles"] = "16000-25000"
     root["lod1TargetTriangles"] = "6000-10000"

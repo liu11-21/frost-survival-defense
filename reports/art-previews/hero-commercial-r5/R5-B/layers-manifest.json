@@ -1,0 +1,27 @@
+{
+  "stage": "R5-B",
+  "kind": "authored-material-layers",
+  "source": "assets-source/blender/characters/hero.blend",
+  "views": [
+    {
+      "name": "layers-front",
+      "file": "D:\\codex\\\u904a\u6232\u958b\u767c\\reports\\art-previews\\hero-commercial-r5\\R5-B\\layers-front.png"
+    },
+    {
+      "name": "layers-side",
+      "file": "D:\\codex\\\u904a\u6232\u958b\u767c\\reports\\art-previews\\hero-commercial-r5\\R5-B\\layers-side.png"
+    },
+    {
+      "name": "layers-back",
+      "file": "D:\\codex\\\u904a\u6232\u958b\u767c\\reports\\art-previews\\hero-commercial-r5\\R5-B\\layers-back.png"
+    },
+    {
+      "name": "layers-three-quarter",
+      "file": "D:\\codex\\\u904a\u6232\u958b\u767c\\reports\\art-previews\\hero-commercial-r5\\R5-B\\layers-three-quarter.png"
+    },
+    {
+      "name": "layers-close-up",
+      "file": "D:\\codex\\\u904a\u6232\u958b\u767c\\reports\\art-previews\\hero-commercial-r5\\R5-B\\layers-close-up.png"
+    }
+  ]
+}

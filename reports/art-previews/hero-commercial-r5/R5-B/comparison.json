@@ -1,0 +1,43 @@
+{
+  "stage": "R5-B",
+  "status": "clothing-equipment-review-ready",
+  "artIterations": 1,
+  "scope": "Hero survival clothing and equipment layering only",
+  "baseline": {
+    "lod0": { "triangles": 17176, "renderMeshes": 15 },
+    "lod1": { "triangles": 6848, "renderMeshes": 7, "renderPrimitives": 8 },
+    "lod2": { "triangles": 2060, "renderMeshes": 5, "renderPrimitives": 6 },
+    "glbBytes": 3775724,
+    "materials": 4,
+    "embeddedTextures": 1,
+    "skeletonBones": 18,
+    "animationClips": 7
+  },
+  "current": {
+    "lod0": { "triangles": 18176, "renderMeshes": 15 },
+    "lod1": { "triangles": 6996, "renderMeshes": 8, "renderPrimitives": 8 },
+    "lod2": { "triangles": 2208, "renderMeshes": 6, "renderPrimitives": 6 },
+    "glbBytes": 3932264,
+    "sourceBlendBytes": 764716,
+    "materials": 4,
+    "embeddedTextures": 1,
+    "skeletonBones": 18,
+    "animationClips": 7
+  },
+  "layerChanges": {
+    "coat": "tailored jacket shell with raised collar, leather placket and belt strip in one skinned mesh",
+    "armor": "asymmetric shoulder plates and a left utility guard integrated into the armor mesh",
+    "pack": "wider shallow survival pack with flap, load-bearing strap and offset canister in one mesh",
+    "cape": "slightly asymmetric coat hem and side slit retained in the existing cape mesh",
+    "lods": "production tiers retain coat, armor, pack, cape and weapon identity without new LOD0 render objects"
+  },
+  "evidence": [
+    "layers-front.png",
+    "layers-side.png",
+    "layers-back.png",
+    "layers-three-quarter.png",
+    "layers-close-up.png",
+    "layers-manifest.json"
+  ],
+  "humanReviewNote": "These plates document clothing and equipment layering only. Material, animation and commercial art quality remain a human artist decision."
+}

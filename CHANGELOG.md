@@ -550,3 +550,14 @@ flyingColossus, furnace and crossbow/turret before claiming display readiness.
 - Babylon/Vite runtime capture and production build remain blocked by the
   managed Windows `spawn EPERM` esbuild child-process restriction; no runtime
   pass or commercial-quality claim is made. See `runtime-blocked.md`.
+## 2026-08-03 | Hero-R5 B survival clothing and equipment checkpoint
+
+- Added a tailored jacket shell with raised collar, leather placket and belt
+  strip while keeping the existing Hero render-object budget.
+- Added asymmetric shoulder/utility armor and an integrated survival-pack
+  strap/canister layer, plus a restrained coat-hem asymmetry for movement read.
+- Rebuilt Hero GLB with Blender 5.2.0 LTS; the Hero validator remains pass with
+  four materials, one embedded 1024 atlas, 18 bones and seven clips.
+- Added R5-B front, side, back, three-quarter and close-up evidence plates.
+- This is a clothing/equipment checkpoint only; commercial art quality remains
+  open for human review.
