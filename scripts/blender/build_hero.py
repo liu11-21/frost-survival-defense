@@ -343,155 +343,187 @@ def _r4_leg_rings(side):
 
 
 def _add_hero_lods(root, mats):
-    """Add real identity-preserving LOD1/LOD2 authored silhouettes.
+    """Build production LODs from the R4 mid-poly loop volumes.
 
-    Each tier keeps the Hero's visual nouns—helmet/visor, torso, survival
-    pack, coat, goggles, and weapon—while reducing ring/section density. The
-    old head/body/cape/weapon-only proxies made the character lose identity at
-    distance and are intentionally not reused here.
+    LOD1 and LOD2 deliberately keep the complete identity read—helmet/visor,
+    shoulders, arms, legs, coat, survival pack, goggles and weapons—while
+    reducing loop density.  They are authored meshes, not the old six-piece
+    proxy stack, and stay under the runtime's existing LOD marker nodes.
     """
-    lod_parts = []
-    for level in (1, 2):
-        target = f"LOD{level}"
+
+    def sample(rings, count):
+        if len(rings) <= count:
+            return list(rings)
+        return [rings[round(index * (len(rings) - 1) / (count - 1))] for index in range(count)]
+
+    def tag(obj, level, marker, identity):
+        obj["lodLevel"] = level
+        obj["identityPart"] = identity
+        obj["generatedFrom"] = "R4-B-mid-poly-loop-base"
+        obj["productionLod"] = True
+        obj["proxyGeometry"] = False
+        obj.parent = marker
+        return obj
+
+    def marker_for(level):
         marker = empty(f"LOD{level}", (0, 0, 0), "EXPORT", "PLAIN_AXES")
         marker.parent = root
         marker["screenCoverage"] = 0.35 if level == 1 else 0.12
-        marker["generatedFrom"] = "R3-F-identity-preserving-lod"
-        marker["proxyGeometry"] = True
-        marker["identityFeatures"] = "helmet,visor,goggles,torso,pack,cape,weapon"
+        marker["generatedFrom"] = "R4-D-production-lod-from-mid-poly"
+        marker["proxyGeometry"] = False
+        marker["productionLod"] = True
+        marker["identityFeatures"] = "helmet,visor,shoulders,arms,legs,pack,coat,goggles,weapons"
+        return marker
 
+    def visor_rings():
+        return [
+            (1.68, 0.31, 0.045, 0.0, -0.31, 2),
+            (1.72, 0.35, 0.050, 0.0, -0.32, 2),
+            (1.80, 0.35, 0.050, 0.0, -0.32, 2),
+            (1.84, 0.31, 0.045, 0.0, -0.31, 2),
+        ]
+
+    def jacket_rings(level):
+        source = _r4_body_rings()
+        return sample(source[4:22], 10 if level == 1 else 6)
+
+    def armor_rings():
+        return [
+            (1.08, 0.42, 0.11, 0.0, -0.34, 2),
+            (1.16, 0.52, 0.13, 0.0, -0.35, 2),
+            (1.28, 0.54, 0.13, 0.0, -0.34, 2),
+            (1.38, 0.40, 0.10, 0.0, -0.30, 2),
+        ]
+
+    def pack_rings(level):
+        return [
+            (0.76, 0.28, 0.10, 0.0, 0.40, 1),
+            (0.88, 0.34, 0.13, 0.0, 0.42, 1),
+            (1.10, 0.36, 0.14, 0.0, 0.42, 1),
+            (1.28, 0.30, 0.11, 0.0, 0.36, 1),
+        ][: (4 if level == 1 else 3)]
+
+    def weapon_components(level):
+        blade = [
+            ([(-0.07, -0.18), (0.07, -0.18), (0.10, 0.10), (0.0, 0.70), (-0.10, 0.10)], 0.02, 0.09, 0),
+            ([(-0.04, -0.24), (0.04, -0.24), (0.04, -0.06), (-0.04, -0.06)], 0.02, 0.11, 1),
+        ]
         if level == 1:
-            segments = 18
-            body_rings = [
-                (0.56, 0.30, 0.27, 0.0, -0.04, 1),
-                (0.68, 0.34, 0.29, 0.0, -0.02, 1),
-                (0.82, 0.32, 0.27, 0.0, 0.00, 0),
-                (0.98, 0.38, 0.29, 0.0, 0.01, 0),
-                (1.14, 0.44, 0.32, 0.0, 0.02, 0),
-                (1.30, 0.49, 0.33, 0.0, 0.02, 2),
-                (1.43, 0.50, 0.32, 0.0, 0.01, 0),
-                (1.54, 0.36, 0.27, 0.0, 0.00, 0),
-            ]
-            head_segments = 14
-            head_rings = [
-                (1.50, 0.24, 0.23, 0, 0, 0),
-                (1.63, 0.29, 0.27, 0, 0, 0),
-                (1.78, 0.33, 0.30, 0, 0, 0),
-                (1.96, 0.33, 0.29, 0, 0, 2),
-                (2.10, 0.25, 0.23, 0, -0.01, 3),
-                (2.20, 0.08, 0.09, 0, -0.02, 3),
-            ]
-            cape_detail = 4
-        else:
-            segments = 12
-            body_rings = [
-                (0.56, 0.29, 0.26, 0.0, -0.04, 1),
-                (0.74, 0.33, 0.28, 0.0, -0.01, 1),
-                (0.92, 0.30, 0.26, 0.0, 0.00, 0),
-                (1.14, 0.41, 0.31, 0.0, 0.01, 0),
-                (1.34, 0.46, 0.32, 0.0, 0.01, 2),
-                (1.50, 0.35, 0.27, 0.0, 0.00, 0),
-            ]
-            head_segments = 10
-            head_rings = [
-                (1.50, 0.22, 0.22, 0, 0, 0),
-                (1.70, 0.28, 0.26, 0, 0, 0),
-                (1.94, 0.30, 0.28, 0, 0, 2),
-                (2.12, 0.18, 0.18, 0, -0.01, 3),
-            ]
-            cape_detail = 3
+            blade.append(([(-0.035, 0.12), (0.035, 0.12), (0.035, 0.45), (-0.035, 0.45)], 0.02, 0.08, 0))
+        return blade
 
-        body = _loft_mesh(
-            f"LOD{level}_PROXY_body",
-            body_rings,
-            segments,
+    lod_parts = []
+    for level in (1, 2):
+        target = f"LOD{level}"
+        marker = marker_for(level)
+        if level == 1:
+            body_segments, body_count = 40, 20
+            limb_segments, limb_count = 18, 20
+            head_segments, head_count = 28, 14
+            arm_segments, arm_count = 16, 18
+            gear_segments = 20
+        else:
+            body_segments, body_count = 24, 10
+            limb_segments, limb_count = 12, 10
+            head_segments, head_count = 18, 8
+            arm_segments, arm_count = 12, 8
+            gear_segments = 14
+
+        body = _multi_loft_mesh(
+            f"LOD{level}_PROD_body",
+            [
+                {"rings": sample(_r4_body_rings(), body_count), "segments": body_segments},
+                {"rings": sample(_r4_leg_rings(-1), limb_count), "segments": limb_segments},
+                {"rings": sample(_r4_leg_rings(1), limb_count), "segments": limb_segments},
+            ],
             [mats["cloth"], mats["leather"], mats["metal"]],
             target=target,
         )
-        body["lodLevel"] = level
-        body["identityPart"] = "torso"
-        body.parent = marker
+        tag(body, level, marker, "body-shoulders-legs")
 
-        def lod_head_override(_ring_index, _segment, _center_x, center_y, _center_z, current, _following):
-            return 2 if 1.60 <= center_y <= 1.88 else current[5]
-
-        head = _loft_mesh(
-            f"LOD{level}_PROXY_head",
-            head_rings,
-            head_segments,
-            [mats["skin"], mats["snow"], mats["cloth_dark"], mats["accent"]],
+        head = _multi_loft_mesh(
+            f"LOD{level}_PROD_head",
+            [
+                {"rings": sample(_r4_head_rings(), head_count), "segments": head_segments},
+                {"rings": sample(_r4_head_rings(), max(5, head_count - 4)), "segments": head_segments},
+                {"rings": visor_rings(), "segments": head_segments},
+            ],
+            [mats["cloth"], mats["metal"], mats["accent"], mats["accent"]],
             target=target,
-            override=lod_head_override,
         )
-        head["lodLevel"] = level
-        head["identityPart"] = "helmet-visor"
-        head.parent = marker
+        tag(head, level, marker, "helmet-visor-goggles")
 
-        gear_components = [
-            ([(-0.30, 1.34), (0.30, 1.34), (0.32, 0.88), (0.21, 0.74), (-0.21, 0.74), (-0.32, 0.88)], 0.42, 0.28, 0),
-            ([(-0.22, 1.34), (0.22, 1.34), (0.20, 1.24), (-0.20, 1.24)], 0.59, 0.07, 1),
-            ([(-0.34, 1.38), (-0.24, 1.40), (-0.08, 0.84), (-0.17, 0.82)], -0.29, 0.06, 1),
-            ([(0.34, 1.38), (0.24, 1.40), (0.08, 0.84), (0.17, 0.82)], -0.29, 0.06, 1),
-        ]
+        arms = _multi_loft_mesh(
+            f"LOD{level}_PROD_arms",
+            [
+                {"rings": sample(_r4_arm_rings(-1), arm_count), "segments": arm_segments},
+                {"rings": sample(_r4_arm_rings(1), arm_count), "segments": arm_segments},
+            ],
+            [mats["cloth"]],
+            target=target,
+        )
+        tag(arms, level, marker, "arms-sleeves")
+
         if level == 1:
-            gear_components.extend([
-                ([(-0.48, 1.04), (-0.36, 1.06), (-0.34, 0.82), (-0.48, 0.80)], -0.16, 0.14, 1),
-                ([(0.48, 1.04), (0.36, 1.06), (0.34, 0.82), (0.48, 0.80)], -0.16, 0.14, 1),
-            ])
-        gear = _profile_mesh(
-            f"LOD{level}_PROXY_gear",
-            gear_components,
-            [mats["cloth_dark"], mats["leather"], mats["metal"]],
+            legs = _multi_loft_mesh(
+                f"LOD{level}_PROD_legs",
+                [
+                    {"rings": sample(_r4_leg_rings(-1), limb_count), "segments": limb_segments},
+                    {"rings": sample(_r4_leg_rings(1), limb_count), "segments": limb_segments},
+                ],
+                [mats["leather"]],
+                target=target,
+            )
+            tag(legs, level, marker, "legs-boots")
+        else:
+            legs = None
+
+        gear = _multi_loft_mesh(
+            f"LOD{level}_PROD_gear",
+            [
+                {"rings": jacket_rings(level), "segments": gear_segments},
+                {"rings": armor_rings(), "segments": gear_segments},
+                {"rings": pack_rings(level), "segments": gear_segments},
+            ],
+            [mats["cloth"], mats["leather"], mats["metal"]],
             target=target,
         )
-        gear["lodLevel"] = level
-        gear["identityPart"] = "survival-pack-harness"
-        gear.parent = marker
+        tag(gear, level, marker, "coat-armor-pack")
 
-        goggles_components = [
-            ([(-0.27, 1.82), (-0.04, 1.82), (-0.04, 1.68), (-0.27, 1.68)], -0.275, 0.07, 0),
-            ([(0.04, 1.82), (0.27, 1.82), (0.27, 1.68), (0.04, 1.68)], -0.275, 0.07, 0),
-            ([(-0.29, 1.86), (0.29, 1.86), (0.29, 1.91), (-0.29, 1.91)], 0.02, 0.06, 0),
-        ]
         if level == 1:
-            goggles_components.append(([(-0.05, 1.77), (0.05, 1.77), (0.05, 1.70), (-0.05, 1.70)], -0.30, 0.05, 0))
-        goggles = _profile_mesh(
-            f"LOD{level}_PROXY_goggles",
-            goggles_components,
-            [mats["glow"]],
-            target=target,
-        )
-        goggles["lodLevel"] = level
-        goggles["identityPart"] = "goggles"
-        goggles.parent = marker
-
-        cape = _cape_mesh(
-            f"LOD{level}_PROXY_cape",
-            (0, 1.1, 0),
-            [mats["cloth_dark"], mats["leather"]],
-            target=target,
-            detail=cape_detail,
-        )
-        cape["lodLevel"] = level
-        cape["identityPart"] = "coat"
-        cape.parent = marker
+            cape = _cape_mesh(
+                f"LOD{level}_PROD_cape",
+                (0, 1.1, 0),
+                [mats["cloth"], mats["leather"]],
+                target=target,
+                detail=4,
+            )
+            tag(cape, level, marker, "coat-cape")
+            goggles = _profile_mesh(
+                f"LOD{level}_PROD_goggles",
+                [
+                    ([(-0.27, 1.82), (-0.04, 1.82), (-0.04, 1.68), (-0.27, 1.68)], -0.275, 0.07, 0),
+                    ([(0.04, 1.82), (0.27, 1.82), (0.27, 1.68), (0.04, 1.68)], -0.275, 0.07, 0),
+                ],
+                [mats["accent"]],
+                target=target,
+            )
+            tag(goggles, level, marker, "goggles")
 
         weapon = _profile_mesh(
-            f"LOD{level}_PROXY_weapon",
-            [
-                ([(-0.07, -0.16), (0.07, -0.16), (0.09, 0.10), (0.0, 0.70), (-0.09, 0.10)], 0.02, 0.09, 0),
-                ([(-0.025, -0.26), (0.025, -0.26), (0.025, -0.05), (-0.025, -0.05)], 0.0, 0.10, 1),
-            ] if level == 1 else [
-                ([(-0.07, -0.16), (0.07, -0.16), (0.09, 0.10), (0.0, 0.70), (-0.09, 0.10)], 0.02, 0.09, 0),
-            ],
-            [mats["metal_light"], mats["leather"]],
+            f"LOD{level}_PROD_weapon",
+            weapon_components(level),
+            [mats["metal"], mats["leather"]],
             origin=(0.56, 0.76, 0.16),
             target=target,
         )
-        weapon["lodLevel"] = level
-        weapon["identityPart"] = "melee-weapon"
-        weapon.parent = marker
-        lod_parts.extend((body, head, gear, goggles, cape, weapon))
+        tag(weapon, level, marker, "melee-ranged-weapons")
+        lod_parts.extend([body, head, arms, gear, weapon])
+        if legs:
+            lod_parts.append(legs)
+        if level == 1:
+            lod_parts.append(cape)
+            lod_parts.append(goggles)
     return lod_parts
 
 
@@ -872,6 +904,42 @@ def _hero_vertex_weights(object_name, position):
         amount = max(0.0, min(1.0, amount))
         return [(first, amount), (second, 1.0 - amount)]
 
+    # R4-D production LODs are kept under their marker nodes, but are also
+    # skinned so distance switching does not freeze the character in a bind
+    # pose. Combined arm/leg meshes choose the side from the authored x sign.
+    if name.startswith(("lod1_prod_", "lod2_prod_")):
+        if "head" in name:
+            return [("head", 1.0)]
+        if "weapon" in name:
+            return [("hand.R", 1.0)]
+        if "arms" in name:
+            side = "L" if x < 0 else "R"
+            if y >= 1.10:
+                return pair(f"upper_arm.{side}", f"lower_arm.{side}", (y - 1.10) / 0.22)
+            if y >= 0.78:
+                return pair(f"lower_arm.{side}", f"hand.{side}", (y - 0.78) / 0.32)
+            return [(f"hand.{side}", 1.0)]
+        if "body" in name:
+            if y >= 1.18:
+                return [("chest", 1.0)]
+            if y >= 0.86:
+                return pair("chest", "spine", (y - 0.86) / 0.32)
+            return pair("spine", "pelvis", max(0.0, min(1.0, (y - 0.58) / 0.28)))
+        if "legs" in name:
+            side = "L" if x < 0 else "R"
+            if y >= 0.42:
+                return pair(f"thigh.{side}", f"shin.{side}", (y - 0.42) / 0.24)
+            if y >= 0.10:
+                return pair(f"shin.{side}", f"foot.{side}", (y - 0.10) / 0.32)
+            return [(f"foot.{side}", 1.0)]
+        if "cape" in name:
+            return pair("spine", "pelvis", max(0.0, min(1.0, (y - 0.36) / 0.69)))
+        if "gear" in name:
+            if y >= 1.12:
+                return pair("chest", "spine", (y - 1.12) / 0.34)
+            return pair("spine", "pelvis", max(0.0, min(1.0, (y - 0.58) / 0.54)))
+        return [("spine", 1.0)]
+
     if name.startswith(("head.", "head", "face.")):
         return [("head", 1.0)]
     if name.startswith("weapon."):
@@ -929,12 +997,17 @@ def _hero_vertex_weights(object_name, position):
 
 
 def bind_hero_weighted(parts, skeleton):
-    """Bind Hero LOD0 meshes through Armature modifiers and vertex weights."""
+    """Bind Hero meshes through Armature modifiers and vertex weights.
+
+    Production LOD meshes retain their explicit LOD1/LOD2 marker parent while
+    still pointing their Armature modifier at the shared HeroSkeleton.
+    """
     valid_bones = {bone.name for bone in skeleton.data.bones}
     for obj in parts:
         if obj.type != "MESH":
             continue
         world_matrix = obj.matrix_world.copy()
+        lod_parent = obj.parent if obj.get("productionLod") else None
         skeleton_inverse = skeleton.matrix_world.inverted()
         # Resolve authored coordinates before changing the parent. This keeps
         # the envelope independent of the Babylon orientation correction on
@@ -951,8 +1024,12 @@ def bind_hero_weighted(parts, skeleton):
             total = sum(weight for _name, weight in weights) or 1.0
             for bone_name, weight in weights:
                 groups[bone_name].add([vertex_index], weight / total, "REPLACE")
-        obj.parent = skeleton
-        obj.parent_type = "OBJECT"
+        if lod_parent is None:
+            obj.parent = skeleton
+            obj.parent_type = "OBJECT"
+        else:
+            obj.parent = lod_parent
+            obj.parent_type = "OBJECT"
         obj.matrix_world = world_matrix
         modifier = obj.modifiers.get("HeroWeightedDeform") or obj.modifiers.new("HeroWeightedDeform", "ARMATURE")
         modifier.object = skeleton
@@ -974,6 +1051,15 @@ def collapse_hero_material_slots(objects, mats):
         name = obj.name.lower()
         if "goggle" in name or name.startswith("head.nose"):
             primary = mats["accent"]
+        elif name.startswith(("lod1_prod_head", "lod2_prod_head")):
+            # Production heads keep a second accent slot for the integrated
+            # visor band; this avoids reducing LOD identity to a blank dome.
+            obj.data.materials.clear()
+            obj.data.materials.append(mats["cloth"])
+            obj.data.materials.append(mats["accent"])
+            for polygon in obj.data.polygons:
+                polygon.material_index = 1 if 1.64 <= polygon.center.y <= 1.88 else 0
+            continue
         elif "weapon" in name or "armor" in name:
             primary = mats["metal"]
         elif "pack" in name or name.startswith("leg."):
@@ -1011,11 +1097,14 @@ def build():
     # this pass is a topology rebuild, not a new H1-H6 claim.
     root["commercialStage"] = "H6"
     root["commercialIteration"] = 2
-    root["heroMeshPass"] = "R4-B-commercial-clothing-equipment"
-    root["heroMeshContract"] = "15 LOD0 meshes; mid-poly body with continuous jacket, armor, backpack and helmet forms"
-    root["heroR4Stage"] = "R4-B"
+    root["heroMeshPass"] = "R4-D-production-lods"
+    root["heroMeshContract"] = "15 LOD0 meshes plus production LOD1/LOD2 identity forms from the mid-poly loop base"
+    root["heroR4Stage"] = "R4-D"
     root["topologyMethod"] = "authored anatomical and garment edge-loop lofts; no subdivision modifier"
     root["lod0TargetTriangles"] = "16000-25000"
+    root["lod1TargetTriangles"] = "6000-10000"
+    root["lod2TargetTriangles"] = "1500-3500"
+    root["lodBuildMethod"] = "production authored loop reductions from R4-B mid-poly volumes"
     root["animationReview"] = "R3-E weighted body envelopes with contact-safe locomotion and staged combat poses"
     root["feetGrounded"] = True
     root["orientationContract"] = "Babylon Y-up, forward +Z"
@@ -1028,7 +1117,7 @@ def build():
     skeleton = make_skeleton(root)
     skeleton.name = "HeroSkeleton"
     skeleton.data.name = "HeroSkeleton"
-    bind_hero_weighted(parts, skeleton)
+    bind_hero_weighted(parts + lod_parts, skeleton)
 
     socket_positions = {
         "weapon_socket.R": (0.62, 0.78, 0.20),
@@ -1104,7 +1193,7 @@ def build():
     output = os.path.abspath(os.path.join(HERE, "..", "..", "public", "assets", "models", "characters", "hero.glb"))
     save_source(source)
     export_glb(output)
-    print(f"Hero continuous mesh pass: LOD0={len(parts)} meshes, LOD1/LOD2 authored silhouette proxies={len(lod_parts)} meshes")
+    print(f"Hero production mesh pass: LOD0={len(parts)} meshes, LOD1/LOD2 authored production meshes={len(lod_parts)} meshes")
 
 
 if __name__ == "__main__":

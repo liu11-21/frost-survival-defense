@@ -510,3 +510,18 @@ flyingColossus, furnace and crossbow/turret before claiming display readiness.
 - Structural skinning checks pass; pose/clipping and commercial animation
   quality remain human review decisions. Production LOD work is deferred to
   R4-D.
+
+## 2026-08-03 | Hero-R4 D production LOD rebuild (runtime blocked)
+
+- Rebuilt LOD1 and LOD2 from the R4-B mid-poly loop volumes instead of the
+  previous low-density proxy stack. LOD1 is 7,980 triangles / 8 meshes and
+  LOD2 is 2,304 triangles / 5 meshes; both retain the Hero head/visor,
+  shoulders, limbs, survival gear and weapon identity.
+- Added `LOD*_PROD` runtime classification to Babylon's ModelLoader,
+  CharacterFactory and asset validators, and skinned the production tiers to
+  the existing 18-bone HeroSkeleton without changing LOD0 or other assets.
+- Added Blender LOD evidence under
+  `reports/art-previews/hero-commercial-r4/R4-D/`.
+- Babylon/Vite runtime capture and production build remain blocked by the
+  managed Windows `spawn EPERM` esbuild child-process restriction; no runtime
+  pass or commercial-quality claim is made. See `runtime-blocked.md`.

@@ -73,13 +73,13 @@ function parseGlb(buffer) {
 function validate(spec, glb) {
   const { json } = parseGlb(glb);
   const names = new Set((json.nodes ?? []).map((node) => node.name).filter(Boolean));
-  const lodProxyNodes = (json.nodes ?? []).filter((node) => {
+  const lodNodes = (json.nodes ?? []).filter((node) => {
     const name = String(node.name ?? "");
-    return (name.startsWith("LOD1_PROXY") || name.startsWith("LOD2_PROXY")) && node.mesh !== undefined;
+    return (name.startsWith("LOD1_PROXY") || name.startsWith("LOD2_PROXY") || name.startsWith("LOD1_PROD") || name.startsWith("LOD2_PROD")) && node.mesh !== undefined;
   });
   const lodProxies = {
-    LOD1: lodProxyNodes.filter((node) => String(node.name).startsWith("LOD1_PROXY")).length,
-    LOD2: lodProxyNodes.filter((node) => String(node.name).startsWith("LOD2_PROXY")).length,
+    LOD1: lodNodes.filter((node) => { const name = String(node.name); return name.startsWith("LOD1_PROXY") || name.startsWith("LOD1_PROD"); }).length,
+    LOD2: lodNodes.filter((node) => { const name = String(node.name); return name.startsWith("LOD2_PROXY") || name.startsWith("LOD2_PROD"); }).length,
   };
   const animationRecords = (json.animations ?? []).filter((animation) => animation.name);
   const animations = new Set(animationRecords.map((animation) => animation.name));
@@ -99,7 +99,7 @@ function validate(spec, glb) {
   for (const node of json.nodes ?? []) {
     if (node.mesh === undefined) continue;
     const name = String(node.name ?? "");
-    const tier = name.startsWith("LOD1_PROXY") ? "LOD1" : name.startsWith("LOD2_PROXY") ? "LOD2" : "LOD0";
+    const tier = name.startsWith("LOD1_PROXY") || name.startsWith("LOD1_PROD") ? "LOD1" : name.startsWith("LOD2_PROXY") || name.startsWith("LOD2_PROD") ? "LOD2" : "LOD0";
     for (const primitive of json.meshes?.[node.mesh]?.primitives ?? []) lodTriangles[tier] += primitiveTriangles(primitive);
   }
   const renderPrimitives = (json.meshes ?? []).flatMap((mesh) => mesh.primitives ?? []);
@@ -114,7 +114,7 @@ function validate(spec, glb) {
   if ((json.meshes ?? []).length < 2 || triangles < 24) warnings.push("Asset is too small to be a finished authored model.");
   if (!hasUv0) warnings.push("Authored UV channel TEXCOORD_0 is missing.");
   if (!hasColor0) warnings.push("Authored surface paint COLOR_0 is missing.");
-  if (lodProxies.LOD1 < 1 || lodProxies.LOD2 < 1) warnings.push("LOD1/LOD2 proxy geometry is missing.");
+  if (lodProxies.LOD1 < 1 || lodProxies.LOD2 < 1) warnings.push("LOD1/LOD2 geometry is missing.");
   const collisionNodes = (json.nodes ?? []).filter((node) => {
     const name = String(node.name ?? "").toLowerCase();
     return name.includes("col_") || name.includes("collision") || name.includes("collider");

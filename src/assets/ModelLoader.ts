@@ -42,8 +42,8 @@ export class ModelLoader {
     const proxyLevel = (mesh: AbstractMesh): 0 | 1 | 2 => {
       const segments = mesh.name.split(":");
       const name = segments[segments.length - 1] ?? mesh.name;
-      if (name.startsWith("LOD1_PROXY")) return 1;
-      if (name.startsWith("LOD2_PROXY")) return 2;
+      if (name.startsWith("LOD1_PROXY") || name.startsWith("LOD1_PROD")) return 1;
+      if (name.startsWith("LOD2_PROXY") || name.startsWith("LOD2_PROD")) return 2;
       return 0;
     };
     const lodMeshes: [AbstractMesh[], AbstractMesh[], AbstractMesh[]] = [[], [], []];

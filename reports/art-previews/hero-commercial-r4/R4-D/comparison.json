@@ -1,0 +1,54 @@
+{
+  "stage": "R4-D",
+  "iteration": 3,
+  "status": "partial-runtime-blocked",
+  "source": "Blender production LOD reduction from R4-B mid-poly loop volumes",
+  "baseline": {
+    "commit": "62a4dc3",
+    "lod0Vertices": 10486,
+    "lod0Triangles": 20852,
+    "lod0RenderMeshes": 15,
+    "lod1Triangles": 652,
+    "lod2Triangles": 360,
+    "glbBytes": 3199820,
+    "glbMeshes": 27
+  },
+  "current": {
+    "lod0Vertices": 10486,
+    "lod0Triangles": 20852,
+    "lod0RenderMeshes": 15,
+    "lod1Vertices": 4032,
+    "lod1Triangles": 7980,
+    "lod1RenderMeshes": 8,
+    "lod1GlbPrimitives": 9,
+    "lod2Vertices": 1178,
+    "lod2Triangles": 2304,
+    "lod2RenderMeshes": 5,
+    "lod2GlbPrimitives": 6,
+    "glbBytes": 4446252,
+    "glbNodes": 54,
+    "glbMeshes": 28,
+    "glbMaterials": 4,
+    "embeddedTextures": 1,
+    "skeletonBones": 18,
+    "animationClips": 7,
+    "skinnedPrimitives": 30
+  },
+  "deltas": {
+    "lod0Triangles": 0,
+    "lod1Triangles": 7328,
+    "lod2Triangles": 1944,
+    "glbBytes": 1246432,
+    "glbMeshes": 1
+  },
+  "review": {
+    "blender": [
+      "lod0-front.png",
+      "lod1-front.png",
+      "lod2-front.png",
+      "lod1-three-quarter.png"
+    ],
+    "runtime": null
+  },
+  "humanReviewNote": "Production LOD budgets and identity structure pass machine checks; commercial visual quality and Babylon runtime switching remain human/runtime verification items."
+}

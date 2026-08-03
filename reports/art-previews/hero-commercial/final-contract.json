@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-08-03T08:42:58.790Z",
+  "generatedAt": "2026-08-03T09:07:20.835Z",
   "asset": "hero",
   "sourcePath": "assets-source/blender/characters/hero.blend",
   "glbPath": "public/assets/models/characters/hero.glb",
@@ -33,10 +33,10 @@
   "artifact": {
     "status": "pass",
     "glb": {
-      "bytes": 3199820,
+      "bytes": 4446252,
       "assetVersion": "2.0",
-      "nodes": 53,
-      "meshes": 27,
+      "nodes": 54,
+      "meshes": 28,
       "materials": 4,
       "textures": 1,
       "skeletons": 1,
@@ -59,7 +59,7 @@
       },
       "roots": [
         {
-          "index": 52,
+          "index": 53,
           "name": "HeroRoot",
           "translation": [
             0,
@@ -80,11 +80,14 @@
           "extras": {
             "commercialStage": "H6",
             "commercialIteration": 2,
-            "heroMeshPass": "R4-B-commercial-clothing-equipment",
-            "heroMeshContract": "15 LOD0 meshes; mid-poly body with continuous jacket, armor, backpack and helmet forms",
-            "heroR4Stage": "R4-B",
+            "heroMeshPass": "R4-D-production-lods",
+            "heroMeshContract": "15 LOD0 meshes plus production LOD1/LOD2 identity forms from the mid-poly loop base",
+            "heroR4Stage": "R4-D",
             "topologyMethod": "authored anatomical and garment edge-loop lofts; no subdivision modifier",
             "lod0TargetTriangles": "16000-25000",
+            "lod1TargetTriangles": "6000-10000",
+            "lod2TargetTriangles": "1500-3500",
+            "lodBuildMethod": "production authored loop reductions from R4-B mid-poly volumes",
             "animationReview": "R3-E weighted body envelopes with contact-safe locomotion and staged combat poses",
             "feetGrounded": true,
             "orientationContract": "Babylon Y-up, forward +Z",
@@ -99,11 +102,14 @@
       "rootExtras": {
         "commercialStage": "H6",
         "commercialIteration": 2,
-        "heroMeshPass": "R4-B-commercial-clothing-equipment",
-        "heroMeshContract": "15 LOD0 meshes; mid-poly body with continuous jacket, armor, backpack and helmet forms",
-        "heroR4Stage": "R4-B",
+        "heroMeshPass": "R4-D-production-lods",
+        "heroMeshContract": "15 LOD0 meshes plus production LOD1/LOD2 identity forms from the mid-poly loop base",
+        "heroR4Stage": "R4-D",
         "topologyMethod": "authored anatomical and garment edge-loop lofts; no subdivision modifier",
         "lod0TargetTriangles": "16000-25000",
+        "lod1TargetTriangles": "6000-10000",
+        "lod2TargetTriangles": "1500-3500",
+        "lodBuildMethod": "production authored loop reductions from R4-B mid-poly volumes",
         "animationReview": "R3-E weighted body envelopes with contact-safe locomotion and staged combat poses",
         "feetGrounded": true,
         "orientationContract": "Babylon Y-up, forward +Z",
@@ -113,31 +119,32 @@
         "heroAtlasResolution": 1024,
         "heroMaterialCount": 4
       },
-      "triangles": 21864,
+      "triangles": 31136,
       "lodTriangles": {
         "LOD0": 20852,
-        "LOD1": 652,
-        "LOD2": 360
+        "LOD1": 7980,
+        "LOD2": 2304
       },
       "lodIdentityParts": [
-        "LOD1_PROXY_body",
-        "LOD1_PROXY_cape",
-        "LOD1_PROXY_gear",
-        "LOD1_PROXY_goggles",
-        "LOD1_PROXY_head",
-        "LOD1_PROXY_weapon",
-        "LOD2_PROXY_body",
-        "LOD2_PROXY_cape",
-        "LOD2_PROXY_gear",
-        "LOD2_PROXY_goggles",
-        "LOD2_PROXY_head",
-        "LOD2_PROXY_weapon"
+        "LOD1_PROD_arms",
+        "LOD1_PROD_body",
+        "LOD1_PROD_cape",
+        "LOD1_PROD_gear",
+        "LOD1_PROD_goggles",
+        "LOD1_PROD_head",
+        "LOD1_PROD_legs",
+        "LOD1_PROD_weapon",
+        "LOD2_PROD_arms",
+        "LOD2_PROD_body",
+        "LOD2_PROD_gear",
+        "LOD2_PROD_head",
+        "LOD2_PROD_weapon"
       ],
-      "renderPrimitiveCount": 27,
-      "skinnedPrimitives": 15,
+      "renderPrimitiveCount": 30,
+      "skinnedPrimitives": 30,
       "lodRenderPrimitives": {
         "LOD0": 15,
-        "LOD1": 6,
+        "LOD1": 9,
         "LOD2": 6
       },
       "images": [
@@ -249,7 +256,7 @@
       "renderableCollisionNodes": []
     },
     "source": {
-      "bytes": 714894,
+      "bytes": 845657,
       "exists": true
     },
     "checks": {

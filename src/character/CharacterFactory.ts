@@ -233,7 +233,7 @@ export class CharacterAvatar {
         mesh.setEnabled(true);
         continue;
       }
-      const tier = name.startsWith("LOD1_PROXY") ? 1 : name.startsWith("LOD2_PROXY") ? 2 : 0;
+      const tier = name.startsWith("LOD1_PROXY") || name.startsWith("LOD1_PROD") ? 1 : name.startsWith("LOD2_PROXY") || name.startsWith("LOD2_PROD") ? 2 : 0;
       const enabled = tier === this.reviewLod;
       mesh.isVisible = enabled;
       mesh.setEnabled(enabled);
@@ -243,7 +243,7 @@ export class CharacterAvatar {
     // review override must activate the selected group as well as its meshes.
     for (const mesh of this.authoredMeshes) {
       const name = mesh.name.split(":").pop() ?? mesh.name;
-      const tier = name.startsWith("LOD1_PROXY") ? 1 : name.startsWith("LOD2_PROXY") ? 2 : 0;
+      const tier = name.startsWith("LOD1_PROXY") || name.startsWith("LOD1_PROD") ? 1 : name.startsWith("LOD2_PROXY") || name.startsWith("LOD2_PROD") ? 2 : 0;
       if (tier === 0) continue;
       let parent = mesh.parent;
       while (parent && parent !== this.rig.root) {

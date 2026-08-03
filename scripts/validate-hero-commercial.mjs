@@ -98,16 +98,20 @@ function buildAudit(glb, sourceBytes) {
   const triangles = primitives.reduce((sum, primitive) => sum + trianglesForPrimitive(primitive), 0);
   const lodRenderPrimitives = { LOD0: 0, LOD1: 0, LOD2: 0 };
   const lodTriangles = { LOD0: 0, LOD1: 0, LOD2: 0 };
-  const lodProxyNames = nodes
+  const lodProductionNames = nodes
     .filter((node) => node.mesh !== undefined)
     .map((node) => String(node.name ?? ""))
-    .filter((name) => name.startsWith("LOD1_PROXY") || name.startsWith("LOD2_PROXY"));
-  const lodIdentityParts = ["body", "head", "gear", "goggles", "cape", "weapon"];
-  const lodIdentity = [1, 2].every((level) => lodIdentityParts.every((part) => lodProxyNames.some((name) => name.startsWith(`LOD${level}_PROXY_${part}`))));
+    .filter((name) => name.startsWith("LOD1_PROXY") || name.startsWith("LOD2_PROXY") || name.startsWith("LOD1_PROD") || name.startsWith("LOD2_PROD"));
+  const lodPrefix = (level) => [`LOD${level}_PROD`, `LOD${level}_PROXY`];
+  const lodIdentityParts = ["body", "head", "arms", "legs", "gear", "weapon"];
+  const lodIdentity = [1, 2].every((level) => {
+    const requiredParts = level === 1 ? lodIdentityParts : ["body", "head", "arms", "gear", "weapon"];
+    return requiredParts.every((part) => lodProductionNames.some((name) => lodPrefix(level).some((prefix) => name.startsWith(`${prefix}_${part}`))));
+  });
   for (const node of nodes) {
     if (node.mesh === undefined) continue;
     const name = String(node.name ?? "");
-    const tier = name.startsWith("LOD1_PROXY") ? "LOD1" : name.startsWith("LOD2_PROXY") ? "LOD2" : "LOD0";
+    const tier = name.startsWith("LOD1_PROXY") || name.startsWith("LOD1_PROD") ? "LOD1" : name.startsWith("LOD2_PROXY") || name.startsWith("LOD2_PROD") ? "LOD2" : "LOD0";
     for (const primitive of json.meshes?.[node.mesh]?.primitives ?? []) {
       lodRenderPrimitives[tier] += 1;
       lodTriangles[tier] += trianglesForPrimitive(primitive);
@@ -179,7 +183,7 @@ function buildAudit(glb, sourceBytes) {
       rootExtras,
       triangles,
       lodTriangles,
-      lodIdentityParts: lodProxyNames,
+      lodIdentityParts: lodProductionNames,
       renderPrimitiveCount: primitives.length,
       skinnedPrimitives,
       lodRenderPrimitives,
