@@ -14,6 +14,12 @@
 - Added evidence-only key-pose renders and `comparison.json` under `reports/art-previews/hero-commercial-r5/R5-F/`.
 - Static Hero validation and the full authored asset validation remain passing. Commercial animation quality remains a human artist decision.
 
+## 2026-08-03 | Hero-R5 G gameplay runtime review checkpoint
+
+- Captured the final Hero-R5 GLB in the formal Babylon `heroReview=1` scene through the Linux GitHub Actions runner, with gameplay/front/side/back/three-quarter/close-up cameras, LOD0/LOD1/LOD2, and all seven animation states.
+- Preserved the runtime evidence and 21-frame animation sequence under `reports/art-previews/hero-commercial-r5/R5-G/`, including `runtime-result.json`, empty console/page/request error lists, and screen-space visibility metadata.
+- This checkpoint proves the latest Hero is visible in the formal runtime without procedural overlap; it does not claim that commercial art quality has passed human review.
+
 ## 2026-08-03｜Hero-R5 A proportions and silhouette checkpoint
 
 - 以現有連續 loop 網格為基礎完成 R5-A 比例校正：縮小頭盔冠部、拉長軀幹、收斂肩線與腰線、延長腿部並保留厚實救援靴，背包同步改為略寬但更薄的輪廓。

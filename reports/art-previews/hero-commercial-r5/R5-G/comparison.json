@@ -1,0 +1,56 @@
+{
+  "stage": "R5-G",
+  "status": "gameplay-runtime-review-ready",
+  "artIterations": 1,
+  "scope": "Formal Babylon gameplay review evidence for the final Hero-R5 checkpoint",
+  "sourceCommit": "fb6baa8 art(hero): polish locomotion and combat performance",
+  "runtimeVerification": {
+    "workflow": "Hero Runtime Verification",
+    "prRun": 30828946183,
+    "prUrl": "https://github.com/liu11-21/frost-survival-defense/actions/runs/30828946183",
+    "pushRun": 30828939261,
+    "pushUrl": "https://github.com/liu11-21/frost-survival-defense/actions/runs/30828939261",
+    "artifactName": "hero-runtime-verification-30828939261",
+    "artifactId": 8862157735,
+    "captureMode": "heroReview=1",
+    "viewport": { "width": 1600, "height": 900, "deviceScaleFactor": 1 },
+    "passed": true
+  },
+  "runtimeContract": {
+    "modelSource": "GLB",
+    "proceduralVisibleMeshes": 0,
+    "authoredVisibleMeshes": { "LOD0": 15, "LOD1": 8, "LOD2": 6 },
+    "visibleTriangles": { "LOD0": 19064, "LOD1": 7324, "LOD2": 2656 },
+    "screenBoundsVisible": true,
+    "uiOccluded": false,
+    "requiredCameras": ["gameplay", "front", "left-side", "back", "three-quarter", "close-up"],
+    "requiredAnimations": ["Idle", "Walk", "Run", "MeleeAttack", "RangedAttack", "Hit", "Death"],
+    "requiredLods": ["LOD0", "LOD1", "LOD2"],
+    "captureCount": 16,
+    "sequenceFrameCount": 21,
+    "consoleErrors": 0,
+    "pageErrors": 0,
+    "requestFailures": 0
+  },
+  "evidence": {
+    "reviewScreenshots": [
+      "hero-review-gameplay.png",
+      "hero-review-front.png",
+      "hero-review-side.png",
+      "hero-review-back.png",
+      "hero-review-three-quarter.png",
+      "hero-review-close-up.png",
+      "hero-review-melee.png",
+      "hero-review-ranged.png",
+      "hero-review-hit.png",
+      "hero-review-death.png",
+      "hero-review-lod0.png",
+      "hero-review-lod1.png",
+      "hero-review-lod2.png"
+    ],
+    "sequenceFrames": "sequence-001-idle-1.png through sequence-021-death-3.png",
+    "runtimeResult": "runtime-result.json",
+    "consoleLog": "console.log"
+  },
+  "humanReviewNote": "These are formal Babylon runtime captures from heroReview=1 and prove visibility, GLB source, LODs, animations and absence of procedural overlap. Commercial art quality remains a human artist decision; this report does not claim commercial quality passed."
+}

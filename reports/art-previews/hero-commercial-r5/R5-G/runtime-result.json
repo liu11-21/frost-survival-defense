@@ -1,0 +1,3137 @@
+{
+  "captureMode": "heroReview=1",
+  "url": "http://127.0.0.1:4173/?heroReview=1",
+  "viewport": {
+    "width": 1600,
+    "height": 900,
+    "deviceScaleFactor": 1
+  },
+  "passed": true,
+  "captures": [
+    {
+      "captureId": "hero-review-gameplay",
+      "capturedAt": "2026-08-03T15:47:10.945Z",
+      "screenshot": "/home/runner/work/frost-survival-defense/frost-survival-defense/reports/hero-runtime-ci/hero-review-gameplay.png",
+      "camera": "gameplay",
+      "animation": "Idle",
+      "lod": "LOD0",
+      "state": {
+        "ready": true,
+        "modelSource": "GLB",
+        "currentCamera": "gameplay",
+        "currentAnimation": "Idle",
+        "currentLod": "LOD0",
+        "authoredVisibleMeshes": 15,
+        "proceduralVisibleMeshes": 0,
+        "visibleVertices": 36550,
+        "visibleTriangles": 19064,
+        "heroWorldPosition": {
+          "x": 0,
+          "y": 0,
+          "z": 0
+        },
+        "heroScreenBounds": {
+          "x": 624.738,
+          "y": 352.731,
+          "width": 273.303,
+          "height": 275.291,
+          "visible": true
+        },
+        "animationGroups": [
+          "hero.player:Idle",
+          "hero.player:Walk",
+          "hero.player:Run",
+          "hero.player:MeleeAttack",
+          "hero.player:RangedAttack",
+          "hero.player:Hit",
+          "hero.player:Death"
+        ],
+        "consoleErrors": [],
+        "uiOccluded": false
+      },
+      "metadata": {
+        "captureMode": "heroReview=1",
+        "cameraMode": "gameplay",
+        "animation": "Idle",
+        "lod": 0,
+        "modelSource": "GLB",
+        "heroWorldPosition": {
+          "x": 0,
+          "y": 0,
+          "z": 0
+        },
+        "screenSpaceBoundingBox": {
+          "x": 624.738,
+          "y": 352.731,
+          "width": 273.303,
+          "height": 275.291,
+          "right": 898.041,
+          "bottom": 628.022
+        },
+        "viewport": {
+          "width": 1600,
+          "height": 900
+        },
+        "uiOccluded": false,
+        "uiPanel": {
+          "x": 1346,
+          "y": 16,
+          "width": 238,
+          "height": 341.625
+        },
+        "authoredVisibleMeshCount": 15,
+        "proceduralVisibleMeshCount": 0,
+        "drawCalls": 18,
+        "drawCallsThisFrame": 18,
+        "drawCallsAvg120": 18,
+        "activeMeshes": 16,
+        "fps": 63.291,
+        "fpsAvg5s": 53.476,
+        "frameTimeP50": 16.3,
+        "frameTimeP95": 24,
+        "visibleMeshes": 15,
+        "visibleVertices": 36550,
+        "visibleTriangles": 19064
+      }
+    },
+    {
+      "captureId": "hero-review-front",
+      "capturedAt": "2026-08-03T15:47:14.028Z",
+      "screenshot": "/home/runner/work/frost-survival-defense/frost-survival-defense/reports/hero-runtime-ci/hero-review-front.png",
+      "camera": "front",
+      "animation": "Idle",
+      "lod": "LOD0",
+      "state": {
+        "ready": true,
+        "modelSource": "GLB",
+        "currentCamera": "front",
+        "currentAnimation": "Idle",
+        "currentLod": "LOD0",
+        "authoredVisibleMeshes": 15,
+        "proceduralVisibleMeshes": 0,
+        "visibleVertices": 36550,
+        "visibleTriangles": 19064,
+        "heroWorldPosition": {
+          "x": 0,
+          "y": 0,
+          "z": 0
+        },
+        "heroScreenBounds": {
+          "x": 590.463,
+          "y": 340.689,
+          "width": 326.622,
+          "height": 330.567,
+          "visible": true
+        },
+        "animationGroups": [
+          "hero.player:Idle",
+          "hero.player:Walk",
+          "hero.player:Run",
+          "hero.player:MeleeAttack",
+          "hero.player:RangedAttack",
+          "hero.player:Hit",
+          "hero.player:Death"
+        ],
+        "consoleErrors": [],
+        "uiOccluded": false
+      },
+      "metadata": {
+        "captureMode": "heroReview=1",
+        "cameraMode": "front",
+        "animation": "Idle",
+        "lod": 0,
+        "modelSource": "GLB",
+        "heroWorldPosition": {
+          "x": 0,
+          "y": 0,
+          "z": 0
+        },
+        "screenSpaceBoundingBox": {
+          "x": 590.463,
+          "y": 340.689,
+          "width": 326.622,
+          "height": 330.567,
+          "right": 917.085,
+          "bottom": 671.256
+        },
+        "viewport": {
+          "width": 1600,
+          "height": 900
+        },
+        "uiOccluded": false,
+        "uiPanel": {
+          "x": 1346,
+          "y": 16,
+          "width": 238,
+          "height": 341.625
+        },
+        "authoredVisibleMeshCount": 15,
+        "proceduralVisibleMeshCount": 0,
+        "drawCalls": 18,
+        "drawCallsThisFrame": 18,
+        "drawCallsAvg120": 18,
+        "activeMeshes": 16,
+        "fps": 140.845,
+        "fpsAvg5s": 102.041,
+        "frameTimeP50": 8.4,
+        "frameTimeP95": 13.9,
+        "visibleMeshes": 15,
+        "visibleVertices": 36550,
+        "visibleTriangles": 19064
+      }
+    },
+    {
+      "captureId": "hero-review-side",
+      "capturedAt": "2026-08-03T15:47:16.899Z",
+      "screenshot": "/home/runner/work/frost-survival-defense/frost-survival-defense/reports/hero-runtime-ci/hero-review-side.png",
+      "camera": "left-side",
+      "animation": "Idle",
+      "lod": "LOD0",
+      "state": {
+        "ready": true,
+        "modelSource": "GLB",
+        "currentCamera": "left-side",
+        "currentAnimation": "Idle",
+        "currentLod": "LOD0",
+        "authoredVisibleMeshes": 15,
+        "proceduralVisibleMeshes": 0,
+        "visibleVertices": 36550,
+        "visibleTriangles": 19064,
+        "heroWorldPosition": {
+          "x": 0,
+          "y": 0,
+          "z": 0
+        },
+        "heroScreenBounds": {
+          "x": 692.395,
+          "y": 339.738,
+          "width": 194.957,
+          "height": 351.075,
+          "visible": true
+        },
+        "animationGroups": [
+          "hero.player:Idle",
+          "hero.player:Walk",
+          "hero.player:Run",
+          "hero.player:MeleeAttack",
+          "hero.player:RangedAttack",
+          "hero.player:Hit",
+          "hero.player:Death"
+        ],
+        "consoleErrors": [],
+        "uiOccluded": false
+      },
+      "metadata": {
+        "captureMode": "heroReview=1",
+        "cameraMode": "left-side",
+        "animation": "Idle",
+        "lod": 0,
+        "modelSource": "GLB",
+        "heroWorldPosition": {
+          "x": 0,
+          "y": 0,
+          "z": 0
+        },
+        "screenSpaceBoundingBox": {
+          "x": 692.395,
+          "y": 339.738,
+          "width": 194.957,
+          "height": 351.075,
+          "right": 887.352,
+          "bottom": 690.813
+        },
+        "viewport": {
+          "width": 1600,
+          "height": 900
+        },
+        "uiOccluded": false,
+        "uiPanel": {
+          "x": 1346,
+          "y": 16,
+          "width": 238,
+          "height": 341.625
+        },
+        "authoredVisibleMeshCount": 15,
+        "proceduralVisibleMeshCount": 0,
+        "drawCalls": 18,
+        "drawCallsThisFrame": 18,
+        "drawCallsAvg120": 18,
+        "activeMeshes": 16,
+        "fps": 128.205,
+        "fpsAvg5s": 128.755,
+        "frameTimeP50": 7.8,
+        "frameTimeP95": 8.1,
+        "visibleMeshes": 15,
+        "visibleVertices": 36550,
+        "visibleTriangles": 19064
+      }
+    },
+    {
+      "captureId": "hero-review-back",
+      "capturedAt": "2026-08-03T15:47:19.923Z",
+      "screenshot": "/home/runner/work/frost-survival-defense/frost-survival-defense/reports/hero-runtime-ci/hero-review-back.png",
+      "camera": "back",
+      "animation": "Idle",
+      "lod": "LOD0",
+      "state": {
+        "ready": true,
+        "modelSource": "GLB",
+        "currentCamera": "back",
+        "currentAnimation": "Idle",
+        "currentLod": "LOD0",
+        "authoredVisibleMeshes": 15,
+        "proceduralVisibleMeshes": 0,
+        "visibleVertices": 36550,
+        "visibleTriangles": 19064,
+        "heroWorldPosition": {
+          "x": 0,
+          "y": 0,
+          "z": 0
+        },
+        "heroScreenBounds": {
+          "x": 684.696,
+          "y": 340.578,
+          "width": 304.798,
+          "height": 351.019,
+          "visible": true
+        },
+        "animationGroups": [
+          "hero.player:Idle",
+          "hero.player:Walk",
+          "hero.player:Run",
+          "hero.player:MeleeAttack",
+          "hero.player:RangedAttack",
+          "hero.player:Hit",
+          "hero.player:Death"
+        ],
+        "consoleErrors": [],
+        "uiOccluded": false
+      },
+      "metadata": {
+        "captureMode": "heroReview=1",
+        "cameraMode": "back",
+        "animation": "Idle",
+        "lod": 0,
+        "modelSource": "GLB",
+        "heroWorldPosition": {
+          "x": 0,
+          "y": 0,
+          "z": 0
+        },
+        "screenSpaceBoundingBox": {
+          "x": 684.696,
+          "y": 340.578,
+          "width": 304.798,
+          "height": 351.019,
+          "right": 989.495,
+          "bottom": 691.597
+        },
+        "viewport": {
+          "width": 1600,
+          "height": 900
+        },
+        "uiOccluded": false,
+        "uiPanel": {
+          "x": 1346,
+          "y": 16,
+          "width": 238,
+          "height": 341.625
+        },
+        "authoredVisibleMeshCount": 15,
+        "proceduralVisibleMeshCount": 0,
+        "drawCalls": 18,
+        "drawCallsThisFrame": 18,
+        "drawCallsAvg120": 18,
+        "activeMeshes": 16,
+        "fps": 149.254,
+        "fpsAvg5s": 153.846,
+        "frameTimeP50": 6.7,
+        "frameTimeP95": 7.2,
+        "visibleMeshes": 15,
+        "visibleVertices": 36550,
+        "visibleTriangles": 19064
+      }
+    },
+    {
+      "captureId": "hero-review-three-quarter",
+      "capturedAt": "2026-08-03T15:47:22.829Z",
+      "screenshot": "/home/runner/work/frost-survival-defense/frost-survival-defense/reports/hero-runtime-ci/hero-review-three-quarter.png",
+      "camera": "three-quarter",
+      "animation": "Idle",
+      "lod": "LOD0",
+      "state": {
+        "ready": true,
+        "modelSource": "GLB",
+        "currentCamera": "three-quarter",
+        "currentAnimation": "Idle",
+        "currentLod": "LOD0",
+        "authoredVisibleMeshes": 15,
+        "proceduralVisibleMeshes": 0,
+        "visibleVertices": 36550,
+        "visibleTriangles": 19064,
+        "heroWorldPosition": {
+          "x": 0,
+          "y": 0,
+          "z": 0
+        },
+        "heroScreenBounds": {
+          "x": 653.846,
+          "y": 357.647,
+          "width": 234.168,
+          "height": 278.972,
+          "visible": true
+        },
+        "animationGroups": [
+          "hero.player:Idle",
+          "hero.player:Walk",
+          "hero.player:Run",
+          "hero.player:MeleeAttack",
+          "hero.player:RangedAttack",
+          "hero.player:Hit",
+          "hero.player:Death"
+        ],
+        "consoleErrors": [],
+        "uiOccluded": false
+      },
+      "metadata": {
+        "captureMode": "heroReview=1",
+        "cameraMode": "three-quarter",
+        "animation": "Idle",
+        "lod": 0,
+        "modelSource": "GLB",
+        "heroWorldPosition": {
+          "x": 0,
+          "y": 0,
+          "z": 0
+        },
+        "screenSpaceBoundingBox": {
+          "x": 653.846,
+          "y": 357.647,
+          "width": 234.168,
+          "height": 278.972,
+          "right": 888.014,
+          "bottom": 636.619
+        },
+        "viewport": {
+          "width": 1600,
+          "height": 900
+        },
+        "uiOccluded": false,
+        "uiPanel": {
+          "x": 1346,
+          "y": 16,
+          "width": 238,
+          "height": 341.625
+        },
+        "authoredVisibleMeshCount": 15,
+        "proceduralVisibleMeshCount": 0,
+        "drawCalls": 18,
+        "drawCallsThisFrame": 18,
+        "drawCallsAvg120": 18,
+        "activeMeshes": 16,
+        "fps": 185.185,
+        "fpsAvg5s": 103.448,
+        "frameTimeP50": 11.2,
+        "frameTimeP95": 12.4,
+        "visibleMeshes": 15,
+        "visibleVertices": 36550,
+        "visibleTriangles": 19064
+      }
+    },
+    {
+      "captureId": "hero-review-close-up",
+      "capturedAt": "2026-08-03T15:47:27.550Z",
+      "screenshot": "/home/runner/work/frost-survival-defense/frost-survival-defense/reports/hero-runtime-ci/hero-review-close-up.png",
+      "camera": "close-up",
+      "animation": "Idle",
+      "lod": "LOD0",
+      "state": {
+        "ready": true,
+        "modelSource": "GLB",
+        "currentCamera": "close-up",
+        "currentAnimation": "Idle",
+        "currentLod": "LOD0",
+        "authoredVisibleMeshes": 15,
+        "proceduralVisibleMeshes": 0,
+        "visibleVertices": 36550,
+        "visibleTriangles": 19064,
+        "heroWorldPosition": {
+          "x": 0,
+          "y": 0,
+          "z": 0
+        },
+        "heroScreenBounds": {
+          "x": 408.103,
+          "y": 253.551,
+          "width": 608.384,
+          "height": 590.956,
+          "visible": true
+        },
+        "animationGroups": [
+          "hero.player:Idle",
+          "hero.player:Walk",
+          "hero.player:Run",
+          "hero.player:MeleeAttack",
+          "hero.player:RangedAttack",
+          "hero.player:Hit",
+          "hero.player:Death"
+        ],
+        "consoleErrors": [],
+        "uiOccluded": false
+      },
+      "metadata": {
+        "captureMode": "heroReview=1",
+        "cameraMode": "close-up",
+        "animation": "Idle",
+        "lod": 0,
+        "modelSource": "GLB",
+        "heroWorldPosition": {
+          "x": 0,
+          "y": 0,
+          "z": 0
+        },
+        "screenSpaceBoundingBox": {
+          "x": 408.103,
+          "y": 253.551,
+          "width": 608.384,
+          "height": 590.956,
+          "right": 1016.487,
+          "bottom": 844.506
+        },
+        "viewport": {
+          "width": 1600,
+          "height": 900
+        },
+        "uiOccluded": false,
+        "uiPanel": {
+          "x": 1346,
+          "y": 16,
+          "width": 238,
+          "height": 341.625
+        },
+        "authoredVisibleMeshCount": 15,
+        "proceduralVisibleMeshCount": 0,
+        "drawCalls": 18,
+        "drawCallsThisFrame": 18,
+        "drawCallsAvg120": 18,
+        "activeMeshes": 16,
+        "fps": 106.383,
+        "fpsAvg5s": 81.301,
+        "frameTimeP50": 10,
+        "frameTimeP95": 17.5,
+        "visibleMeshes": 15,
+        "visibleVertices": 36550,
+        "visibleTriangles": 19064
+      }
+    },
+    {
+      "captureId": "hero-review-animation-idle",
+      "capturedAt": "2026-08-03T15:47:30.183Z",
+      "screenshot": "/home/runner/work/frost-survival-defense/frost-survival-defense/reports/hero-runtime-ci/hero-review-animation-idle.png",
+      "camera": "three-quarter",
+      "animation": "Idle",
+      "lod": "LOD0",
+      "state": {
+        "ready": true,
+        "modelSource": "GLB",
+        "currentCamera": "three-quarter",
+        "currentAnimation": "Idle",
+        "currentLod": "LOD0",
+        "authoredVisibleMeshes": 15,
+        "proceduralVisibleMeshes": 0,
+        "visibleVertices": 36550,
+        "visibleTriangles": 19064,
+        "heroWorldPosition": {
+          "x": 0,
+          "y": 0,
+          "z": 0
+        },
+        "heroScreenBounds": {
+          "x": 653.846,
+          "y": 357.647,
+          "width": 234.168,
+          "height": 278.972,
+          "visible": true
+        },
+        "animationGroups": [
+          "hero.player:Idle",
+          "hero.player:Walk",
+          "hero.player:Run",
+          "hero.player:MeleeAttack",
+          "hero.player:RangedAttack",
+          "hero.player:Hit",
+          "hero.player:Death"
+        ],
+        "consoleErrors": [],
+        "uiOccluded": false
+      },
+      "metadata": {
+        "captureMode": "heroReview=1",
+        "cameraMode": "three-quarter",
+        "animation": "Idle",
+        "lod": 0,
+        "modelSource": "GLB",
+        "heroWorldPosition": {
+          "x": 0,
+          "y": 0,
+          "z": 0
+        },
+        "screenSpaceBoundingBox": {
+          "x": 653.846,
+          "y": 357.647,
+          "width": 234.168,
+          "height": 278.972,
+          "right": 888.014,
+          "bottom": 636.619
+        },
+        "viewport": {
+          "width": 1600,
+          "height": 900
+        },
+        "uiOccluded": false,
+        "uiPanel": {
+          "x": 1346,
+          "y": 16,
+          "width": 238,
+          "height": 341.625
+        },
+        "authoredVisibleMeshCount": 15,
+        "proceduralVisibleMeshCount": 0,
+        "drawCalls": 18,
+        "drawCallsThisFrame": 18,
+        "drawCallsAvg120": 18,
+        "activeMeshes": 16,
+        "fps": 178.571,
+        "fpsAvg5s": 108.303,
+        "frameTimeP50": 9.6,
+        "frameTimeP95": 12.5,
+        "visibleMeshes": 15,
+        "visibleVertices": 36550,
+        "visibleTriangles": 19064
+      }
+    },
+    {
+      "captureId": "hero-review-animation-walk",
+      "capturedAt": "2026-08-03T15:47:35.180Z",
+      "screenshot": "/home/runner/work/frost-survival-defense/frost-survival-defense/reports/hero-runtime-ci/hero-review-animation-walk.png",
+      "camera": "three-quarter",
+      "animation": "Walk",
+      "lod": "LOD0",
+      "state": {
+        "ready": true,
+        "modelSource": "GLB",
+        "currentCamera": "three-quarter",
+        "currentAnimation": "Walk",
+        "currentLod": "LOD0",
+        "authoredVisibleMeshes": 15,
+        "proceduralVisibleMeshes": 0,
+        "visibleVertices": 36550,
+        "visibleTriangles": 19064,
+        "heroWorldPosition": {
+          "x": 0,
+          "y": 0,
+          "z": 0
+        },
+        "heroScreenBounds": {
+          "x": 653.846,
+          "y": 357.647,
+          "width": 234.168,
+          "height": 278.972,
+          "visible": true
+        },
+        "animationGroups": [
+          "hero.player:Idle",
+          "hero.player:Walk",
+          "hero.player:Run",
+          "hero.player:MeleeAttack",
+          "hero.player:RangedAttack",
+          "hero.player:Hit",
+          "hero.player:Death"
+        ],
+        "consoleErrors": [],
+        "uiOccluded": false
+      },
+      "metadata": {
+        "captureMode": "heroReview=1",
+        "cameraMode": "three-quarter",
+        "animation": "Walk",
+        "lod": 0,
+        "modelSource": "GLB",
+        "heroWorldPosition": {
+          "x": 0,
+          "y": 0,
+          "z": 0
+        },
+        "screenSpaceBoundingBox": {
+          "x": 653.846,
+          "y": 357.647,
+          "width": 234.168,
+          "height": 278.972,
+          "right": 888.014,
+          "bottom": 636.619
+        },
+        "viewport": {
+          "width": 1600,
+          "height": 900
+        },
+        "uiOccluded": false,
+        "uiPanel": {
+          "x": 1346,
+          "y": 16,
+          "width": 238,
+          "height": 341.625
+        },
+        "authoredVisibleMeshCount": 15,
+        "proceduralVisibleMeshCount": 0,
+        "drawCalls": 18,
+        "drawCallsThisFrame": 18,
+        "drawCallsAvg120": 18,
+        "activeMeshes": 16,
+        "fps": 140.845,
+        "fpsAvg5s": 114.943,
+        "frameTimeP50": 9.2,
+        "frameTimeP95": 9.8,
+        "visibleMeshes": 15,
+        "visibleVertices": 36550,
+        "visibleTriangles": 19064
+      }
+    },
+    {
+      "captureId": "hero-review-animation-run",
+      "capturedAt": "2026-08-03T15:47:40.127Z",
+      "screenshot": "/home/runner/work/frost-survival-defense/frost-survival-defense/reports/hero-runtime-ci/hero-review-animation-run.png",
+      "camera": "three-quarter",
+      "animation": "Run",
+      "lod": "LOD0",
+      "state": {
+        "ready": true,
+        "modelSource": "GLB",
+        "currentCamera": "three-quarter",
+        "currentAnimation": "Run",
+        "currentLod": "LOD0",
+        "authoredVisibleMeshes": 15,
+        "proceduralVisibleMeshes": 0,
+        "visibleVertices": 36550,
+        "visibleTriangles": 19064,
+        "heroWorldPosition": {
+          "x": 0,
+          "y": 0,
+          "z": 0
+        },
+        "heroScreenBounds": {
+          "x": 653.846,
+          "y": 357.647,
+          "width": 234.168,
+          "height": 278.972,
+          "visible": true
+        },
+        "animationGroups": [
+          "hero.player:Idle",
+          "hero.player:Walk",
+          "hero.player:Run",
+          "hero.player:MeleeAttack",
+          "hero.player:RangedAttack",
+          "hero.player:Hit",
+          "hero.player:Death"
+        ],
+        "consoleErrors": [],
+        "uiOccluded": false
+      },
+      "metadata": {
+        "captureMode": "heroReview=1",
+        "cameraMode": "three-quarter",
+        "animation": "Run",
+        "lod": 0,
+        "modelSource": "GLB",
+        "heroWorldPosition": {
+          "x": 0,
+          "y": 0,
+          "z": 0
+        },
+        "screenSpaceBoundingBox": {
+          "x": 653.846,
+          "y": 357.647,
+          "width": 234.168,
+          "height": 278.972,
+          "right": 888.014,
+          "bottom": 636.619
+        },
+        "viewport": {
+          "width": 1600,
+          "height": 900
+        },
+        "uiOccluded": false,
+        "uiPanel": {
+          "x": 1346,
+          "y": 16,
+          "width": 238,
+          "height": 341.625
+        },
+        "authoredVisibleMeshCount": 15,
+        "proceduralVisibleMeshCount": 0,
+        "drawCalls": 18,
+        "drawCallsThisFrame": 18,
+        "drawCallsAvg120": 18,
+        "activeMeshes": 16,
+        "fps": 232.558,
+        "fpsAvg5s": 119.522,
+        "frameTimeP50": 8.2,
+        "frameTimeP95": 12.6,
+        "visibleMeshes": 15,
+        "visibleVertices": 36550,
+        "visibleTriangles": 19064
+      }
+    },
+    {
+      "captureId": "hero-review-melee",
+      "capturedAt": "2026-08-03T15:47:45.113Z",
+      "screenshot": "/home/runner/work/frost-survival-defense/frost-survival-defense/reports/hero-runtime-ci/hero-review-melee.png",
+      "camera": "three-quarter",
+      "animation": "MeleeAttack",
+      "lod": "LOD0",
+      "state": {
+        "ready": true,
+        "modelSource": "GLB",
+        "currentCamera": "three-quarter",
+        "currentAnimation": "MeleeAttack",
+        "currentLod": "LOD0",
+        "authoredVisibleMeshes": 15,
+        "proceduralVisibleMeshes": 0,
+        "visibleVertices": 36550,
+        "visibleTriangles": 19064,
+        "heroWorldPosition": {
+          "x": 0,
+          "y": 0,
+          "z": 0
+        },
+        "heroScreenBounds": {
+          "x": 653.846,
+          "y": 357.647,
+          "width": 234.168,
+          "height": 278.972,
+          "visible": true
+        },
+        "animationGroups": [
+          "hero.player:Idle",
+          "hero.player:Walk",
+          "hero.player:Run",
+          "hero.player:MeleeAttack",
+          "hero.player:RangedAttack",
+          "hero.player:Hit",
+          "hero.player:Death"
+        ],
+        "consoleErrors": [],
+        "uiOccluded": false
+      },
+      "metadata": {
+        "captureMode": "heroReview=1",
+        "cameraMode": "three-quarter",
+        "animation": "MeleeAttack",
+        "lod": 0,
+        "modelSource": "GLB",
+        "heroWorldPosition": {
+          "x": 0,
+          "y": 0,
+          "z": 0
+        },
+        "screenSpaceBoundingBox": {
+          "x": 653.846,
+          "y": 357.647,
+          "width": 234.168,
+          "height": 278.972,
+          "right": 888.014,
+          "bottom": 636.619
+        },
+        "viewport": {
+          "width": 1600,
+          "height": 900
+        },
+        "uiOccluded": false,
+        "uiPanel": {
+          "x": 1346,
+          "y": 16,
+          "width": 238,
+          "height": 341.625
+        },
+        "authoredVisibleMeshCount": 15,
+        "proceduralVisibleMeshCount": 0,
+        "drawCalls": 18,
+        "drawCallsThisFrame": 18,
+        "drawCallsAvg120": 18,
+        "activeMeshes": 16,
+        "fps": 217.391,
+        "fpsAvg5s": 115.83,
+        "frameTimeP50": 7.9,
+        "frameTimeP95": 13.4,
+        "visibleMeshes": 15,
+        "visibleVertices": 36550,
+        "visibleTriangles": 19064
+      }
+    },
+    {
+      "captureId": "hero-review-ranged",
+      "capturedAt": "2026-08-03T15:47:50.073Z",
+      "screenshot": "/home/runner/work/frost-survival-defense/frost-survival-defense/reports/hero-runtime-ci/hero-review-ranged.png",
+      "camera": "three-quarter",
+      "animation": "RangedAttack",
+      "lod": "LOD0",
+      "state": {
+        "ready": true,
+        "modelSource": "GLB",
+        "currentCamera": "three-quarter",
+        "currentAnimation": "RangedAttack",
+        "currentLod": "LOD0",
+        "authoredVisibleMeshes": 15,
+        "proceduralVisibleMeshes": 0,
+        "visibleVertices": 36550,
+        "visibleTriangles": 19064,
+        "heroWorldPosition": {
+          "x": 0,
+          "y": 0,
+          "z": 0
+        },
+        "heroScreenBounds": {
+          "x": 653.846,
+          "y": 357.647,
+          "width": 234.168,
+          "height": 278.972,
+          "visible": true
+        },
+        "animationGroups": [
+          "hero.player:Idle",
+          "hero.player:Walk",
+          "hero.player:Run",
+          "hero.player:MeleeAttack",
+          "hero.player:RangedAttack",
+          "hero.player:Hit",
+          "hero.player:Death"
+        ],
+        "consoleErrors": [],
+        "uiOccluded": false
+      },
+      "metadata": {
+        "captureMode": "heroReview=1",
+        "cameraMode": "three-quarter",
+        "animation": "RangedAttack",
+        "lod": 0,
+        "modelSource": "GLB",
+        "heroWorldPosition": {
+          "x": 0,
+          "y": 0,
+          "z": 0
+        },
+        "screenSpaceBoundingBox": {
+          "x": 653.846,
+          "y": 357.647,
+          "width": 234.168,
+          "height": 278.972,
+          "right": 888.014,
+          "bottom": 636.619
+        },
+        "viewport": {
+          "width": 1600,
+          "height": 900
+        },
+        "uiOccluded": false,
+        "uiPanel": {
+          "x": 1346,
+          "y": 16,
+          "width": 238,
+          "height": 341.625
+        },
+        "authoredVisibleMeshCount": 15,
+        "proceduralVisibleMeshCount": 0,
+        "drawCalls": 18,
+        "drawCallsThisFrame": 18,
+        "drawCallsAvg120": 18,
+        "activeMeshes": 16,
+        "fps": 232.558,
+        "fpsAvg5s": 212.766,
+        "frameTimeP50": 4.8,
+        "frameTimeP95": 5,
+        "visibleMeshes": 15,
+        "visibleVertices": 36550,
+        "visibleTriangles": 19064
+      }
+    },
+    {
+      "captureId": "hero-review-animation-hit",
+      "capturedAt": "2026-08-03T15:47:55.045Z",
+      "screenshot": "/home/runner/work/frost-survival-defense/frost-survival-defense/reports/hero-runtime-ci/hero-review-animation-hit.png",
+      "camera": "three-quarter",
+      "animation": "Hit",
+      "lod": "LOD0",
+      "state": {
+        "ready": true,
+        "modelSource": "GLB",
+        "currentCamera": "three-quarter",
+        "currentAnimation": "Hit",
+        "currentLod": "LOD0",
+        "authoredVisibleMeshes": 15,
+        "proceduralVisibleMeshes": 0,
+        "visibleVertices": 36550,
+        "visibleTriangles": 19064,
+        "heroWorldPosition": {
+          "x": 0,
+          "y": 0,
+          "z": 0
+        },
+        "heroScreenBounds": {
+          "x": 653.846,
+          "y": 357.647,
+          "width": 234.168,
+          "height": 278.972,
+          "visible": true
+        },
+        "animationGroups": [
+          "hero.player:Idle",
+          "hero.player:Walk",
+          "hero.player:Run",
+          "hero.player:MeleeAttack",
+          "hero.player:RangedAttack",
+          "hero.player:Hit",
+          "hero.player:Death"
+        ],
+        "consoleErrors": [],
+        "uiOccluded": false
+      },
+      "metadata": {
+        "captureMode": "heroReview=1",
+        "cameraMode": "three-quarter",
+        "animation": "Hit",
+        "lod": 0,
+        "modelSource": "GLB",
+        "heroWorldPosition": {
+          "x": 0,
+          "y": 0,
+          "z": 0
+        },
+        "screenSpaceBoundingBox": {
+          "x": 653.846,
+          "y": 357.647,
+          "width": 234.168,
+          "height": 278.972,
+          "right": 888.014,
+          "bottom": 636.619
+        },
+        "viewport": {
+          "width": 1600,
+          "height": 900
+        },
+        "uiOccluded": false,
+        "uiPanel": {
+          "x": 1346,
+          "y": 16,
+          "width": 238,
+          "height": 341.625
+        },
+        "authoredVisibleMeshCount": 15,
+        "proceduralVisibleMeshCount": 0,
+        "drawCalls": 18,
+        "drawCallsThisFrame": 18,
+        "drawCallsAvg120": 18,
+        "activeMeshes": 16,
+        "fps": 97.087,
+        "fpsAvg5s": 84.27,
+        "frameTimeP50": 10.4,
+        "frameTimeP95": 14.9,
+        "visibleMeshes": 15,
+        "visibleVertices": 36550,
+        "visibleTriangles": 19064
+      }
+    },
+    {
+      "captureId": "hero-review-death",
+      "capturedAt": "2026-08-03T15:47:59.979Z",
+      "screenshot": "/home/runner/work/frost-survival-defense/frost-survival-defense/reports/hero-runtime-ci/hero-review-death.png",
+      "camera": "three-quarter",
+      "animation": "Death",
+      "lod": "LOD0",
+      "state": {
+        "ready": true,
+        "modelSource": "GLB",
+        "currentCamera": "three-quarter",
+        "currentAnimation": "Death",
+        "currentLod": "LOD0",
+        "authoredVisibleMeshes": 15,
+        "proceduralVisibleMeshes": 0,
+        "visibleVertices": 36550,
+        "visibleTriangles": 19064,
+        "heroWorldPosition": {
+          "x": 0,
+          "y": 0,
+          "z": 0
+        },
+        "heroScreenBounds": {
+          "x": 653.846,
+          "y": 357.647,
+          "width": 234.168,
+          "height": 278.972,
+          "visible": true
+        },
+        "animationGroups": [
+          "hero.player:Idle",
+          "hero.player:Walk",
+          "hero.player:Run",
+          "hero.player:MeleeAttack",
+          "hero.player:RangedAttack",
+          "hero.player:Hit",
+          "hero.player:Death"
+        ],
+        "consoleErrors": [],
+        "uiOccluded": false
+      },
+      "metadata": {
+        "captureMode": "heroReview=1",
+        "cameraMode": "three-quarter",
+        "animation": "Death",
+        "lod": 0,
+        "modelSource": "GLB",
+        "heroWorldPosition": {
+          "x": 0,
+          "y": 0,
+          "z": 0
+        },
+        "screenSpaceBoundingBox": {
+          "x": 653.846,
+          "y": 357.647,
+          "width": 234.168,
+          "height": 278.972,
+          "right": 888.014,
+          "bottom": 636.619
+        },
+        "viewport": {
+          "width": 1600,
+          "height": 900
+        },
+        "uiOccluded": false,
+        "uiPanel": {
+          "x": 1346,
+          "y": 16,
+          "width": 238,
+          "height": 341.625
+        },
+        "authoredVisibleMeshCount": 15,
+        "proceduralVisibleMeshCount": 0,
+        "drawCalls": 18,
+        "drawCallsThisFrame": 18,
+        "drawCallsAvg120": 18,
+        "activeMeshes": 16,
+        "fps": 250,
+        "fpsAvg5s": 236.22,
+        "frameTimeP50": 4.3,
+        "frameTimeP95": 4.4,
+        "visibleMeshes": 15,
+        "visibleVertices": 36550,
+        "visibleTriangles": 19064
+      }
+    },
+    {
+      "captureId": "hero-review-lod0",
+      "capturedAt": "2026-08-03T15:48:05.241Z",
+      "screenshot": "/home/runner/work/frost-survival-defense/frost-survival-defense/reports/hero-runtime-ci/hero-review-lod0.png",
+      "camera": "front",
+      "animation": "Idle",
+      "lod": "LOD0",
+      "state": {
+        "ready": true,
+        "modelSource": "GLB",
+        "currentCamera": "front",
+        "currentAnimation": "Idle",
+        "currentLod": "LOD0",
+        "authoredVisibleMeshes": 15,
+        "proceduralVisibleMeshes": 0,
+        "visibleVertices": 36550,
+        "visibleTriangles": 19064,
+        "heroWorldPosition": {
+          "x": 0,
+          "y": 0,
+          "z": 0
+        },
+        "heroScreenBounds": {
+          "x": 590.463,
+          "y": 340.689,
+          "width": 326.622,
+          "height": 330.567,
+          "visible": true
+        },
+        "animationGroups": [
+          "hero.player:Idle",
+          "hero.player:Walk",
+          "hero.player:Run",
+          "hero.player:MeleeAttack",
+          "hero.player:RangedAttack",
+          "hero.player:Hit",
+          "hero.player:Death"
+        ],
+        "consoleErrors": [],
+        "uiOccluded": false
+      },
+      "metadata": {
+        "captureMode": "heroReview=1",
+        "cameraMode": "front",
+        "animation": "Idle",
+        "lod": 0,
+        "modelSource": "GLB",
+        "heroWorldPosition": {
+          "x": 0,
+          "y": 0,
+          "z": 0
+        },
+        "screenSpaceBoundingBox": {
+          "x": 590.463,
+          "y": 340.689,
+          "width": 326.622,
+          "height": 330.567,
+          "right": 917.085,
+          "bottom": 671.256
+        },
+        "viewport": {
+          "width": 1600,
+          "height": 900
+        },
+        "uiOccluded": false,
+        "uiPanel": {
+          "x": 1346,
+          "y": 16,
+          "width": 238,
+          "height": 341.625
+        },
+        "authoredVisibleMeshCount": 15,
+        "proceduralVisibleMeshCount": 0,
+        "drawCalls": 18,
+        "drawCallsThisFrame": 18,
+        "drawCallsAvg120": 18,
+        "activeMeshes": 16,
+        "fps": 277.778,
+        "fpsAvg5s": 125.523,
+        "frameTimeP50": 7.9,
+        "frameTimeP95": 12.4,
+        "visibleMeshes": 15,
+        "visibleVertices": 36550,
+        "visibleTriangles": 19064
+      }
+    },
+    {
+      "captureId": "hero-review-lod1",
+      "capturedAt": "2026-08-03T15:48:07.858Z",
+      "screenshot": "/home/runner/work/frost-survival-defense/frost-survival-defense/reports/hero-runtime-ci/hero-review-lod1.png",
+      "camera": "front",
+      "animation": "Idle",
+      "lod": "LOD1",
+      "state": {
+        "ready": true,
+        "modelSource": "GLB",
+        "currentCamera": "front",
+        "currentAnimation": "Idle",
+        "currentLod": "LOD1",
+        "authoredVisibleMeshes": 8,
+        "proceduralVisibleMeshes": 0,
+        "visibleVertices": 14107,
+        "visibleTriangles": 7324,
+        "heroWorldPosition": {
+          "x": 0,
+          "y": 0,
+          "z": 0
+        },
+        "heroScreenBounds": {
+          "x": 596.607,
+          "y": 340.712,
+          "width": 313.41,
+          "height": 336.243,
+          "visible": true
+        },
+        "animationGroups": [
+          "hero.player:Idle",
+          "hero.player:Walk",
+          "hero.player:Run",
+          "hero.player:MeleeAttack",
+          "hero.player:RangedAttack",
+          "hero.player:Hit",
+          "hero.player:Death"
+        ],
+        "consoleErrors": [],
+        "uiOccluded": false
+      },
+      "metadata": {
+        "captureMode": "heroReview=1",
+        "cameraMode": "front",
+        "animation": "Idle",
+        "lod": 1,
+        "modelSource": "GLB",
+        "heroWorldPosition": {
+          "x": 0,
+          "y": 0,
+          "z": 0
+        },
+        "screenSpaceBoundingBox": {
+          "x": 596.607,
+          "y": 340.712,
+          "width": 313.41,
+          "height": 336.243,
+          "right": 910.017,
+          "bottom": 676.955
+        },
+        "viewport": {
+          "width": 1600,
+          "height": 900
+        },
+        "uiOccluded": false,
+        "uiPanel": {
+          "x": 1346,
+          "y": 16,
+          "width": 238,
+          "height": 341.625
+        },
+        "authoredVisibleMeshCount": 8,
+        "proceduralVisibleMeshCount": 0,
+        "drawCalls": 11,
+        "drawCallsThisFrame": 11,
+        "drawCallsAvg120": 11,
+        "activeMeshes": 9,
+        "fps": 250,
+        "fpsAvg5s": 218.978,
+        "frameTimeP50": 4.4,
+        "frameTimeP95": 5.3,
+        "visibleMeshes": 8,
+        "visibleVertices": 14107,
+        "visibleTriangles": 7324
+      }
+    },
+    {
+      "captureId": "hero-review-lod2",
+      "capturedAt": "2026-08-03T15:48:10.282Z",
+      "screenshot": "/home/runner/work/frost-survival-defense/frost-survival-defense/reports/hero-runtime-ci/hero-review-lod2.png",
+      "camera": "front",
+      "animation": "Idle",
+      "lod": "LOD2",
+      "state": {
+        "ready": true,
+        "modelSource": "GLB",
+        "currentCamera": "front",
+        "currentAnimation": "Idle",
+        "currentLod": "LOD2",
+        "authoredVisibleMeshes": 6,
+        "proceduralVisibleMeshes": 0,
+        "visibleVertices": 4988,
+        "visibleTriangles": 2656,
+        "heroWorldPosition": {
+          "x": 0,
+          "y": 0,
+          "z": 0
+        },
+        "heroScreenBounds": {
+          "x": 596.607,
+          "y": 340.712,
+          "width": 313.145,
+          "height": 335.719,
+          "visible": true
+        },
+        "animationGroups": [
+          "hero.player:Idle",
+          "hero.player:Walk",
+          "hero.player:Run",
+          "hero.player:MeleeAttack",
+          "hero.player:RangedAttack",
+          "hero.player:Hit",
+          "hero.player:Death"
+        ],
+        "consoleErrors": [],
+        "uiOccluded": false
+      },
+      "metadata": {
+        "captureMode": "heroReview=1",
+        "cameraMode": "front",
+        "animation": "Idle",
+        "lod": 2,
+        "modelSource": "GLB",
+        "heroWorldPosition": {
+          "x": 0,
+          "y": 0,
+          "z": 0
+        },
+        "screenSpaceBoundingBox": {
+          "x": 596.607,
+          "y": 340.712,
+          "width": 313.145,
+          "height": 335.719,
+          "right": 909.752,
+          "bottom": 676.431
+        },
+        "viewport": {
+          "width": 1600,
+          "height": 900
+        },
+        "uiOccluded": false,
+        "uiPanel": {
+          "x": 1346,
+          "y": 16,
+          "width": 238,
+          "height": 325.438
+        },
+        "authoredVisibleMeshCount": 6,
+        "proceduralVisibleMeshCount": 0,
+        "drawCalls": 9,
+        "drawCallsThisFrame": 9,
+        "drawCallsAvg120": 9,
+        "activeMeshes": 7,
+        "fps": 208.333,
+        "fpsAvg5s": 185.185,
+        "frameTimeP50": 5.2,
+        "frameTimeP95": 6.2,
+        "visibleMeshes": 6,
+        "visibleVertices": 4988,
+        "visibleTriangles": 2656
+      }
+    }
+  ],
+  "sequence": [
+    {
+      "captureId": "sequence-001-idle-1",
+      "screenshot": "/home/runner/work/frost-survival-defense/frost-survival-defense/reports/hero-runtime-ci/sequence-001-idle-1.png",
+      "animation": "Idle",
+      "state": {
+        "ready": true,
+        "modelSource": "GLB",
+        "currentCamera": "three-quarter",
+        "currentAnimation": "Idle",
+        "currentLod": "LOD0",
+        "authoredVisibleMeshes": 15,
+        "proceduralVisibleMeshes": 0,
+        "visibleVertices": 36550,
+        "visibleTriangles": 19064,
+        "heroWorldPosition": {
+          "x": 0,
+          "y": 0,
+          "z": 0
+        },
+        "heroScreenBounds": {
+          "x": 653.846,
+          "y": 357.647,
+          "width": 234.168,
+          "height": 278.972,
+          "visible": true
+        },
+        "animationGroups": [
+          "hero.player:Idle",
+          "hero.player:Walk",
+          "hero.player:Run",
+          "hero.player:MeleeAttack",
+          "hero.player:RangedAttack",
+          "hero.player:Hit",
+          "hero.player:Death"
+        ],
+        "consoleErrors": [],
+        "uiOccluded": false
+      },
+      "metadata": {
+        "captureMode": "heroReview=1",
+        "cameraMode": "three-quarter",
+        "animation": "Idle",
+        "lod": 0,
+        "modelSource": "GLB",
+        "heroWorldPosition": {
+          "x": 0,
+          "y": 0,
+          "z": 0
+        },
+        "screenSpaceBoundingBox": {
+          "x": 653.846,
+          "y": 357.647,
+          "width": 234.168,
+          "height": 278.972,
+          "right": 888.014,
+          "bottom": 636.619
+        },
+        "viewport": {
+          "width": 1600,
+          "height": 900
+        },
+        "uiOccluded": false,
+        "uiPanel": {
+          "x": 1346,
+          "y": 16,
+          "width": 238,
+          "height": 341.625
+        },
+        "authoredVisibleMeshCount": 15,
+        "proceduralVisibleMeshCount": 0,
+        "drawCalls": 18,
+        "drawCallsThisFrame": 18,
+        "drawCallsAvg120": 18,
+        "activeMeshes": 16,
+        "fps": 0.384,
+        "fpsAvg5s": 108.303,
+        "frameTimeP50": 9.6,
+        "frameTimeP95": 12.5,
+        "visibleMeshes": 15,
+        "visibleVertices": 36550,
+        "visibleTriangles": 19064
+      }
+    },
+    {
+      "captureId": "sequence-002-idle-2",
+      "screenshot": "/home/runner/work/frost-survival-defense/frost-survival-defense/reports/hero-runtime-ci/sequence-002-idle-2.png",
+      "animation": "Idle",
+      "state": {
+        "ready": true,
+        "modelSource": "GLB",
+        "currentCamera": "three-quarter",
+        "currentAnimation": "Idle",
+        "currentLod": "LOD0",
+        "authoredVisibleMeshes": 15,
+        "proceduralVisibleMeshes": 0,
+        "visibleVertices": 36550,
+        "visibleTriangles": 19064,
+        "heroWorldPosition": {
+          "x": 0,
+          "y": 0,
+          "z": 0
+        },
+        "heroScreenBounds": {
+          "x": 653.846,
+          "y": 357.647,
+          "width": 234.168,
+          "height": 278.972,
+          "visible": true
+        },
+        "animationGroups": [
+          "hero.player:Idle",
+          "hero.player:Walk",
+          "hero.player:Run",
+          "hero.player:MeleeAttack",
+          "hero.player:RangedAttack",
+          "hero.player:Hit",
+          "hero.player:Death"
+        ],
+        "consoleErrors": [],
+        "uiOccluded": false
+      },
+      "metadata": {
+        "captureMode": "heroReview=1",
+        "cameraMode": "three-quarter",
+        "animation": "Idle",
+        "lod": 0,
+        "modelSource": "GLB",
+        "heroWorldPosition": {
+          "x": 0,
+          "y": 0,
+          "z": 0
+        },
+        "screenSpaceBoundingBox": {
+          "x": 653.846,
+          "y": 357.647,
+          "width": 234.168,
+          "height": 278.972,
+          "right": 888.014,
+          "bottom": 636.619
+        },
+        "viewport": {
+          "width": 1600,
+          "height": 900
+        },
+        "uiOccluded": false,
+        "uiPanel": {
+          "x": 1346,
+          "y": 16,
+          "width": 238,
+          "height": 341.625
+        },
+        "authoredVisibleMeshCount": 15,
+        "proceduralVisibleMeshCount": 0,
+        "drawCalls": 18,
+        "drawCallsThisFrame": 18,
+        "drawCallsAvg120": 18,
+        "activeMeshes": 16,
+        "fps": 1.242,
+        "fpsAvg5s": 4.804,
+        "frameTimeP50": 9.6,
+        "frameTimeP95": 805,
+        "visibleMeshes": 15,
+        "visibleVertices": 36550,
+        "visibleTriangles": 19064
+      }
+    },
+    {
+      "captureId": "sequence-003-idle-3",
+      "screenshot": "/home/runner/work/frost-survival-defense/frost-survival-defense/reports/hero-runtime-ci/sequence-003-idle-3.png",
+      "animation": "Idle",
+      "state": {
+        "ready": true,
+        "modelSource": "GLB",
+        "currentCamera": "three-quarter",
+        "currentAnimation": "Idle",
+        "currentLod": "LOD0",
+        "authoredVisibleMeshes": 15,
+        "proceduralVisibleMeshes": 0,
+        "visibleVertices": 36550,
+        "visibleTriangles": 19064,
+        "heroWorldPosition": {
+          "x": 0,
+          "y": 0,
+          "z": 0
+        },
+        "heroScreenBounds": {
+          "x": 653.846,
+          "y": 357.647,
+          "width": 234.168,
+          "height": 278.972,
+          "visible": true
+        },
+        "animationGroups": [
+          "hero.player:Idle",
+          "hero.player:Walk",
+          "hero.player:Run",
+          "hero.player:MeleeAttack",
+          "hero.player:RangedAttack",
+          "hero.player:Hit",
+          "hero.player:Death"
+        ],
+        "consoleErrors": [],
+        "uiOccluded": false
+      },
+      "metadata": {
+        "captureMode": "heroReview=1",
+        "cameraMode": "three-quarter",
+        "animation": "Idle",
+        "lod": 0,
+        "modelSource": "GLB",
+        "heroWorldPosition": {
+          "x": 0,
+          "y": 0,
+          "z": 0
+        },
+        "screenSpaceBoundingBox": {
+          "x": 653.846,
+          "y": 357.647,
+          "width": 234.168,
+          "height": 278.972,
+          "right": 888.014,
+          "bottom": 636.619
+        },
+        "viewport": {
+          "width": 1600,
+          "height": 900
+        },
+        "uiOccluded": false,
+        "uiPanel": {
+          "x": 1346,
+          "y": 16,
+          "width": 238,
+          "height": 341.625
+        },
+        "authoredVisibleMeshCount": 15,
+        "proceduralVisibleMeshCount": 0,
+        "drawCalls": 18,
+        "drawCallsThisFrame": 18,
+        "drawCallsAvg120": 18,
+        "activeMeshes": 16,
+        "fps": 1.244,
+        "fpsAvg5s": 3.055,
+        "frameTimeP50": 12.5,
+        "frameTimeP95": 805,
+        "visibleMeshes": 15,
+        "visibleVertices": 36550,
+        "visibleTriangles": 19064
+      }
+    },
+    {
+      "captureId": "sequence-004-walk-1",
+      "screenshot": "/home/runner/work/frost-survival-defense/frost-survival-defense/reports/hero-runtime-ci/sequence-004-walk-1.png",
+      "animation": "Walk",
+      "state": {
+        "ready": true,
+        "modelSource": "GLB",
+        "currentCamera": "three-quarter",
+        "currentAnimation": "Walk",
+        "currentLod": "LOD0",
+        "authoredVisibleMeshes": 15,
+        "proceduralVisibleMeshes": 0,
+        "visibleVertices": 36550,
+        "visibleTriangles": 19064,
+        "heroWorldPosition": {
+          "x": 0,
+          "y": 0,
+          "z": 0
+        },
+        "heroScreenBounds": {
+          "x": 653.846,
+          "y": 357.647,
+          "width": 234.168,
+          "height": 278.972,
+          "visible": true
+        },
+        "animationGroups": [
+          "hero.player:Idle",
+          "hero.player:Walk",
+          "hero.player:Run",
+          "hero.player:MeleeAttack",
+          "hero.player:RangedAttack",
+          "hero.player:Hit",
+          "hero.player:Death"
+        ],
+        "consoleErrors": [],
+        "uiOccluded": false
+      },
+      "metadata": {
+        "captureMode": "heroReview=1",
+        "cameraMode": "three-quarter",
+        "animation": "Walk",
+        "lod": 0,
+        "modelSource": "GLB",
+        "heroWorldPosition": {
+          "x": 0,
+          "y": 0,
+          "z": 0
+        },
+        "screenSpaceBoundingBox": {
+          "x": 653.846,
+          "y": 357.647,
+          "width": 234.168,
+          "height": 278.972,
+          "right": 888.014,
+          "bottom": 636.619
+        },
+        "viewport": {
+          "width": 1600,
+          "height": 900
+        },
+        "uiOccluded": false,
+        "uiPanel": {
+          "x": 1346,
+          "y": 16,
+          "width": 238,
+          "height": 341.625
+        },
+        "authoredVisibleMeshCount": 15,
+        "proceduralVisibleMeshCount": 0,
+        "drawCalls": 18,
+        "drawCallsThisFrame": 18,
+        "drawCallsAvg120": 18,
+        "activeMeshes": 16,
+        "fps": 0.389,
+        "fpsAvg5s": 114.943,
+        "frameTimeP50": 9.2,
+        "frameTimeP95": 9.8,
+        "visibleMeshes": 15,
+        "visibleVertices": 36550,
+        "visibleTriangles": 19064
+      }
+    },
+    {
+      "captureId": "sequence-005-walk-2",
+      "screenshot": "/home/runner/work/frost-survival-defense/frost-survival-defense/reports/hero-runtime-ci/sequence-005-walk-2.png",
+      "animation": "Walk",
+      "state": {
+        "ready": true,
+        "modelSource": "GLB",
+        "currentCamera": "three-quarter",
+        "currentAnimation": "Walk",
+        "currentLod": "LOD0",
+        "authoredVisibleMeshes": 15,
+        "proceduralVisibleMeshes": 0,
+        "visibleVertices": 36550,
+        "visibleTriangles": 19064,
+        "heroWorldPosition": {
+          "x": 0,
+          "y": 0,
+          "z": 0
+        },
+        "heroScreenBounds": {
+          "x": 653.846,
+          "y": 357.647,
+          "width": 234.168,
+          "height": 278.972,
+          "visible": true
+        },
+        "animationGroups": [
+          "hero.player:Idle",
+          "hero.player:Walk",
+          "hero.player:Run",
+          "hero.player:MeleeAttack",
+          "hero.player:RangedAttack",
+          "hero.player:Hit",
+          "hero.player:Death"
+        ],
+        "consoleErrors": [],
+        "uiOccluded": false
+      },
+      "metadata": {
+        "captureMode": "heroReview=1",
+        "cameraMode": "three-quarter",
+        "animation": "Walk",
+        "lod": 0,
+        "modelSource": "GLB",
+        "heroWorldPosition": {
+          "x": 0,
+          "y": 0,
+          "z": 0
+        },
+        "screenSpaceBoundingBox": {
+          "x": 653.846,
+          "y": 357.647,
+          "width": 234.168,
+          "height": 278.972,
+          "right": 888.014,
+          "bottom": 636.619
+        },
+        "viewport": {
+          "width": 1600,
+          "height": 900
+        },
+        "uiOccluded": false,
+        "uiPanel": {
+          "x": 1346,
+          "y": 16,
+          "width": 238,
+          "height": 341.625
+        },
+        "authoredVisibleMeshCount": 15,
+        "proceduralVisibleMeshCount": 0,
+        "drawCalls": 18,
+        "drawCallsThisFrame": 18,
+        "drawCallsAvg120": 18,
+        "activeMeshes": 16,
+        "fps": 1.271,
+        "fpsAvg5s": 4.921,
+        "frameTimeP50": 9.2,
+        "frameTimeP95": 786.8,
+        "visibleMeshes": 15,
+        "visibleVertices": 36550,
+        "visibleTriangles": 19064
+      }
+    },
+    {
+      "captureId": "sequence-006-walk-3",
+      "screenshot": "/home/runner/work/frost-survival-defense/frost-survival-defense/reports/hero-runtime-ci/sequence-006-walk-3.png",
+      "animation": "Walk",
+      "state": {
+        "ready": true,
+        "modelSource": "GLB",
+        "currentCamera": "three-quarter",
+        "currentAnimation": "Walk",
+        "currentLod": "LOD0",
+        "authoredVisibleMeshes": 15,
+        "proceduralVisibleMeshes": 0,
+        "visibleVertices": 36550,
+        "visibleTriangles": 19064,
+        "heroWorldPosition": {
+          "x": 0,
+          "y": 0,
+          "z": 0
+        },
+        "heroScreenBounds": {
+          "x": 653.846,
+          "y": 357.647,
+          "width": 234.168,
+          "height": 278.972,
+          "visible": true
+        },
+        "animationGroups": [
+          "hero.player:Idle",
+          "hero.player:Walk",
+          "hero.player:Run",
+          "hero.player:MeleeAttack",
+          "hero.player:RangedAttack",
+          "hero.player:Hit",
+          "hero.player:Death"
+        ],
+        "consoleErrors": [],
+        "uiOccluded": false
+      },
+      "metadata": {
+        "captureMode": "heroReview=1",
+        "cameraMode": "three-quarter",
+        "animation": "Walk",
+        "lod": 0,
+        "modelSource": "GLB",
+        "heroWorldPosition": {
+          "x": 0,
+          "y": 0,
+          "z": 0
+        },
+        "screenSpaceBoundingBox": {
+          "x": 653.846,
+          "y": 357.647,
+          "width": 234.168,
+          "height": 278.972,
+          "right": 888.014,
+          "bottom": 636.619
+        },
+        "viewport": {
+          "width": 1600,
+          "height": 900
+        },
+        "uiOccluded": false,
+        "uiPanel": {
+          "x": 1346,
+          "y": 16,
+          "width": 238,
+          "height": 341.625
+        },
+        "authoredVisibleMeshCount": 15,
+        "proceduralVisibleMeshCount": 0,
+        "drawCalls": 18,
+        "drawCallsThisFrame": 18,
+        "drawCallsAvg120": 18,
+        "activeMeshes": 16,
+        "fps": 1.278,
+        "fpsAvg5s": 3.134,
+        "frameTimeP50": 9.8,
+        "frameTimeP95": 786.8,
+        "visibleMeshes": 15,
+        "visibleVertices": 36550,
+        "visibleTriangles": 19064
+      }
+    },
+    {
+      "captureId": "sequence-007-run-1",
+      "screenshot": "/home/runner/work/frost-survival-defense/frost-survival-defense/reports/hero-runtime-ci/sequence-007-run-1.png",
+      "animation": "Run",
+      "state": {
+        "ready": true,
+        "modelSource": "GLB",
+        "currentCamera": "three-quarter",
+        "currentAnimation": "Run",
+        "currentLod": "LOD0",
+        "authoredVisibleMeshes": 15,
+        "proceduralVisibleMeshes": 0,
+        "visibleVertices": 36550,
+        "visibleTriangles": 19064,
+        "heroWorldPosition": {
+          "x": 0,
+          "y": 0,
+          "z": 0
+        },
+        "heroScreenBounds": {
+          "x": 653.846,
+          "y": 357.647,
+          "width": 234.168,
+          "height": 278.972,
+          "visible": true
+        },
+        "animationGroups": [
+          "hero.player:Idle",
+          "hero.player:Walk",
+          "hero.player:Run",
+          "hero.player:MeleeAttack",
+          "hero.player:RangedAttack",
+          "hero.player:Hit",
+          "hero.player:Death"
+        ],
+        "consoleErrors": [],
+        "uiOccluded": false
+      },
+      "metadata": {
+        "captureMode": "heroReview=1",
+        "cameraMode": "three-quarter",
+        "animation": "Run",
+        "lod": 0,
+        "modelSource": "GLB",
+        "heroWorldPosition": {
+          "x": 0,
+          "y": 0,
+          "z": 0
+        },
+        "screenSpaceBoundingBox": {
+          "x": 653.846,
+          "y": 357.647,
+          "width": 234.168,
+          "height": 278.972,
+          "right": 888.014,
+          "bottom": 636.619
+        },
+        "viewport": {
+          "width": 1600,
+          "height": 900
+        },
+        "uiOccluded": false,
+        "uiPanel": {
+          "x": 1346,
+          "y": 16,
+          "width": 238,
+          "height": 341.625
+        },
+        "authoredVisibleMeshCount": 15,
+        "proceduralVisibleMeshCount": 0,
+        "drawCalls": 18,
+        "drawCallsThisFrame": 18,
+        "drawCallsAvg120": 18,
+        "activeMeshes": 16,
+        "fps": 0.388,
+        "fpsAvg5s": 119.522,
+        "frameTimeP50": 8.2,
+        "frameTimeP95": 12.6,
+        "visibleMeshes": 15,
+        "visibleVertices": 36550,
+        "visibleTriangles": 19064
+      }
+    },
+    {
+      "captureId": "sequence-008-run-2",
+      "screenshot": "/home/runner/work/frost-survival-defense/frost-survival-defense/reports/hero-runtime-ci/sequence-008-run-2.png",
+      "animation": "Run",
+      "state": {
+        "ready": true,
+        "modelSource": "GLB",
+        "currentCamera": "three-quarter",
+        "currentAnimation": "Run",
+        "currentLod": "LOD0",
+        "authoredVisibleMeshes": 15,
+        "proceduralVisibleMeshes": 0,
+        "visibleVertices": 36550,
+        "visibleTriangles": 19064,
+        "heroWorldPosition": {
+          "x": 0,
+          "y": 0,
+          "z": 0
+        },
+        "heroScreenBounds": {
+          "x": 653.846,
+          "y": 357.647,
+          "width": 234.168,
+          "height": 278.972,
+          "visible": true
+        },
+        "animationGroups": [
+          "hero.player:Idle",
+          "hero.player:Walk",
+          "hero.player:Run",
+          "hero.player:MeleeAttack",
+          "hero.player:RangedAttack",
+          "hero.player:Hit",
+          "hero.player:Death"
+        ],
+        "consoleErrors": [],
+        "uiOccluded": false
+      },
+      "metadata": {
+        "captureMode": "heroReview=1",
+        "cameraMode": "three-quarter",
+        "animation": "Run",
+        "lod": 0,
+        "modelSource": "GLB",
+        "heroWorldPosition": {
+          "x": 0,
+          "y": 0,
+          "z": 0
+        },
+        "screenSpaceBoundingBox": {
+          "x": 653.846,
+          "y": 357.647,
+          "width": 234.168,
+          "height": 278.972,
+          "right": 888.014,
+          "bottom": 636.619
+        },
+        "viewport": {
+          "width": 1600,
+          "height": 900
+        },
+        "uiOccluded": false,
+        "uiPanel": {
+          "x": 1346,
+          "y": 16,
+          "width": 238,
+          "height": 341.625
+        },
+        "authoredVisibleMeshCount": 15,
+        "proceduralVisibleMeshCount": 0,
+        "drawCalls": 18,
+        "drawCallsThisFrame": 18,
+        "drawCallsAvg120": 18,
+        "activeMeshes": 16,
+        "fps": 1.278,
+        "fpsAvg5s": 4.953,
+        "frameTimeP50": 8.2,
+        "frameTimeP95": 782.5,
+        "visibleMeshes": 15,
+        "visibleVertices": 36550,
+        "visibleTriangles": 19064
+      }
+    },
+    {
+      "captureId": "sequence-009-run-3",
+      "screenshot": "/home/runner/work/frost-survival-defense/frost-survival-defense/reports/hero-runtime-ci/sequence-009-run-3.png",
+      "animation": "Run",
+      "state": {
+        "ready": true,
+        "modelSource": "GLB",
+        "currentCamera": "three-quarter",
+        "currentAnimation": "Run",
+        "currentLod": "LOD0",
+        "authoredVisibleMeshes": 15,
+        "proceduralVisibleMeshes": 0,
+        "visibleVertices": 36550,
+        "visibleTriangles": 19064,
+        "heroWorldPosition": {
+          "x": 0,
+          "y": 0,
+          "z": 0
+        },
+        "heroScreenBounds": {
+          "x": 653.846,
+          "y": 357.647,
+          "width": 234.168,
+          "height": 278.972,
+          "visible": true
+        },
+        "animationGroups": [
+          "hero.player:Idle",
+          "hero.player:Walk",
+          "hero.player:Run",
+          "hero.player:MeleeAttack",
+          "hero.player:RangedAttack",
+          "hero.player:Hit",
+          "hero.player:Death"
+        ],
+        "consoleErrors": [],
+        "uiOccluded": false
+      },
+      "metadata": {
+        "captureMode": "heroReview=1",
+        "cameraMode": "three-quarter",
+        "animation": "Run",
+        "lod": 0,
+        "modelSource": "GLB",
+        "heroWorldPosition": {
+          "x": 0,
+          "y": 0,
+          "z": 0
+        },
+        "screenSpaceBoundingBox": {
+          "x": 653.846,
+          "y": 357.647,
+          "width": 234.168,
+          "height": 278.972,
+          "right": 888.014,
+          "bottom": 636.619
+        },
+        "viewport": {
+          "width": 1600,
+          "height": 900
+        },
+        "uiOccluded": false,
+        "uiPanel": {
+          "x": 1346,
+          "y": 16,
+          "width": 238,
+          "height": 341.625
+        },
+        "authoredVisibleMeshCount": 15,
+        "proceduralVisibleMeshCount": 0,
+        "drawCalls": 18,
+        "drawCallsThisFrame": 18,
+        "drawCallsAvg120": 18,
+        "activeMeshes": 16,
+        "fps": 1.268,
+        "fpsAvg5s": 3.132,
+        "frameTimeP50": 12.6,
+        "frameTimeP95": 788.8,
+        "visibleMeshes": 15,
+        "visibleVertices": 36550,
+        "visibleTriangles": 19064
+      }
+    },
+    {
+      "captureId": "sequence-010-meleeattack-1",
+      "screenshot": "/home/runner/work/frost-survival-defense/frost-survival-defense/reports/hero-runtime-ci/sequence-010-meleeattack-1.png",
+      "animation": "MeleeAttack",
+      "state": {
+        "ready": true,
+        "modelSource": "GLB",
+        "currentCamera": "three-quarter",
+        "currentAnimation": "MeleeAttack",
+        "currentLod": "LOD0",
+        "authoredVisibleMeshes": 15,
+        "proceduralVisibleMeshes": 0,
+        "visibleVertices": 36550,
+        "visibleTriangles": 19064,
+        "heroWorldPosition": {
+          "x": 0,
+          "y": 0,
+          "z": 0
+        },
+        "heroScreenBounds": {
+          "x": 653.846,
+          "y": 357.647,
+          "width": 234.168,
+          "height": 278.972,
+          "visible": true
+        },
+        "animationGroups": [
+          "hero.player:Idle",
+          "hero.player:Walk",
+          "hero.player:Run",
+          "hero.player:MeleeAttack",
+          "hero.player:RangedAttack",
+          "hero.player:Hit",
+          "hero.player:Death"
+        ],
+        "consoleErrors": [],
+        "uiOccluded": false
+      },
+      "metadata": {
+        "captureMode": "heroReview=1",
+        "cameraMode": "three-quarter",
+        "animation": "MeleeAttack",
+        "lod": 0,
+        "modelSource": "GLB",
+        "heroWorldPosition": {
+          "x": 0,
+          "y": 0,
+          "z": 0
+        },
+        "screenSpaceBoundingBox": {
+          "x": 653.846,
+          "y": 357.647,
+          "width": 234.168,
+          "height": 278.972,
+          "right": 888.014,
+          "bottom": 636.619
+        },
+        "viewport": {
+          "width": 1600,
+          "height": 900
+        },
+        "uiOccluded": false,
+        "uiPanel": {
+          "x": 1346,
+          "y": 16,
+          "width": 238,
+          "height": 341.625
+        },
+        "authoredVisibleMeshCount": 15,
+        "proceduralVisibleMeshCount": 0,
+        "drawCalls": 18,
+        "drawCallsThisFrame": 18,
+        "drawCallsAvg120": 18,
+        "activeMeshes": 16,
+        "fps": 0.393,
+        "fpsAvg5s": 115.83,
+        "frameTimeP50": 7.9,
+        "frameTimeP95": 13.4,
+        "visibleMeshes": 15,
+        "visibleVertices": 36550,
+        "visibleTriangles": 19064
+      }
+    },
+    {
+      "captureId": "sequence-011-meleeattack-2",
+      "screenshot": "/home/runner/work/frost-survival-defense/frost-survival-defense/reports/hero-runtime-ci/sequence-011-meleeattack-2.png",
+      "animation": "MeleeAttack",
+      "state": {
+        "ready": true,
+        "modelSource": "GLB",
+        "currentCamera": "three-quarter",
+        "currentAnimation": "MeleeAttack",
+        "currentLod": "LOD0",
+        "authoredVisibleMeshes": 15,
+        "proceduralVisibleMeshes": 0,
+        "visibleVertices": 36550,
+        "visibleTriangles": 19064,
+        "heroWorldPosition": {
+          "x": 0,
+          "y": 0,
+          "z": 0
+        },
+        "heroScreenBounds": {
+          "x": 653.846,
+          "y": 357.647,
+          "width": 234.168,
+          "height": 278.972,
+          "visible": true
+        },
+        "animationGroups": [
+          "hero.player:Idle",
+          "hero.player:Walk",
+          "hero.player:Run",
+          "hero.player:MeleeAttack",
+          "hero.player:RangedAttack",
+          "hero.player:Hit",
+          "hero.player:Death"
+        ],
+        "consoleErrors": [],
+        "uiOccluded": false
+      },
+      "metadata": {
+        "captureMode": "heroReview=1",
+        "cameraMode": "three-quarter",
+        "animation": "MeleeAttack",
+        "lod": 0,
+        "modelSource": "GLB",
+        "heroWorldPosition": {
+          "x": 0,
+          "y": 0,
+          "z": 0
+        },
+        "screenSpaceBoundingBox": {
+          "x": 653.846,
+          "y": 357.647,
+          "width": 234.168,
+          "height": 278.972,
+          "right": 888.014,
+          "bottom": 636.619
+        },
+        "viewport": {
+          "width": 1600,
+          "height": 900
+        },
+        "uiOccluded": false,
+        "uiPanel": {
+          "x": 1346,
+          "y": 16,
+          "width": 238,
+          "height": 341.625
+        },
+        "authoredVisibleMeshCount": 15,
+        "proceduralVisibleMeshCount": 0,
+        "drawCalls": 18,
+        "drawCallsThisFrame": 18,
+        "drawCallsAvg120": 18,
+        "activeMeshes": 16,
+        "fps": 1.258,
+        "fpsAvg5s": 4.874,
+        "frameTimeP50": 7.9,
+        "frameTimeP95": 794.7,
+        "visibleMeshes": 15,
+        "visibleVertices": 36550,
+        "visibleTriangles": 19064
+      }
+    },
+    {
+      "captureId": "sequence-012-meleeattack-3",
+      "screenshot": "/home/runner/work/frost-survival-defense/frost-survival-defense/reports/hero-runtime-ci/sequence-012-meleeattack-3.png",
+      "animation": "MeleeAttack",
+      "state": {
+        "ready": true,
+        "modelSource": "GLB",
+        "currentCamera": "three-quarter",
+        "currentAnimation": "MeleeAttack",
+        "currentLod": "LOD0",
+        "authoredVisibleMeshes": 15,
+        "proceduralVisibleMeshes": 0,
+        "visibleVertices": 36550,
+        "visibleTriangles": 19064,
+        "heroWorldPosition": {
+          "x": 0,
+          "y": 0,
+          "z": 0
+        },
+        "heroScreenBounds": {
+          "x": 653.846,
+          "y": 357.647,
+          "width": 234.168,
+          "height": 278.972,
+          "visible": true
+        },
+        "animationGroups": [
+          "hero.player:Idle",
+          "hero.player:Walk",
+          "hero.player:Run",
+          "hero.player:MeleeAttack",
+          "hero.player:RangedAttack",
+          "hero.player:Hit",
+          "hero.player:Death"
+        ],
+        "consoleErrors": [],
+        "uiOccluded": false
+      },
+      "metadata": {
+        "captureMode": "heroReview=1",
+        "cameraMode": "three-quarter",
+        "animation": "MeleeAttack",
+        "lod": 0,
+        "modelSource": "GLB",
+        "heroWorldPosition": {
+          "x": 0,
+          "y": 0,
+          "z": 0
+        },
+        "screenSpaceBoundingBox": {
+          "x": 653.846,
+          "y": 357.647,
+          "width": 234.168,
+          "height": 278.972,
+          "right": 888.014,
+          "bottom": 636.619
+        },
+        "viewport": {
+          "width": 1600,
+          "height": 900
+        },
+        "uiOccluded": false,
+        "uiPanel": {
+          "x": 1346,
+          "y": 16,
+          "width": 238,
+          "height": 341.625
+        },
+        "authoredVisibleMeshCount": 15,
+        "proceduralVisibleMeshCount": 0,
+        "drawCalls": 18,
+        "drawCallsThisFrame": 18,
+        "drawCallsAvg120": 18,
+        "activeMeshes": 16,
+        "fps": 1.277,
+        "fpsAvg5s": 3.118,
+        "frameTimeP50": 13.4,
+        "frameTimeP95": 794.7,
+        "visibleMeshes": 15,
+        "visibleVertices": 36550,
+        "visibleTriangles": 19064
+      }
+    },
+    {
+      "captureId": "sequence-013-rangedattack-1",
+      "screenshot": "/home/runner/work/frost-survival-defense/frost-survival-defense/reports/hero-runtime-ci/sequence-013-rangedattack-1.png",
+      "animation": "RangedAttack",
+      "state": {
+        "ready": true,
+        "modelSource": "GLB",
+        "currentCamera": "three-quarter",
+        "currentAnimation": "RangedAttack",
+        "currentLod": "LOD0",
+        "authoredVisibleMeshes": 15,
+        "proceduralVisibleMeshes": 0,
+        "visibleVertices": 36550,
+        "visibleTriangles": 19064,
+        "heroWorldPosition": {
+          "x": 0,
+          "y": 0,
+          "z": 0
+        },
+        "heroScreenBounds": {
+          "x": 653.846,
+          "y": 357.647,
+          "width": 234.168,
+          "height": 278.972,
+          "visible": true
+        },
+        "animationGroups": [
+          "hero.player:Idle",
+          "hero.player:Walk",
+          "hero.player:Run",
+          "hero.player:MeleeAttack",
+          "hero.player:RangedAttack",
+          "hero.player:Hit",
+          "hero.player:Death"
+        ],
+        "consoleErrors": [],
+        "uiOccluded": false
+      },
+      "metadata": {
+        "captureMode": "heroReview=1",
+        "cameraMode": "three-quarter",
+        "animation": "RangedAttack",
+        "lod": 0,
+        "modelSource": "GLB",
+        "heroWorldPosition": {
+          "x": 0,
+          "y": 0,
+          "z": 0
+        },
+        "screenSpaceBoundingBox": {
+          "x": 653.846,
+          "y": 357.647,
+          "width": 234.168,
+          "height": 278.972,
+          "right": 888.014,
+          "bottom": 636.619
+        },
+        "viewport": {
+          "width": 1600,
+          "height": 900
+        },
+        "uiOccluded": false,
+        "uiPanel": {
+          "x": 1346,
+          "y": 16,
+          "width": 238,
+          "height": 341.625
+        },
+        "authoredVisibleMeshCount": 15,
+        "proceduralVisibleMeshCount": 0,
+        "drawCalls": 18,
+        "drawCallsThisFrame": 18,
+        "drawCallsAvg120": 18,
+        "activeMeshes": 16,
+        "fps": 0.387,
+        "fpsAvg5s": 212.766,
+        "frameTimeP50": 4.8,
+        "frameTimeP95": 5,
+        "visibleMeshes": 15,
+        "visibleVertices": 36550,
+        "visibleTriangles": 19064
+      }
+    },
+    {
+      "captureId": "sequence-014-rangedattack-2",
+      "screenshot": "/home/runner/work/frost-survival-defense/frost-survival-defense/reports/hero-runtime-ci/sequence-014-rangedattack-2.png",
+      "animation": "RangedAttack",
+      "state": {
+        "ready": true,
+        "modelSource": "GLB",
+        "currentCamera": "three-quarter",
+        "currentAnimation": "RangedAttack",
+        "currentLod": "LOD0",
+        "authoredVisibleMeshes": 15,
+        "proceduralVisibleMeshes": 0,
+        "visibleVertices": 36550,
+        "visibleTriangles": 19064,
+        "heroWorldPosition": {
+          "x": 0,
+          "y": 0,
+          "z": 0
+        },
+        "heroScreenBounds": {
+          "x": 653.846,
+          "y": 357.647,
+          "width": 234.168,
+          "height": 278.972,
+          "visible": true
+        },
+        "animationGroups": [
+          "hero.player:Idle",
+          "hero.player:Walk",
+          "hero.player:Run",
+          "hero.player:MeleeAttack",
+          "hero.player:RangedAttack",
+          "hero.player:Hit",
+          "hero.player:Death"
+        ],
+        "consoleErrors": [],
+        "uiOccluded": false
+      },
+      "metadata": {
+        "captureMode": "heroReview=1",
+        "cameraMode": "three-quarter",
+        "animation": "RangedAttack",
+        "lod": 0,
+        "modelSource": "GLB",
+        "heroWorldPosition": {
+          "x": 0,
+          "y": 0,
+          "z": 0
+        },
+        "screenSpaceBoundingBox": {
+          "x": 653.846,
+          "y": 357.647,
+          "width": 234.168,
+          "height": 278.972,
+          "right": 888.014,
+          "bottom": 636.619
+        },
+        "viewport": {
+          "width": 1600,
+          "height": 900
+        },
+        "uiOccluded": false,
+        "uiPanel": {
+          "x": 1346,
+          "y": 16,
+          "width": 238,
+          "height": 341.625
+        },
+        "authoredVisibleMeshCount": 15,
+        "proceduralVisibleMeshCount": 0,
+        "drawCalls": 18,
+        "drawCallsThisFrame": 18,
+        "drawCallsAvg120": 18,
+        "activeMeshes": 16,
+        "fps": 1.26,
+        "fpsAvg5s": 4.953,
+        "frameTimeP50": 4.8,
+        "frameTimeP95": 793.5,
+        "visibleMeshes": 15,
+        "visibleVertices": 36550,
+        "visibleTriangles": 19064
+      }
+    },
+    {
+      "captureId": "sequence-015-rangedattack-3",
+      "screenshot": "/home/runner/work/frost-survival-defense/frost-survival-defense/reports/hero-runtime-ci/sequence-015-rangedattack-3.png",
+      "animation": "RangedAttack",
+      "state": {
+        "ready": true,
+        "modelSource": "GLB",
+        "currentCamera": "three-quarter",
+        "currentAnimation": "RangedAttack",
+        "currentLod": "LOD0",
+        "authoredVisibleMeshes": 15,
+        "proceduralVisibleMeshes": 0,
+        "visibleVertices": 36550,
+        "visibleTriangles": 19064,
+        "heroWorldPosition": {
+          "x": 0,
+          "y": 0,
+          "z": 0
+        },
+        "heroScreenBounds": {
+          "x": 653.846,
+          "y": 357.647,
+          "width": 234.168,
+          "height": 278.972,
+          "visible": true
+        },
+        "animationGroups": [
+          "hero.player:Idle",
+          "hero.player:Walk",
+          "hero.player:Run",
+          "hero.player:MeleeAttack",
+          "hero.player:RangedAttack",
+          "hero.player:Hit",
+          "hero.player:Death"
+        ],
+        "consoleErrors": [],
+        "uiOccluded": false
+      },
+      "metadata": {
+        "captureMode": "heroReview=1",
+        "cameraMode": "three-quarter",
+        "animation": "RangedAttack",
+        "lod": 0,
+        "modelSource": "GLB",
+        "heroWorldPosition": {
+          "x": 0,
+          "y": 0,
+          "z": 0
+        },
+        "screenSpaceBoundingBox": {
+          "x": 653.846,
+          "y": 357.647,
+          "width": 234.168,
+          "height": 278.972,
+          "right": 888.014,
+          "bottom": 636.619
+        },
+        "viewport": {
+          "width": 1600,
+          "height": 900
+        },
+        "uiOccluded": false,
+        "uiPanel": {
+          "x": 1346,
+          "y": 16,
+          "width": 238,
+          "height": 341.625
+        },
+        "authoredVisibleMeshCount": 15,
+        "proceduralVisibleMeshCount": 0,
+        "drawCalls": 18,
+        "drawCallsThisFrame": 18,
+        "drawCallsAvg120": 18,
+        "activeMeshes": 16,
+        "fps": 1.274,
+        "fpsAvg5s": 3.14,
+        "frameTimeP50": 5,
+        "frameTimeP95": 793.5,
+        "visibleMeshes": 15,
+        "visibleVertices": 36550,
+        "visibleTriangles": 19064
+      }
+    },
+    {
+      "captureId": "sequence-016-hit-1",
+      "screenshot": "/home/runner/work/frost-survival-defense/frost-survival-defense/reports/hero-runtime-ci/sequence-016-hit-1.png",
+      "animation": "Hit",
+      "state": {
+        "ready": true,
+        "modelSource": "GLB",
+        "currentCamera": "three-quarter",
+        "currentAnimation": "Hit",
+        "currentLod": "LOD0",
+        "authoredVisibleMeshes": 15,
+        "proceduralVisibleMeshes": 0,
+        "visibleVertices": 36550,
+        "visibleTriangles": 19064,
+        "heroWorldPosition": {
+          "x": 0,
+          "y": 0,
+          "z": 0
+        },
+        "heroScreenBounds": {
+          "x": 653.846,
+          "y": 357.647,
+          "width": 234.168,
+          "height": 278.972,
+          "visible": true
+        },
+        "animationGroups": [
+          "hero.player:Idle",
+          "hero.player:Walk",
+          "hero.player:Run",
+          "hero.player:MeleeAttack",
+          "hero.player:RangedAttack",
+          "hero.player:Hit",
+          "hero.player:Death"
+        ],
+        "consoleErrors": [],
+        "uiOccluded": false
+      },
+      "metadata": {
+        "captureMode": "heroReview=1",
+        "cameraMode": "three-quarter",
+        "animation": "Hit",
+        "lod": 0,
+        "modelSource": "GLB",
+        "heroWorldPosition": {
+          "x": 0,
+          "y": 0,
+          "z": 0
+        },
+        "screenSpaceBoundingBox": {
+          "x": 653.846,
+          "y": 357.647,
+          "width": 234.168,
+          "height": 278.972,
+          "right": 888.014,
+          "bottom": 636.619
+        },
+        "viewport": {
+          "width": 1600,
+          "height": 900
+        },
+        "uiOccluded": false,
+        "uiPanel": {
+          "x": 1346,
+          "y": 16,
+          "width": 238,
+          "height": 341.625
+        },
+        "authoredVisibleMeshCount": 15,
+        "proceduralVisibleMeshCount": 0,
+        "drawCalls": 18,
+        "drawCallsThisFrame": 18,
+        "drawCallsAvg120": 18,
+        "activeMeshes": 16,
+        "fps": 0.39,
+        "fpsAvg5s": 84.27,
+        "frameTimeP50": 10.4,
+        "frameTimeP95": 14.9,
+        "visibleMeshes": 15,
+        "visibleVertices": 36550,
+        "visibleTriangles": 19064
+      }
+    },
+    {
+      "captureId": "sequence-017-hit-2",
+      "screenshot": "/home/runner/work/frost-survival-defense/frost-survival-defense/reports/hero-runtime-ci/sequence-017-hit-2.png",
+      "animation": "Hit",
+      "state": {
+        "ready": true,
+        "modelSource": "GLB",
+        "currentCamera": "three-quarter",
+        "currentAnimation": "Hit",
+        "currentLod": "LOD0",
+        "authoredVisibleMeshes": 15,
+        "proceduralVisibleMeshes": 0,
+        "visibleVertices": 36550,
+        "visibleTriangles": 19064,
+        "heroWorldPosition": {
+          "x": 0,
+          "y": 0,
+          "z": 0
+        },
+        "heroScreenBounds": {
+          "x": 653.846,
+          "y": 357.647,
+          "width": 234.168,
+          "height": 278.972,
+          "visible": true
+        },
+        "animationGroups": [
+          "hero.player:Idle",
+          "hero.player:Walk",
+          "hero.player:Run",
+          "hero.player:MeleeAttack",
+          "hero.player:RangedAttack",
+          "hero.player:Hit",
+          "hero.player:Death"
+        ],
+        "consoleErrors": [],
+        "uiOccluded": false
+      },
+      "metadata": {
+        "captureMode": "heroReview=1",
+        "cameraMode": "three-quarter",
+        "animation": "Hit",
+        "lod": 0,
+        "modelSource": "GLB",
+        "heroWorldPosition": {
+          "x": 0,
+          "y": 0,
+          "z": 0
+        },
+        "screenSpaceBoundingBox": {
+          "x": 653.846,
+          "y": 357.647,
+          "width": 234.168,
+          "height": 278.972,
+          "right": 888.014,
+          "bottom": 636.619
+        },
+        "viewport": {
+          "width": 1600,
+          "height": 900
+        },
+        "uiOccluded": false,
+        "uiPanel": {
+          "x": 1346,
+          "y": 16,
+          "width": 238,
+          "height": 341.625
+        },
+        "authoredVisibleMeshCount": 15,
+        "proceduralVisibleMeshCount": 0,
+        "drawCalls": 18,
+        "drawCallsThisFrame": 18,
+        "drawCallsAvg120": 18,
+        "activeMeshes": 16,
+        "fps": 1.254,
+        "fpsAvg5s": 4.803,
+        "frameTimeP50": 10.4,
+        "frameTimeP95": 797.2,
+        "visibleMeshes": 15,
+        "visibleVertices": 36550,
+        "visibleTriangles": 19064
+      }
+    },
+    {
+      "captureId": "sequence-018-hit-3",
+      "screenshot": "/home/runner/work/frost-survival-defense/frost-survival-defense/reports/hero-runtime-ci/sequence-018-hit-3.png",
+      "animation": "Hit",
+      "state": {
+        "ready": true,
+        "modelSource": "GLB",
+        "currentCamera": "three-quarter",
+        "currentAnimation": "Hit",
+        "currentLod": "LOD0",
+        "authoredVisibleMeshes": 15,
+        "proceduralVisibleMeshes": 0,
+        "visibleVertices": 36550,
+        "visibleTriangles": 19064,
+        "heroWorldPosition": {
+          "x": 0,
+          "y": 0,
+          "z": 0
+        },
+        "heroScreenBounds": {
+          "x": 653.846,
+          "y": 357.647,
+          "width": 234.168,
+          "height": 278.972,
+          "visible": true
+        },
+        "animationGroups": [
+          "hero.player:Idle",
+          "hero.player:Walk",
+          "hero.player:Run",
+          "hero.player:MeleeAttack",
+          "hero.player:RangedAttack",
+          "hero.player:Hit",
+          "hero.player:Death"
+        ],
+        "consoleErrors": [],
+        "uiOccluded": false
+      },
+      "metadata": {
+        "captureMode": "heroReview=1",
+        "cameraMode": "three-quarter",
+        "animation": "Hit",
+        "lod": 0,
+        "modelSource": "GLB",
+        "heroWorldPosition": {
+          "x": 0,
+          "y": 0,
+          "z": 0
+        },
+        "screenSpaceBoundingBox": {
+          "x": 653.846,
+          "y": 357.647,
+          "width": 234.168,
+          "height": 278.972,
+          "right": 888.014,
+          "bottom": 636.619
+        },
+        "viewport": {
+          "width": 1600,
+          "height": 900
+        },
+        "uiOccluded": false,
+        "uiPanel": {
+          "x": 1346,
+          "y": 16,
+          "width": 238,
+          "height": 341.625
+        },
+        "authoredVisibleMeshCount": 15,
+        "proceduralVisibleMeshCount": 0,
+        "drawCalls": 18,
+        "drawCallsThisFrame": 18,
+        "drawCallsAvg120": 18,
+        "activeMeshes": 16,
+        "fps": 1.276,
+        "fpsAvg5s": 3.093,
+        "frameTimeP50": 14.9,
+        "frameTimeP95": 797.2,
+        "visibleMeshes": 15,
+        "visibleVertices": 36550,
+        "visibleTriangles": 19064
+      }
+    },
+    {
+      "captureId": "sequence-019-death-1",
+      "screenshot": "/home/runner/work/frost-survival-defense/frost-survival-defense/reports/hero-runtime-ci/sequence-019-death-1.png",
+      "animation": "Death",
+      "state": {
+        "ready": true,
+        "modelSource": "GLB",
+        "currentCamera": "three-quarter",
+        "currentAnimation": "Death",
+        "currentLod": "LOD0",
+        "authoredVisibleMeshes": 15,
+        "proceduralVisibleMeshes": 0,
+        "visibleVertices": 36550,
+        "visibleTriangles": 19064,
+        "heroWorldPosition": {
+          "x": 0,
+          "y": 0,
+          "z": 0
+        },
+        "heroScreenBounds": {
+          "x": 653.846,
+          "y": 357.647,
+          "width": 234.168,
+          "height": 278.972,
+          "visible": true
+        },
+        "animationGroups": [
+          "hero.player:Idle",
+          "hero.player:Walk",
+          "hero.player:Run",
+          "hero.player:MeleeAttack",
+          "hero.player:RangedAttack",
+          "hero.player:Hit",
+          "hero.player:Death"
+        ],
+        "consoleErrors": [],
+        "uiOccluded": false
+      },
+      "metadata": {
+        "captureMode": "heroReview=1",
+        "cameraMode": "three-quarter",
+        "animation": "Death",
+        "lod": 0,
+        "modelSource": "GLB",
+        "heroWorldPosition": {
+          "x": 0,
+          "y": 0,
+          "z": 0
+        },
+        "screenSpaceBoundingBox": {
+          "x": 653.846,
+          "y": 357.647,
+          "width": 234.168,
+          "height": 278.972,
+          "right": 888.014,
+          "bottom": 636.619
+        },
+        "viewport": {
+          "width": 1600,
+          "height": 900
+        },
+        "uiOccluded": false,
+        "uiPanel": {
+          "x": 1346,
+          "y": 16,
+          "width": 238,
+          "height": 341.625
+        },
+        "authoredVisibleMeshCount": 15,
+        "proceduralVisibleMeshCount": 0,
+        "drawCalls": 18,
+        "drawCallsThisFrame": 18,
+        "drawCallsAvg120": 18,
+        "activeMeshes": 16,
+        "fps": 0.391,
+        "fpsAvg5s": 236.22,
+        "frameTimeP50": 4.3,
+        "frameTimeP95": 4.4,
+        "visibleMeshes": 15,
+        "visibleVertices": 36550,
+        "visibleTriangles": 19064
+      }
+    },
+    {
+      "captureId": "sequence-020-death-2",
+      "screenshot": "/home/runner/work/frost-survival-defense/frost-survival-defense/reports/hero-runtime-ci/sequence-020-death-2.png",
+      "animation": "Death",
+      "state": {
+        "ready": true,
+        "modelSource": "GLB",
+        "currentCamera": "three-quarter",
+        "currentAnimation": "Death",
+        "currentLod": "LOD0",
+        "authoredVisibleMeshes": 15,
+        "proceduralVisibleMeshes": 0,
+        "visibleVertices": 36550,
+        "visibleTriangles": 19064,
+        "heroWorldPosition": {
+          "x": 0,
+          "y": 0,
+          "z": 0
+        },
+        "heroScreenBounds": {
+          "x": 653.846,
+          "y": 357.647,
+          "width": 234.168,
+          "height": 278.972,
+          "visible": true
+        },
+        "animationGroups": [
+          "hero.player:Idle",
+          "hero.player:Walk",
+          "hero.player:Run",
+          "hero.player:MeleeAttack",
+          "hero.player:RangedAttack",
+          "hero.player:Hit",
+          "hero.player:Death"
+        ],
+        "consoleErrors": [],
+        "uiOccluded": false
+      },
+      "metadata": {
+        "captureMode": "heroReview=1",
+        "cameraMode": "three-quarter",
+        "animation": "Death",
+        "lod": 0,
+        "modelSource": "GLB",
+        "heroWorldPosition": {
+          "x": 0,
+          "y": 0,
+          "z": 0
+        },
+        "screenSpaceBoundingBox": {
+          "x": 653.846,
+          "y": 357.647,
+          "width": 234.168,
+          "height": 278.972,
+          "right": 888.014,
+          "bottom": 636.619
+        },
+        "viewport": {
+          "width": 1600,
+          "height": 900
+        },
+        "uiOccluded": false,
+        "uiPanel": {
+          "x": 1346,
+          "y": 16,
+          "width": 238,
+          "height": 341.625
+        },
+        "authoredVisibleMeshCount": 15,
+        "proceduralVisibleMeshCount": 0,
+        "drawCalls": 18,
+        "drawCallsThisFrame": 18,
+        "drawCallsAvg120": 18,
+        "activeMeshes": 16,
+        "fps": 1.249,
+        "fpsAvg5s": 4.916,
+        "frameTimeP50": 4.3,
+        "frameTimeP95": 800.9,
+        "visibleMeshes": 15,
+        "visibleVertices": 36550,
+        "visibleTriangles": 19064
+      }
+    },
+    {
+      "captureId": "sequence-021-death-3",
+      "screenshot": "/home/runner/work/frost-survival-defense/frost-survival-defense/reports/hero-runtime-ci/sequence-021-death-3.png",
+      "animation": "Death",
+      "state": {
+        "ready": true,
+        "modelSource": "GLB",
+        "currentCamera": "three-quarter",
+        "currentAnimation": "Death",
+        "currentLod": "LOD0",
+        "authoredVisibleMeshes": 15,
+        "proceduralVisibleMeshes": 0,
+        "visibleVertices": 36550,
+        "visibleTriangles": 19064,
+        "heroWorldPosition": {
+          "x": 0,
+          "y": 0,
+          "z": 0
+        },
+        "heroScreenBounds": {
+          "x": 653.846,
+          "y": 357.647,
+          "width": 234.168,
+          "height": 278.972,
+          "visible": true
+        },
+        "animationGroups": [
+          "hero.player:Idle",
+          "hero.player:Walk",
+          "hero.player:Run",
+          "hero.player:MeleeAttack",
+          "hero.player:RangedAttack",
+          "hero.player:Hit",
+          "hero.player:Death"
+        ],
+        "consoleErrors": [],
+        "uiOccluded": false
+      },
+      "metadata": {
+        "captureMode": "heroReview=1",
+        "cameraMode": "three-quarter",
+        "animation": "Death",
+        "lod": 0,
+        "modelSource": "GLB",
+        "heroWorldPosition": {
+          "x": 0,
+          "y": 0,
+          "z": 0
+        },
+        "screenSpaceBoundingBox": {
+          "x": 653.846,
+          "y": 357.647,
+          "width": 234.168,
+          "height": 278.972,
+          "right": 888.014,
+          "bottom": 636.619
+        },
+        "viewport": {
+          "width": 1600,
+          "height": 900
+        },
+        "uiOccluded": false,
+        "uiPanel": {
+          "x": 1346,
+          "y": 16,
+          "width": 238,
+          "height": 341.625
+        },
+        "authoredVisibleMeshCount": 15,
+        "proceduralVisibleMeshCount": 0,
+        "drawCalls": 18,
+        "drawCallsThisFrame": 18,
+        "drawCallsAvg120": 18,
+        "activeMeshes": 16,
+        "fps": 1.341,
+        "fpsAvg5s": 3.207,
+        "frameTimeP50": 4.4,
+        "frameTimeP95": 800.9,
+        "visibleMeshes": 15,
+        "visibleVertices": 36550,
+        "visibleTriangles": 19064
+      }
+    }
+  ],
+  "consoleErrors": [],
+  "pageErrors": [],
+  "requestFailures": [],
+  "finishedAt": "2026-08-03T15:48:10.282Z"
+}
