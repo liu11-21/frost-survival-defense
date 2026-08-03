@@ -395,6 +395,7 @@ export class Game {
     if (this.disposed) return;
     if (this.heroReview) {
       this.heroReview.update();
+      this.heroReview.beforeRender();
       this.s.scene.render();
       this.heroReview.afterRender();
       return;
@@ -432,7 +433,10 @@ export class Game {
     const frameDt = Math.min(0.05, dt);
     if (this.heroReview) {
       this.heroReview.update();
-      if (render) this.s.scene.render();
+      if (render) {
+        this.heroReview.beforeRender();
+        this.s.scene.render();
+      }
       this.heroReview.afterRender();
       return;
     }
@@ -456,6 +460,7 @@ export class Game {
             setCamera: (mode: Parameters<HeroReviewMode["setCamera"]>[0]) => this.heroReview?.setCamera(mode),
             setAnimation: (animation: Parameters<HeroReviewMode["setAnimation"]>[0]) => this.heroReview?.setAnimation(animation),
             setLod: (lod: Parameters<HeroReviewMode["setLod"]>[0]) => this.heroReview?.setLod(lod),
+            resetPerformance: () => this.heroReview?.resetPerformance(),
             capture: () => this.heroReview?.capture() ?? null,
             state: () => this.heroReview?.panelState() ?? null,
           }

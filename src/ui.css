@@ -22,10 +22,11 @@ body.hero-review #uiRoot > *:not(#heroReviewPanel) {
 .hero-review-panel {
   position: absolute;
   top: 16px;
-  left: 16px;
+  right: 16px;
+  left: auto;
   z-index: 80;
-  width: 248px;
-  padding: 10px 12px;
+  width: 238px;
+  padding: 8px 10px;
   pointer-events: auto;
   color: #e8f2ff;
   background: rgba(10, 17, 28, 0.86);
@@ -36,14 +37,14 @@ body.hero-review #uiRoot > *:not(#heroReviewPanel) {
 }
 
 .hero-review-title {
-  margin-bottom: 6px;
+  margin-bottom: 4px;
   color: #ffd28a;
   font-weight: 800;
   letter-spacing: 0.12em;
 }
 
 .hero-review-source {
-  margin-bottom: 7px;
+  margin-bottom: 5px;
   color: #b9e6ff;
   font-weight: 700;
 }
@@ -53,7 +54,7 @@ body.hero-review #uiRoot > *:not(#heroReviewPanel) {
   grid-template-columns: 62px 1fr;
   align-items: center;
   gap: 6px;
-  margin: 3px 0;
+  margin: 2px 0;
   color: #c2d4e9;
 }
 
@@ -71,7 +72,7 @@ body.hero-review #uiRoot > *:not(#heroReviewPanel) {
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 2px 8px;
-  margin-top: 8px;
+  margin-top: 6px;
   color: #a8bfd8;
 }
 

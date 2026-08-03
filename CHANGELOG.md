@@ -411,3 +411,10 @@ flyingColossus, furnace and crossbow/turret before claiming display readiness.
 - No new effect type, material framework, asset family, or refactor was added
   after this checkpoint. Remaining commercial-art gaps stay documented in the
   art-quality audit.
+
+## 2026-08-03 | Hero-R3 A review lighting and real frame metrics
+
+- Added a dedicated Babylon review presentation state with neutral lighting and
+  no inherited bloom/fog/vignette overexposure.
+- Review captures now record per-frame and rolling draw calls, measured FPS, p50/p95 frame times, and visible Hero geometry counts.
+- Formal R3-A runtime evidence is under `reports/art-previews/hero-commercial-r3/R3-A/`; Hero geometry is unchanged.

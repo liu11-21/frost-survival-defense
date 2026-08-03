@@ -1,14 +1,18 @@
 import puppeteer from "puppeteer-core";
 import { mkdir, writeFile } from "node:fs/promises";
-import { resolve } from "node:path";
+import { relative, resolve } from "node:path";
 
 const args = process.argv.slice(2);
 const urlIndex = args.indexOf("--url");
 const baseUrl = urlIndex >= 0 ? args[urlIndex + 1] : "http://127.0.0.1:5181";
 const chromePath = "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe";
-const reviewRoot = resolve(process.cwd(), "reports/art-previews/hero-commercial/review");
+const outputIndex = args.indexOf("--output");
+const staticOnly = args.includes("--static-only");
+const reviewRoot = resolve(process.cwd(), outputIndex >= 0 ? args[outputIndex + 1] : "reports/art-previews/hero-commercial/review");
 const sequenceRoot = resolve(reviewRoot, "sequence");
 await mkdir(sequenceRoot, { recursive: true });
+
+const relativeReportPath = (file) => relative(process.cwd(), file).replaceAll("\\", "/");
 
 const browser = await puppeteer.launch({
   executablePath: chromePath,
@@ -60,6 +64,7 @@ const setReview = (camera, animation, lod) =>
       review?.setCamera(state.camera);
       review?.setAnimation(state.animation);
       review?.setLod(state.lod);
+      review?.resetPerformance?.();
       window.frostbound?.step(0.016, 4, true);
     },
     { camera, animation, lod },
@@ -76,7 +81,7 @@ const capture = async (name, state, frameCount = 5, directory = reviewRoot) => {
     captureId: name,
     capturedAt: new Date().toISOString(),
     url: reviewUrl,
-    screenshot: `reports/art-previews/hero-commercial/${directory === sequenceRoot ? "review/sequence/" : "review/"}${name}.png`,
+    screenshot: relativeReportPath(screenshot),
     ...metadata,
   };
   await writeFile(resolve(directory, `${name}.json`), `${JSON.stringify(record, null, 2)}\n`, "utf8");
@@ -115,14 +120,16 @@ const sequenceStates = [
   ["death", "Death"],
 ];
 let frame = 0;
-for (const [label, animation] of sequenceStates) {
-  for (let i = 0; i < 3; i++) {
-    frame += 1;
-    sequence.push(await capture(`sequence-${String(frame).padStart(3, "0")}-${label}-${i + 1}`, {
-      camera: "three-quarter",
-      animation,
-      lod: 0,
-    }, 6, sequenceRoot));
+if (!staticOnly) {
+  for (const [label, animation] of sequenceStates) {
+    for (let i = 0; i < 3; i++) {
+      frame += 1;
+      sequence.push(await capture(`sequence-${String(frame).padStart(3, "0")}-${label}-${i + 1}`, {
+        camera: "three-quarter",
+        animation,
+        lod: 0,
+      }, 6, sequenceRoot));
+    }
   }
 }
 await writeFile(resolve(sequenceRoot, "manifest.json"), `${JSON.stringify({
