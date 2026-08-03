@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-08-03T14:40:11.142Z",
+  "generatedAt": "2026-08-03T14:49:57.749Z",
   "asset": "hero",
   "sourcePath": "assets-source/blender/characters/hero.blend",
   "glbPath": "public/assets/models/characters/hero.glb",
@@ -33,7 +33,7 @@
   "artifact": {
     "status": "pass",
     "glb": {
-      "bytes": 3932264,
+      "bytes": 4117692,
       "assetVersion": "2.0",
       "nodes": 53,
       "meshes": 27,
@@ -83,8 +83,8 @@
             "heroMeshPass": "R4-D-production-lods",
             "heroMeshContract": "15 LOD0 meshes plus production LOD1/LOD2 identity forms from the mid-poly loop base",
             "heroR4Stage": "R4-D",
-            "heroR5Stage": "R5-B",
-            "heroR5Scope": "survival clothing and equipment layering",
+            "heroR5Stage": "R5-C",
+            "heroR5Scope": "expedition helmet identity and visor",
             "topologyMethod": "authored anatomical and garment edge-loop lofts; no subdivision modifier",
             "lod0TargetTriangles": "16000-25000",
             "lod1TargetTriangles": "6000-10000",
@@ -107,8 +107,8 @@
         "heroMeshPass": "R4-D-production-lods",
         "heroMeshContract": "15 LOD0 meshes plus production LOD1/LOD2 identity forms from the mid-poly loop base",
         "heroR4Stage": "R4-D",
-        "heroR5Stage": "R5-B",
-        "heroR5Scope": "survival clothing and equipment layering",
+        "heroR5Stage": "R5-C",
+        "heroR5Scope": "expedition helmet identity and visor",
         "topologyMethod": "authored anatomical and garment edge-loop lofts; no subdivision modifier",
         "lod0TargetTriangles": "16000-25000",
         "lod1TargetTriangles": "6000-10000",
@@ -123,11 +123,11 @@
         "heroAtlasResolution": 1024,
         "heroMaterialCount": 4
       },
-      "triangles": 27380,
+      "triangles": 28908,
       "lodTriangles": {
-        "LOD0": 18176,
-        "LOD1": 6996,
-        "LOD2": 2208
+        "LOD0": 19004,
+        "LOD1": 7288,
+        "LOD2": 2616
       },
       "lodIdentityParts": [
         "LOD1_PROD_arms",
@@ -259,7 +259,7 @@
       "renderableCollisionNodes": []
     },
     "source": {
-      "bytes": 764716,
+      "bytes": 782902,
       "exists": true
     },
     "checks": {

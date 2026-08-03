@@ -1,0 +1,43 @@
+{
+  "stage": "R5-C",
+  "status": "helmet-identity-review-ready",
+  "artIterations": 1,
+  "scope": "Hero expedition helmet, visor and LOD identity only",
+  "baseline": {
+    "lod0": { "triangles": 18176, "renderMeshes": 15 },
+    "lod1": { "triangles": 6996, "renderMeshes": 8, "renderPrimitives": 8 },
+    "lod2": { "triangles": 2208, "renderMeshes": 6, "renderPrimitives": 6 },
+    "glbBytes": 3932264,
+    "materials": 4,
+    "embeddedTextures": 1,
+    "skeletonBones": 18,
+    "animationClips": 7
+  },
+  "current": {
+    "lod0": { "triangles": 19004, "renderMeshes": 15 },
+    "lod1": { "triangles": 7288, "renderMeshes": 8, "renderPrimitives": 8 },
+    "lod2": { "triangles": 2616, "renderMeshes": 6, "renderPrimitives": 6 },
+    "glbBytes": 4117692,
+    "sourceBlendBytes": 782902,
+    "materials": 4,
+    "embeddedTextures": 1,
+    "skeletonBones": 18,
+    "animationClips": 7
+  },
+  "identityChanges": {
+    "helmet": "continuous shell now includes forward brow housing, mirrored cheek/ear guards and a low rear ridge in one skinned mesh",
+    "visor": "faceted paired lens profiles and a narrower bridge preserve the existing goggle mesh contract",
+    "lods": "LOD1 and LOD2 use the same helmet shell family with reduced rings and retain the visor band and cheek silhouette",
+    "contract": "HeroRoot, HeroSkeleton, sockets, four materials, one 1024 atlas and seven clips are unchanged"
+  },
+  "evidence": [
+    "helmet-front.png",
+    "helmet-side.png",
+    "helmet-three-quarter.png",
+    "helmet-close-up.png",
+    "helmet-lod1.png",
+    "helmet-lod2.png",
+    "helmet-manifest.json"
+  ],
+  "humanReviewNote": "These plates document helmet identity and LOD preservation only. Commercial art quality remains a human artist decision."
+}

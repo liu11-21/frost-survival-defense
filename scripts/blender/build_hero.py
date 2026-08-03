@@ -276,6 +276,39 @@ def _r4_head_rings():
     ]
 
 
+def _r5_helmet_brow_rings():
+    """A forward brow/visor housing that gives the helmet a readable plane."""
+    return [
+        (1.70, 0.25, 0.055, 0.00, 0.255, 0),
+        (1.75, 0.34, 0.070, 0.00, 0.275, 1),
+        (1.82, 0.36, 0.075, 0.00, 0.275, 1),
+        (1.89, 0.31, 0.065, 0.00, 0.255, 1),
+        (1.94, 0.20, 0.045, 0.00, 0.225, 0),
+    ]
+
+
+def _r5_helmet_cheek_rings(side):
+    """Asymmetric-ready cheek/ear guard volume, mirrored by side."""
+    x = side * 0.30
+    return [
+        (1.61, 0.070, 0.125, x * 0.92, 0.015, 0),
+        (1.69, 0.095, 0.145, x, 0.020, 0),
+        (1.79, 0.105, 0.155, x * 1.02, 0.015, 1),
+        (1.89, 0.090, 0.140, x * 1.01, 0.005, 1),
+        (1.98, 0.060, 0.105, x * 0.96, -0.005, 0),
+    ]
+
+
+def _r5_helmet_rear_ridge_rings():
+    """A low rear ridge that preserves helmet identity in back views."""
+    return [
+        (1.72, 0.070, 0.045, 0.00, -0.285, 0),
+        (1.84, 0.085, 0.055, 0.00, -0.305, 1),
+        (1.96, 0.080, 0.050, 0.00, -0.295, 1),
+        (2.07, 0.050, 0.040, 0.00, -0.255, 0),
+    ]
+
+
 def _r4_arm_rings(side):
     """R5-A slimmer sleeves with a slightly narrower shoulder break."""
     shoulder = 0.45 if side < 0 else 0.47
@@ -394,12 +427,16 @@ def _add_hero_lods(root, mats):
         marker["generatedFrom"] = "R4-D-production-lod-from-mid-poly"
         marker["proxyGeometry"] = False
         marker["productionLod"] = True
-        marker["identityFeatures"] = "helmet,visor,shoulders,arms,legs,pack,coat,goggles,weapons"
+        marker["identityFeatures"] = "expedition-helmet,visor,cheek-guards,shoulders,arms,legs,pack,coat,goggles,weapons"
         return marker
 
     def jacket_rings(level):
         source = _r5_jacket_rings()
         return sample(source, 10 if level == 1 else 6)
+
+    def helmet_rings(level):
+        source = _r5_helmet_rings()
+        return sample(source, 10 if level == 1 else 7)
 
     def armor_rings():
         # A compact chest bib exposes the waist and leaves the shoulder line
@@ -470,7 +507,11 @@ def _add_hero_lods(root, mats):
         head = _multi_loft_mesh(
             f"LOD{level}_PROD_head",
             [
-                {"rings": sample(_r4_head_rings(), head_count), "segments": head_segments},
+                {"rings": helmet_rings(level), "segments": head_segments},
+                {"rings": _r5_helmet_brow_rings(), "segments": max(14, head_segments // 2)},
+                {"rings": _r5_helmet_cheek_rings(-1), "segments": max(12, head_segments // 2)},
+                {"rings": _r5_helmet_cheek_rings(1), "segments": max(12, head_segments // 2)},
+                {"rings": _r5_helmet_rear_ridge_rings(), "segments": max(10, head_segments // 2)},
             ],
             [mats["cloth"], mats["metal"], mats["accent"], mats["accent"]],
             target=target,
@@ -707,12 +748,21 @@ def _build_mesh_parts(mats):
         [mats["leather"], mats["cloth"]],
     )
 
-    helmet = _loft_mesh(
+    def helmet_override(_ring_index, _segment, _center_x, center_y, center_z, current, _following):
+        if center_y >= 1.72 and center_z > 0.18:
+            return 1
+        return current[5]
+
+    helmet = _multi_loft_mesh(
         "helmet.heroShell",
-        _r5_helmet_rings(),
-        48,
+        [
+            {"rings": _r5_helmet_rings(), "segments": 48, "override": helmet_override},
+            {"rings": _r5_helmet_brow_rings(), "segments": 28, "override": helmet_override},
+            {"rings": _r5_helmet_cheek_rings(-1), "segments": 20, "override": helmet_override},
+            {"rings": _r5_helmet_cheek_rings(1), "segments": 20, "override": helmet_override},
+            {"rings": _r5_helmet_rear_ridge_rings(), "segments": 18, "override": helmet_override},
+        ],
         [mats["cloth"], mats["accent"]],
-        override=lambda _ring, _segment, _x, y, _z, current, _following: 1 if 1.73 <= y <= 1.91 else current[5],
     )
 
     # A single head-bound mesh gives the Hero a readable goggle band and two
@@ -720,10 +770,11 @@ def _build_mesh_parts(mats):
     goggles = _profile_mesh(
         "head.goggles",
         [
-            ([(-0.27, 1.82), (-0.04, 1.82), (-0.04, 1.67), (-0.27, 1.67)], -0.275, 0.08, 0),
-            ([(0.04, 1.82), (0.27, 1.82), (0.27, 1.67), (0.04, 1.67)], -0.275, 0.08, 0),
-            ([(-0.29, 1.86), (0.29, 1.86), (0.29, 1.91), (-0.29, 1.91)], 0.02, 0.07, 0),
-            ([(-0.05, 1.77), (0.05, 1.77), (0.05, 1.70), (-0.05, 1.70)], -0.30, 0.06, 0),
+            ([(-0.27, 1.82), (-0.06, 1.84), (-0.055, 1.69), (-0.27, 1.71)], -0.285, 0.065, 0),
+            ([(0.06, 1.84), (0.27, 1.82), (0.27, 1.71), (0.055, 1.69)], -0.285, 0.065, 0),
+            ([(-0.085, 1.80), (0.085, 1.80), (0.08, 1.85), (-0.08, 1.85)], -0.292, 0.055, 0),
+            ([(-0.30, 1.87), (-0.24, 1.90), (0.24, 1.90), (0.30, 1.87), (0.25, 1.93), (-0.25, 1.93)], -0.012, 0.055, 0),
+            ([(-0.052, 1.77), (0.052, 1.77), (0.052, 1.70), (-0.052, 1.70)], -0.30, 0.050, 0),
         ],
         [mats["glow"]],
     )
@@ -1138,8 +1189,8 @@ def build():
     root["heroMeshPass"] = "R4-D-production-lods"
     root["heroMeshContract"] = "15 LOD0 meshes plus production LOD1/LOD2 identity forms from the mid-poly loop base"
     root["heroR4Stage"] = "R4-D"
-    root["heroR5Stage"] = "R5-B"
-    root["heroR5Scope"] = "survival clothing and equipment layering"
+    root["heroR5Stage"] = "R5-C"
+    root["heroR5Scope"] = "expedition helmet identity and visor"
     root["topologyMethod"] = "authored anatomical and garment edge-loop lofts; no subdivision modifier"
     root["lod0TargetTriangles"] = "16000-25000"
     root["lod1TargetTriangles"] = "6000-10000"

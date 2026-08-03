@@ -561,3 +561,13 @@ flyingColossus, furnace and crossbow/turret before claiming display readiness.
 - Added R5-B front, side, back, three-quarter and close-up evidence plates.
 - This is a clothing/equipment checkpoint only; commercial art quality remains
   open for human review.
+## 2026-08-03 | Hero-R5 C expedition helmet identity checkpoint
+
+- Rebuilt the Hero helmet shell as one continuous authored mesh with a forward
+  brow housing, cheek/ear guards and a low rear ridge.
+- Refined the paired visor profiles and bridge without adding a render object.
+- Reused the helmet family in LOD1/LOD2 so the character remains identifiable at
+  distance while staying inside the existing production budgets.
+- Added R5-C helmet front, side, three-quarter, close-up and LOD evidence.
+- This is a helmet identity checkpoint only; commercial art quality remains open
+  for human review.

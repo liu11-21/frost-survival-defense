@@ -1,0 +1,37 @@
+{
+  "stage": "R5-C",
+  "kind": "expedition-helmet-identity",
+  "source": "assets-source/blender/characters/hero.blend",
+  "views": [
+    {
+      "name": "helmet-front",
+      "lod": 0,
+      "file": "D:\\codex\\\u904a\u6232\u958b\u767c\\reports\\art-previews\\hero-commercial-r5\\R5-C\\helmet-front.png"
+    },
+    {
+      "name": "helmet-side",
+      "lod": 0,
+      "file": "D:\\codex\\\u904a\u6232\u958b\u767c\\reports\\art-previews\\hero-commercial-r5\\R5-C\\helmet-side.png"
+    },
+    {
+      "name": "helmet-three-quarter",
+      "lod": 0,
+      "file": "D:\\codex\\\u904a\u6232\u958b\u767c\\reports\\art-previews\\hero-commercial-r5\\R5-C\\helmet-three-quarter.png"
+    },
+    {
+      "name": "helmet-close-up",
+      "lod": 0,
+      "file": "D:\\codex\\\u904a\u6232\u958b\u767c\\reports\\art-previews\\hero-commercial-r5\\R5-C\\helmet-close-up.png"
+    },
+    {
+      "name": "helmet-lod1",
+      "lod": 1,
+      "file": "D:\\codex\\\u904a\u6232\u958b\u767c\\reports\\art-previews\\hero-commercial-r5\\R5-C\\helmet-lod1.png"
+    },
+    {
+      "name": "helmet-lod2",
+      "lod": 2,
+      "file": "D:\\codex\\\u904a\u6232\u958b\u767c\\reports\\art-previews\\hero-commercial-r5\\R5-C\\helmet-lod2.png"
+    }
+  ]
+}
