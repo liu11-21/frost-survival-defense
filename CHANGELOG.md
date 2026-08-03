@@ -7,7 +7,7 @@
 - 縮小 LOD0／production LOD 胸甲與肩甲，將前方披掛改為由腰線連接並逐段收窄的外套下擺；背包向後調整、既有 LOD weapon mesh 保留刀身與槍體輪廓。
 - 追加 `reports/art-previews/hero-commercial-r4/R4-final-correction/` 的三個 LOD front／side／back／three-quarter clay 證據與比較資料；不把 Blender clay 圖當作 Babylon runtime 證據或商業品質簽核。
 - 最新靜態 GLB：LOD0 10,492 vertices／20,864 triangles／15 meshes；LOD1 3,684／7,280／7；LOD2 1,060／2,060／5；4 materials、1 embedded atlas、18 bones、7 animations。
-- `npm run art:validate:hero` 通過；Babylon runtime 仍需在本輪第二階段以有限方式嘗試，若再次受 `spawn EPERM` 阻擋則只保留 blocker，不宣稱 runtime 通過。
+- `npm run art:validate:hero` 與完整 `npm run art:validate` 均通過；Babylon runtime 仍需在本輪第二階段以有限方式嘗試，若再次受 `spawn EPERM` 阻擋則只保留 blocker，不宣稱 runtime 通過。
 
 ## 2026-08-03｜Hero continuous authored mesh reconstruction
 
