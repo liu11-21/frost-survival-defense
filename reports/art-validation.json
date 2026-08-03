@@ -1,12 +1,12 @@
 {
-  "generatedAt": "2026-08-03T15:13:55.002Z",
+  "generatedAt": "2026-08-03T15:27:15.754Z",
   "blenderRequired": true,
   "assets": [
     {
       "key": "hero",
       "status": "ok",
       "path": "public/assets/models/characters/hero.glb",
-      "sizeBytes": 4135028,
+      "sizeBytes": 4027500,
       "nodes": 53,
       "meshes": 27,
       "materials": 4,

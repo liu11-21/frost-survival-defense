@@ -906,16 +906,27 @@ def author_hero_atlas(objects, mats):
         tag = mat.name.lower()
         for y in range(margin, cell_height - margin):
             for x in range(margin, cell_width - margin):
-                wave = math.sin((x + index * 19) * 0.047) * 0.025
-                wave += math.cos((y + index * 11) * 0.031) * 0.020
+                # R5-E uses broad, hand-painted value bands instead of a
+                # noisy procedural texture.  The same deterministic atlas
+                # remains the only Hero image; these low-frequency bands make
+                # cloth, leather, steel, and visor accents read as authored
+                # surfaces at both gameplay distance and close-up review.
+                u = x / max(1, cell_width - 1)
+                v = y / max(1, cell_height - 1)
+                wave = math.sin((x + index * 19) * 0.047) * 0.018
+                wave += math.cos((y + index * 11) * 0.031) * 0.014
                 if "metal" in tag:
-                    wave += math.sin((y * 0.18 + x * 0.012) + index) * 0.035
+                    wave += math.sin((y * 0.18 + x * 0.012) + index) * 0.028
+                    wave += (0.035 if v < 0.30 else (-0.025 if v > 0.76 else 0.0))
                 elif "leather" in tag:
-                    wave += math.sin((x * 0.11 + y * 0.08) + index) * 0.045
+                    wave += math.sin((x * 0.11 + y * 0.08) + index) * 0.032
+                    wave += 0.045 * math.sin((u * 2.0 + v * 0.7 + index) * math.pi)
                 elif "cloth" in tag:
-                    wave += math.sin(x * 0.16 + index) * math.sin(y * 0.12) * 0.028
+                    wave += math.sin(x * 0.16 + index) * math.sin(y * 0.12) * 0.020
+                    wave += 0.035 * math.sin((u * 1.5 + v * 0.35 + index * 0.17) * math.pi)
                 elif "glow" in tag or "accent" in tag:
                     wave += 0.025 * math.sin((x + y) * 0.035)
+                    wave += 0.035 * (1.0 - abs(0.5 - u) * 1.6)
                 edge = min(x, y, cell_width - 1 - x, cell_height - 1 - y)
                 value = 0.96 + wave + (0.025 if edge < 10 else 0.0)
                 pixel_index = ((y0 + y) * texture_size + (x0 + x)) * 4
@@ -1170,10 +1181,14 @@ def collapse_hero_material_slots(objects, mats):
 def build():
     reset_scene()
     mats = {
-        "cloth": material("MAT_hero_cloth", (0.16, 0.28, 0.52), 0.84),
-        "leather": material("MAT_hero_leather", (0.24, 0.09, 0.038), 0.70),
-        "metal": material("MAT_hero_metal", (0.20, 0.27, 0.36), 0.22, 0.93),
-        "accent": material("MAT_hero_accent", (0.40, 0.74, 1.0), 0.28, 0.62),
+        # R5-E is a palette and atlas pass only.  Keep the four established
+        # material identities, but give the expedition leader a darker navy
+        # cloth, warm worn leather, readable gunmetal, and a controlled cyan
+        # visor accent that does not clip to white in the review lights.
+        "cloth": material("MAT_hero_cloth", (0.075, 0.16, 0.34), 0.78),
+        "leather": material("MAT_hero_leather", (0.19, 0.055, 0.018), 0.66),
+        "metal": material("MAT_hero_metal", (0.085, 0.14, 0.21), 0.30, 0.88),
+        "accent": material("MAT_hero_accent", (0.018, 0.22, 0.50), 0.36, 0.18),
     }
     # R4-B keeps four primary material slots. These semantic aliases let the
     # existing mesh authoring code retain its regions without exporting a
@@ -1184,8 +1199,12 @@ def build():
     mats["snow"] = mats["cloth"]
     mats["glow"] = mats["accent"]
     glow_shader = mats["glow"].node_tree.nodes.get("Principled BSDF")
-    if glow_shader and glow_shader.inputs.get("Emission Strength"):
-        glow_shader.inputs["Emission Strength"].default_value = 2.6
+    if glow_shader:
+        emission_color = glow_shader.inputs.get("Emission Color")
+        if emission_color:
+            emission_color.default_value = (0.018, 0.22, 0.50, 1.0)
+        if glow_shader.inputs.get("Emission Strength"):
+            glow_shader.inputs["Emission Strength"].default_value = 0.65
 
     root = orient_for_babylon(empty("HeroRoot", target="EXPORT", display="PLAIN_AXES"))
     # Keep the existing H6 metadata required by the established asset gate;
@@ -1195,8 +1214,8 @@ def build():
     root["heroMeshPass"] = "R4-D-production-lods"
     root["heroMeshContract"] = "15 LOD0 meshes plus production LOD1/LOD2 identity forms from the mid-poly loop base"
     root["heroR4Stage"] = "R4-D"
-    root["heroR5Stage"] = "R5-D"
-    root["heroR5Scope"] = "survival weapon silhouettes and sockets"
+    root["heroR5Stage"] = "R5-E"
+    root["heroR5Scope"] = "production material palette and painted atlas"
     root["topologyMethod"] = "authored anatomical and garment edge-loop lofts; no subdivision modifier"
     root["lod0TargetTriangles"] = "16000-25000"
     root["lod1TargetTriangles"] = "6000-10000"

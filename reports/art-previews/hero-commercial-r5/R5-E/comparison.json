@@ -1,0 +1,44 @@
+{
+  "stage": "R5-E",
+  "status": "material-atlas-review-ready",
+  "artIterations": 2,
+  "scope": "Hero production palette and the existing single 1024 atlas only",
+  "baseline": {
+    "lod0": { "triangles": 19064, "renderMeshes": 15 },
+    "lod1": { "triangles": 7324, "renderMeshes": 8, "renderPrimitives": 8 },
+    "lod2": { "triangles": 2656, "renderMeshes": 6, "renderPrimitives": 6 },
+    "glbBytes": 4135028,
+    "materials": 4,
+    "embeddedTextures": 1,
+    "skeletonBones": 18,
+    "animationClips": 7
+  },
+  "current": {
+    "lod0": { "triangles": 19064, "renderMeshes": 15 },
+    "lod1": { "triangles": 7324, "renderMeshes": 8, "renderPrimitives": 8 },
+    "lod2": { "triangles": 2656, "renderMeshes": 6, "renderPrimitives": 6 },
+    "glbBytes": 4027500,
+    "sourceBlendBytes": 677504,
+    "materials": 4,
+    "embeddedTextures": 1,
+    "atlas": { "name": "HERO_ATLAS_1024", "resolution": 1024 },
+    "skeletonBones": 18,
+    "animationClips": 7
+  },
+  "materialChanges": {
+    "cloth": "deep expedition navy with broad low-frequency value bands",
+    "leather": "warm worn brown with restrained grain breakup",
+    "metal": "dark gunmetal with readable roughness and edge response",
+    "accent": "controlled cyan visor and signal accents with reduced white clipping",
+    "atlas": "regenerated existing HERO_ATLAS_1024; no additional image or material slots"
+  },
+  "evidence": [
+    "materials-front.png",
+    "materials-side.png",
+    "materials-back.png",
+    "materials-three-quarter.png",
+    "materials-close-up.png",
+    "materials-manifest.json"
+  ],
+  "humanReviewNote": "These plates document the production palette and atlas response only. Commercial art quality remains a human artist decision."
+}

@@ -1,0 +1,40 @@
+{
+  "stage": "R5-E",
+  "kind": "production-material-atlas",
+  "source": "assets-source/blender/characters/hero.blend",
+  "materials": [
+    "MAT_hero_accent",
+    "MAT_hero_cloth",
+    "MAT_hero_leather",
+    "MAT_hero_metal"
+  ],
+  "atlas": {
+    "name": "HERO_ATLAS_1024",
+    "resolution": [
+      1024,
+      1024
+    ]
+  },
+  "views": [
+    {
+      "name": "materials-front",
+      "file": "D:\\codex\\\u904a\u6232\u958b\u767c\\reports\\art-previews\\hero-commercial-r5\\R5-E\\materials-front.png"
+    },
+    {
+      "name": "materials-side",
+      "file": "D:\\codex\\\u904a\u6232\u958b\u767c\\reports\\art-previews\\hero-commercial-r5\\R5-E\\materials-side.png"
+    },
+    {
+      "name": "materials-back",
+      "file": "D:\\codex\\\u904a\u6232\u958b\u767c\\reports\\art-previews\\hero-commercial-r5\\R5-E\\materials-back.png"
+    },
+    {
+      "name": "materials-three-quarter",
+      "file": "D:\\codex\\\u904a\u6232\u958b\u767c\\reports\\art-previews\\hero-commercial-r5\\R5-E\\materials-three-quarter.png"
+    },
+    {
+      "name": "materials-close-up",
+      "file": "D:\\codex\\\u904a\u6232\u958b\u767c\\reports\\art-previews\\hero-commercial-r5\\R5-E\\materials-close-up.png"
+    }
+  ]
+}
