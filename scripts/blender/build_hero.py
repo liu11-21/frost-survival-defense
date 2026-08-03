@@ -10,6 +10,7 @@ the generic head-and-cylinder proxies used by the shared unit builder.
 import math
 import os
 import sys
+from array import array
 
 import bpy
 
@@ -388,6 +389,144 @@ def _build_mesh_parts(mats):
     return [body, head, face_marker, gear, goggles, *arm_parts, *leg_parts, cape, melee, ranged]
 
 
+def _hero_atlas_materials(mats):
+    """Return the deterministic, de-duplicated Hero atlas palette."""
+    ordered = [
+        mats["cloth"],
+        mats["leather"],
+        mats["metal"],
+        mats["skin"],
+        mats["cloth_dark"],
+        mats["snow"],
+        mats["glow"],
+        mats["accent"],
+    ]
+    result = []
+    seen = set()
+    for mat in ordered:
+        if mat is None or mat.name in seen:
+            continue
+        result.append(mat)
+        seen.add(mat.name)
+    return result
+
+
+def author_hero_atlas(objects, mats):
+    """Author one embedded 1024 atlas and place every Hero UV in its cell.
+
+    The previous Hero pass generated one 64x64 image per material.  This
+    stage deliberately uses a single, deterministic atlas so the runtime has
+    enough texel density for close-up review while keeping the authored
+    material set small and inspectable.  Existing projected UVs remain the
+    starting point; this function only packs them into material-specific
+    regions and does not change mesh geometry.
+    """
+    texture_size = 1024
+    columns = 4
+    rows = 2
+    margin = 6
+    cell_width = texture_size // columns
+    cell_height = texture_size // rows
+    palette = _hero_atlas_materials(mats)
+    if not palette:
+        raise RuntimeError("Hero atlas has no materials")
+
+    for image in list(bpy.data.images):
+        if image.name.startswith("ART_PAINT_") or image.name == "HERO_ATLAS_1024":
+            bpy.data.images.remove(image)
+
+    image = bpy.data.images.new("HERO_ATLAS_1024", width=texture_size, height=texture_size, alpha=True)
+    pixels = array("f")
+    pixels.extend([0.0] * (texture_size * texture_size * 4))
+    # Fill the atlas with low-frequency hand-painted value breakup. Each cell
+    # is intentionally broad and readable rather than a noisy placeholder.
+    for index, mat in enumerate(palette):
+        shader = mat.node_tree.nodes.get("Principled BSDF") if mat.use_nodes else None
+        base = tuple(shader.inputs["Base Color"].default_value[:3]) if shader else (0.5, 0.5, 0.5)
+        cell_x = index % columns
+        cell_y = index // columns
+        x0 = cell_x * cell_width
+        y0 = cell_y * cell_height
+        tag = mat.name.lower()
+        for y in range(margin, cell_height - margin):
+            for x in range(margin, cell_width - margin):
+                wave = math.sin((x + index * 19) * 0.047) * 0.025
+                wave += math.cos((y + index * 11) * 0.031) * 0.020
+                if "metal" in tag:
+                    wave += math.sin((y * 0.18 + x * 0.012) + index) * 0.035
+                elif "leather" in tag:
+                    wave += math.sin((x * 0.11 + y * 0.08) + index) * 0.045
+                elif "cloth" in tag:
+                    wave += math.sin(x * 0.16 + index) * math.sin(y * 0.12) * 0.028
+                elif "glow" in tag or "accent" in tag:
+                    wave += 0.025 * math.sin((x + y) * 0.035)
+                edge = min(x, y, cell_width - 1 - x, cell_height - 1 - y)
+                value = 0.96 + wave + (0.025 if edge < 10 else 0.0)
+                pixel_index = ((y0 + y) * texture_size + (x0 + x)) * 4
+                pixels[pixel_index] = max(0.0, min(1.0, base[0] * value))
+                pixels[pixel_index + 1] = max(0.0, min(1.0, base[1] * value))
+                pixels[pixel_index + 2] = max(0.0, min(1.0, base[2] * value))
+                pixels[pixel_index + 3] = 1.0
+        region = (cell_x, cell_y, x0 + margin, y0 + margin, cell_width - margin, cell_height - margin)
+        mat["heroAtlasRegion"] = ",".join(str(value) for value in region)
+        mat["heroAtlasResolution"] = texture_size
+    image.pixels = pixels
+    image.pack()
+    image["heroAtlas"] = True
+    image["resolution"] = texture_size
+
+    regions = {mat.name: (index % columns, index // columns) for index, mat in enumerate(palette)}
+    for obj in objects:
+        if obj.type != "MESH" or not obj.data.polygons:
+            continue
+        mesh = obj.data
+        uv_layer = mesh.uv_layers.active or (mesh.uv_layers[0] if mesh.uv_layers else mesh.uv_layers.new(name="UVMap"))
+        for polygon in mesh.polygons:
+            slot = mesh.materials[polygon.material_index] if polygon.material_index < len(mesh.materials) else None
+            cell = regions.get(slot.name if slot else "", (0, 0))
+            cell_x, cell_y = cell
+            u_min = (cell_x * cell_width + margin) / texture_size
+            v_min = (cell_y * cell_height + margin) / texture_size
+            u_span = (cell_width - margin * 2) / texture_size
+            v_span = (cell_height - margin * 2) / texture_size
+            for loop_index in polygon.loop_indices:
+                uv = uv_layer.data[loop_index].uv
+                uv.x = u_min + max(0.0, min(1.0, uv.x)) * u_span
+                uv.y = v_min + max(0.0, min(1.0, uv.y)) * v_span
+
+    for mat in palette:
+        if not mat.use_nodes:
+            continue
+        nodes = mat.node_tree.nodes
+        links = mat.node_tree.links
+        shader = nodes.get("Principled BSDF")
+        if shader is None:
+            continue
+        texcoord = nodes.get("HeroAtlas UV") or nodes.new("ShaderNodeTexCoord")
+        texcoord.name = "HeroAtlas UV"
+        texture = nodes.get("HeroAtlasTexture") or nodes.new("ShaderNodeTexImage")
+        texture.name = "HeroAtlasTexture"
+        texture.label = "R3-D 1024px Hero atlas"
+        texture.image = image
+        texture.interpolation = "Linear"
+        for link in list(texture.inputs["Vector"].links):
+            links.remove(link)
+        links.new(texcoord.outputs["UV"], texture.inputs["Vector"])
+        mix = nodes.get("ArtTint Multiply")
+        if mix is not None and len(mix.inputs) > 6:
+            for link in list(mix.inputs[6].links):
+                links.remove(link)
+            links.new(texture.outputs["Color"], mix.inputs[6])
+        else:
+            base_input = shader.inputs.get("Base Color")
+            if base_input is not None:
+                for link in list(base_input.links):
+                    links.remove(link)
+                links.new(texture.outputs["Color"], base_input)
+
+    return {"image": image.name, "resolution": texture_size, "materials": len(palette)}
+
+
 def build():
     reset_scene()
     mats = {
@@ -401,6 +540,9 @@ def build():
         "glow": material("MAT_hero_glow", (0.26, 0.74, 1.0), 0.18, 0.0, (0.16, 0.58, 1.0)),
         "accent": material("MAT_hero_accent", (0.40, 0.74, 1.0), 0.28, 0.62),
     }
+    # Keep the lighter metal palette name available to the mesh authoring
+    # code, while exporting one shared metal material for the atlas budget.
+    mats["metal_light"] = mats["metal"]
     glow_shader = mats["glow"].node_tree.nodes.get("Principled BSDF")
     if glow_shader and glow_shader.inputs.get("Emission Strength"):
         glow_shader.inputs["Emission Strength"].default_value = 2.6
@@ -464,8 +606,12 @@ def build():
     ])
 
     # Keep the packed surface/vertex colour contract while applying it only
-    # to this Hero asset.  No other character or facility is regenerated.
-    author_surface_paint(parts + lod_parts, seed=53, textured=True)
+    # to this Hero asset. No other character or facility is regenerated.
+    author_surface_paint(parts + lod_parts, seed=53, textured=False)
+    atlas = author_hero_atlas(parts + lod_parts, mats)
+    root["heroSurfacePass"] = "R3-D-1024-hero-atlas"
+    root["heroAtlasResolution"] = atlas["resolution"]
+    root["heroMaterialCount"] = atlas["materials"]
     source = os.path.abspath(os.path.join(HERE, "..", "..", "assets-source", "blender", "characters", "hero.blend"))
     output = os.path.abspath(os.path.join(HERE, "..", "..", "public", "assets", "models", "characters", "hero.glb"))
     save_source(source)

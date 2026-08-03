@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-08-03T03:31:26.000Z",
+  "generatedAt": "2026-08-03T03:39:22.935Z",
   "asset": "hero",
   "sourcePath": "assets-source/blender/characters/hero.blend",
   "glbPath": "public/assets/models/characters/hero.glb",
@@ -31,12 +31,12 @@
   "artifact": {
     "status": "pass",
     "glb": {
-      "bytes": 342300,
+      "bytes": 741192,
       "assetVersion": "2.0",
       "nodes": 46,
       "meshes": 20,
-      "materials": 9,
-      "textures": 9,
+      "materials": 8,
+      "textures": 1,
       "skeletons": 1,
       "requiredNodes": {
         "HeroRoot": true,
@@ -83,7 +83,10 @@
             "animationReview": "existing contact-safe walk/run cycles, staged attacks, stable hit/death poses",
             "feetGrounded": true,
             "orientationContract": "Babylon Y-up, forward +Z",
-            "animationIteration2": "follow-through and recovery keys"
+            "animationIteration2": "follow-through and recovery keys",
+            "heroSurfacePass": "R3-D-1024-hero-atlas",
+            "heroAtlasResolution": 1024,
+            "heroMaterialCount": 8
           }
         }
       ],
@@ -95,7 +98,10 @@
         "animationReview": "existing contact-safe walk/run cycles, staged attacks, stable hit/death poses",
         "feetGrounded": true,
         "orientationContract": "Babylon Y-up, forward +Z",
-        "animationIteration2": "follow-through and recovery keys"
+        "animationIteration2": "follow-through and recovery keys",
+        "heroSurfacePass": "R3-D-1024-hero-atlas",
+        "heroAtlasResolution": 1024,
+        "heroMaterialCount": 8
       },
       "triangles": 1868,
       "lodTriangles": {
@@ -111,83 +117,11 @@
       },
       "images": [
         {
-          "name": "ART_PAINT_MAT_hero_glow",
+          "name": "HERO_ATLAS_1024",
           "mimeType": "image/png",
           "resolution": {
-            "width": 64,
-            "height": 64
-          },
-          "embedded": true
-        },
-        {
-          "name": "ART_PAINT_MAT_hero_skin",
-          "mimeType": "image/png",
-          "resolution": {
-            "width": 64,
-            "height": 64
-          },
-          "embedded": true
-        },
-        {
-          "name": "ART_PAINT_MAT_hero_cloth_dark",
-          "mimeType": "image/png",
-          "resolution": {
-            "width": 64,
-            "height": 64
-          },
-          "embedded": true
-        },
-        {
-          "name": "ART_PAINT_MAT_hero_accent",
-          "mimeType": "image/png",
-          "resolution": {
-            "width": 64,
-            "height": 64
-          },
-          "embedded": true
-        },
-        {
-          "name": "ART_PAINT_MAT_hero_cloth",
-          "mimeType": "image/png",
-          "resolution": {
-            "width": 64,
-            "height": 64
-          },
-          "embedded": true
-        },
-        {
-          "name": "ART_PAINT_MAT_hero_leather",
-          "mimeType": "image/png",
-          "resolution": {
-            "width": 64,
-            "height": 64
-          },
-          "embedded": true
-        },
-        {
-          "name": "ART_PAINT_MAT_hero_metal_light",
-          "mimeType": "image/png",
-          "resolution": {
-            "width": 64,
-            "height": 64
-          },
-          "embedded": true
-        },
-        {
-          "name": "ART_PAINT_MAT_hero_metal",
-          "mimeType": "image/png",
-          "resolution": {
-            "width": 64,
-            "height": 64
-          },
-          "embedded": true
-        },
-        {
-          "name": "ART_PAINT_MAT_hero_snow",
-          "mimeType": "image/png",
-          "resolution": {
-            "width": 64,
-            "height": 64
+            "width": 1024,
+            "height": 1024
           },
           "embedded": true
         }
@@ -290,7 +224,7 @@
       "renderableCollisionNodes": []
     },
     "source": {
-      "bytes": 196846,
+      "bytes": 598627,
       "exists": true
     },
     "checks": {

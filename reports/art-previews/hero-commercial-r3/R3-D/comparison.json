@@ -1,0 +1,32 @@
+{
+  "stage": "R3-D",
+  "scope": "Hero UV packing and embedded material atlas",
+  "before": {
+    "sourceCommit": "9e9e5ae",
+    "lod0AuthoredObjects": 12,
+    "lod0RenderPrimitives": 31,
+    "lod0Triangles": 1396,
+    "materials": 9,
+    "textures": 9,
+    "textureResolution": "64x64 per material",
+    "glbBytes": 342300
+  },
+  "after": {
+    "lod0AuthoredObjects": 12,
+    "lod0RenderPrimitives": 31,
+    "lod0Triangles": 1396,
+    "materials": 8,
+    "textures": 1,
+    "textureResolution": "1024x1024 HERO_ATLAS_1024",
+    "glbBytes": 741192,
+    "externalUris": [],
+    "atlasRegions": 8
+  },
+  "runtimeContract": {
+    "captureMode": "heroReview=1",
+    "modelSource": "GLB",
+    "proceduralVisibleMeshCount": 0,
+    "evidence": "twelve runtime PNG/JSON pairs in this directory"
+  },
+  "humanReview": "The validator confirms atlas embedding and runtime contracts only; commercial visual quality remains a human review decision."
+}

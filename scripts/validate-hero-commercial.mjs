@@ -139,8 +139,13 @@ function buildAudit(glb, sourceBytes) {
     groundedContract: rootExtras.feetGrounded === true,
     uvAndColor: primitives.some((primitive) => primitive.attributes?.TEXCOORD_0 !== undefined) && primitives.some((primitive) => primitive.attributes?.COLOR_0 !== undefined),
     lodGeometry: lodRenderPrimitives.LOD1 > 0 && lodRenderPrimitives.LOD2 > 0 && lodTriangles.LOD1 > 0 && lodTriangles.LOD2 > 0,
-    embeddedTextures: images.length === 9 && images.every((image) => image.embedded && !image.uri),
-    textureResolution: images.length > 0 && images.every((image) => image.resolution?.width > 0 && image.resolution?.height > 0),
+    // R3-D replaces the old per-material 64px brush images with one embedded
+    // commercial atlas (and leaves room for one optional weapon atlas).
+    // Keep this fail-closed: an image URI or a low-resolution-only export is
+    // not a valid Hero material deliverable.
+    embeddedTextures: images.length >= 1 && images.length <= 2 && images.every((image) => image.embedded && !image.uri),
+    textureResolution: images.length > 0 && images.every((image) => image.resolution?.width > 0 && image.resolution?.height > 0)
+      && images.some((image) => image.resolution?.width >= 1024 && image.resolution?.height >= 1024),
     noExternalUris: externalUris.length === 0,
     noAbsolutePaths: !absolutePathMetadata,
     collisionNotRenderable: renderableCollisionNodes.length === 0,

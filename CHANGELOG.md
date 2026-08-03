@@ -437,3 +437,13 @@ flyingColossus, furnace and crossbow/turret before claiming display readiness.
 - Added R3-C runtime review evidence under
   `reports/art-previews/hero-commercial-r3/R3-C/`; UV atlas/material rebuild and
   weighted deformation remain later stages.
+
+## 2026-08-03 | Hero-R3 D UV atlas and material authoring
+
+- Replaced Hero's nine embedded 64×64 brush images with one embedded
+  `HERO_ATLAS_1024` 1024×1024 atlas and eight shared material slots.
+- Preserved the R3-C mesh/skeleton/socket/animation contract; no other asset
+  family was regenerated.
+- Added Babylon runtime evidence and before/after metrics under
+  `reports/art-previews/hero-commercial-r3/R3-D/`; commercial visual quality
+  remains a human review decision.
