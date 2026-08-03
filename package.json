@@ -18,6 +18,7 @@
     "art:resources": "node scripts/run-blender.mjs scripts/blender/build_resources.py",
     "art:export": "node scripts/run-blender.mjs scripts/blender/batch_export.py",
     "art:hero:review": "node scripts/capture-hero-review.mjs",
+    "test:hero:runtime": "playwright test tests/hero-runtime.spec.ts",
     "art:validate": "node scripts/validate-models.mjs",
     "art:validate:hero": "node scripts/validate-hero-commercial.mjs",
     "ai:sync": "node scripts/generate-ai-sync.mjs"
@@ -28,6 +29,8 @@
     "@babylonjs/loaders": "^7.54.3"
   },
   "devDependencies": {
+    "@playwright/test": "^1.62.1",
+    "@types/node": "^24.13.3",
     "typescript": "^5.6.3",
     "vite": "^5.4.11"
   }

@@ -21,7 +21,8 @@ function bootstrap(): void {
 
   game.start().catch(showFatal);
 
-  if (import.meta.env.DEV) {
+  const heroReview = new URLSearchParams(window.location.search).get("heroReview") === "1";
+  if (import.meta.env.DEV || heroReview) {
     const instance = game;
     window.frostbound = {
       game: instance,

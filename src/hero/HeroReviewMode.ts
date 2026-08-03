@@ -221,7 +221,9 @@ export class HeroReviewMode {
 
   afterRender(): void {
     this.samplePerformance();
-    this.panel.update(this.panelState());
+    const metadata = this.capture();
+    this.panel.update(this.panelState(metadata));
+    this.publishTestState(metadata);
   }
 
   refreshAuthored(): void {
@@ -339,8 +341,7 @@ export class HeroReviewMode {
     };
   }
 
-  panelState(): HeroReviewPanelState {
-    const metadata = this.capture();
+  panelState(metadata = this.capture()): HeroReviewPanelState {
     return {
       camera: metadata.cameraMode,
       animation: metadata.animation,
@@ -361,7 +362,54 @@ export class HeroReviewMode {
     };
   }
 
+  /**
+   * Minimal, explicit browser hook for the remote Linux runtime verifier.
+   * HeroReviewMode is only constructed for ?heroReview=1, so this does not
+   * add a production gameplay debug surface.
+   */
+  private publishTestState(metadata: HeroReviewCaptureMetadata): void {
+    const bounds = metadata.screenSpaceBoundingBox;
+    const visible =
+      bounds.width > 0 &&
+      bounds.height > 0 &&
+      bounds.x >= 0 &&
+      bounds.y >= 0 &&
+      bounds.right <= metadata.viewport.width &&
+      bounds.bottom <= metadata.viewport.height;
+    const ready =
+      metadata.modelSource === "GLB" &&
+      metadata.authoredVisibleMeshCount > 0 &&
+      metadata.proceduralVisibleMeshCount === 0 &&
+      visible &&
+      !metadata.uiOccluded &&
+      metadata.animation === this.animation &&
+      metadata.lod === this.lod;
+    window.__heroReviewState = {
+      ready,
+      modelSource: metadata.modelSource,
+      currentCamera: metadata.cameraMode,
+      currentAnimation: metadata.animation,
+      currentLod: `LOD${metadata.lod}` as "LOD0" | "LOD1" | "LOD2",
+      authoredVisibleMeshes: metadata.authoredVisibleMeshCount,
+      proceduralVisibleMeshes: metadata.proceduralVisibleMeshCount,
+      visibleVertices: metadata.visibleVertices,
+      visibleTriangles: metadata.visibleTriangles,
+      heroWorldPosition: metadata.heroWorldPosition,
+      heroScreenBounds: {
+        x: bounds.x,
+        y: bounds.y,
+        width: bounds.width,
+        height: bounds.height,
+        visible,
+      },
+      animationGroups: [...this.s.hero.authoredAnimationNames],
+      consoleErrors: [],
+      uiOccluded: metadata.uiOccluded,
+    };
+  }
+
   dispose(): void {
+    delete window.__heroReviewState;
     for (const state of this.savedNodes) state.node.setEnabled(state.enabled);
     for (const state of this.savedMeshes) {
       state.mesh.isVisible = state.visible;

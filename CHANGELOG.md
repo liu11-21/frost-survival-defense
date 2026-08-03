@@ -1,5 +1,11 @@
 # 變更脈絡
 
+## 2026-08-03｜Hero-R4 remote Babylon runtime verification
+
+- 新增 Linux GitHub Actions `Hero Runtime Verification`：以 Git LFS 取回 Hero、執行 TypeScript／靜態資產驗證／production build，啟動 preview 並以 Chromium 驗證正式 `?heroReview=1` 場景。
+- 新增只在 Hero Review 入口暴露的 `window.__heroReviewState`，回報 GLB source、LOD、動畫、可見網格、螢幕邊界與 procedural mesh 數量；新增固定 1600×900 的 Playwright runtime 截圖、JSON 與 console log 證據。
+- 本節只建立遠端驗證鏈，未修改 `hero.blend`、Hero 幾何／材質／動畫或其他正式資產；本機 Vite/esbuild `spawn EPERM` blocker 仍需由 GitHub runner 給出最終 runtime 結果。
+
 ## 2026-08-03｜Hero R4 final silhouette correction
 
 - 延續 `codex/hero-commercial-h1-h6`，只修改 Hero Blender 幾何與既有權重綁定；未修改其他資產、Babylon runtime 程式或完整 H1–H6 流程。
