@@ -110,38 +110,45 @@ test("verifies the production Hero GLB in Babylon runtime", async ({ page }) => 
   });
 
   const waitForState = async (expected: { camera: CameraName; animation: AnimationName; lod: LodName }): Promise<ReviewState> => {
-    await page.waitForFunction(
-      (target) => {
-        const reviewWindow = window as ReviewWindow;
-        const state = reviewWindow.__heroReviewState;
-        return Boolean(
-          document.getElementById("renderCanvas") instanceof HTMLCanvasElement &&
-            state?.ready &&
-            state.modelSource === "GLB" &&
-            state.authoredVisibleMeshes > 0 &&
-            state.proceduralVisibleMeshes === 0 &&
-            state.currentCamera === target.camera &&
-            state.currentAnimation === target.animation &&
-            state.currentLod === `LOD${target.lod}`,
-        );
-      },
-      expected,
-      { timeout: 90_000 },
-    );
+    try {
+      await page.waitForFunction(
+        (target) => {
+          const reviewWindow = window as ReviewWindow;
+          const state = reviewWindow.__heroReviewState;
+          return Boolean(
+            document.getElementById("renderCanvas") instanceof HTMLCanvasElement &&
+              state?.ready &&
+              state.modelSource === "GLB" &&
+              state.authoredVisibleMeshes > 0 &&
+              state.proceduralVisibleMeshes === 0 &&
+              state.currentCamera === target.camera &&
+              state.currentAnimation === target.animation &&
+              state.currentLod === `LOD${target.lod}`,
+          );
+        },
+        expected,
+        { timeout: 30_000 },
+      );
+    } catch (error) {
+      const diagnostic = await readReviewState(page);
+      throw new Error(`Hero review readiness timed out for ${JSON.stringify(expected)}; state=${JSON.stringify(diagnostic.state)}; cause=${String(error)}`);
+    }
     const { state } = await readReviewState(page);
     assertVisibleState(state, expected);
     return state;
   };
 
   const selectReview = async (camera: CameraName, animation: AnimationName, lod: LodName): Promise<ReviewState> => {
-    await page.evaluate((target) => {
+    const commandAnimation = await page.evaluate((target) => {
       const review = (window as ReviewWindow).frostbound?.api().heroReview;
       if (!review) throw new Error("Hero review API is unavailable");
       review.setCamera(target.camera);
       review.setAnimation(target.animation);
       review.setLod(target.lod);
       review.resetPerformance();
+      return review.capture()?.animation ?? null;
     }, { camera, animation, lod });
+    expect(commandAnimation, `Hero review API did not accept animation ${animation}`).toBe(animation);
     return waitForState({ camera, animation, lod });
   };
 
