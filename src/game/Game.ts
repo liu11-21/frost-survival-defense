@@ -394,7 +394,7 @@ export class Game {
   private readonly frame = (): void => {
     if (this.disposed) return;
     if (this.heroReview) {
-      this.heroReview.update();
+      this.heroReview.update(0.016);
       this.heroReview.beforeRender();
       this.s.scene.render();
       this.heroReview.afterRender();
@@ -432,7 +432,7 @@ export class Game {
     if (this.disposed) return;
     const frameDt = Math.min(0.05, dt);
     if (this.heroReview) {
-      this.heroReview.update();
+      this.heroReview.update(0.016);
       if (render) {
         this.heroReview.beforeRender();
         this.s.scene.render();

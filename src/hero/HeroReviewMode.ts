@@ -202,8 +202,8 @@ export class HeroReviewMode {
     this.panel.update(this.panelState());
   }
 
-  update(): void {
-    this.s.hero.updateReview();
+  update(dt = 0.016): void {
+    this.s.hero.updateReview(dt);
   }
 
   /** Resets Babylon's per-frame draw-call counter before the isolated render. */

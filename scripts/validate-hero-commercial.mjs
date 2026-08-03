@@ -93,6 +93,7 @@ function buildAudit(glb, sourceBytes) {
     embedded: image.bufferView !== undefined,
   }));
   const primitives = (json.meshes ?? []).flatMap((mesh) => mesh.primitives ?? []);
+  const skinnedPrimitives = primitives.filter((primitive) => primitive.attributes?.JOINTS_0 !== undefined && primitive.attributes?.WEIGHTS_0 !== undefined).length;
   const trianglesForPrimitive = (primitive) => Math.floor((json.accessors?.[primitive.indices]?.count ?? 0) / 3);
   const triangles = primitives.reduce((sum, primitive) => sum + trianglesForPrimitive(primitive), 0);
   const lodRenderPrimitives = { LOD0: 0, LOD1: 0, LOD2: 0 };
@@ -134,6 +135,7 @@ function buildAudit(glb, sourceBytes) {
     requiredNodes: requiredNodes.every((name) => requiredNodeState[name]),
     requiredAnimations: requiredAnimations.every((name) => requiredAnimationState[name]),
     skeleton: (json.skins ?? []).length === 1 && (json.skins?.[0]?.joints?.length ?? 0) > 0,
+    weightedSkinning: skinnedPrimitives > 0,
     rootTransform: rootScaleUnit && roots.some((node) => node.name === "HeroRoot"),
     orientationContract: rootExtras.orientationContract === "Babylon Y-up, forward +Z",
     groundedContract: rootExtras.feetGrounded === true,
@@ -171,6 +173,7 @@ function buildAudit(glb, sourceBytes) {
       triangles,
       lodTriangles,
       renderPrimitiveCount: primitives.length,
+      skinnedPrimitives,
       lodRenderPrimitives,
       images,
       animations,

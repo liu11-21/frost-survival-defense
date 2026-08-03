@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-08-03T03:39:22.935Z",
+  "generatedAt": "2026-08-03T03:52:29.772Z",
   "asset": "hero",
   "sourcePath": "assets-source/blender/characters/hero.blend",
   "glbPath": "public/assets/models/characters/hero.glb",
@@ -11,6 +11,7 @@
     "requiredNodes": true,
     "requiredAnimations": true,
     "skeleton": true,
+    "weightedSkinning": true,
     "rootTransform": true,
     "orientationContract": true,
     "groundedContract": true,
@@ -31,7 +32,7 @@
   "artifact": {
     "status": "pass",
     "glb": {
-      "bytes": 741192,
+      "bytes": 808636,
       "assetVersion": "2.0",
       "nodes": 46,
       "meshes": 20,
@@ -80,10 +81,11 @@
             "commercialIteration": 2,
             "heroMeshPass": "R3-C-commercial-clothing-and-identity",
             "heroMeshContract": "12 LOD0 meshes; continuous body plus consolidated survival gear and goggles",
-            "animationReview": "existing contact-safe walk/run cycles, staged attacks, stable hit/death poses",
+            "animationReview": "R3-E weighted body envelopes with contact-safe locomotion and staged combat poses",
             "feetGrounded": true,
             "orientationContract": "Babylon Y-up, forward +Z",
             "animationIteration2": "follow-through and recovery keys",
+            "skinningPass": "R3-E-weighted-deformation",
             "heroSurfacePass": "R3-D-1024-hero-atlas",
             "heroAtlasResolution": 1024,
             "heroMaterialCount": 8
@@ -95,10 +97,11 @@
         "commercialIteration": 2,
         "heroMeshPass": "R3-C-commercial-clothing-and-identity",
         "heroMeshContract": "12 LOD0 meshes; continuous body plus consolidated survival gear and goggles",
-        "animationReview": "existing contact-safe walk/run cycles, staged attacks, stable hit/death poses",
+        "animationReview": "R3-E weighted body envelopes with contact-safe locomotion and staged combat poses",
         "feetGrounded": true,
         "orientationContract": "Babylon Y-up, forward +Z",
         "animationIteration2": "follow-through and recovery keys",
+        "skinningPass": "R3-E-weighted-deformation",
         "heroSurfacePass": "R3-D-1024-hero-atlas",
         "heroAtlasResolution": 1024,
         "heroMaterialCount": 8
@@ -110,6 +113,7 @@
         "LOD2": 204
       },
       "renderPrimitiveCount": 51,
+      "skinnedPrimitives": 31,
       "lodRenderPrimitives": {
         "LOD0": 31,
         "LOD1": 10,
@@ -170,7 +174,7 @@
           "name": "MeleeAttack",
           "channels": 54,
           "samplers": 54,
-          "totalInputKeys": 150,
+          "totalInputKeys": 178,
           "maxSamplerKeys": 16,
           "durationSeconds": 0.6666666666666666,
           "targetPaths": [
@@ -183,7 +187,7 @@
           "name": "RangedAttack",
           "channels": 54,
           "samplers": 54,
-          "totalInputKeys": 164,
+          "totalInputKeys": 206,
           "maxSamplerKeys": 16,
           "durationSeconds": 0.6666666666666666,
           "targetPaths": [
@@ -196,7 +200,7 @@
           "name": "Hit",
           "channels": 54,
           "samplers": 54,
-          "totalInputKeys": 138,
+          "totalInputKeys": 158,
           "maxSamplerKeys": 12,
           "durationSeconds": 0.5,
           "targetPaths": [
@@ -224,7 +228,7 @@
       "renderableCollisionNodes": []
     },
     "source": {
-      "bytes": 598627,
+      "bytes": 608207,
       "exists": true
     },
     "checks": {
@@ -233,6 +237,7 @@
       "requiredNodes": true,
       "requiredAnimations": true,
       "skeleton": true,
+      "weightedSkinning": true,
       "rootTransform": true,
       "orientationContract": true,
       "groundedContract": true,

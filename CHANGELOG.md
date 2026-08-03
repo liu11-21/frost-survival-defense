@@ -447,3 +447,14 @@ flyingColossus, furnace and crossbow/turret before claiming display readiness.
 - Added Babylon runtime evidence and before/after metrics under
   `reports/art-previews/hero-commercial-r3/R3-D/`; commercial visual quality
   remains a human review decision.
+
+## 2026-08-03 | Hero-R3 E weighted deformation and combat animation
+
+- Bound all 31 Hero LOD0 render primitives to `HeroSkeleton` with weighted
+  Armature modifiers; the shared unit builder and every non-Hero asset remain
+  unchanged.
+- Added Hero-specific combat follow-through/recovery keys and deterministic
+  paused-loop review stepping so the 21-frame sequence shows real clip motion.
+- Added runtime evidence under
+  `reports/art-previews/hero-commercial-r3/R3-E/`; validator output now checks
+  for JOINTS_0/WEIGHTS_0 and still does not claim commercial animation quality.

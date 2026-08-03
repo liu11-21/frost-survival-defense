@@ -1,0 +1,1014 @@
+{
+  "captureMode": "heroReview=1",
+  "description": "Continuous runtime frames in order: Idle -> Walk -> Run -> MeleeAttack -> RangedAttack -> Hit -> Death.",
+  "frames": [
+    {
+      "captureId": "sequence-001-idle-1",
+      "capturedAt": "2026-08-03T03:52:03.445Z",
+      "url": "http://127.0.0.1:5181?heroReview=1",
+      "screenshot": "reports/art-previews/hero-commercial-r3/R3-E/sequence/sequence-001-idle-1.png",
+      "captureMode": "heroReview=1",
+      "cameraMode": "three-quarter",
+      "animation": "Idle",
+      "lod": 0,
+      "modelSource": "GLB",
+      "heroWorldPosition": {
+        "x": 0,
+        "y": 0,
+        "z": 0
+      },
+      "screenSpaceBoundingBox": {
+        "x": 507.284,
+        "y": 255.29,
+        "width": 114.65,
+        "height": 184.166,
+        "right": 621.934,
+        "bottom": 439.456
+      },
+      "viewport": {
+        "width": 1120,
+        "height": 630
+      },
+      "uiOccluded": false,
+      "uiPanel": {
+        "x": 866,
+        "y": 16,
+        "width": 238,
+        "height": 347.625
+      },
+      "authoredVisibleMeshCount": 31,
+      "proceduralVisibleMeshCount": 0,
+      "drawCalls": 34,
+      "drawCallsThisFrame": 34,
+      "drawCallsAvg120": 34,
+      "activeMeshes": 32,
+      "fps": 185.185,
+      "fpsAvg5s": 238.095,
+      "frameTimeP50": 3.9,
+      "frameTimeP95": 6.9,
+      "visibleMeshes": 31,
+      "visibleVertices": 2618,
+      "visibleTriangles": 1396
+    },
+    {
+      "captureId": "sequence-002-idle-2",
+      "capturedAt": "2026-08-03T03:52:03.799Z",
+      "url": "http://127.0.0.1:5181?heroReview=1",
+      "screenshot": "reports/art-previews/hero-commercial-r3/R3-E/sequence/sequence-002-idle-2.png",
+      "captureMode": "heroReview=1",
+      "cameraMode": "three-quarter",
+      "animation": "Idle",
+      "lod": 0,
+      "modelSource": "GLB",
+      "heroWorldPosition": {
+        "x": 0,
+        "y": 0,
+        "z": 0
+      },
+      "screenSpaceBoundingBox": {
+        "x": 507.284,
+        "y": 255.29,
+        "width": 114.65,
+        "height": 184.166,
+        "right": 621.934,
+        "bottom": 439.456
+      },
+      "viewport": {
+        "width": 1120,
+        "height": 630
+      },
+      "uiOccluded": false,
+      "uiPanel": {
+        "x": 866,
+        "y": 16,
+        "width": 238,
+        "height": 347.625
+      },
+      "authoredVisibleMeshCount": 31,
+      "proceduralVisibleMeshCount": 0,
+      "drawCalls": 34,
+      "drawCallsThisFrame": 34,
+      "drawCallsAvg120": 34,
+      "activeMeshes": 32,
+      "fps": 526.316,
+      "fpsAvg5s": 515.464,
+      "frameTimeP50": 1.9,
+      "frameTimeP95": 2.3,
+      "visibleMeshes": 31,
+      "visibleVertices": 2618,
+      "visibleTriangles": 1396
+    },
+    {
+      "captureId": "sequence-003-idle-3",
+      "capturedAt": "2026-08-03T03:52:04.135Z",
+      "url": "http://127.0.0.1:5181?heroReview=1",
+      "screenshot": "reports/art-previews/hero-commercial-r3/R3-E/sequence/sequence-003-idle-3.png",
+      "captureMode": "heroReview=1",
+      "cameraMode": "three-quarter",
+      "animation": "Idle",
+      "lod": 0,
+      "modelSource": "GLB",
+      "heroWorldPosition": {
+        "x": 0,
+        "y": 0,
+        "z": 0
+      },
+      "screenSpaceBoundingBox": {
+        "x": 507.284,
+        "y": 255.29,
+        "width": 114.65,
+        "height": 184.166,
+        "right": 621.934,
+        "bottom": 439.456
+      },
+      "viewport": {
+        "width": 1120,
+        "height": 630
+      },
+      "uiOccluded": false,
+      "uiPanel": {
+        "x": 866,
+        "y": 16,
+        "width": 238,
+        "height": 347.625
+      },
+      "authoredVisibleMeshCount": 31,
+      "proceduralVisibleMeshCount": 0,
+      "drawCalls": 34,
+      "drawCallsThisFrame": 34,
+      "drawCallsAvg120": 34,
+      "activeMeshes": 32,
+      "fps": 384.615,
+      "fpsAvg5s": 318.471,
+      "frameTimeP50": 3.3,
+      "frameTimeP95": 3.8,
+      "visibleMeshes": 31,
+      "visibleVertices": 2618,
+      "visibleTriangles": 1396
+    },
+    {
+      "captureId": "sequence-004-walk-1",
+      "capturedAt": "2026-08-03T03:52:04.579Z",
+      "url": "http://127.0.0.1:5181?heroReview=1",
+      "screenshot": "reports/art-previews/hero-commercial-r3/R3-E/sequence/sequence-004-walk-1.png",
+      "captureMode": "heroReview=1",
+      "cameraMode": "three-quarter",
+      "animation": "Walk",
+      "lod": 0,
+      "modelSource": "GLB",
+      "heroWorldPosition": {
+        "x": 0,
+        "y": 0,
+        "z": 0
+      },
+      "screenSpaceBoundingBox": {
+        "x": 507.284,
+        "y": 255.29,
+        "width": 114.65,
+        "height": 184.166,
+        "right": 621.934,
+        "bottom": 439.456
+      },
+      "viewport": {
+        "width": 1120,
+        "height": 630
+      },
+      "uiOccluded": false,
+      "uiPanel": {
+        "x": 866,
+        "y": 16,
+        "width": 238,
+        "height": 347.625
+      },
+      "authoredVisibleMeshCount": 31,
+      "proceduralVisibleMeshCount": 0,
+      "drawCalls": 34,
+      "drawCallsThisFrame": 34,
+      "drawCallsAvg120": 34,
+      "activeMeshes": 32,
+      "fps": 384.615,
+      "fpsAvg5s": 188.679,
+      "frameTimeP50": 3.2,
+      "frameTimeP95": 18.3,
+      "visibleMeshes": 31,
+      "visibleVertices": 2618,
+      "visibleTriangles": 1396
+    },
+    {
+      "captureId": "sequence-005-walk-2",
+      "capturedAt": "2026-08-03T03:52:04.918Z",
+      "url": "http://127.0.0.1:5181?heroReview=1",
+      "screenshot": "reports/art-previews/hero-commercial-r3/R3-E/sequence/sequence-005-walk-2.png",
+      "captureMode": "heroReview=1",
+      "cameraMode": "three-quarter",
+      "animation": "Walk",
+      "lod": 0,
+      "modelSource": "GLB",
+      "heroWorldPosition": {
+        "x": 0,
+        "y": 0,
+        "z": 0
+      },
+      "screenSpaceBoundingBox": {
+        "x": 507.284,
+        "y": 255.29,
+        "width": 114.65,
+        "height": 184.166,
+        "right": 621.934,
+        "bottom": 439.456
+      },
+      "viewport": {
+        "width": 1120,
+        "height": 630
+      },
+      "uiOccluded": false,
+      "uiPanel": {
+        "x": 866,
+        "y": 16,
+        "width": 238,
+        "height": 347.625
+      },
+      "authoredVisibleMeshCount": 31,
+      "proceduralVisibleMeshCount": 0,
+      "drawCalls": 34,
+      "drawCallsThisFrame": 34,
+      "drawCallsAvg120": 34,
+      "activeMeshes": 32,
+      "fps": 526.316,
+      "fpsAvg5s": 250,
+      "frameTimeP50": 3.5,
+      "frameTimeP95": 6.6,
+      "visibleMeshes": 31,
+      "visibleVertices": 2618,
+      "visibleTriangles": 1396
+    },
+    {
+      "captureId": "sequence-006-walk-3",
+      "capturedAt": "2026-08-03T03:52:05.293Z",
+      "url": "http://127.0.0.1:5181?heroReview=1",
+      "screenshot": "reports/art-previews/hero-commercial-r3/R3-E/sequence/sequence-006-walk-3.png",
+      "captureMode": "heroReview=1",
+      "cameraMode": "three-quarter",
+      "animation": "Walk",
+      "lod": 0,
+      "modelSource": "GLB",
+      "heroWorldPosition": {
+        "x": 0,
+        "y": 0,
+        "z": 0
+      },
+      "screenSpaceBoundingBox": {
+        "x": 507.284,
+        "y": 255.29,
+        "width": 114.65,
+        "height": 184.166,
+        "right": 621.934,
+        "bottom": 439.456
+      },
+      "viewport": {
+        "width": 1120,
+        "height": 630
+      },
+      "uiOccluded": false,
+      "uiPanel": {
+        "x": 866,
+        "y": 16,
+        "width": 238,
+        "height": 347.625
+      },
+      "authoredVisibleMeshCount": 31,
+      "proceduralVisibleMeshCount": 0,
+      "drawCalls": 34,
+      "drawCallsThisFrame": 34,
+      "drawCallsAvg120": 34,
+      "activeMeshes": 32,
+      "fps": 344.828,
+      "fpsAvg5s": 312.5,
+      "frameTimeP50": 2.9,
+      "frameTimeP95": 4,
+      "visibleMeshes": 31,
+      "visibleVertices": 2618,
+      "visibleTriangles": 1396
+    },
+    {
+      "captureId": "sequence-007-run-1",
+      "capturedAt": "2026-08-03T03:52:05.796Z",
+      "url": "http://127.0.0.1:5181?heroReview=1",
+      "screenshot": "reports/art-previews/hero-commercial-r3/R3-E/sequence/sequence-007-run-1.png",
+      "captureMode": "heroReview=1",
+      "cameraMode": "three-quarter",
+      "animation": "Run",
+      "lod": 0,
+      "modelSource": "GLB",
+      "heroWorldPosition": {
+        "x": 0,
+        "y": 0,
+        "z": 0
+      },
+      "screenSpaceBoundingBox": {
+        "x": 507.284,
+        "y": 255.29,
+        "width": 114.65,
+        "height": 184.166,
+        "right": 621.934,
+        "bottom": 439.456
+      },
+      "viewport": {
+        "width": 1120,
+        "height": 630
+      },
+      "uiOccluded": false,
+      "uiPanel": {
+        "x": 866,
+        "y": 16,
+        "width": 238,
+        "height": 347.625
+      },
+      "authoredVisibleMeshCount": 31,
+      "proceduralVisibleMeshCount": 0,
+      "drawCalls": 34,
+      "drawCallsThisFrame": 34,
+      "drawCallsAvg120": 34,
+      "activeMeshes": 32,
+      "fps": 188.679,
+      "fpsAvg5s": 214.797,
+      "frameTimeP50": 4.7,
+      "frameTimeP95": 6.4,
+      "visibleMeshes": 31,
+      "visibleVertices": 2618,
+      "visibleTriangles": 1396
+    },
+    {
+      "captureId": "sequence-008-run-2",
+      "capturedAt": "2026-08-03T03:52:06.128Z",
+      "url": "http://127.0.0.1:5181?heroReview=1",
+      "screenshot": "reports/art-previews/hero-commercial-r3/R3-E/sequence/sequence-008-run-2.png",
+      "captureMode": "heroReview=1",
+      "cameraMode": "three-quarter",
+      "animation": "Run",
+      "lod": 0,
+      "modelSource": "GLB",
+      "heroWorldPosition": {
+        "x": 0,
+        "y": 0,
+        "z": 0
+      },
+      "screenSpaceBoundingBox": {
+        "x": 507.284,
+        "y": 255.29,
+        "width": 114.65,
+        "height": 184.166,
+        "right": 621.934,
+        "bottom": 439.456
+      },
+      "viewport": {
+        "width": 1120,
+        "height": 630
+      },
+      "uiOccluded": false,
+      "uiPanel": {
+        "x": 866,
+        "y": 16,
+        "width": 238,
+        "height": 347.625
+      },
+      "authoredVisibleMeshCount": 31,
+      "proceduralVisibleMeshCount": 0,
+      "drawCalls": 34,
+      "drawCallsThisFrame": 34,
+      "drawCallsAvg120": 34,
+      "activeMeshes": 32,
+      "fps": 256.41,
+      "fpsAvg5s": 318.471,
+      "frameTimeP50": 2.9,
+      "frameTimeP95": 3.9,
+      "visibleMeshes": 31,
+      "visibleVertices": 2618,
+      "visibleTriangles": 1396
+    },
+    {
+      "captureId": "sequence-009-run-3",
+      "capturedAt": "2026-08-03T03:52:06.473Z",
+      "url": "http://127.0.0.1:5181?heroReview=1",
+      "screenshot": "reports/art-previews/hero-commercial-r3/R3-E/sequence/sequence-009-run-3.png",
+      "captureMode": "heroReview=1",
+      "cameraMode": "three-quarter",
+      "animation": "Run",
+      "lod": 0,
+      "modelSource": "GLB",
+      "heroWorldPosition": {
+        "x": 0,
+        "y": 0,
+        "z": 0
+      },
+      "screenSpaceBoundingBox": {
+        "x": 507.284,
+        "y": 255.29,
+        "width": 114.65,
+        "height": 184.166,
+        "right": 621.934,
+        "bottom": 439.456
+      },
+      "viewport": {
+        "width": 1120,
+        "height": 630
+      },
+      "uiOccluded": false,
+      "uiPanel": {
+        "x": 866,
+        "y": 16,
+        "width": 238,
+        "height": 347.625
+      },
+      "authoredVisibleMeshCount": 31,
+      "proceduralVisibleMeshCount": 0,
+      "drawCalls": 34,
+      "drawCallsThisFrame": 34,
+      "drawCallsAvg120": 34,
+      "activeMeshes": 32,
+      "fps": 526.316,
+      "fpsAvg5s": 378.788,
+      "frameTimeP50": 2.3,
+      "frameTimeP95": 4,
+      "visibleMeshes": 31,
+      "visibleVertices": 2618,
+      "visibleTriangles": 1396
+    },
+    {
+      "captureId": "sequence-010-melee-1",
+      "capturedAt": "2026-08-03T03:52:06.924Z",
+      "url": "http://127.0.0.1:5181?heroReview=1",
+      "screenshot": "reports/art-previews/hero-commercial-r3/R3-E/sequence/sequence-010-melee-1.png",
+      "captureMode": "heroReview=1",
+      "cameraMode": "three-quarter",
+      "animation": "MeleeAttack",
+      "lod": 0,
+      "modelSource": "GLB",
+      "heroWorldPosition": {
+        "x": 0,
+        "y": 0,
+        "z": 0
+      },
+      "screenSpaceBoundingBox": {
+        "x": 507.284,
+        "y": 255.29,
+        "width": 114.65,
+        "height": 184.166,
+        "right": 621.934,
+        "bottom": 439.456
+      },
+      "viewport": {
+        "width": 1120,
+        "height": 630
+      },
+      "uiOccluded": false,
+      "uiPanel": {
+        "x": 866,
+        "y": 16,
+        "width": 238,
+        "height": 347.625
+      },
+      "authoredVisibleMeshCount": 31,
+      "proceduralVisibleMeshCount": 0,
+      "drawCalls": 34,
+      "drawCallsThisFrame": 34,
+      "drawCallsAvg120": 34,
+      "activeMeshes": 32,
+      "fps": 416.667,
+      "fpsAvg5s": 360,
+      "frameTimeP50": 2.4,
+      "frameTimeP95": 5.2,
+      "visibleMeshes": 31,
+      "visibleVertices": 2618,
+      "visibleTriangles": 1396
+    },
+    {
+      "captureId": "sequence-011-melee-2",
+      "capturedAt": "2026-08-03T03:52:07.216Z",
+      "url": "http://127.0.0.1:5181?heroReview=1",
+      "screenshot": "reports/art-previews/hero-commercial-r3/R3-E/sequence/sequence-011-melee-2.png",
+      "captureMode": "heroReview=1",
+      "cameraMode": "three-quarter",
+      "animation": "MeleeAttack",
+      "lod": 0,
+      "modelSource": "GLB",
+      "heroWorldPosition": {
+        "x": 0,
+        "y": 0,
+        "z": 0
+      },
+      "screenSpaceBoundingBox": {
+        "x": 507.284,
+        "y": 255.29,
+        "width": 114.65,
+        "height": 184.166,
+        "right": 621.934,
+        "bottom": 439.456
+      },
+      "viewport": {
+        "width": 1120,
+        "height": 630
+      },
+      "uiOccluded": false,
+      "uiPanel": {
+        "x": 866,
+        "y": 16,
+        "width": 238,
+        "height": 347.625
+      },
+      "authoredVisibleMeshCount": 31,
+      "proceduralVisibleMeshCount": 0,
+      "drawCalls": 34,
+      "drawCallsThisFrame": 34,
+      "drawCallsAvg120": 34,
+      "activeMeshes": 32,
+      "fps": 666.667,
+      "fpsAvg5s": 495.05,
+      "frameTimeP50": 1.7,
+      "frameTimeP95": 3.1,
+      "visibleMeshes": 31,
+      "visibleVertices": 2618,
+      "visibleTriangles": 1396
+    },
+    {
+      "captureId": "sequence-012-melee-3",
+      "capturedAt": "2026-08-03T03:52:07.527Z",
+      "url": "http://127.0.0.1:5181?heroReview=1",
+      "screenshot": "reports/art-previews/hero-commercial-r3/R3-E/sequence/sequence-012-melee-3.png",
+      "captureMode": "heroReview=1",
+      "cameraMode": "three-quarter",
+      "animation": "MeleeAttack",
+      "lod": 0,
+      "modelSource": "GLB",
+      "heroWorldPosition": {
+        "x": 0,
+        "y": 0,
+        "z": 0
+      },
+      "screenSpaceBoundingBox": {
+        "x": 507.284,
+        "y": 255.29,
+        "width": 114.65,
+        "height": 184.166,
+        "right": 621.934,
+        "bottom": 439.456
+      },
+      "viewport": {
+        "width": 1120,
+        "height": 630
+      },
+      "uiOccluded": false,
+      "uiPanel": {
+        "x": 866,
+        "y": 16,
+        "width": 238,
+        "height": 347.625
+      },
+      "authoredVisibleMeshCount": 31,
+      "proceduralVisibleMeshCount": 0,
+      "drawCalls": 34,
+      "drawCallsThisFrame": 34,
+      "drawCallsAvg120": 34,
+      "activeMeshes": 32,
+      "fps": 526.316,
+      "fpsAvg5s": 375.94,
+      "frameTimeP50": 2.3,
+      "frameTimeP95": 4.4,
+      "visibleMeshes": 31,
+      "visibleVertices": 2618,
+      "visibleTriangles": 1396
+    },
+    {
+      "captureId": "sequence-013-ranged-1",
+      "capturedAt": "2026-08-03T03:52:08.127Z",
+      "url": "http://127.0.0.1:5181?heroReview=1",
+      "screenshot": "reports/art-previews/hero-commercial-r3/R3-E/sequence/sequence-013-ranged-1.png",
+      "captureMode": "heroReview=1",
+      "cameraMode": "three-quarter",
+      "animation": "RangedAttack",
+      "lod": 0,
+      "modelSource": "GLB",
+      "heroWorldPosition": {
+        "x": 0,
+        "y": 0,
+        "z": 0
+      },
+      "screenSpaceBoundingBox": {
+        "x": 507.284,
+        "y": 255.29,
+        "width": 114.65,
+        "height": 184.166,
+        "right": 621.934,
+        "bottom": 439.456
+      },
+      "viewport": {
+        "width": 1120,
+        "height": 630
+      },
+      "uiOccluded": false,
+      "uiPanel": {
+        "x": 866,
+        "y": 16,
+        "width": 238,
+        "height": 347.625
+      },
+      "authoredVisibleMeshCount": 31,
+      "proceduralVisibleMeshCount": 0,
+      "drawCalls": 34,
+      "drawCallsThisFrame": 34,
+      "drawCallsAvg120": 34,
+      "activeMeshes": 32,
+      "fps": 181.818,
+      "fpsAvg5s": 235.602,
+      "frameTimeP50": 4.1,
+      "frameTimeP95": 6.9,
+      "visibleMeshes": 31,
+      "visibleVertices": 2618,
+      "visibleTriangles": 1396
+    },
+    {
+      "captureId": "sequence-014-ranged-2",
+      "capturedAt": "2026-08-03T03:52:08.443Z",
+      "url": "http://127.0.0.1:5181?heroReview=1",
+      "screenshot": "reports/art-previews/hero-commercial-r3/R3-E/sequence/sequence-014-ranged-2.png",
+      "captureMode": "heroReview=1",
+      "cameraMode": "three-quarter",
+      "animation": "RangedAttack",
+      "lod": 0,
+      "modelSource": "GLB",
+      "heroWorldPosition": {
+        "x": 0,
+        "y": 0,
+        "z": 0
+      },
+      "screenSpaceBoundingBox": {
+        "x": 507.284,
+        "y": 255.29,
+        "width": 114.65,
+        "height": 184.166,
+        "right": 621.934,
+        "bottom": 439.456
+      },
+      "viewport": {
+        "width": 1120,
+        "height": 630
+      },
+      "uiOccluded": false,
+      "uiPanel": {
+        "x": 866,
+        "y": 16,
+        "width": 238,
+        "height": 347.625
+      },
+      "authoredVisibleMeshCount": 31,
+      "proceduralVisibleMeshCount": 0,
+      "drawCalls": 34,
+      "drawCallsThisFrame": 34,
+      "drawCallsAvg120": 34,
+      "activeMeshes": 32,
+      "fps": 625,
+      "fpsAvg5s": 337.838,
+      "frameTimeP50": 2.6,
+      "frameTimeP95": 4.6,
+      "visibleMeshes": 31,
+      "visibleVertices": 2618,
+      "visibleTriangles": 1396
+    },
+    {
+      "captureId": "sequence-015-ranged-3",
+      "capturedAt": "2026-08-03T03:52:08.723Z",
+      "url": "http://127.0.0.1:5181?heroReview=1",
+      "screenshot": "reports/art-previews/hero-commercial-r3/R3-E/sequence/sequence-015-ranged-3.png",
+      "captureMode": "heroReview=1",
+      "cameraMode": "three-quarter",
+      "animation": "RangedAttack",
+      "lod": 0,
+      "modelSource": "GLB",
+      "heroWorldPosition": {
+        "x": 0,
+        "y": 0,
+        "z": 0
+      },
+      "screenSpaceBoundingBox": {
+        "x": 507.284,
+        "y": 255.29,
+        "width": 114.65,
+        "height": 184.166,
+        "right": 621.934,
+        "bottom": 439.456
+      },
+      "viewport": {
+        "width": 1120,
+        "height": 630
+      },
+      "uiOccluded": false,
+      "uiPanel": {
+        "x": 866,
+        "y": 16,
+        "width": 238,
+        "height": 347.625
+      },
+      "authoredVisibleMeshCount": 31,
+      "proceduralVisibleMeshCount": 0,
+      "drawCalls": 34,
+      "drawCallsThisFrame": 34,
+      "drawCallsAvg120": 34,
+      "activeMeshes": 32,
+      "fps": 555.556,
+      "fpsAvg5s": 485.437,
+      "frameTimeP50": 2,
+      "frameTimeP95": 2.4,
+      "visibleMeshes": 31,
+      "visibleVertices": 2618,
+      "visibleTriangles": 1396
+    },
+    {
+      "captureId": "sequence-016-hit-1",
+      "capturedAt": "2026-08-03T03:52:09.281Z",
+      "url": "http://127.0.0.1:5181?heroReview=1",
+      "screenshot": "reports/art-previews/hero-commercial-r3/R3-E/sequence/sequence-016-hit-1.png",
+      "captureMode": "heroReview=1",
+      "cameraMode": "three-quarter",
+      "animation": "Hit",
+      "lod": 0,
+      "modelSource": "GLB",
+      "heroWorldPosition": {
+        "x": 0,
+        "y": 0,
+        "z": 0
+      },
+      "screenSpaceBoundingBox": {
+        "x": 507.284,
+        "y": 255.29,
+        "width": 114.65,
+        "height": 184.166,
+        "right": 621.934,
+        "bottom": 439.456
+      },
+      "viewport": {
+        "width": 1120,
+        "height": 630
+      },
+      "uiOccluded": false,
+      "uiPanel": {
+        "x": 866,
+        "y": 16,
+        "width": 238,
+        "height": 347.625
+      },
+      "authoredVisibleMeshCount": 31,
+      "proceduralVisibleMeshCount": 0,
+      "drawCalls": 34,
+      "drawCallsThisFrame": 34,
+      "drawCallsAvg120": 34,
+      "activeMeshes": 32,
+      "fps": 243.902,
+      "fpsAvg5s": 206.897,
+      "frameTimeP50": 4.5,
+      "frameTimeP95": 6.1,
+      "visibleMeshes": 31,
+      "visibleVertices": 2618,
+      "visibleTriangles": 1396
+    },
+    {
+      "captureId": "sequence-017-hit-2",
+      "capturedAt": "2026-08-03T03:52:09.587Z",
+      "url": "http://127.0.0.1:5181?heroReview=1",
+      "screenshot": "reports/art-previews/hero-commercial-r3/R3-E/sequence/sequence-017-hit-2.png",
+      "captureMode": "heroReview=1",
+      "cameraMode": "three-quarter",
+      "animation": "Hit",
+      "lod": 0,
+      "modelSource": "GLB",
+      "heroWorldPosition": {
+        "x": 0,
+        "y": 0,
+        "z": 0
+      },
+      "screenSpaceBoundingBox": {
+        "x": 507.284,
+        "y": 255.29,
+        "width": 114.65,
+        "height": 184.166,
+        "right": 621.934,
+        "bottom": 439.456
+      },
+      "viewport": {
+        "width": 1120,
+        "height": 630
+      },
+      "uiOccluded": false,
+      "uiPanel": {
+        "x": 866,
+        "y": 16,
+        "width": 238,
+        "height": 347.625
+      },
+      "authoredVisibleMeshCount": 31,
+      "proceduralVisibleMeshCount": 0,
+      "drawCalls": 34,
+      "drawCallsThisFrame": 34,
+      "drawCallsAvg120": 34,
+      "activeMeshes": 32,
+      "fps": 714.286,
+      "fpsAvg5s": 458.716,
+      "frameTimeP50": 1.7,
+      "frameTimeP95": 3.7,
+      "visibleMeshes": 31,
+      "visibleVertices": 2618,
+      "visibleTriangles": 1396
+    },
+    {
+      "captureId": "sequence-018-hit-3",
+      "capturedAt": "2026-08-03T03:52:09.923Z",
+      "url": "http://127.0.0.1:5181?heroReview=1",
+      "screenshot": "reports/art-previews/hero-commercial-r3/R3-E/sequence/sequence-018-hit-3.png",
+      "captureMode": "heroReview=1",
+      "cameraMode": "three-quarter",
+      "animation": "Hit",
+      "lod": 0,
+      "modelSource": "GLB",
+      "heroWorldPosition": {
+        "x": 0,
+        "y": 0,
+        "z": 0
+      },
+      "screenSpaceBoundingBox": {
+        "x": 507.284,
+        "y": 255.29,
+        "width": 114.65,
+        "height": 184.166,
+        "right": 621.934,
+        "bottom": 439.456
+      },
+      "viewport": {
+        "width": 1120,
+        "height": 630
+      },
+      "uiOccluded": false,
+      "uiPanel": {
+        "x": 866,
+        "y": 16,
+        "width": 238,
+        "height": 347.625
+      },
+      "authoredVisibleMeshCount": 31,
+      "proceduralVisibleMeshCount": 0,
+      "drawCalls": 34,
+      "drawCallsThisFrame": 34,
+      "drawCallsAvg120": 34,
+      "activeMeshes": 32,
+      "fps": 476.19,
+      "fpsAvg5s": 322.581,
+      "frameTimeP50": 2.9,
+      "frameTimeP95": 4.3,
+      "visibleMeshes": 31,
+      "visibleVertices": 2618,
+      "visibleTriangles": 1396
+    },
+    {
+      "captureId": "sequence-019-death-1",
+      "capturedAt": "2026-08-03T03:52:10.460Z",
+      "url": "http://127.0.0.1:5181?heroReview=1",
+      "screenshot": "reports/art-previews/hero-commercial-r3/R3-E/sequence/sequence-019-death-1.png",
+      "captureMode": "heroReview=1",
+      "cameraMode": "three-quarter",
+      "animation": "Death",
+      "lod": 0,
+      "modelSource": "GLB",
+      "heroWorldPosition": {
+        "x": 0,
+        "y": 0,
+        "z": 0
+      },
+      "screenSpaceBoundingBox": {
+        "x": 507.284,
+        "y": 255.29,
+        "width": 114.65,
+        "height": 184.166,
+        "right": 621.934,
+        "bottom": 439.456
+      },
+      "viewport": {
+        "width": 1120,
+        "height": 630
+      },
+      "uiOccluded": false,
+      "uiPanel": {
+        "x": 866,
+        "y": 16,
+        "width": 238,
+        "height": 347.625
+      },
+      "authoredVisibleMeshCount": 31,
+      "proceduralVisibleMeshCount": 0,
+      "drawCalls": 34,
+      "drawCallsThisFrame": 34,
+      "drawCallsAvg120": 34,
+      "activeMeshes": 32,
+      "fps": 140.845,
+      "fpsAvg5s": 178.571,
+      "frameTimeP50": 5.5,
+      "frameTimeP95": 7.5,
+      "visibleMeshes": 31,
+      "visibleVertices": 2618,
+      "visibleTriangles": 1396
+    },
+    {
+      "captureId": "sequence-020-death-2",
+      "capturedAt": "2026-08-03T03:52:10.759Z",
+      "url": "http://127.0.0.1:5181?heroReview=1",
+      "screenshot": "reports/art-previews/hero-commercial-r3/R3-E/sequence/sequence-020-death-2.png",
+      "captureMode": "heroReview=1",
+      "cameraMode": "three-quarter",
+      "animation": "Death",
+      "lod": 0,
+      "modelSource": "GLB",
+      "heroWorldPosition": {
+        "x": 0,
+        "y": 0,
+        "z": 0
+      },
+      "screenSpaceBoundingBox": {
+        "x": 507.284,
+        "y": 255.29,
+        "width": 114.65,
+        "height": 184.166,
+        "right": 621.934,
+        "bottom": 439.456
+      },
+      "viewport": {
+        "width": 1120,
+        "height": 630
+      },
+      "uiOccluded": false,
+      "uiPanel": {
+        "x": 866,
+        "y": 16,
+        "width": 238,
+        "height": 347.625
+      },
+      "authoredVisibleMeshCount": 31,
+      "proceduralVisibleMeshCount": 0,
+      "drawCalls": 34,
+      "drawCallsThisFrame": 34,
+      "drawCallsAvg120": 34,
+      "activeMeshes": 32,
+      "fps": 238.095,
+      "fpsAvg5s": 240.385,
+      "frameTimeP50": 4.2,
+      "frameTimeP95": 4.9,
+      "visibleMeshes": 31,
+      "visibleVertices": 2618,
+      "visibleTriangles": 1396
+    },
+    {
+      "captureId": "sequence-021-death-3",
+      "capturedAt": "2026-08-03T03:52:11.096Z",
+      "url": "http://127.0.0.1:5181?heroReview=1",
+      "screenshot": "reports/art-previews/hero-commercial-r3/R3-E/sequence/sequence-021-death-3.png",
+      "captureMode": "heroReview=1",
+      "cameraMode": "three-quarter",
+      "animation": "Death",
+      "lod": 0,
+      "modelSource": "GLB",
+      "heroWorldPosition": {
+        "x": 0,
+        "y": 0,
+        "z": 0
+      },
+      "screenSpaceBoundingBox": {
+        "x": 507.284,
+        "y": 255.29,
+        "width": 114.65,
+        "height": 184.166,
+        "right": 621.934,
+        "bottom": 439.456
+      },
+      "viewport": {
+        "width": 1120,
+        "height": 630
+      },
+      "uiOccluded": false,
+      "uiPanel": {
+        "x": 866,
+        "y": 16,
+        "width": 238,
+        "height": 347.625
+      },
+      "authoredVisibleMeshCount": 31,
+      "proceduralVisibleMeshCount": 0,
+      "drawCalls": 34,
+      "drawCallsThisFrame": 34,
+      "drawCallsAvg120": 34,
+      "activeMeshes": 32,
+      "fps": 277.778,
+      "fpsAvg5s": 225.225,
+      "frameTimeP50": 4.5,
+      "frameTimeP95": 5.4,
+      "visibleMeshes": 31,
+      "visibleVertices": 2618,
+      "visibleTriangles": 1396
+    }
+  ]
+}

@@ -1,0 +1,30 @@
+{
+  "stage": "R3-E",
+  "scope": "Hero weighted deformation and combat animation",
+  "before": {
+    "sourceCommit": "361892e",
+    "lod0AuthoredObjects": 12,
+    "lod0RenderPrimitives": 31,
+    "lod0Triangles": 1396,
+    "skinnedPrimitives": 0,
+    "animationKeyChange": "rig clips existed, no Hero skin envelope"
+  },
+  "after": {
+    "lod0AuthoredObjects": 12,
+    "lod0RenderPrimitives": 31,
+    "lod0Triangles": 1396,
+    "skinnedPrimitives": 31,
+    "glbBytes": 808636,
+    "skeletons": 1,
+    "animations": ["Idle", "Walk", "Run", "MeleeAttack", "RangedAttack", "Hit", "Death"],
+    "sequenceFrames": 21,
+    "note": "all LOD0 primitives carry JOINTS_0 and WEIGHTS_0; LOD1/LOD2 remain authored silhouette proxies for R3-F"
+  },
+  "runtimeContract": {
+    "captureMode": "heroReview=1",
+    "modelSource": "GLB",
+    "proceduralVisibleMeshCount": 0,
+    "evidence": "twelve runtime PNG/JSON pairs plus 21 continuous sequence frames"
+  },
+  "humanReview": "The validator confirms weighted runtime deformation and clip evidence only; commercial animation quality remains a human review decision."
+}

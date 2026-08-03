@@ -70,8 +70,12 @@ const setReview = (camera, animation, lod) =>
     { camera, animation, lod },
   );
 
-const capture = async (name, state, frameCount = 5, directory = reviewRoot) => {
-  await setReview(state.camera, state.animation, state.lod);
+const capture = async (name, state, frameCount = 5, directory = reviewRoot, resetState = true) => {
+  if (resetState) {
+    await setReview(state.camera, state.animation, state.lod);
+  } else {
+    await page.evaluate(() => window.frostbound?.api()?.heroReview?.resetPerformance?.());
+  }
   await page.evaluate((frames) => window.frostbound?.step(0.016, frames, true), frameCount);
   const metadata = await page.evaluate(() => window.frostbound?.api()?.heroReview?.capture());
   if (!metadata) throw new Error(`Hero review metadata missing for ${name}`);
@@ -128,7 +132,7 @@ if (!staticOnly) {
         camera: "three-quarter",
         animation,
         lod: 0,
-      }, 6, sequenceRoot));
+      }, 6, sequenceRoot, i === 0));
     }
   }
 }

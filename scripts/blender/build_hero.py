@@ -28,7 +28,7 @@ from common import (  # noqa: E402
     reset_scene,
     save_source,
 )
-from build_units import add_armature_clip, bind_unit_pieces, make_skeleton  # noqa: E402
+from build_units import add_armature_clip, make_skeleton  # noqa: E402
 
 
 def _mesh_object(name, vertices, faces, materials, material_indices=None, origin=(0.0, 0.0, 0.0), target="LOD0", smooth=True):
@@ -527,6 +527,101 @@ def author_hero_atlas(objects, mats):
     return {"image": image.name, "resolution": texture_size, "materials": len(palette)}
 
 
+def _hero_vertex_weights(object_name, position):
+    """Return smooth local envelopes for the Hero's authored meshes.
+
+    The shared unit library intentionally keeps rigid piece binding. Hero-R3
+    uses a separate envelope so the continuous body, sleeves, boots, cape,
+    pack, and weapons deform through the existing HeroSkeleton without
+    changing any other character builder.
+    """
+    name = object_name.lower()
+    x, y, _z = position
+
+    def pair(first, second, amount):
+        amount = max(0.0, min(1.0, amount))
+        return [(first, amount), (second, 1.0 - amount)]
+
+    if name.startswith(("head.", "head", "face.")):
+        return [("head", 1.0)]
+    if name.startswith("weapon."):
+        return [("hand.R", 1.0)]
+    if name.startswith("arm.l"):
+        if y >= 1.10:
+            return pair("upper_arm.L", "lower_arm.L", (y - 1.10) / 0.22)
+        if y >= 0.78:
+            return pair("lower_arm.L", "hand.L", (y - 0.78) / 0.32)
+        return [("hand.L", 1.0)]
+    if name.startswith("arm.r"):
+        if y >= 1.10:
+            return pair("upper_arm.R", "lower_arm.R", (y - 1.10) / 0.22)
+        if y >= 0.78:
+            return pair("lower_arm.R", "hand.R", (y - 0.78) / 0.32)
+        return [("hand.R", 1.0)]
+    if name.startswith("leg.l"):
+        if y >= 0.42:
+            return pair("thigh.L", "shin.L", (y - 0.42) / 0.24)
+        if y >= 0.10:
+            return pair("shin.L", "foot.L", (y - 0.10) / 0.32)
+        return [("foot.L", 1.0)]
+    if name.startswith("leg.r"):
+        if y >= 0.42:
+            return pair("thigh.R", "shin.R", (y - 0.42) / 0.24)
+        if y >= 0.10:
+            return pair("shin.R", "foot.R", (y - 0.10) / 0.32)
+        return [("foot.R", 1.0)]
+    if name.startswith("cape."):
+        if y >= 1.05:
+            return pair("chest", "spine", (y - 1.05) / 0.38)
+        return pair("spine", "pelvis", max(0.0, min(1.0, (y - 0.36) / 0.69)))
+    if name.startswith("pack."):
+        if y >= 1.14:
+            return pair("chest", "spine", (y - 1.14) / 0.30)
+        return pair("spine", "pelvis", max(0.0, min(1.0, (y - 0.72) / 0.42)))
+    # The continuous torso gets a three-band envelope. Keeping adjacent
+    # weights overlapping is what prevents a hard seam at the waist during a
+    # hit or attack pose.
+    if name.startswith("chest."):
+        if y >= 1.18:
+            return [("chest", 1.0)]
+        if y >= 0.86:
+            return pair("chest", "spine", (y - 0.86) / 0.32)
+        return pair("spine", "pelvis", max(0.0, min(1.0, (y - 0.58) / 0.28)))
+    return [("spine", 1.0)]
+
+
+def bind_hero_weighted(parts, skeleton):
+    """Bind Hero LOD0 meshes through Armature modifiers and vertex weights."""
+    valid_bones = {bone.name for bone in skeleton.data.bones}
+    for obj in parts:
+        if obj.type != "MESH":
+            continue
+        world_matrix = obj.matrix_world.copy()
+        skeleton_inverse = skeleton.matrix_world.inverted()
+        # Resolve authored coordinates before changing the parent. This keeps
+        # the envelope independent of the Babylon orientation correction on
+        # HeroRoot.
+        local_positions = [
+            skeleton_inverse @ (world_matrix @ vertex.co)
+            for vertex in obj.data.vertices
+        ]
+        groups = {}
+        for bone_name in valid_bones:
+            groups[bone_name] = obj.vertex_groups.new(name=bone_name)
+        for vertex_index, position in enumerate(local_positions):
+            weights = [(name, weight) for name, weight in _hero_vertex_weights(obj.name, position) if name in groups and weight > 0.001]
+            total = sum(weight for _name, weight in weights) or 1.0
+            for bone_name, weight in weights:
+                groups[bone_name].add([vertex_index], weight / total, "REPLACE")
+        obj.parent = skeleton
+        obj.parent_type = "OBJECT"
+        obj.matrix_world = world_matrix
+        modifier = obj.modifiers.get("HeroWeightedDeform") or obj.modifiers.new("HeroWeightedDeform", "ARMATURE")
+        modifier.object = skeleton
+        modifier.use_deform_preserve_volume = True
+        obj["skinBinding"] = "R3-E-weighted-envelope"
+
+
 def build():
     reset_scene()
     mats = {
@@ -554,10 +649,11 @@ def build():
     root["commercialIteration"] = 2
     root["heroMeshPass"] = "R3-C-commercial-clothing-and-identity"
     root["heroMeshContract"] = "12 LOD0 meshes; continuous body plus consolidated survival gear and goggles"
-    root["animationReview"] = "existing contact-safe walk/run cycles, staged attacks, stable hit/death poses"
+    root["animationReview"] = "R3-E weighted body envelopes with contact-safe locomotion and staged combat poses"
     root["feetGrounded"] = True
     root["orientationContract"] = "Babylon Y-up, forward +Z"
     root["animationIteration2"] = "follow-through and recovery keys"
+    root["skinningPass"] = "R3-E-weighted-deformation"
 
     parts = _build_mesh_parts(mats)
     lod_parts = _add_hero_lods(root, mats)
@@ -565,7 +661,7 @@ def build():
     skeleton = make_skeleton(root)
     skeleton.name = "HeroSkeleton"
     skeleton.data.name = "HeroSkeleton"
-    bind_unit_pieces(parts, skeleton)
+    bind_hero_weighted(parts, skeleton)
 
     socket_positions = {
         "weapon_socket.R": (0.62, 0.78, 0.20),
@@ -594,9 +690,26 @@ def build():
         (12, {"upper_arm.L": (0.52, 0, 0), "upper_arm.R": (-0.52, 0, 0), "thigh.L": (-0.62, 0, 0), "thigh.R": (0.62, 0, 0), "chest": (0.08, 0, 0)}),
         (18, {}),
     ])
-    add_armature_clip(skeleton, "MeleeAttack", 16, [(1, {"upper_arm.R": (-1.0, 0, 0), "lower_arm.R": (-0.6, 0, 0)}), (5, {"upper_arm.R": (-1.7, 0, 0), "lower_arm.R": (-0.8, 0, 0), "chest": (-0.08, 0, 0)}), (9, {"upper_arm.R": (1.4, 0, 0), "lower_arm.R": (0.5, 0, 0), "chest": (0.2, 0, 0)}), (12, {"upper_arm.R": (0.72, 0, 0), "lower_arm.R": (0.18, 0, 0), "chest": (0.08, 0, 0)}), (16, {})])
-    add_armature_clip(skeleton, "RangedAttack", 16, [(1, {"upper_arm.R": (-0.8, 0, 0), "upper_arm.L": (-0.5, 0, 0)}), (7, {"upper_arm.R": (-1.7, 0, 0), "upper_arm.L": (-1.1, 0, 0), "lower_arm.L": (-0.35, 0, 0), "head": (-0.15, 0, 0)}), (11, {"upper_arm.R": (-1.25, 0, 0), "upper_arm.L": (-0.85, 0, 0), "head": (-0.08, 0, 0)}), (14, {"upper_arm.R": (-0.92, 0, 0), "upper_arm.L": (-0.62, 0, 0), "lower_arm.L": (-0.12, 0, 0), "head": (-0.04, 0, 0)}), (16, {})])
-    add_armature_clip(skeleton, "Hit", 12, [(1, {"chest": (-0.2, 0, 0), "head": (0.12, 0, 0), "upper_arm.L": (0.15, 0, 0)}), (6, {"chest": (-0.32, 0, 0), "head": (0.18, 0, 0), "upper_arm.L": (0.24, 0, 0)}), (10, {"chest": (-0.14, 0, 0), "head": (0.08, 0, 0)}), (12, {})])
+    add_armature_clip(skeleton, "MeleeAttack", 16, [
+        (1, {"upper_arm.R": (-0.85, 0.0, -0.10), "lower_arm.R": (-0.55, 0.0, 0.08), "hand.R": (-0.20, 0.0, 0.0), "chest": (0.04, 0.0, -0.04)}),
+        (5, {"upper_arm.R": (-1.65, 0.0, -0.18), "lower_arm.R": (-0.85, 0.0, 0.16), "hand.R": (-0.42, 0.0, 0.04), "chest": (-0.14, 0.0, -0.10), "pelvis": (0.08, 0.0, 0.0)}),
+        (9, {"upper_arm.R": (1.35, 0.0, 0.22), "lower_arm.R": (0.62, 0.0, -0.12), "hand.R": (0.38, 0.0, -0.04), "chest": (0.26, 0.0, 0.16), "pelvis": (-0.06, 0.0, 0.0)}),
+        (12, {"upper_arm.R": (0.68, 0.0, 0.12), "lower_arm.R": (0.20, 0.0, -0.04), "hand.R": (0.12, 0.0, 0.0), "chest": (0.10, 0.0, 0.06)}),
+        (16, {})
+    ])
+    add_armature_clip(skeleton, "RangedAttack", 16, [
+        (1, {"upper_arm.R": (-0.72, 0.0, -0.06), "upper_arm.L": (-0.44, 0.0, 0.06), "lower_arm.L": (-0.18, 0.0, 0.04), "hand.R": (-0.12, 0.0, 0.0)}),
+        (7, {"upper_arm.R": (-1.58, 0.0, -0.14), "upper_arm.L": (-1.04, 0.0, 0.10), "lower_arm.L": (-0.42, 0.0, 0.06), "lower_arm.R": (-0.26, 0.0, 0.04), "hand.R": (-0.34, 0.0, 0.0), "head": (-0.18, 0.0, 0.0), "chest": (-0.08, 0.0, -0.06)}),
+        (11, {"upper_arm.R": (-1.18, 0.0, -0.08), "upper_arm.L": (-0.82, 0.0, 0.06), "lower_arm.L": (-0.30, 0.0, 0.04), "lower_arm.R": (-0.16, 0.0, 0.02), "hand.R": (-0.18, 0.0, 0.0), "head": (-0.08, 0.0, 0.0), "chest": (-0.03, 0.0, -0.02)}),
+        (14, {"upper_arm.R": (-0.86, 0.0, -0.04), "upper_arm.L": (-0.58, 0.0, 0.03), "lower_arm.L": (-0.14, 0.0, 0.02), "hand.R": (-0.10, 0.0, 0.0), "head": (-0.03, 0.0, 0.0)}),
+        (16, {})
+    ])
+    add_armature_clip(skeleton, "Hit", 12, [
+        (1, {"chest": (-0.16, 0.0, 0.06), "pelvis": (-0.04, 0.0, 0.0), "head": (0.10, 0.0, 0.04), "upper_arm.L": (0.12, 0.0, 0.08), "upper_arm.R": (-0.08, 0.0, -0.04)}),
+        (6, {"chest": (-0.34, 0.0, 0.12), "pelvis": (-0.08, 0.0, 0.0), "head": (0.20, 0.0, 0.08), "upper_arm.L": (0.26, 0.0, 0.14), "upper_arm.R": (-0.18, 0.0, -0.08), "lower_arm.L": (0.12, 0.0, 0.06)}),
+        (10, {"chest": (-0.14, 0.0, 0.05), "head": (0.08, 0.0, 0.03), "upper_arm.L": (0.10, 0.0, 0.04), "upper_arm.R": (-0.06, 0.0, -0.02)}),
+        (12, {})
+    ])
     add_armature_clip(skeleton, "Death", 20, [
         (1, {"foot.L": (0.04, 0, 0), "foot.R": (-0.04, 0, 0)}),
         (6, {"root": (0.35, 0, 0), "chest": (0.12, 0, 0), "head": (0.06, 0, 0), "foot.L": (0.08, 0, 0), "foot.R": (-0.08, 0, 0)}),

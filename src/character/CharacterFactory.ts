@@ -1,4 +1,4 @@
-import { Scene, TransformNode, Vector3 } from "@babylonjs/core";
+import { AnimationGroup, Scene, TransformNode, Vector3 } from "@babylonjs/core";
 import { MaterialFactory } from "../scene/MaterialFactory";
 import { CharacterAnimator } from "./CharacterAnimator";
 import { createHumanoid, type HumanoidPalette, type HumanoidRig } from "./ProceduralHumanoid";
@@ -53,6 +53,8 @@ export class CharacterAvatar {
   private authoredState = "";
   private authoredAttack: "MeleeAttack" | "RangedAttack" | null = null;
   private reviewAnimation: string | null = null;
+  private reviewGroup: AnimationGroup | null = null;
+  private reviewElapsed = 0;
   private reviewLod: 0 | 1 | 2 = 0;
 
   constructor(
@@ -120,6 +122,8 @@ export class CharacterAvatar {
     this.authoredState = "";
     this.authoredAttack = null;
     this.reviewAnimation = null;
+    this.reviewGroup = null;
+    this.reviewElapsed = 0;
     this.reviewLod = 0;
     this.applyLodVisibility();
   }
@@ -167,10 +171,25 @@ export class CharacterAvatar {
     );
     if (!group) return;
     this.reviewAnimation = name;
+    this.reviewGroup = group;
+    this.reviewElapsed = 0;
     this.authoredState = `review:${name}`;
     this.authoredAttack = null;
     for (const candidate of this.authored.animationGroups) candidate.stop();
     group.start(name === "Idle" || name === "Walk" || name === "Run", 1);
+    group.goToFrame(group.from);
+  }
+
+  /** Advances the isolated review clip deterministically when the render loop is paused. */
+  advanceReview(dt: number): void {
+    if (!this.reviewGroup) return;
+    const group = this.reviewGroup;
+    const frameRate = group.targetedAnimations[0]?.animation.framePerSecond ?? 24;
+    const frameSpan = Math.max(1, group.to - group.from);
+    this.reviewElapsed += Math.max(0, dt) * group.speedRatio;
+    const offset = this.reviewElapsed * frameRate;
+    const frame = group.from + (group.loopAnimation ? offset % frameSpan : Math.min(offset, frameSpan));
+    group.goToFrame(frame);
   }
 
   /** Selects the authored LOD mesh tier for the isolated review scene. */

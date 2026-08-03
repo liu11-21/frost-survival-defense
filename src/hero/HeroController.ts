@@ -162,9 +162,10 @@ export class HeroController implements Damageable {
   }
 
   /** Keeps authored animation groups advancing without running gameplay AI. */
-  updateReview(): void {
-    // Babylon advances AnimationGroups as part of Scene.render(). The review
-    // path deliberately does not call the gameplay animator or combat loop.
+  updateReview(dt = 0.016): void {
+    // Review captures stop Babylon's render loop, so advance the selected
+    // authored clip explicitly while leaving gameplay AI and movement idle.
+    this.avatar.advanceReview(dt);
   }
   /** A live combat lock, rather than merely facing a recently-dead target. */
   get isAttacking(): boolean {
