@@ -66,7 +66,9 @@ function assertVisibleState(state: ReviewState | null, expected: { camera: Camer
   expect(state.currentCamera).toBe(expected.camera);
   expect(state.currentAnimation).toBe(expected.animation);
   expect(state.currentLod).toBe(`LOD${expected.lod}`);
-  expect(state.animationGroups).toEqual(expect.arrayContaining([...requiredAnimations]));
+  const hasAnimation = (name: AnimationName): boolean =>
+    state.animationGroups.some((group) => group === name || group.endsWith(`:${name}`));
+  expect(requiredAnimations.every(hasAnimation), "All seven authored animation groups must be present").toBe(true);
   expect(state.uiOccluded).toBe(false);
 
   const bounds = state.heroScreenBounds;

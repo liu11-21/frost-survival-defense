@@ -4,6 +4,7 @@
 
 - 新增 Linux GitHub Actions `Hero Runtime Verification`：以 Git LFS 取回 Hero、執行 TypeScript／靜態資產驗證／production build，啟動 preview 並以 Chromium 驗證正式 `?heroReview=1` 場景。
 - 新增只在 Hero Review 入口暴露的 `window.__heroReviewState`，回報 GLB source、LOD、動畫、可見網格、螢幕邊界與 procedural mesh 數量；新增固定 1600×900 的 Playwright runtime 截圖、JSON 與 console log 證據。
+- 首次 Linux run 的前置步驟全部通過；測試發現 GLB 動畫名稱帶有 `hero.player:` namespace，已將驗證調整為要求七段動畫的 namespace-safe 對應，而非放寬動畫數量或跳過檢查。
 - 本節只建立遠端驗證鏈，未修改 `hero.blend`、Hero 幾何／材質／動畫或其他正式資產；本機 Vite/esbuild `spawn EPERM` blocker 仍需由 GitHub runner 給出最終 runtime 結果。
 
 ## 2026-08-03｜Hero R4 final silhouette correction
