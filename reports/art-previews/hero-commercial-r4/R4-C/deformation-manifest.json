@@ -1,0 +1,98 @@
+{
+  "stage": "R4-C",
+  "source": "Blender clay/topology review",
+  "poses": [
+    {
+      "name": "pose-t",
+      "rotatedBones": [],
+      "image": "pose-t.png"
+    },
+    {
+      "name": "pose-arms-forward",
+      "rotatedBones": [
+        "lower_arm.L",
+        "lower_arm.R",
+        "upper_arm.L",
+        "upper_arm.R"
+      ],
+      "image": "pose-arms-forward.png"
+    },
+    {
+      "name": "pose-arms-up",
+      "rotatedBones": [
+        "lower_arm.L",
+        "lower_arm.R",
+        "upper_arm.L",
+        "upper_arm.R"
+      ],
+      "image": "pose-arms-up.png"
+    },
+    {
+      "name": "pose-elbow-90",
+      "rotatedBones": [
+        "lower_arm.L",
+        "lower_arm.R",
+        "upper_arm.L",
+        "upper_arm.R"
+      ],
+      "image": "pose-elbow-90.png"
+    },
+    {
+      "name": "pose-knee-bend",
+      "rotatedBones": [
+        "shin.L",
+        "shin.R",
+        "thigh.L",
+        "thigh.R"
+      ],
+      "image": "pose-knee-bend.png"
+    },
+    {
+      "name": "pose-walk-stride",
+      "rotatedBones": [
+        "shin.L",
+        "shin.R",
+        "thigh.L",
+        "thigh.R",
+        "upper_arm.L",
+        "upper_arm.R"
+      ],
+      "image": "pose-walk-stride.png"
+    },
+    {
+      "name": "pose-melee",
+      "rotatedBones": [
+        "chest",
+        "hand.R",
+        "lower_arm.R",
+        "upper_arm.L",
+        "upper_arm.R"
+      ],
+      "image": "pose-melee.png"
+    },
+    {
+      "name": "pose-ranged",
+      "rotatedBones": [
+        "chest",
+        "head",
+        "lower_arm.L",
+        "lower_arm.R",
+        "upper_arm.L",
+        "upper_arm.R"
+      ],
+      "image": "pose-ranged.png"
+    },
+    {
+      "name": "pose-death",
+      "rotatedBones": [
+        "chest",
+        "root",
+        "thigh.L",
+        "thigh.R",
+        "upper_arm.L",
+        "upper_arm.R"
+      ],
+      "image": "pose-death.png"
+    }
+  ]
+}

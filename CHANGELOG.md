@@ -498,3 +498,15 @@ flyingColossus, furnace and crossbow/turret before claiming display readiness.
 - Added Blender review evidence under
   `reports/art-previews/hero-commercial-r4/R4-B/`; deformation and production
   LOD validation remain R4-C/R4-D work.
+
+## 2026-08-03 | Hero-R4 C weighted mid-poly deformation
+
+- Added a Blender-only deformation contract for the R4-B LOD0 mesh: all 15
+  render meshes use the existing 18-bone HeroSkeleton, weights are normalized,
+  and 4,660 vertices have multiple bone influences.
+- Added nine explicit clay pose frames and their manifest under
+  `reports/art-previews/hero-commercial-r4/R4-C/`; the renderer disables NLA
+  evaluation and keeps the rig's authored root bind orientation for review.
+- Structural skinning checks pass; pose/clipping and commercial animation
+  quality remain human review decisions. Production LOD work is deferred to
+  R4-D.

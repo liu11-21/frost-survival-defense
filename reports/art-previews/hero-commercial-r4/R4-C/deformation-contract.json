@@ -1,0 +1,147 @@
+{
+  "stage": "R4-C",
+  "status": "pass",
+  "skeleton": {
+    "name": "HeroSkeleton",
+    "boneCount": 18,
+    "requiredBones": [
+      "chest",
+      "foot.L",
+      "foot.R",
+      "hand.L",
+      "hand.R",
+      "head",
+      "lower_arm.L",
+      "lower_arm.R",
+      "neck",
+      "pelvis",
+      "root",
+      "shin.L",
+      "shin.R",
+      "spine",
+      "thigh.L",
+      "thigh.R",
+      "upper_arm.L",
+      "upper_arm.R"
+    ],
+    "requiredBonesPresent": true
+  },
+  "lod0": {
+    "meshCount": 15,
+    "totalVertices": 10486,
+    "smoothMultiInfluenceVertices": 4660,
+    "perMesh": [
+      {
+        "name": "arm.L.heroSleeve",
+        "vertices": 1152,
+        "weightedVertices": 1152,
+        "multiInfluenceVertices": 480,
+        "armatureModifier": true
+      },
+      {
+        "name": "arm.R.heroSleeve",
+        "vertices": 1152,
+        "weightedVertices": 1152,
+        "multiInfluenceVertices": 480,
+        "armatureModifier": true
+      },
+      {
+        "name": "armor.heroPlates",
+        "vertices": 560,
+        "weightedVertices": 560,
+        "multiInfluenceVertices": 496,
+        "armatureModifier": true
+      },
+      {
+        "name": "cape.heroCoat",
+        "vertices": 30,
+        "weightedVertices": 30,
+        "multiInfluenceVertices": 24,
+        "armatureModifier": true
+      },
+      {
+        "name": "chest.heroBody",
+        "vertices": 1824,
+        "weightedVertices": 1824,
+        "multiInfluenceVertices": 836,
+        "armatureModifier": true
+      },
+      {
+        "name": "coat.heroJacket",
+        "vertices": 816,
+        "weightedVertices": 816,
+        "multiInfluenceVertices": 624,
+        "armatureModifier": true
+      },
+      {
+        "name": "head.goggles",
+        "vertices": 32,
+        "weightedVertices": 32,
+        "multiInfluenceVertices": 0,
+        "armatureModifier": true
+      },
+      {
+        "name": "head.heroHead",
+        "vertices": 1280,
+        "weightedVertices": 1280,
+        "multiInfluenceVertices": 0,
+        "armatureModifier": true
+      },
+      {
+        "name": "head.nose",
+        "vertices": 6,
+        "weightedVertices": 6,
+        "multiInfluenceVertices": 0,
+        "armatureModifier": true
+      },
+      {
+        "name": "helmet.heroShell",
+        "vertices": 576,
+        "weightedVertices": 576,
+        "multiInfluenceVertices": 0,
+        "armatureModifier": true
+      },
+      {
+        "name": "leg.L.heroBoot",
+        "vertices": 1248,
+        "weightedVertices": 1248,
+        "multiInfluenceVertices": 672,
+        "armatureModifier": true
+      },
+      {
+        "name": "leg.R.heroBoot",
+        "vertices": 1248,
+        "weightedVertices": 1248,
+        "multiInfluenceVertices": 672,
+        "armatureModifier": true
+      },
+      {
+        "name": "pack.heroSurvival",
+        "vertices": 488,
+        "weightedVertices": 488,
+        "multiInfluenceVertices": 376,
+        "armatureModifier": true
+      },
+      {
+        "name": "weapon.meleeBlade",
+        "vertices": 40,
+        "weightedVertices": 40,
+        "multiInfluenceVertices": 0,
+        "armatureModifier": true
+      },
+      {
+        "name": "weapon.rangedCarbine",
+        "vertices": 34,
+        "weightedVertices": 34,
+        "multiInfluenceVertices": 0,
+        "armatureModifier": true
+      }
+    ]
+  },
+  "checks": {
+    "armatureModifiers": true,
+    "normalizedWeights": true,
+    "smoothSkinningPresent": true
+  },
+  "humanReviewNote": "Source weights and modifiers are verified structurally; the rendered pose sheets remain a human deformation/clipping review."
+}

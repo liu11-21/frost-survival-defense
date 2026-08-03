@@ -39,14 +39,12 @@ def _clay_material():
 
 def _setup_scene(clay=False):
     scene = bpy.context.scene
-    # The shipped HeroRoot carries the Babylon Y-up orientation correction.
-    # For a Blender clay sheet, neutralize that export-only rotation so the
-    # review camera can inspect the authored source in its natural Y-up pose.
+    # Neutralize the Babylon export correction, then retain a Z-up review
+    # scene.  The source mesh is authored Y-up; applying the inverse root
+    # transform to every child preserves its shape while making the Blender
+    # clay ground and camera share the runtime's upright convention.
     root = bpy.data.objects.get("HeroRoot")
     if root:
-        # Preserve each child's authored world shape while removing the
-        # export correction, including the parent-inverse matrices Blender
-        # stores on the armature-bound meshes.
         root_world = root.matrix_world.copy()
         neutralize = root_world.inverted()
         for obj in list(bpy.data.objects):

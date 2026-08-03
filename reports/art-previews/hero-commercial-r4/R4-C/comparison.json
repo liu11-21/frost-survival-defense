@@ -1,0 +1,52 @@
+{
+  "stage": "R4-C",
+  "iteration": 2,
+  "source": "Blender weighted deformation contract and pose review",
+  "baseline": {
+    "commit": "ed3bb26",
+    "lod0Vertices": 10486,
+    "lod0Triangles": 20852,
+    "lod0RenderMeshes": 15,
+    "lod0GlbPrimitives": 15,
+    "glbBytes": 3199820,
+    "glbMaterials": 4
+  },
+  "current": {
+    "lod0Vertices": 10486,
+    "lod0Triangles": 20852,
+    "lod0RenderMeshes": 15,
+    "lod0GlbPrimitives": 15,
+    "glbBytes": 3199820,
+    "glbMaterials": 4,
+    "skeletonBones": 18,
+    "animationClips": 7,
+    "armatureModifiers": 15,
+    "smoothMultiInfluenceVertices": 4660,
+    "normalizedWeights": true,
+    "requiredBonesPresent": true
+  },
+  "deltas": {
+    "lod0Vertices": 0,
+    "lod0Triangles": 0,
+    "lod0RenderMeshes": 0,
+    "lod0GlbPrimitives": 0,
+    "glbBytes": 0,
+    "glbMaterials": 0
+  },
+  "deformation": {
+    "contract": "deformation-contract.json",
+    "manifest": "deformation-manifest.json",
+    "poses": [
+      "pose-t.png",
+      "pose-arms-forward.png",
+      "pose-arms-up.png",
+      "pose-elbow-90.png",
+      "pose-knee-bend.png",
+      "pose-walk-stride.png",
+      "pose-melee.png",
+      "pose-ranged.png",
+      "pose-death.png"
+    ]
+  },
+  "humanReviewNote": "Source skinning structure passes; pose/clipping and commercial animation quality require human review."
+}
