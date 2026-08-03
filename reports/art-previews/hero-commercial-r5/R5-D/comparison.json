@@ -1,0 +1,45 @@
+{
+  "stage": "R5-D",
+  "status": "weapon-silhouette-review-ready",
+  "artIterations": 2,
+  "scope": "Hero melee/ranged weapon silhouette and socket visibility only",
+  "baseline": {
+    "lod0": { "triangles": 19004, "renderMeshes": 15 },
+    "lod1": { "triangles": 7288, "renderMeshes": 8, "renderPrimitives": 8 },
+    "lod2": { "triangles": 2616, "renderMeshes": 6, "renderPrimitives": 6 },
+    "glbBytes": 4117692,
+    "materials": 4,
+    "embeddedTextures": 1,
+    "skeletonBones": 18,
+    "animationClips": 7
+  },
+  "current": {
+    "lod0": { "triangles": 19064, "renderMeshes": 15 },
+    "lod1": { "triangles": 7324, "renderMeshes": 8, "renderPrimitives": 8 },
+    "lod2": { "triangles": 2656, "renderMeshes": 6, "renderPrimitives": 6 },
+    "glbBytes": 4135028,
+    "sourceBlendBytes": 784978,
+    "materials": 4,
+    "embeddedTextures": 1,
+    "skeletonBones": 18,
+    "animationClips": 7
+  },
+  "weaponChanges": {
+    "melee": "sharper tapered blade, fuller, cross guard, wrapped grip and pommel remain one authored profile mesh",
+    "ranged": "horizontal survival carbine silhouette with receiver, stock, barrel, sight, grip and magazine remain one profile mesh",
+    "sockets": "ranged_socket moves with the visible carbine hand-off while weapon_socket.R remains named and stable",
+    "lods": "both production tiers retain readable melee and ranged profiles in one weapon mesh"
+  },
+  "evidence": [
+    "weapons-front.png",
+    "weapons-side.png",
+    "weapons-three-quarter.png",
+    "weapons-back.png",
+    "weapons-ranged.png",
+    "weapons-close-up.png",
+    "weapons-lod1.png",
+    "weapons-lod2.png",
+    "weapons-manifest.json"
+  ],
+  "humanReviewNote": "These plates document weapon silhouettes and socket placement only. Commercial art quality remains a human artist decision."
+}

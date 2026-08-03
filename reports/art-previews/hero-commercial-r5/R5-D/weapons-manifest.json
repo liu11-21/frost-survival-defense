@@ -1,0 +1,47 @@
+{
+  "stage": "R5-D",
+  "kind": "weapon-silhouette-and-socket",
+  "source": "assets-source/blender/characters/hero.blend",
+  "views": [
+    {
+      "name": "weapons-front",
+      "lod": 0,
+      "file": "D:\\codex\\\u904a\u6232\u958b\u767c\\reports\\art-previews\\hero-commercial-r5\\R5-D\\weapons-front.png"
+    },
+    {
+      "name": "weapons-side",
+      "lod": 0,
+      "file": "D:\\codex\\\u904a\u6232\u958b\u767c\\reports\\art-previews\\hero-commercial-r5\\R5-D\\weapons-side.png"
+    },
+    {
+      "name": "weapons-three-quarter",
+      "lod": 0,
+      "file": "D:\\codex\\\u904a\u6232\u958b\u767c\\reports\\art-previews\\hero-commercial-r5\\R5-D\\weapons-three-quarter.png"
+    },
+    {
+      "name": "weapons-back",
+      "lod": 0,
+      "file": "D:\\codex\\\u904a\u6232\u958b\u767c\\reports\\art-previews\\hero-commercial-r5\\R5-D\\weapons-back.png"
+    },
+    {
+      "name": "weapons-ranged",
+      "lod": 0,
+      "file": "D:\\codex\\\u904a\u6232\u958b\u767c\\reports\\art-previews\\hero-commercial-r5\\R5-D\\weapons-ranged.png"
+    },
+    {
+      "name": "weapons-close-up",
+      "lod": 0,
+      "file": "D:\\codex\\\u904a\u6232\u958b\u767c\\reports\\art-previews\\hero-commercial-r5\\R5-D\\weapons-close-up.png"
+    },
+    {
+      "name": "weapons-lod1",
+      "lod": 1,
+      "file": "D:\\codex\\\u904a\u6232\u958b\u767c\\reports\\art-previews\\hero-commercial-r5\\R5-D\\weapons-lod1.png"
+    },
+    {
+      "name": "weapons-lod2",
+      "lod": 2,
+      "file": "D:\\codex\\\u904a\u6232\u958b\u767c\\reports\\art-previews\\hero-commercial-r5\\R5-D\\weapons-lod2.png"
+    }
+  ]
+}

@@ -571,3 +571,14 @@ flyingColossus, furnace and crossbow/turret before claiming display readiness.
 - Added R5-C helmet front, side, three-quarter, close-up and LOD evidence.
 - This is a helmet identity checkpoint only; commercial art quality remains open
   for human review.
+## 2026-08-03 | Hero-R5 D survival weapon silhouette checkpoint
+
+- Strengthened the melee profile with a tapered blade, fuller, guard, grip and
+  pommel while keeping one authored weapon mesh.
+- Rebuilt the ranged profile as a horizontal survival carbine with receiver,
+  stock, barrel, sight, grip and magazine in the existing weapon mesh.
+- Moved the ranged socket with the visible carbine hand-off; the socket names
+  and Hero skeleton contract remain intact.
+- Added R5-D front, side, back, ranged, close-up and LOD evidence plates.
+- This is a weapon silhouette checkpoint only; commercial art quality remains
+  open for human review.
