@@ -1,6 +1,6 @@
 {
   "captureId": "hero-review-gameplay",
-  "capturedAt": "2026-08-03T02:08:27.303Z",
+  "capturedAt": "2026-08-03T02:37:29.338Z",
   "url": "http://127.0.0.1:5181?heroReview=1",
   "screenshot": "reports/art-previews/hero-commercial/review/hero-review-gameplay.png",
   "captureMode": "heroReview=1",
@@ -14,12 +14,12 @@
     "z": 0
   },
   "screenSpaceBoundingBox": {
-    "x": 494.245,
-    "y": 236.927,
-    "width": 122.804,
-    "height": 199.49,
-    "right": 617.049,
-    "bottom": 436.417
+    "x": 492.893,
+    "y": 252.154,
+    "width": 129.029,
+    "height": 183.454,
+    "right": 621.922,
+    "bottom": 435.608
   },
   "viewport": {
     "width": 1120,
@@ -32,9 +32,9 @@
     "width": 248,
     "height": 258.5
   },
-  "authoredVisibleMeshCount": 184,
+  "authoredVisibleMeshCount": 32,
   "proceduralVisibleMeshCount": 0,
-  "drawCalls": 2525,
-  "activeMeshes": 185,
-  "fps": 4.06
+  "drawCalls": 493,
+  "activeMeshes": 33,
+  "fps": 5.34
 }

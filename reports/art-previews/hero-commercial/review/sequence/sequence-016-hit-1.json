@@ -1,6 +1,6 @@
 {
   "captureId": "sequence-016-hit-1",
-  "capturedAt": "2026-08-03T02:09:16.938Z",
+  "capturedAt": "2026-08-03T02:37:50.170Z",
   "url": "http://127.0.0.1:5181?heroReview=1",
   "screenshot": "reports/art-previews/hero-commercial/review/sequence/sequence-016-hit-1.png",
   "captureMode": "heroReview=1",
@@ -14,12 +14,12 @@
     "z": 0
   },
   "screenSpaceBoundingBox": {
-    "x": 501.322,
-    "y": 238.214,
-    "width": 115.386,
-    "height": 203.501,
-    "right": 616.708,
-    "bottom": 441.714
+    "x": 501.071,
+    "y": 255.885,
+    "width": 118.982,
+    "height": 185.258,
+    "right": 620.053,
+    "bottom": 441.143
   },
   "viewport": {
     "width": 1120,
@@ -32,9 +32,9 @@
     "width": 248,
     "height": 258.5
   },
-  "authoredVisibleMeshCount": 184,
+  "authoredVisibleMeshCount": 32,
   "proceduralVisibleMeshCount": 0,
-  "drawCalls": 47572,
-  "activeMeshes": 185,
-  "fps": 4.06
+  "drawCalls": 9964,
+  "activeMeshes": 33,
+  "fps": 5.34
 }

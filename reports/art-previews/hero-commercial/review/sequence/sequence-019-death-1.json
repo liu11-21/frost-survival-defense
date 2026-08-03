@@ -1,6 +1,6 @@
 {
   "captureId": "sequence-019-death-1",
-  "capturedAt": "2026-08-03T02:09:22.632Z",
+  "capturedAt": "2026-08-03T02:37:52.595Z",
   "url": "http://127.0.0.1:5181?heroReview=1",
   "screenshot": "reports/art-previews/hero-commercial/review/sequence/sequence-019-death-1.png",
   "captureMode": "heroReview=1",
@@ -14,12 +14,12 @@
     "z": 0
   },
   "screenSpaceBoundingBox": {
-    "x": 510.341,
-    "y": 241.462,
-    "width": 127.453,
-    "height": 200.369,
-    "right": 637.794,
-    "bottom": 441.831
+    "x": 510.174,
+    "y": 256.963,
+    "width": 131.773,
+    "height": 182.816,
+    "right": 641.946,
+    "bottom": 439.779
   },
   "viewport": {
     "width": 1120,
@@ -32,9 +32,9 @@
     "width": 248,
     "height": 258.5
   },
-  "authoredVisibleMeshCount": 184,
+  "authoredVisibleMeshCount": 32,
   "proceduralVisibleMeshCount": 0,
-  "drawCalls": 53302,
-  "activeMeshes": 185,
-  "fps": 4.06
+  "drawCalls": 11134,
+  "activeMeshes": 33,
+  "fps": 5.34
 }

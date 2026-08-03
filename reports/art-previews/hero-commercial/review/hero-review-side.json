@@ -1,6 +1,6 @@
 {
   "captureId": "hero-review-side",
-  "capturedAt": "2026-08-03T02:08:30.746Z",
+  "capturedAt": "2026-08-03T02:37:30.874Z",
   "url": "http://127.0.0.1:5181?heroReview=1",
   "screenshot": "reports/art-previews/hero-commercial/review/hero-review-side.png",
   "captureMode": "heroReview=1",
@@ -14,12 +14,12 @@
     "z": 0
   },
   "screenSpaceBoundingBox": {
-    "x": 481.334,
-    "y": 220.768,
-    "width": 128.52,
-    "height": 253.625,
-    "right": 609.853,
-    "bottom": 474.393
+    "x": 511.891,
+    "y": 242.755,
+    "width": 98.285,
+    "height": 230.236,
+    "right": 610.176,
+    "bottom": 472.991
   },
   "viewport": {
     "width": 1120,
@@ -32,9 +32,9 @@
     "width": 248,
     "height": 258.5
   },
-  "authoredVisibleMeshCount": 184,
+  "authoredVisibleMeshCount": 32,
   "proceduralVisibleMeshCount": 0,
-  "drawCalls": 5963,
-  "activeMeshes": 185,
-  "fps": 4.06
+  "drawCalls": 1195,
+  "activeMeshes": 33,
+  "fps": 5.34
 }

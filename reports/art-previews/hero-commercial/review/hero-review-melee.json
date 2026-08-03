@@ -1,6 +1,6 @@
 {
   "captureId": "hero-review-melee",
-  "capturedAt": "2026-08-03T02:08:38.421Z",
+  "capturedAt": "2026-08-03T02:37:33.913Z",
   "url": "http://127.0.0.1:5181?heroReview=1",
   "screenshot": "reports/art-previews/hero-commercial/review/hero-review-melee.png",
   "captureMode": "heroReview=1",
@@ -14,12 +14,12 @@
     "z": 0
   },
   "screenSpaceBoundingBox": {
-    "x": 491.33,
-    "y": 238.214,
-    "width": 122.935,
-    "height": 203.501,
-    "right": 614.265,
-    "bottom": 441.714
+    "x": 491.082,
+    "y": 254.682,
+    "width": 125.247,
+    "height": 186.461,
+    "right": 616.329,
+    "bottom": 441.143
   },
   "viewport": {
     "width": 1120,
@@ -32,9 +32,9 @@
     "width": 248,
     "height": 258.5
   },
-  "authoredVisibleMeshCount": 184,
+  "authoredVisibleMeshCount": 32,
   "proceduralVisibleMeshCount": 0,
-  "drawCalls": 12457,
-  "activeMeshes": 185,
-  "fps": 4.06
+  "drawCalls": 2521,
+  "activeMeshes": 33,
+  "fps": 5.34
 }

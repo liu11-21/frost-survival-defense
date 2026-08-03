@@ -1,5 +1,22 @@
 # Hero commercial H1-H6 evidence
 
+## 2026-08-03 mesh reconstruction checkpoint
+
+This is a focused Hero topology pass after the H1-H6 evidence work, not a new
+H1-H6 modeling stage. The old primitive assembly was replaced in
+`scripts/blender/build_hero.py` with nine LOD0 authored objects: continuous
+lofted body/head/limbs, a curved coat panel, and consolidated melee/ranged
+equipment. A small `head.nose` mesh marker preserves the runtime facing
+calibration contract. The exported GLB reports 10 LOD0 authored objects and 32
+material-split LOD0 render primitives, down from the previous 184 runtime
+authored meshes. LOD1 and LOD2 each contain body, hood/visor, cape and weapon
+silhouette meshes so the Hero remains identifiable at distance.
+
+The review captures under `review/` were regenerated from the real
+`?heroReview=1` Babylon scene after this export. They are evidence for mesh
+count, silhouette visibility, LOD identity and runtime loading only. They do
+not constitute a commercial material or animation-quality claim.
+
 This folder records the staged Blender source -> GLB -> Babylon formal-scene
 workflow for the authored Hero. Each stage has two modeling iterations,
 `metrics-iteration-1.json`, `metrics-iteration-2.json`, a before/after

@@ -1,6 +1,6 @@
 {
   "captureId": "sequence-010-melee-1",
-  "capturedAt": "2026-08-03T02:09:05.455Z",
+  "capturedAt": "2026-08-03T02:37:45.389Z",
   "url": "http://127.0.0.1:5181?heroReview=1",
   "screenshot": "reports/art-previews/hero-commercial/review/sequence/sequence-010-melee-1.png",
   "captureMode": "heroReview=1",
@@ -14,12 +14,12 @@
     "z": 0
   },
   "screenSpaceBoundingBox": {
-    "x": 490.267,
-    "y": 238.214,
-    "width": 123.998,
-    "height": 203.501,
-    "right": 614.265,
-    "bottom": 441.714
+    "x": 491.089,
+    "y": 254.682,
+    "width": 125.24,
+    "height": 186.461,
+    "right": 616.329,
+    "bottom": 441.143
   },
   "viewport": {
     "width": 1120,
@@ -32,9 +32,9 @@
     "width": 248,
     "height": 258.5
   },
-  "authoredVisibleMeshCount": 184,
+  "authoredVisibleMeshCount": 32,
   "proceduralVisibleMeshCount": 0,
-  "drawCalls": 36112,
-  "activeMeshes": 185,
-  "fps": 4.06
+  "drawCalls": 7624,
+  "activeMeshes": 33,
+  "fps": 5.34
 }

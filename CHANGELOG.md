@@ -1,5 +1,13 @@
 # 變更脈絡
 
+## 2026-08-03｜Hero continuous authored mesh reconstruction
+
+- 本輪只重建 Hero；未修改其他角色、設施或遊戲玩法，也沒有重新執行 H1-H6 建模階段。
+- `scripts/blender/build_hero.py` 以連續 loft/profile 網格取代原先大量 rigid primitive 組裝：LOD0 由約 184 個 runtime authored meshes 降至 32 個 material-split render meshes（10 個 authored objects，含朝向校正用 `head.nose` marker）。
+- 保留 `HeroRoot`、`HeroSkeleton`、weapon/ranged sockets、七段既有動畫與 Babylon +Z 朝向契約；LOD1/LOD2 各自保留 body、hood/visor、cape、weapon 四類識別網格。
+- 只使用 `npm run art:hero` 重新產出 `assets-source/blender/characters/hero.blend` 與 `public/assets/models/characters/hero.glb`，未執行其他資產匯出。
+- `npm run art:hero:review` 已更新 `reports/art-previews/hero-commercial/review/` 的 12 張 Babylon runtime 截圖與 21 個動畫影格；`npm run art:validate:hero` 通過。此驗證只證明可見性、LOD、動畫與無 procedural 疊加，不宣稱材質或動畫達商業品質。
+
 ## 2026-08-02｜visual-effects implementation checkpoint
 
 - 按使用者要求在安全位置停止視覺資產擴充；未啟動設施全名單預覽，也未新增新的特效類型、材質框架、資產家族或重構。
