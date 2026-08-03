@@ -1,0 +1,25 @@
+{
+  "stage": "R3-B",
+  "scope": "Hero body proportions and continuous topology only",
+  "before": {
+    "sourceCommit": "97d811d",
+    "lod0AuthoredObjects": 10,
+    "lod0VisibleRenderMeshes": 32,
+    "lod0Triangles": 1224,
+    "note": "continuous body still had a broad lower torso and egg-like chest silhouette"
+  },
+  "after": {
+    "lod0AuthoredObjects": 10,
+    "lod0VisibleRenderMeshes": 32,
+    "lod0Triangles": 1224,
+    "glbBytes": 326648,
+    "note": "pinched waist, separated pelvis/legs, longer lower-body read, and clearer side depth"
+  },
+  "runtimeContract": {
+    "captureMode": "heroReview=1",
+    "modelSource": "GLB",
+    "proceduralVisibleMeshCount": 0,
+    "evidence": "twelve runtime PNG/JSON pairs in this directory"
+  },
+  "humanReview": "Commercial visual quality remains a human review decision; this stage records geometry scope only."
+}

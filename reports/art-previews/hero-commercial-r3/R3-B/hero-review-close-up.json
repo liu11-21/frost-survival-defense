@@ -1,0 +1,48 @@
+{
+  "captureId": "hero-review-close-up",
+  "capturedAt": "2026-08-03T03:20:52.983Z",
+  "url": "http://127.0.0.1:5181?heroReview=1",
+  "screenshot": "reports/art-previews/hero-commercial-r3/R3-B/hero-review-close-up.png",
+  "captureMode": "heroReview=1",
+  "cameraMode": "close-up",
+  "animation": "Idle",
+  "lod": 0,
+  "modelSource": "GLB",
+  "heroWorldPosition": {
+    "x": 0,
+    "y": 0,
+    "z": 0
+  },
+  "screenSpaceBoundingBox": {
+    "x": 415.04,
+    "y": 187.937,
+    "width": 289.919,
+    "height": 388.675,
+    "right": 704.96,
+    "bottom": 576.613
+  },
+  "viewport": {
+    "width": 1120,
+    "height": 630
+  },
+  "uiOccluded": false,
+  "uiPanel": {
+    "x": 866,
+    "y": 16,
+    "width": 238,
+    "height": 347.625
+  },
+  "authoredVisibleMeshCount": 32,
+  "proceduralVisibleMeshCount": 0,
+  "drawCalls": 35,
+  "drawCallsThisFrame": 35,
+  "drawCallsAvg120": 35,
+  "activeMeshes": 33,
+  "fps": 270.27,
+  "fpsAvg5s": 267.559,
+  "frameTimeP50": 3.2,
+  "frameTimeP95": 10.4,
+  "visibleMeshes": 32,
+  "visibleVertices": 2282,
+  "visibleTriangles": 1224
+}

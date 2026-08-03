@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-08-03T02:42:57.087Z",
+  "generatedAt": "2026-08-03T03:20:00.636Z",
   "asset": "hero",
   "sourcePath": "assets-source/blender/characters/hero.blend",
   "glbPath": "public/assets/models/characters/hero.glb",
@@ -31,7 +31,7 @@
   "artifact": {
     "status": "pass",
     "glb": {
-      "bytes": 322536,
+      "bytes": 326648,
       "assetVersion": "2.0",
       "nodes": 44,
       "meshes": 18,
@@ -78,8 +78,8 @@
           "extras": {
             "commercialStage": "H6",
             "commercialIteration": 2,
-            "heroMeshPass": "continuous-authored-mesh",
-            "heroMeshContract": "9 LOD0 meshes; identity-preserving LOD1/LOD2",
+            "heroMeshPass": "R3-B-commercial-body-proportions",
+            "heroMeshContract": "10 LOD0 meshes; pinched waist, separated feet, identity-preserving LOD1/LOD2",
             "animationReview": "existing contact-safe walk/run cycles, staged attacks, stable hit/death poses",
             "feetGrounded": true,
             "orientationContract": "Babylon Y-up, forward +Z",
@@ -90,18 +90,18 @@
       "rootExtras": {
         "commercialStage": "H6",
         "commercialIteration": 2,
-        "heroMeshPass": "continuous-authored-mesh",
-        "heroMeshContract": "9 LOD0 meshes; identity-preserving LOD1/LOD2",
+        "heroMeshPass": "R3-B-commercial-body-proportions",
+        "heroMeshContract": "10 LOD0 meshes; pinched waist, separated feet, identity-preserving LOD1/LOD2",
         "animationReview": "existing contact-safe walk/run cycles, staged attacks, stable hit/death poses",
         "feetGrounded": true,
         "orientationContract": "Babylon Y-up, forward +Z",
         "animationIteration2": "follow-through and recovery keys"
       },
-      "triangles": 1656,
+      "triangles": 1696,
       "lodTriangles": {
         "LOD0": 1224,
-        "LOD1": 244,
-        "LOD2": 188
+        "LOD1": 268,
+        "LOD2": 204
       },
       "renderPrimitiveCount": 52,
       "lodRenderPrimitives": {
@@ -290,7 +290,7 @@
       "renderableCollisionNodes": []
     },
     "source": {
-      "bytes": 191957,
+      "bytes": 193389,
       "exists": true
     },
     "checks": {

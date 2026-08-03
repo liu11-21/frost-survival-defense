@@ -178,20 +178,21 @@ def _add_hero_lods(root, mats):
         marker["generatedFrom"] = "hero-continuous-mesh-pass"
         marker["proxyGeometry"] = True
         body_rings = [
-            (0.32, 0.40 if level == 1 else 0.38, 0.34, 0, -0.04, 1),
-            (0.62, 0.54 if level == 1 else 0.50, 0.36, 0, 0.0, 0),
-            (0.98, 0.56 if level == 1 else 0.52, 0.36, 0, 0.0, 0),
-            (1.30, 0.48 if level == 1 else 0.44, 0.31, 0, 0.0, 2),
-            (1.48, 0.36 if level == 1 else 0.32, 0.27, 0, 0.0, 0),
+            (0.56, 0.30 if level == 1 else 0.28, 0.26, 0, -0.03, 1),
+            (0.76, 0.34 if level == 1 else 0.31, 0.28, 0, -0.01, 1),
+            (0.92, 0.31 if level == 1 else 0.29, 0.26, 0, 0.0, 0),
+            (1.14, 0.42 if level == 1 else 0.39, 0.31, 0, 0.01, 0),
+            (1.38, 0.49 if level == 1 else 0.45, 0.33, 0, 0.01, 2),
+            (1.50, 0.37 if level == 1 else 0.34, 0.27, 0, 0.0, 0),
         ]
         body = _loft_mesh(f"LOD{level}_PROXY_body", body_rings, segments, [mats["cloth"], mats["leather"], mats["metal"]], target=target)
         body["lodLevel"] = level
         body.parent = marker
         head_rings = [
-            (1.48, 0.25, 0.24, 0, 0, 0),
-            (1.72, 0.31, 0.28, 0, 0, 0),
-            (1.98, 0.31, 0.27, 0, 0, 1),
-            (2.14, 0.16, 0.17, 0, 0, 3),
+            (1.50, 0.22, 0.22, 0, 0, 0),
+            (1.70, 0.27, 0.26, 0, 0, 0),
+            (1.98, 0.29, 0.27, 0, 0, 1),
+            (2.14, 0.15, 0.16, 0, 0, 3),
         ]
         def lod_head_override(_ring_index, _segment, _center_x, center_y, _center_z, current, _following):
             # Keep a readable mask/visor band at distance instead of reducing
@@ -240,13 +241,13 @@ def _build_mesh_parts(mats):
     body = _loft_mesh(
         "chest.heroBody",
         [
-            (0.30, 0.42, 0.34, 0.0, -0.05, 1),
-            (0.46, 0.51, 0.38, 0.0, -0.03, 1),
-            (0.70, 0.56, 0.38, 0.0, 0.00, 0),
-            (0.94, 0.57, 0.38, 0.0, 0.01, 0),
-            (1.16, 0.58, 0.36, 0.0, 0.01, 2),
-            (1.36, 0.50, 0.33, 0.0, 0.00, 0),
-            (1.50, 0.38, 0.28, 0.0, 0.00, 5),
+            (0.58, 0.30, 0.27, 0.0, -0.04, 1),
+            (0.76, 0.35, 0.29, 0.0, -0.02, 1),
+            (0.92, 0.31, 0.26, 0.0, 0.00, 0),
+            (1.10, 0.40, 0.30, 0.0, 0.01, 0),
+            (1.30, 0.48, 0.33, 0.0, 0.02, 2),
+            (1.43, 0.51, 0.32, 0.0, 0.01, 0),
+            (1.50, 0.37, 0.27, 0.0, 0.00, 5),
         ],
         20,
         body_mats,
@@ -293,11 +294,11 @@ def _build_mesh_parts(mats):
         arm_parts.append(_loft_mesh(
             f"arm.{label}.heroSleeve",
             [
-                (1.40, 0.20, 0.20, side * 0.49, 0.00, 0),
-                (1.22, 0.19, 0.19, side * 0.53, 0.00, 0),
-                (1.00, 0.17, 0.17, side * 0.54, 0.01, 0),
-                (0.82, 0.15, 0.15, side * 0.53, 0.02, 2),
-                (0.69, 0.13, 0.13, side * 0.52, 0.04, 1),
+                (1.42, 0.18, 0.18, side * 0.54, 0.00, 0),
+                (1.26, 0.17, 0.18, side * 0.60, 0.00, 0),
+                (1.04, 0.15, 0.16, side * 0.63, 0.01, 0),
+                (0.82, 0.14, 0.15, side * 0.61, 0.04, 2),
+                (0.66, 0.12, 0.14, side * 0.58, 0.07, 1),
             ],
             14,
             arm_mats,
@@ -310,11 +311,11 @@ def _build_mesh_parts(mats):
         leg_parts.append(_loft_mesh(
             f"leg.{label}.heroBoot",
             [
-                (0.68, 0.23, 0.24, side * 0.22, 0.00, 0),
-                (0.48, 0.22, 0.23, side * 0.22, 0.00, 0),
-                (0.26, 0.20, 0.24, side * 0.22, 0.04, 1),
-                (0.10, 0.20, 0.30, side * 0.22, 0.10, 2),
-                (0.04, 0.20, 0.34, side * 0.22, 0.14, 2),
+                (0.66, 0.18, 0.20, side * 0.23, 0.00, 0),
+                (0.46, 0.17, 0.19, side * 0.23, 0.02, 0),
+                (0.26, 0.16, 0.20, side * 0.23, 0.07, 1),
+                (0.10, 0.18, 0.27, side * 0.23, 0.14, 2),
+                (0.04, 0.18, 0.31, side * 0.23, 0.18, 2),
             ],
             14,
             leg_mats,
@@ -372,8 +373,8 @@ def build():
     # this pass is a topology rebuild, not a new H1-H6 claim.
     root["commercialStage"] = "H6"
     root["commercialIteration"] = 2
-    root["heroMeshPass"] = "continuous-authored-mesh"
-    root["heroMeshContract"] = "9 LOD0 meshes; identity-preserving LOD1/LOD2"
+    root["heroMeshPass"] = "R3-B-commercial-body-proportions"
+    root["heroMeshContract"] = "10 LOD0 meshes; pinched waist, separated feet, identity-preserving LOD1/LOD2"
     root["animationReview"] = "existing contact-safe walk/run cycles, staged attacks, stable hit/death poses"
     root["feetGrounded"] = True
     root["orientationContract"] = "Babylon Y-up, forward +Z"

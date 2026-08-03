@@ -418,3 +418,12 @@ flyingColossus, furnace and crossbow/turret before claiming display readiness.
   no inherited bloom/fog/vignette overexposure.
 - Review captures now record per-frame and rolling draw calls, measured FPS, p50/p95 frame times, and visible Hero geometry counts.
 - Formal R3-A runtime evidence is under `reports/art-previews/hero-commercial-r3/R3-A/`; Hero geometry is unchanged.
+## 2026-08-03 | Hero-R3 B commercial body proportions
+
+- Rebuilt only the Hero continuous body loft: distinct pelvis, pinched waist,
+  chest/shoulder break, longer legs, separated feet, and clearer side depth.
+- Kept the 10 authored LOD0 object budget, HeroRoot/HeroSkeleton/sockets, seven
+  animation clips, and existing Babylon runtime contract intact.
+- Added R3-B Babylon runtime evidence under
+  `reports/art-previews/hero-commercial-r3/R3-B/`; clothing, UV/materials, and
+  weighted deformation remain subsequent stages.
