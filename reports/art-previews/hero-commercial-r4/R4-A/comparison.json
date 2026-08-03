@@ -1,0 +1,50 @@
+{
+  "stage": "R4-A",
+  "iteration": 2,
+  "source": "Blender clay/topology review",
+  "baseline": {
+    "commit": "f789179",
+    "lod0Vertices": 762,
+    "lod0Triangles": 1396,
+    "lod0RenderMeshes": 12,
+    "lod0GlbPrimitives": 31,
+    "glbBytes": 862124,
+    "glbMaterials": 7,
+    "atlas": "HERO_ATLAS_1024"
+  },
+  "current": {
+    "lod0Vertices": 8126,
+    "lod0Triangles": 16124,
+    "lod0RenderMeshes": 12,
+    "lod0GlbPrimitives": 31,
+    "glbBytes": 2793212,
+    "glbMaterials": 7,
+    "atlas": "HERO_ATLAS_1024",
+    "skeletonBones": 18,
+    "animationClips": 7,
+    "armatureModifiers": 12,
+    "smoothWeightBinding": true
+  },
+  "deltas": {
+    "lod0Vertices": 7364,
+    "lod0Triangles": 14728,
+    "lod0RenderMeshes": 0,
+    "lod0GlbPrimitives": 0,
+    "glbBytes": 1931088
+  },
+  "review": {
+    "clay": [
+      "clay-front.png",
+      "clay-side.png",
+      "clay-back.png",
+      "clay-three-quarter.png"
+    ],
+    "textured": [
+      "textured-front.png",
+      "textured-close-up.png"
+    ],
+    "perspective": "gameplay.png",
+    "runtimeBabylon": "pending environment process permission; not used as R4-A clay evidence"
+  },
+  "humanReviewNote": "The clay sheets show the R4-A body foundation only. They do not certify commercial quality; clothing/equipment and deformation remain later R4 stages."
+}

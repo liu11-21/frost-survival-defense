@@ -98,6 +98,12 @@ function buildAudit(glb, sourceBytes) {
   const triangles = primitives.reduce((sum, primitive) => sum + trianglesForPrimitive(primitive), 0);
   const lodRenderPrimitives = { LOD0: 0, LOD1: 0, LOD2: 0 };
   const lodTriangles = { LOD0: 0, LOD1: 0, LOD2: 0 };
+  const lodProxyNames = nodes
+    .filter((node) => node.mesh !== undefined)
+    .map((node) => String(node.name ?? ""))
+    .filter((name) => name.startsWith("LOD1_PROXY") || name.startsWith("LOD2_PROXY"));
+  const lodIdentityParts = ["body", "head", "gear", "goggles", "cape", "weapon"];
+  const lodIdentity = [1, 2].every((level) => lodIdentityParts.every((part) => lodProxyNames.some((name) => name.startsWith(`LOD${level}_PROXY_${part}`))));
   for (const node of nodes) {
     if (node.mesh === undefined) continue;
     const name = String(node.name ?? "");
@@ -141,6 +147,7 @@ function buildAudit(glb, sourceBytes) {
     groundedContract: rootExtras.feetGrounded === true,
     uvAndColor: primitives.some((primitive) => primitive.attributes?.TEXCOORD_0 !== undefined) && primitives.some((primitive) => primitive.attributes?.COLOR_0 !== undefined),
     lodGeometry: lodRenderPrimitives.LOD1 > 0 && lodRenderPrimitives.LOD2 > 0 && lodTriangles.LOD1 > 0 && lodTriangles.LOD2 > 0,
+    lodIdentity,
     // R3-D replaces the old per-material 64px brush images with one embedded
     // commercial atlas (and leaves room for one optional weapon atlas).
     // Keep this fail-closed: an image URI or a low-resolution-only export is
@@ -172,6 +179,7 @@ function buildAudit(glb, sourceBytes) {
       rootExtras,
       triangles,
       lodTriangles,
+      lodIdentityParts: lodProxyNames,
       renderPrimitiveCount: primitives.length,
       skinnedPrimitives,
       lodRenderPrimitives,

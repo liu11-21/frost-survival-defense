@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-08-03T03:52:29.772Z",
+  "generatedAt": "2026-08-03T07:56:38.804Z",
   "asset": "hero",
   "sourcePath": "assets-source/blender/characters/hero.blend",
   "glbPath": "public/assets/models/characters/hero.glb",
@@ -17,6 +17,7 @@
     "groundedContract": true,
     "uvAndColor": true,
     "lodGeometry": true,
+    "lodIdentity": true,
     "embeddedTextures": true,
     "textureResolution": true,
     "noExternalUris": true,
@@ -32,11 +33,11 @@
   "artifact": {
     "status": "pass",
     "glb": {
-      "bytes": 808636,
+      "bytes": 2793212,
       "assetVersion": "2.0",
-      "nodes": 46,
-      "meshes": 20,
-      "materials": 8,
+      "nodes": 50,
+      "meshes": 24,
+      "materials": 7,
       "textures": 1,
       "skeletons": 1,
       "requiredNodes": {
@@ -58,7 +59,7 @@
       },
       "roots": [
         {
-          "index": 45,
+          "index": 49,
           "name": "HeroRoot",
           "translation": [
             0,
@@ -79,8 +80,11 @@
           "extras": {
             "commercialStage": "H6",
             "commercialIteration": 2,
-            "heroMeshPass": "R3-C-commercial-clothing-and-identity",
-            "heroMeshContract": "12 LOD0 meshes; continuous body plus consolidated survival gear and goggles",
+            "heroMeshPass": "R4-A-mid-poly-body-foundation",
+            "heroMeshContract": "12 LOD0 meshes; anatomical loop topology with continuous torso, limbs and helmet",
+            "heroR4Stage": "R4-A",
+            "topologyMethod": "authored anatomical edge-loop lofts; no subdivision modifier",
+            "lod0TargetTriangles": "16000-25000",
             "animationReview": "R3-E weighted body envelopes with contact-safe locomotion and staged combat poses",
             "feetGrounded": true,
             "orientationContract": "Babylon Y-up, forward +Z",
@@ -88,15 +92,18 @@
             "skinningPass": "R3-E-weighted-deformation",
             "heroSurfacePass": "R3-D-1024-hero-atlas",
             "heroAtlasResolution": 1024,
-            "heroMaterialCount": 8
+            "heroMaterialCount": 7
           }
         }
       ],
       "rootExtras": {
         "commercialStage": "H6",
         "commercialIteration": 2,
-        "heroMeshPass": "R3-C-commercial-clothing-and-identity",
-        "heroMeshContract": "12 LOD0 meshes; continuous body plus consolidated survival gear and goggles",
+        "heroMeshPass": "R4-A-mid-poly-body-foundation",
+        "heroMeshContract": "12 LOD0 meshes; anatomical loop topology with continuous torso, limbs and helmet",
+        "heroR4Stage": "R4-A",
+        "topologyMethod": "authored anatomical edge-loop lofts; no subdivision modifier",
+        "lod0TargetTriangles": "16000-25000",
         "animationReview": "R3-E weighted body envelopes with contact-safe locomotion and staged combat poses",
         "feetGrounded": true,
         "orientationContract": "Babylon Y-up, forward +Z",
@@ -104,20 +111,34 @@
         "skinningPass": "R3-E-weighted-deformation",
         "heroSurfacePass": "R3-D-1024-hero-atlas",
         "heroAtlasResolution": 1024,
-        "heroMaterialCount": 8
+        "heroMaterialCount": 7
       },
-      "triangles": 1868,
+      "triangles": 17136,
       "lodTriangles": {
-        "LOD0": 1396,
-        "LOD1": 268,
-        "LOD2": 204
+        "LOD0": 16124,
+        "LOD1": 652,
+        "LOD2": 360
       },
-      "renderPrimitiveCount": 51,
+      "lodIdentityParts": [
+        "LOD1_PROXY_body",
+        "LOD1_PROXY_cape",
+        "LOD1_PROXY_gear",
+        "LOD1_PROXY_goggles",
+        "LOD1_PROXY_head",
+        "LOD1_PROXY_weapon",
+        "LOD2_PROXY_body",
+        "LOD2_PROXY_cape",
+        "LOD2_PROXY_gear",
+        "LOD2_PROXY_goggles",
+        "LOD2_PROXY_head",
+        "LOD2_PROXY_weapon"
+      ],
+      "renderPrimitiveCount": 56,
       "skinnedPrimitives": 31,
       "lodRenderPrimitives": {
         "LOD0": 31,
-        "LOD1": 10,
-        "LOD2": 10
+        "LOD1": 13,
+        "LOD2": 12
       },
       "images": [
         {
@@ -228,7 +249,7 @@
       "renderableCollisionNodes": []
     },
     "source": {
-      "bytes": 608207,
+      "bytes": 812947,
       "exists": true
     },
     "checks": {
@@ -243,6 +264,7 @@
       "groundedContract": true,
       "uvAndColor": true,
       "lodGeometry": true,
+      "lodIdentity": true,
       "embeddedTextures": true,
       "textureResolution": true,
       "noExternalUris": true,

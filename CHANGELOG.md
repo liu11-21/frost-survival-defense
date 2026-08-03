@@ -458,3 +458,30 @@ flyingColossus, furnace and crossbow/turret before claiming display readiness.
 - Added runtime evidence under
   `reports/art-previews/hero-commercial-r3/R3-E/`; validator output now checks
   for JOINTS_0/WEIGHTS_0 and still does not claim commercial animation quality.
+
+## 2026-08-03 | Hero-R3 F identity-preserving LOD rebuild (runtime evidence pending)
+
+- Replaced the old LOD1/LOD2 head-and-body proxies with six authored identity
+  parts per tier: body, head/visor, survival gear, goggles, coat/cape, and
+  weapon. LOD0 geometry and all Hero runtime contracts remain unchanged.
+- The rebuilt GLB validates with 24 meshes, 7 materials, one embedded 1024px
+  atlas, one skeleton, seven clips, 31 skinned LOD0 primitives, and distinct
+  LOD1/LOD2 geometry (652/360 triangles). These LOD triangle counts remain
+  below the R3 target budgets and are reported as remaining art work.
+- Runtime capture is currently blocked by the managed environment refusing the
+  Chromium child process (`spawn EPERM`); no old screenshot is being reused as
+  R3-F evidence.
+
+## 2026-08-03 | Hero-R4 A true mid-poly body foundation
+
+- Rebuilt the Hero LOD0 body, head, arms and legs from authored anatomical
+  edge-loop profiles rather than the previous ultra-low-poly volume. Pelvis,
+  waist, ribcage, shoulder, elbow, knee and boot transitions now have dedicated
+  control loops; no subdivision modifier was added.
+- LOD0 now measures 8,126 vertices / 16,124 triangles across 12 render meshes
+  and 31 glTF primitives. The existing 18-bone smooth Armature binding, seven
+  animation clips, sockets, atlas and runtime contract are preserved.
+- Added Blender clay/topology review evidence under
+  `reports/art-previews/hero-commercial-r4/R4-A/`. R4-A remains a geometry
+  foundation checkpoint; clothing, deformation validation and production LODs
+  are deferred to R4-B through R4-D.

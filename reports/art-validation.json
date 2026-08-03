@@ -1,20 +1,20 @@
 {
-  "generatedAt": "2026-08-03T03:52:35.479Z",
+  "generatedAt": "2026-08-03T08:00:05.151Z",
   "blenderRequired": true,
   "assets": [
     {
       "key": "hero",
       "status": "ok",
       "path": "public/assets/models/characters/hero.glb",
-      "sizeBytes": 808636,
-      "nodes": 46,
-      "meshes": 20,
-      "materials": 8,
+      "sizeBytes": 2793212,
+      "nodes": 50,
+      "meshes": 24,
+      "materials": 7,
       "textures": 1,
       "skeletons": 1,
       "rootTransforms": [
         {
-          "index": 45,
+          "index": 49,
           "name": "HeroRoot",
           "translation": [
             0,
@@ -30,13 +30,13 @@
       ],
       "bounds": {
         "min": [
-          -0.7799999713897705,
-          -0.4399999976158142,
-          -2.140000104904175
+          -0.8400000333786011,
+          -0.47999998927116394,
+          -2.200000047683716
         ],
         "max": [
-          0.8199999928474426,
-          2.2200000286102295,
+          0.8400000333786011,
+          2.3299999237060547,
           0.7400000095367432
         ]
       },
@@ -58,19 +58,19 @@
         "Hit": 54,
         "Death": 54
       },
-      "triangles": 1868,
+      "triangles": 17136,
       "lodTriangles": {
-        "LOD0": 1396,
-        "LOD1": 268,
-        "LOD2": 204
+        "LOD0": 16124,
+        "LOD1": 652,
+        "LOD2": 360
       },
       "surfaceAttributes": {
         "TEXCOORD_0": true,
         "COLOR_0": true
       },
       "lodProxies": {
-        "LOD1": 4,
-        "LOD2": 4
+        "LOD1": 6,
+        "LOD2": 6
       },
       "missingNodes": [],
       "missingAnimations": [],
