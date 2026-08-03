@@ -37,14 +37,14 @@ def _clay_material():
     return material
 
 
-def _setup_scene(clay=False):
+def _setup_scene(clay=False, neutralize=True):
     scene = bpy.context.scene
     # Neutralize the Babylon export correction, then retain a Z-up review
     # scene.  The source mesh is authored Y-up; applying the inverse root
     # transform to every child preserves its shape while making the Blender
     # clay ground and camera share the runtime's upright convention.
     root = bpy.data.objects.get("HeroRoot")
-    if root:
+    if root and neutralize:
         root_world = root.matrix_world.copy()
         neutralize = root_world.inverted()
         for obj in list(bpy.data.objects):

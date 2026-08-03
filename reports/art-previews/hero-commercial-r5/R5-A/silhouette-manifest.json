@@ -1,0 +1,26 @@
+{
+  "stage": "R5-A",
+  "kind": "black-silhouette",
+  "views": [
+    {
+      "name": "silhouette-front",
+      "file": "D:\\codex\\\u904a\u6232\u958b\u767c\\reports\\art-previews\\hero-commercial-r5\\R5-A\\silhouette-front.png"
+    },
+    {
+      "name": "silhouette-side",
+      "file": "D:\\codex\\\u904a\u6232\u958b\u767c\\reports\\art-previews\\hero-commercial-r5\\R5-A\\silhouette-side.png"
+    },
+    {
+      "name": "silhouette-back",
+      "file": "D:\\codex\\\u904a\u6232\u958b\u767c\\reports\\art-previews\\hero-commercial-r5\\R5-A\\silhouette-back.png"
+    },
+    {
+      "name": "silhouette-three-quarter",
+      "file": "D:\\codex\\\u904a\u6232\u958b\u767c\\reports\\art-previews\\hero-commercial-r5\\R5-A\\silhouette-three-quarter.png"
+    },
+    {
+      "name": "silhouette-gameplay",
+      "file": "D:\\codex\\\u904a\u6232\u958b\u767c\\reports\\art-previews\\hero-commercial-r5\\R5-A\\silhouette-gameplay.png"
+    }
+  ]
+}

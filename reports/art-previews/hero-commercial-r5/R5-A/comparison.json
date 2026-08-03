@@ -1,0 +1,44 @@
+{
+  "stage": "R5-A",
+  "status": "silhouette-review-ready",
+  "artIterations": 1,
+  "scope": "Hero proportions and black silhouette only",
+  "baseline": {
+    "lod0": { "vertices": 10492, "triangles": 20864, "renderMeshes": 15 },
+    "lod1": { "vertices": 3684, "triangles": 7280, "renderMeshes": 7, "renderPrimitives": 8 },
+    "lod2": { "vertices": 1060, "triangles": 2060, "renderMeshes": 5, "renderPrimitives": 6 },
+    "glbBytes": 4329668,
+    "materials": 4,
+    "embeddedTextures": 1,
+    "skeletonBones": 18,
+    "animationClips": 7
+  },
+  "current": {
+    "lod0": { "runtimePositionVertices": 33146, "triangles": 17176, "renderMeshes": 15 },
+    "lod1": { "runtimePositionVertices": 13269, "triangles": 6848, "renderMeshes": 7, "renderPrimitives": 8 },
+    "lod2": { "runtimePositionVertices": 3896, "triangles": 2060, "renderMeshes": 5, "renderPrimitives": 6 },
+    "glbBytes": 3775724,
+    "sourceBlendBytes": 745061,
+    "materials": 4,
+    "embeddedTextures": 1,
+    "skeletonBones": 18,
+    "animationClips": 7
+  },
+  "proportionChanges": {
+    "head": "reduced crown width/depth and lowered top by roughly 8-12%",
+    "torso": "extended the continuous body profile vertically while keeping the shoulder break controlled",
+    "shoulders": "narrowed the shoulder envelope and slimmed arm loops",
+    "waist": "added a visible waist pinch between ribcage and pelvis",
+    "legs": "raised the hip loop and retained a grounded, broad rescue boot toe for a longer leg read",
+    "pack": "slightly widened the survival pack while reducing its depth",
+    "asymmetry": "kept the weapon/backpack offset visible in the front, side and three-quarter silhouette"
+  },
+  "evidence": [
+    "silhouette-front.png",
+    "silhouette-side.png",
+    "silhouette-back.png",
+    "silhouette-three-quarter.png",
+    "silhouette-gameplay.png"
+  ],
+  "humanReviewNote": "These plates are proportion evidence only. Material, animation and commercial art quality remain a human artist decision."
+}

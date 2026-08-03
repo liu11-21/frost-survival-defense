@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-08-03T10:13:37.028Z",
+  "generatedAt": "2026-08-03T14:24:24.567Z",
   "asset": "hero",
   "sourcePath": "assets-source/blender/characters/hero.blend",
   "glbPath": "public/assets/models/characters/hero.glb",
@@ -33,7 +33,7 @@
   "artifact": {
     "status": "pass",
     "glb": {
-      "bytes": 4329668,
+      "bytes": 3775724,
       "assetVersion": "2.0",
       "nodes": 53,
       "meshes": 27,
@@ -119,10 +119,10 @@
         "heroAtlasResolution": 1024,
         "heroMaterialCount": 4
       },
-      "triangles": 30204,
+      "triangles": 26084,
       "lodTriangles": {
-        "LOD0": 20864,
-        "LOD1": 7280,
+        "LOD0": 17176,
+        "LOD1": 6848,
         "LOD2": 2060
       },
       "lodIdentityParts": [
@@ -255,7 +255,7 @@
       "renderableCollisionNodes": []
     },
     "source": {
-      "bytes": 838397,
+      "bytes": 745696,
       "exists": true
     },
     "checks": {

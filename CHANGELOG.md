@@ -1,5 +1,12 @@
 # 變更脈絡
 
+## 2026-08-03｜Hero-R5 A proportions and silhouette checkpoint
+
+- 以現有連續 loop 網格為基礎完成 R5-A 比例校正：縮小頭盔冠部、拉長軀幹、收斂肩線與腰線、延長腿部並保留厚實救援靴，背包同步改為略寬但更薄的輪廓。
+- LOD1／LOD2 仍從同一套 Hero 輪廓來源降階，保留頭盔、肩線、手臂、腿、背包、外套與武器身份；未增加其他角色或遊戲玩法內容。
+- 新增 `scripts/blender/render_hero_r5_silhouette.py`，以最新 `hero.blend` 產出 front／side／back／three-quarter／gameplay 五張純黑 silhouette review plates；修正 review renderer 會使用 Blender 預設 Cube 的證據問題。
+- R5-A comparison 與 silhouette manifest 位於 `reports/art-previews/hero-commercial-r5/R5-A/`。本 checkpoint 只證明比例與黑色輪廓，未宣稱商業美術品質通過。
+
 ## 2026-08-03｜Hero-R4 remote Babylon runtime verification
 
 - 新增 Linux GitHub Actions `Hero Runtime Verification`：以 Git LFS 取回 Hero、執行 TypeScript／靜態資產驗證／production build，啟動 preview 並以 Chromium 驗證正式 `?heroReview=1` 場景。
