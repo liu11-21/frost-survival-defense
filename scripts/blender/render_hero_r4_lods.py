@@ -1,4 +1,4 @@
-"""Render the R4-D production LOD tiers for human review."""
+"""Render the corrected production LOD tiers for human review."""
 
 import os
 import sys
@@ -26,31 +26,20 @@ def _show_tier(tier):
 
 
 def main():
-    output_dir = os.path.abspath(_arg("--output", os.path.join(os.getcwd(), "reports", "art-previews", "hero-commercial-r4", "R4-D")))
+    output_dir = os.path.abspath(_arg("--output", os.path.join(os.getcwd(), "reports", "art-previews", "hero-commercial-r4", "R4-final-correction")))
     os.makedirs(output_dir, exist_ok=True)
     scene, camera = _setup_scene(clay=True)
+    views = [
+        ("front", (0.0, 5.6, 1.15), (0.0, 0.0, 1.15), 58),
+        ("side", (5.6, 0.0, 1.15), (0.0, 0.0, 1.15), 58),
+        ("back", (0.0, -5.6, 1.15), (0.0, 0.0, 1.15), 58),
+        ("three-quarter", (4.4, 4.4, 1.25), (0.0, 0.0, 1.10), 58),
+    ]
     for tier in (0, 1, 2):
         _show_tier(tier)
-        render_view(
-            scene,
-            camera,
-            output_dir,
-            f"lod{tier}-front",
-            (0.0, 5.6, 1.15),
-            target=(0.0, 0.0, 1.15),
-            lens=58,
-        )
-    _show_tier(1)
-    render_view(
-        scene,
-        camera,
-        output_dir,
-        "lod1-three-quarter",
-        (4.4, 4.4, 1.25),
-        target=(0.0, 0.0, 1.10),
-        lens=58,
-    )
-    print(f"R4-D LOD renders written to {output_dir}")
+        for view_name, location, target, lens in views:
+            render_view(scene, camera, output_dir, f"lod{tier}-{view_name}", location, target=target, lens=lens)
+    print(f"Corrected production LOD renders written to {output_dir}")
 
 
 if __name__ == "__main__":

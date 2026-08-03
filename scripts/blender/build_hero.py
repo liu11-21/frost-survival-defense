@@ -176,11 +176,15 @@ def _profile_mesh(name, components, materials, origin=(0.0, 0.0, 0.0), target="L
 def _cape_mesh(name, origin, materials, target="LOD0", detail=4):
     """One gently curved double-sided coat/cape panel with a clean silhouette."""
     levels = [
-        (1.42, 0.34, -0.28),
-        (1.18, 0.48, -0.34),
-        (0.90, 0.58, -0.38),
-        (0.62, 0.54, -0.42),
-        (0.36, 0.35, -0.37),
+        # The panel starts at the waist seam, then tapers back toward the
+        # legs.  This reads as a tailored coat tail instead of a rigid plate
+        # hanging from the chest and reduces leg intersection in locomotion.
+        (1.12, 0.22, -0.22),
+        (1.04, 0.30, -0.25),
+        (0.92, 0.36, -0.23),
+        (0.76, 0.34, -0.18),
+        (0.56, 0.25, -0.12),
+        (0.38, 0.17, -0.08),
     ]
     if detail <= 3:
         levels = levels[::2] + [levels[-1]]
@@ -375,42 +379,46 @@ def _add_hero_lods(root, mats):
         marker["identityFeatures"] = "helmet,visor,shoulders,arms,legs,pack,coat,goggles,weapons"
         return marker
 
-    def visor_rings():
-        return [
-            (1.68, 0.31, 0.045, 0.0, -0.31, 2),
-            (1.72, 0.35, 0.050, 0.0, -0.32, 2),
-            (1.80, 0.35, 0.050, 0.0, -0.32, 2),
-            (1.84, 0.31, 0.045, 0.0, -0.31, 2),
-        ]
-
     def jacket_rings(level):
         source = _r4_body_rings()
         return sample(source[4:22], 10 if level == 1 else 6)
 
     def armor_rings():
+        # A compact chest bib exposes the waist and leaves the shoulder line
+        # to the jacket/body volume instead of reading as a second torso.
         return [
-            (1.08, 0.42, 0.11, 0.0, -0.34, 2),
-            (1.16, 0.52, 0.13, 0.0, -0.35, 2),
-            (1.28, 0.54, 0.13, 0.0, -0.34, 2),
-            (1.38, 0.40, 0.10, 0.0, -0.30, 2),
+            (1.08, 0.30, 0.075, 0.0, -0.275, 2),
+            (1.13, 0.38, 0.090, 0.0, -0.285, 2),
+            (1.24, 0.41, 0.095, 0.0, -0.280, 2),
+            (1.32, 0.31, 0.070, 0.0, -0.255, 2),
         ]
 
     def pack_rings(level):
         return [
-            (0.76, 0.28, 0.10, 0.0, 0.40, 1),
-            (0.88, 0.34, 0.13, 0.0, 0.42, 1),
-            (1.10, 0.36, 0.14, 0.0, 0.42, 1),
-            (1.28, 0.30, 0.11, 0.0, 0.36, 1),
+            (0.76, 0.26, 0.095, 0.0, 0.46, 1),
+            (0.88, 0.32, 0.12, 0.0, 0.48, 1),
+            (1.10, 0.34, 0.13, 0.0, 0.48, 1),
+            (1.28, 0.28, 0.10, 0.0, 0.44, 1),
         ][: (4 if level == 1 else 3)]
 
     def weapon_components(level):
         blade = [
-            ([(-0.07, -0.18), (0.07, -0.18), (0.10, 0.10), (0.0, 0.70), (-0.10, 0.10)], 0.02, 0.09, 0),
-            ([(-0.04, -0.24), (0.04, -0.24), (0.04, -0.06), (-0.04, -0.06)], 0.02, 0.11, 1),
+            ([(-0.09, -0.18), (0.09, -0.18), (0.12, 0.08), (0.055, 0.52), (0.0, 0.72), (-0.055, 0.52), (-0.12, 0.08)], 0.02, 0.075, 0),
+            ([(-0.045, -0.24), (0.045, -0.24), (0.045, -0.06), (-0.045, -0.06)], 0.02, 0.10, 1),
+            ([(-0.16, -0.06), (0.16, -0.06), (0.12, 0.015), (-0.12, 0.015)], 0.02, 0.06, 1),
+        ]
+        # A compact carbine silhouette is kept in the same authored mesh for
+        # both production tiers; it preserves the ranged identity without
+        # creating another LOD render object.
+        carbine = [
+            ([(-0.18, -0.10), (0.16, -0.10), (0.20, 0.02), (0.13, 0.14), (-0.10, 0.14), (-0.20, 0.03)], 0.13, 0.11, 1),
+            ([(-0.05, 0.10), (0.05, 0.10), (0.05, 0.72), (0.02, 0.82), (-0.02, 0.82), (-0.05, 0.72)], 0.13, 0.065, 2),
+            ([(-0.10, -0.22), (0.09, -0.22), (0.12, -0.10), (-0.13, -0.10)], 0.13, 0.09, 1),
         ]
         if level == 1:
-            blade.append(([(-0.035, 0.12), (0.035, 0.12), (0.035, 0.45), (-0.035, 0.45)], 0.02, 0.08, 0))
-        return blade
+            blade.append(([(-0.035, 0.12), (0.035, 0.12), (0.035, 0.45), (-0.035, 0.45)], 0.02, 0.07, 0))
+            carbine.append(([(0.04, 0.10), (0.11, 0.10), (0.11, 0.54), (0.07, 0.62), (0.04, 0.54)], 0.13, 0.055, 0))
+        return blade + carbine
 
     lod_parts = []
     for level in (1, 2):
@@ -445,8 +453,6 @@ def _add_hero_lods(root, mats):
             f"LOD{level}_PROD_head",
             [
                 {"rings": sample(_r4_head_rings(), head_count), "segments": head_segments},
-                {"rings": sample(_r4_head_rings(), max(5, head_count - 4)), "segments": head_segments},
-                {"rings": visor_rings(), "segments": head_segments},
             ],
             [mats["cloth"], mats["metal"], mats["accent"], mats["accent"]],
             target=target,
@@ -499,16 +505,6 @@ def _add_hero_lods(root, mats):
                 detail=4,
             )
             tag(cape, level, marker, "coat-cape")
-            goggles = _profile_mesh(
-                f"LOD{level}_PROD_goggles",
-                [
-                    ([(-0.27, 1.82), (-0.04, 1.82), (-0.04, 1.68), (-0.27, 1.68)], -0.275, 0.07, 0),
-                    ([(0.04, 1.82), (0.27, 1.82), (0.27, 1.68), (0.04, 1.68)], -0.275, 0.07, 0),
-                ],
-                [mats["accent"]],
-                target=target,
-            )
-            tag(goggles, level, marker, "goggles")
 
         weapon = _profile_mesh(
             f"LOD{level}_PROD_weapon",
@@ -523,7 +519,6 @@ def _add_hero_lods(root, mats):
             lod_parts.append(legs)
         if level == 1:
             lod_parts.append(cape)
-            lod_parts.append(goggles)
     return lod_parts
 
 
@@ -608,26 +603,26 @@ def _build_mesh_parts(mats):
         "armor.heroPlates",
         [
             {"segments": 32, "override": armor_override, "rings": [
-                (1.24, 0.23, 0.23, -0.56, 0.01, 1),
-                (1.29, 0.27, 0.25, -0.56, 0.01, 1),
-                (1.35, 0.29, 0.26, -0.56, 0.01, 1),
-                (1.41, 0.27, 0.24, -0.54, 0.01, 1),
-                (1.46, 0.21, 0.20, -0.51, 0.01, 1),
+                (1.24, 0.19, 0.20, -0.50, 0.01, 1),
+                (1.29, 0.23, 0.22, -0.50, 0.01, 1),
+                (1.35, 0.25, 0.23, -0.49, 0.01, 1),
+                (1.41, 0.23, 0.21, -0.48, 0.01, 1),
+                (1.46, 0.18, 0.18, -0.46, 0.01, 1),
             ]},
             {"segments": 32, "override": armor_override, "rings": [
-                (1.24, 0.23, 0.23, 0.56, 0.01, 1),
-                (1.29, 0.27, 0.25, 0.56, 0.01, 1),
-                (1.35, 0.29, 0.26, 0.56, 0.01, 1),
-                (1.41, 0.27, 0.24, 0.54, 0.01, 1),
-                (1.46, 0.21, 0.20, 0.51, 0.01, 1),
+                (1.24, 0.19, 0.20, 0.50, 0.01, 1),
+                (1.29, 0.23, 0.22, 0.50, 0.01, 1),
+                (1.35, 0.25, 0.23, 0.49, 0.01, 1),
+                (1.41, 0.23, 0.21, 0.48, 0.01, 1),
+                (1.46, 0.18, 0.18, 0.46, 0.01, 1),
             ]},
             {"segments": 40, "override": armor_override, "rings": [
-                (1.03, 0.31, 0.11, 0.00, -0.33, 1),
-                (1.08, 0.35, 0.12, 0.00, -0.34, 1),
-                (1.14, 0.38, 0.13, 0.00, -0.35, 1),
-                (1.20, 0.39, 0.13, 0.00, -0.35, 1),
-                (1.26, 0.36, 0.12, 0.00, -0.34, 1),
-                (1.31, 0.29, 0.10, 0.00, -0.33, 1),
+                (1.06, 0.25, 0.075, 0.00, -0.27, 1),
+                (1.10, 0.29, 0.085, 0.00, -0.28, 1),
+                (1.16, 0.33, 0.095, 0.00, -0.29, 1),
+                (1.22, 0.34, 0.095, 0.00, -0.29, 1),
+                (1.28, 0.31, 0.085, 0.00, -0.27, 1),
+                (1.32, 0.25, 0.065, 0.00, -0.24, 1),
             ]},
         ],
         [mats["cloth"], mats["metal"]],
@@ -637,21 +632,21 @@ def _build_mesh_parts(mats):
         "pack.heroSurvival",
         [
             {"segments": 40, "rings": [
-                (0.70, 0.25, 0.16, 0.00, 0.42, 1),
-                (0.76, 0.32, 0.19, 0.00, 0.43, 1),
-                (0.84, 0.35, 0.21, 0.00, 0.44, 1),
-                (0.94, 0.36, 0.22, 0.00, 0.44, 1),
-                (1.04, 0.36, 0.22, 0.00, 0.44, 1),
-                (1.14, 0.35, 0.21, 0.00, 0.44, 1),
-                (1.24, 0.32, 0.19, 0.00, 0.43, 1),
-                (1.34, 0.27, 0.16, 0.00, 0.42, 1),
-                (1.40, 0.20, 0.12, 0.00, 0.41, 1),
+                (0.70, 0.24, 0.15, 0.00, 0.46, 1),
+                (0.76, 0.30, 0.18, 0.00, 0.47, 1),
+                (0.84, 0.33, 0.20, 0.00, 0.48, 1),
+                (0.94, 0.34, 0.21, 0.00, 0.49, 1),
+                (1.04, 0.34, 0.21, 0.00, 0.49, 1),
+                (1.14, 0.33, 0.20, 0.00, 0.49, 1),
+                (1.24, 0.30, 0.18, 0.00, 0.48, 1),
+                (1.34, 0.25, 0.15, 0.00, 0.46, 1),
+                (1.40, 0.18, 0.11, 0.00, 0.45, 1),
             ]},
             {"segments": 32, "rings": [
-                (1.30, 0.24, 0.10, 0.00, 0.58, 0),
-                (1.36, 0.27, 0.11, 0.00, 0.58, 0),
-                (1.42, 0.22, 0.09, 0.00, 0.57, 0),
-                (1.46, 0.14, 0.06, 0.00, 0.55, 0),
+                (1.30, 0.22, 0.09, 0.00, 0.62, 0),
+                (1.36, 0.25, 0.10, 0.00, 0.62, 0),
+                (1.42, 0.20, 0.08, 0.00, 0.61, 0),
+                (1.46, 0.13, 0.055, 0.00, 0.58, 0),
             ]},
         ],
         [mats["leather"], mats["cloth"]],
@@ -1053,12 +1048,13 @@ def collapse_hero_material_slots(objects, mats):
             primary = mats["accent"]
         elif name.startswith(("lod1_prod_head", "lod2_prod_head")):
             # Production heads keep a second accent slot for the integrated
-            # visor band; this avoids reducing LOD identity to a blank dome.
+            # visor band.  The band is a material region on the head volume,
+            # not a forward-facing tube that can become a snout in profile.
             obj.data.materials.clear()
             obj.data.materials.append(mats["cloth"])
             obj.data.materials.append(mats["accent"])
             for polygon in obj.data.polygons:
-                polygon.material_index = 1 if 1.64 <= polygon.center.y <= 1.88 else 0
+                polygon.material_index = 1 if 1.68 <= polygon.center.y <= 1.82 else 0
             continue
         elif "weapon" in name or "armor" in name:
             primary = mats["metal"]

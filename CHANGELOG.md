@@ -1,5 +1,14 @@
 # 變更脈絡
 
+## 2026-08-03｜Hero R4 final silhouette correction
+
+- 延續 `codex/hero-commercial-h1-h6`，只修改 Hero Blender 幾何與既有權重綁定；未修改其他資產、Babylon runtime 程式或完整 H1–H6 流程。
+- LOD1／LOD2 移除造成三分之四視角長鼻狀突出物的重複頭部與浮動 goggles 體積，改以頭部連續網格上的 visor 材質帶保留身份。
+- 縮小 LOD0／production LOD 胸甲與肩甲，將前方披掛改為由腰線連接並逐段收窄的外套下擺；背包向後調整、既有 LOD weapon mesh 保留刀身與槍體輪廓。
+- 追加 `reports/art-previews/hero-commercial-r4/R4-final-correction/` 的三個 LOD front／side／back／three-quarter clay 證據與比較資料；不把 Blender clay 圖當作 Babylon runtime 證據或商業品質簽核。
+- 最新靜態 GLB：LOD0 10,492 vertices／20,864 triangles／15 meshes；LOD1 3,684／7,280／7；LOD2 1,060／2,060／5；4 materials、1 embedded atlas、18 bones、7 animations。
+- `npm run art:validate:hero` 通過；Babylon runtime 仍需在本輪第二階段以有限方式嘗試，若再次受 `spawn EPERM` 阻擋則只保留 blocker，不宣稱 runtime 通過。
+
 ## 2026-08-03｜Hero continuous authored mesh reconstruction
 
 - 本輪只重建 Hero；未修改其他角色、設施或遊戲玩法，也沒有重新執行 H1-H6 建模階段。

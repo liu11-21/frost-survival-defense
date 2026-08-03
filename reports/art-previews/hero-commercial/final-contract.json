@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-08-03T09:07:20.835Z",
+  "generatedAt": "2026-08-03T10:13:37.028Z",
   "asset": "hero",
   "sourcePath": "assets-source/blender/characters/hero.blend",
   "glbPath": "public/assets/models/characters/hero.glb",
@@ -33,10 +33,10 @@
   "artifact": {
     "status": "pass",
     "glb": {
-      "bytes": 4446252,
+      "bytes": 4329668,
       "assetVersion": "2.0",
-      "nodes": 54,
-      "meshes": 28,
+      "nodes": 53,
+      "meshes": 27,
       "materials": 4,
       "textures": 1,
       "skeletons": 1,
@@ -59,7 +59,7 @@
       },
       "roots": [
         {
-          "index": 53,
+          "index": 52,
           "name": "HeroRoot",
           "translation": [
             0,
@@ -119,18 +119,17 @@
         "heroAtlasResolution": 1024,
         "heroMaterialCount": 4
       },
-      "triangles": 31136,
+      "triangles": 30204,
       "lodTriangles": {
-        "LOD0": 20852,
-        "LOD1": 7980,
-        "LOD2": 2304
+        "LOD0": 20864,
+        "LOD1": 7280,
+        "LOD2": 2060
       },
       "lodIdentityParts": [
         "LOD1_PROD_arms",
         "LOD1_PROD_body",
         "LOD1_PROD_cape",
         "LOD1_PROD_gear",
-        "LOD1_PROD_goggles",
         "LOD1_PROD_head",
         "LOD1_PROD_legs",
         "LOD1_PROD_weapon",
@@ -140,11 +139,11 @@
         "LOD2_PROD_head",
         "LOD2_PROD_weapon"
       ],
-      "renderPrimitiveCount": 30,
-      "skinnedPrimitives": 30,
+      "renderPrimitiveCount": 29,
+      "skinnedPrimitives": 29,
       "lodRenderPrimitives": {
         "LOD0": 15,
-        "LOD1": 9,
+        "LOD1": 8,
         "LOD2": 6
       },
       "images": [
@@ -256,7 +255,7 @@
       "renderableCollisionNodes": []
     },
     "source": {
-      "bytes": 845657,
+      "bytes": 838397,
       "exists": true
     },
     "checks": {

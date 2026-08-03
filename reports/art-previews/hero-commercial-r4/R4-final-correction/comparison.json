@@ -1,0 +1,44 @@
+{
+  "stage": "R4-final-correction",
+  "status": "static-visual-correction-passed-runtime-pending",
+  "baselineCommit": "6e36d42",
+  "scope": "Hero silhouette and production LOD geometry only",
+  "baseline": {
+    "lod0": { "vertices": 10486, "triangles": 20852, "renderMeshes": 15 },
+    "lod1": { "vertices": 4032, "triangles": 7980, "renderMeshes": 8, "renderPrimitives": 9 },
+    "lod2": { "vertices": 1178, "triangles": 2304, "renderMeshes": 5, "renderPrimitives": 6 },
+    "glbBytes": 4446252,
+    "glbNodes": 54,
+    "glbMeshes": 28,
+    "materials": 4,
+    "embeddedTextures": 1,
+    "skeletonBones": 18,
+    "animationClips": 7
+  },
+  "current": {
+    "lod0": { "vertices": 10492, "triangles": 20864, "renderMeshes": 15 },
+    "lod1": { "vertices": 3684, "triangles": 7280, "renderMeshes": 7, "renderPrimitives": 8 },
+    "lod2": { "vertices": 1060, "triangles": 2060, "renderMeshes": 5, "renderPrimitives": 6 },
+    "glbBytes": 4329668,
+    "glbNodes": 53,
+    "glbMeshes": 27,
+    "materials": 4,
+    "embeddedTextures": 1,
+    "skeletonBones": 18,
+    "animationClips": 7
+  },
+  "visualChecks": {
+    "lod1Visor": "removed floating tube/goggles silhouette; visor is an integrated head material band",
+    "chestArmor": "narrower bib exposes waist and torso transition",
+    "frontGarment": "waist-connected tapered coat tail",
+    "shoulderConnection": "smaller shoulder caps overlap the sleeve envelope",
+    "backIdentity": "survival pack remains visible from back and three-quarter views",
+    "weaponIdentity": "existing LOD weapon mesh keeps blade and carbine profiles"
+  },
+  "evidence": [
+    "lod0-front.png", "lod0-side.png", "lod0-back.png", "lod0-three-quarter.png",
+    "lod1-front.png", "lod1-side.png", "lod1-back.png", "lod1-three-quarter.png",
+    "lod2-front.png", "lod2-side.png", "lod2-back.png", "lod2-three-quarter.png"
+  ],
+  "humanReviewNote": "Clay renders show the corrected authored forms; commercial material and animation quality remain a human artist review decision."
+}
