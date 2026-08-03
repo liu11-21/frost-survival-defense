@@ -1,0 +1,40 @@
+{
+  "captureId": "sequence-004-walk-1",
+  "capturedAt": "2026-08-03T02:08:54.186Z",
+  "url": "http://127.0.0.1:5181?heroReview=1",
+  "screenshot": "reports/art-previews/hero-commercial/review/sequence/sequence-004-walk-1.png",
+  "captureMode": "heroReview=1",
+  "cameraMode": "three-quarter",
+  "animation": "Walk",
+  "lod": 0,
+  "modelSource": "GLB",
+  "heroWorldPosition": {
+    "x": 0,
+    "y": 0,
+    "z": 0
+  },
+  "screenSpaceBoundingBox": {
+    "x": 498.697,
+    "y": 238.214,
+    "width": 115.568,
+    "height": 202.892,
+    "right": 614.265,
+    "bottom": 441.106
+  },
+  "viewport": {
+    "width": 1120,
+    "height": 630
+  },
+  "uiOccluded": false,
+  "uiPanel": {
+    "x": 16,
+    "y": 16,
+    "width": 248,
+    "height": 258.5
+  },
+  "authoredVisibleMeshCount": 184,
+  "proceduralVisibleMeshCount": 0,
+  "drawCalls": 24652,
+  "activeMeshes": 185,
+  "fps": 4.06
+}

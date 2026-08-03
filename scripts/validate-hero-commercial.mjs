@@ -6,9 +6,25 @@ const sourceRelative = "assets-source/blender/characters/hero.blend";
 const glbRelative = "public/assets/models/characters/hero.glb";
 const evidenceRootRelative = "reports/art-previews/hero-commercial";
 const runtimePerfRelative = `${evidenceRootRelative}/runtime-perf.json`;
+const heroReviewRelative = `${evidenceRootRelative}/review`;
 const requiredNodes = ["HeroRoot", "HeroSkeleton", "weapon_socket.R", "ranged_socket", "LOD1", "LOD2"];
 const requiredAnimations = ["Idle", "Walk", "Run", "MeleeAttack", "RangedAttack", "Hit", "Death"];
 const stages = ["H1", "H2", "H3", "H4", "H5", "H6"];
+const requiredReviewCaptures = [
+  { id: "hero-review-gameplay", cameraMode: "gameplay", animation: "Idle", lod: 0 },
+  { id: "hero-review-front", cameraMode: "front", animation: "Idle", lod: 0 },
+  { id: "hero-review-side", cameraMode: "left-side", animation: "Idle", lod: 0 },
+  { id: "hero-review-back", cameraMode: "back", animation: "Idle", lod: 0 },
+  { id: "hero-review-three-quarter", cameraMode: "three-quarter", animation: "Idle", lod: 0 },
+  { id: "hero-review-close-up", cameraMode: "close-up", animation: "Idle", lod: 0 },
+  { id: "hero-review-melee", cameraMode: "three-quarter", animation: "MeleeAttack", lod: 0 },
+  { id: "hero-review-ranged", cameraMode: "three-quarter", animation: "RangedAttack", lod: 0 },
+  { id: "hero-review-death", cameraMode: "three-quarter", animation: "Death", lod: 0 },
+  { id: "hero-review-lod0", cameraMode: "front", animation: "Idle", lod: 0 },
+  { id: "hero-review-lod1", cameraMode: "front", animation: "Idle", lod: 1 },
+  { id: "hero-review-lod2", cameraMode: "front", animation: "Idle", lod: 2 },
+];
+const requiredReviewAnimations = ["Idle", "Walk", "Run", "MeleeAttack", "RangedAttack", "Hit", "Death"];
 
 function parseGlb(buffer) {
   if (buffer.readUInt32LE(0) !== 0x46546c67) throw new Error("not a GLB file");
@@ -241,6 +257,86 @@ async function auditRuntimePerf() {
   }
 }
 
+function validReviewBounds(metadata) {
+  const box = metadata?.screenSpaceBoundingBox;
+  const viewport = metadata?.viewport;
+  if (!box || !viewport) return false;
+  const values = [box.x, box.y, box.width, box.height, box.right, box.bottom, viewport.width, viewport.height];
+  if (!values.every((value) => Number.isFinite(value))) return false;
+  return box.width >= 40 && box.height >= 80 && box.x >= 0 && box.y >= 0 &&
+    box.right <= viewport.width && box.bottom <= viewport.height && metadata.uiOccluded === false;
+}
+
+async function auditHeroReviewEvidence() {
+  const captures = [];
+  const problems = [];
+  for (const expected of requiredReviewCaptures) {
+    const screenshotFile = `${heroReviewRelative}/${expected.id}.png`;
+    const metadataFile = `${heroReviewRelative}/${expected.id}.json`;
+    try {
+      const screenshot = await stat(resolve(root, screenshotFile));
+      const metadata = await readJson(metadataFile);
+      const contract = metadata.captureMode === "heroReview=1" &&
+        metadata.cameraMode === expected.cameraMode &&
+        metadata.animation === expected.animation &&
+        metadata.lod === expected.lod &&
+        metadata.modelSource === "GLB" &&
+        metadata.proceduralVisibleMeshCount === 0 &&
+        Number.isFinite(metadata.authoredVisibleMeshCount) && metadata.authoredVisibleMeshCount > 0 &&
+        validReviewBounds(metadata);
+      if (!contract) problems.push(`${expected.id}: runtime metadata contract failed`);
+      captures.push({
+        id: expected.id,
+        expected,
+        screenshot: { file: screenshotFile, bytes: screenshot.size, nonEmpty: screenshot.size > 10_000 },
+        metadata,
+        contract,
+      });
+    } catch (error) {
+      problems.push(`${expected.id}: ${String(error.message ?? error)}`);
+      captures.push({ id: expected.id, expected, contract: false, error: String(error.message ?? error) });
+    }
+  }
+
+  let sequence = { present: false, frameCount: 0, valid: false, error: null };
+  try {
+    const manifest = await readJson(`${heroReviewRelative}/sequence/manifest.json`);
+    const frames = Array.isArray(manifest.frames) ? manifest.frames : [];
+    const labels = frames.map((frame) => String(frame.captureId ?? ""));
+    const order = ["idle", "walk", "run", "melee", "ranged", "hit", "death"];
+    const ordered = order.every((label, index) => labels.findIndex((id) => id.includes(`-${label}-`)) >= (index === 0 ? 0 : labels.findIndex((id) => id.includes(`-${order[index - 1]}-`))));
+    const filesPresent = await Promise.all(frames.map(async (frame) => {
+      try {
+        const image = await stat(resolve(root, String(frame.screenshot).replaceAll("\\", "/")));
+        return image.size > 10_000;
+      } catch {
+        return false;
+      }
+    }));
+    sequence = {
+      present: true,
+      frameCount: frames.length,
+      valid: manifest.captureMode === "heroReview=1" && frames.length >= 21 && ordered && filesPresent.every(Boolean),
+      error: null,
+    };
+    if (!sequence.valid) problems.push("sequence manifest is incomplete or out of order");
+  } catch (error) {
+    sequence.error = String(error.message ?? error);
+    problems.push(`sequence: ${sequence.error}`);
+  }
+
+  const allRequired = captures.length === requiredReviewCaptures.length && captures.every((capture) => capture.contract);
+  return {
+    requiredCaptures: captures,
+    requiredCount: requiredReviewCaptures.length,
+    allRequiredCaptures: allRequired,
+    sequence,
+    valid: allRequired && sequence.valid,
+    problems,
+    humanReviewNote: "The validator confirms runtime visibility and contracts only; commercial visual quality remains a human review decision.",
+  };
+}
+
 const sourcePath = resolve(root, sourceRelative);
 const glbPath = resolve(root, glbRelative);
 const sourceStat = await stat(sourcePath);
@@ -249,11 +345,13 @@ const sourceBytes = await readFile(sourcePath);
 const audit = buildAudit(glb, sourceBytes);
 const stageEvidence = await auditStageEvidence();
 const runtimePerf = await auditRuntimePerf();
+const heroReviewEvidence = await auditHeroReviewEvidence();
 const finalChecks = {
   sourceArtifact: sourceStat.isFile() && sourceBytes.length > 20_000,
   ...audit.checks,
-  stageEvidence: stageEvidence.allStagesHaveTwoIterations && stageEvidence.allFormalBabylonEvidence && stageEvidence.allScreenshotsPresent && stageEvidence.allMetricsValid,
-  runtimePerf: runtimePerf.valid,
+  legacyStageEvidencePreserved: stageEvidence.allStagesHaveTwoIterations && stageEvidence.allFormalBabylonEvidence && stageEvidence.allScreenshotsPresent && stageEvidence.allMetricsValid,
+  legacyRuntimePerfPresent: runtimePerf.present,
+  heroReviewEvidence: heroReviewEvidence.valid,
 };
 const output = {
   generatedAt: new Date().toISOString(),
@@ -264,14 +362,17 @@ const output = {
   checks: finalChecks,
   artifact: audit,
   stageEvidence,
+  legacyEvidenceNote: "The prior H1-H6 uiVerification screenshots are preserved for history but are not sufficient visual evidence because the Hero is obscured by the menu and verification overlay.",
+  heroReviewEvidence,
   runtimeEvidence: {
     formalBabylonScene: true,
     sourceIndicator: "Hero Model Source: GLB",
     reloadIterations: stages.length * 2,
     requiredAnimations: requiredAnimations,
-    loadBehavior: "Each H1-H6 iteration has a formal Babylon uiVerification reload screenshot; the existing runtime gate retries authored preload before settling on procedural fallback.",
+    loadBehavior: "The dedicated heroReview=1 runtime instance retries authored preload before capture and exposes model visibility, camera, animation, LOD, screen bounds, and procedural overlap metadata.",
+    visualEvidencePolicy: "Old masked uiVerification screenshots remain historical only; heroReviewEvidence is required for runtime visual acceptance.",
     perfCapture: runtimePerf,
-    liveDrawCallCounter: runtimePerf.valid ? "captured in reports/art-previews/hero-commercial/runtime-perf.json" : "not captured",
+    liveDrawCallCounter: runtimePerf.present ? "captured in reports/art-previews/hero-commercial/runtime-perf.json" : "not captured",
   },
 };
 const outputPath = resolve(root, evidenceRootRelative, "final-contract.json");

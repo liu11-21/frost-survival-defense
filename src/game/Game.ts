@@ -13,6 +13,7 @@ import { SupportSystems } from "./SupportSystems";
 import { PointerRouter } from "../input/PointerRouter";
 import { InputDebugOverlay } from "../ui/InputDebugOverlay";
 import { updateHaltedDeathLifecycle } from "../combat/HaltedDeathLifecycle";
+import { HeroReviewMode } from "../hero/HeroReviewMode";
 
 /** Owns the engine loop and the glue between input, rules and presentation. */
 export class Game {
@@ -24,6 +25,7 @@ export class Game {
   private readonly support = new SupportSystems();
   private readonly pointerRouter: PointerRouter;
   private readonly inputDebug: InputDebugOverlay | null;
+  private heroReview: HeroReviewMode | null = null;
 
   constructor(canvas: HTMLCanvasElement) {
     this.s = new GameSystems(canvas);
@@ -163,6 +165,7 @@ export class Game {
 
   private handleAction(action: ActionKey): void {
     const s = this.s;
+    if (this.heroReview) return;
     if (action === "pause") {
       // Esc unwinds one layer at a time: dialog, then codex, then highlight,
       // then panels, and only then does it pause the run.
@@ -325,7 +328,10 @@ export class Game {
       // the manifest finishes, retry the Hero attachment exactly once so the
       // formal scene converges to the GLB source without blocking the menu.
       void authoredPreload.then(() => {
-        if (this.s.hero.modelSource !== "GLB") this.s.hero.applyAuthoredAsset(this.s.assets);
+        if (this.s.hero.modelSource !== "GLB") {
+          this.s.hero.applyAuthoredAsset(this.s.assets);
+          this.heroReview?.refreshAuthored();
+        }
       });
     }
     this.s.furnace.applyAuthoredAsset(this.s.assets);
@@ -333,6 +339,14 @@ export class Game {
     this.refitCamera();
     this.s.codex.onClose = () => this.closeCodex();
     this.s.markers.setStrength(this.s.markerStrength);
+    if (new URLSearchParams(window.location.search).get("heroReview") === "1") {
+      this.heroReview = new HeroReviewMode(this.s);
+      this.heroReview.enter();
+      this.inMenu = false;
+      this.paused = false;
+      this.s.engine.runRenderLoop(this.frame);
+      return;
+    }
     this.openMainMenu();
     if (new URLSearchParams(window.location.search).get("uiVerification") === "1") {
       this.s.debug.toggleVerify();
@@ -379,6 +393,12 @@ export class Game {
 
   private readonly frame = (): void => {
     if (this.disposed) return;
+    if (this.heroReview) {
+      this.heroReview.update();
+      this.s.scene.render();
+      this.heroReview.afterRender();
+      return;
+    }
     renderFrame(this.s, this.paused || this.inMenu, (dt) => this.update(dt));
   };
 
@@ -410,6 +430,12 @@ export class Game {
   stepManually(dt: number, render = true): void {
     if (this.disposed) return;
     const frameDt = Math.min(0.05, dt);
+    if (this.heroReview) {
+      this.heroReview.update();
+      if (render) this.s.scene.render();
+      this.heroReview.afterRender();
+      return;
+    }
     if (!this.paused && !this.inMenu) this.update(frameDt);
     else updateHaltedDeathLifecycle(this.s.squads, this.s.world, frameDt);
     if (render) this.s.scene.render();
@@ -425,6 +451,15 @@ export class Game {
         startRun: (mode, levelId) => this.startRun(mode, levelId),
         startTutorial: () => this.startTutorial(),
       }),
+      heroReview: this.heroReview
+        ? {
+            setCamera: (mode: Parameters<HeroReviewMode["setCamera"]>[0]) => this.heroReview?.setCamera(mode),
+            setAnimation: (animation: Parameters<HeroReviewMode["setAnimation"]>[0]) => this.heroReview?.setAnimation(animation),
+            setLod: (lod: Parameters<HeroReviewMode["setLod"]>[0]) => this.heroReview?.setLod(lod),
+            capture: () => this.heroReview?.capture() ?? null,
+            state: () => this.heroReview?.panelState() ?? null,
+          }
+        : null,
       pointerDebug: () => ({ ...this.pointerRouter.debug }),
     };
   }
@@ -435,6 +470,8 @@ export class Game {
     this.pointerRouter.dispose();
     this.inputDebug?.dispose();
     this.s.engine.stopRenderLoop();
+    this.heroReview?.dispose();
+    this.heroReview = null;
     window.removeEventListener("resize", this.onResize);
     this.s.dispose();
   }

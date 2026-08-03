@@ -3,8 +3,13 @@
 This folder records the staged Blender source -> GLB -> Babylon formal-scene
 workflow for the authored Hero. Each stage has two modeling iterations,
 `metrics-iteration-1.json`, `metrics-iteration-2.json`, a before/after
-`comparison.json`, and two screenshots captured after a browser reload of the
-formal `uiVerification=1` scene.
+`comparison.json`, and two historical screenshots captured after a browser
+reload of the formal `uiVerification=1` scene.
+
+The old H1-H6 screenshots are deliberately preserved, but they are not visual
+acceptance evidence: the main menu and verification overlay obscure the Hero.
+The only runtime visual evidence used by the validator is the dedicated
+`review/` set captured from `?heroReview=1`.
 
 The runtime contract is checked on every iteration:
 
@@ -22,6 +27,11 @@ Other roster assets and gameplay systems are not part of H1-H6.
 Hero GLB. It records the embedded PNG dimensions (64x64 for each of the nine
 packed paint images), skeleton and animation key statistics, LOD triangle and
 primitive counts, source `.blend` size, and the formal Babylon evidence files.
-`runtime-perf.json` stores a short formal-scene capture (`drawCalls=131`,
-`activeMeshes=59`, `renderMs=12`), while `renderPrimitiveCount` remains the
-portable GLB-side draw-call proxy.
+`review/` contains the twelve required visible runtime screenshots and a
+continuous-frame sequence for Idle -> Walk -> Run -> MeleeAttack ->
+RangedAttack -> Hit -> Death. Every capture has a sidecar JSON record with the
+camera, animation, LOD, GLB source, authored/procedural mesh counts, world
+position, screen-space bounding box, UI occlusion, draw calls, active meshes,
+and FPS. The validator checks those runtime contracts only; commercial visual
+quality remains a human review decision. `runtime-perf.json` is retained as
+supplemental historical performance evidence.

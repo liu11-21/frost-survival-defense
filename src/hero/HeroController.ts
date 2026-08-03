@@ -137,6 +137,35 @@ export class HeroController implements Damageable {
   get authoredAnimationNames(): readonly string[] {
     return this.avatar.authoredAnimationNames;
   }
+  get authoredMeshes(): readonly import("@babylonjs/core").AbstractMesh[] {
+    return this.avatar.authoredMeshes;
+  }
+  get authoredVisibleMeshCount(): number {
+    return this.avatar.authoredVisibleMeshCount;
+  }
+  get proceduralVisibleMeshCount(): number {
+    return this.avatar.proceduralVisibleMeshCount;
+  }
+  get currentAuthoredAnimation(): string | null {
+    return this.avatar.currentAuthoredAnimation;
+  }
+  get reviewLod(): 0 | 1 | 2 {
+    return this.avatar.currentReviewLod;
+  }
+
+  setReviewAnimation(name: string): void {
+    this.avatar.setReviewAnimation(name);
+  }
+
+  setReviewLod(lod: 0 | 1 | 2): void {
+    this.avatar.setReviewLod(lod);
+  }
+
+  /** Keeps authored animation groups advancing without running gameplay AI. */
+  updateReview(): void {
+    // Babylon advances AnimationGroups as part of Scene.render(). The review
+    // path deliberately does not call the gameplay animator or combat loop.
+  }
   /** A live combat lock, rather than merely facing a recently-dead target. */
   get isAttacking(): boolean {
     return this._alive && this.target?.alive === true && !this.outOfRange(this.target);

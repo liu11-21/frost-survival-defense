@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-08-02T16:49:29.607Z",
+  "generatedAt": "2026-08-03T02:09:56.540Z",
   "asset": "hero",
   "sourcePath": "assets-source/blender/characters/hero.blend",
   "glbPath": "public/assets/models/characters/hero.glb",
@@ -24,8 +24,9 @@
     "triangleBudget": true,
     "materialBudget": true,
     "rootExtras": true,
-    "stageEvidence": true,
-    "runtimePerf": true
+    "legacyStageEvidencePreserved": true,
+    "legacyRuntimePerfPresent": true,
+    "heroReviewEvidence": true
   },
   "artifact": {
     "status": "pass",
@@ -810,6 +811,682 @@
     "allMetricsValid": true,
     "allIterationsChanged": true
   },
+  "legacyEvidenceNote": "The prior H1-H6 uiVerification screenshots are preserved for history but are not sufficient visual evidence because the Hero is obscured by the menu and verification overlay.",
+  "heroReviewEvidence": {
+    "requiredCaptures": [
+      {
+        "id": "hero-review-gameplay",
+        "expected": {
+          "id": "hero-review-gameplay",
+          "cameraMode": "gameplay",
+          "animation": "Idle",
+          "lod": 0
+        },
+        "screenshot": {
+          "file": "reports/art-previews/hero-commercial/review/hero-review-gameplay.png",
+          "bytes": 134834,
+          "nonEmpty": true
+        },
+        "metadata": {
+          "captureId": "hero-review-gameplay",
+          "capturedAt": "2026-08-03T02:08:27.303Z",
+          "url": "http://127.0.0.1:5181?heroReview=1",
+          "screenshot": "reports/art-previews/hero-commercial/review/hero-review-gameplay.png",
+          "captureMode": "heroReview=1",
+          "cameraMode": "gameplay",
+          "animation": "Idle",
+          "lod": 0,
+          "modelSource": "GLB",
+          "heroWorldPosition": {
+            "x": 0,
+            "y": 0,
+            "z": 0
+          },
+          "screenSpaceBoundingBox": {
+            "x": 494.245,
+            "y": 236.927,
+            "width": 122.804,
+            "height": 199.49,
+            "right": 617.049,
+            "bottom": 436.417
+          },
+          "viewport": {
+            "width": 1120,
+            "height": 630
+          },
+          "uiOccluded": false,
+          "uiPanel": {
+            "x": 16,
+            "y": 16,
+            "width": 248,
+            "height": 258.5
+          },
+          "authoredVisibleMeshCount": 184,
+          "proceduralVisibleMeshCount": 0,
+          "drawCalls": 2525,
+          "activeMeshes": 185,
+          "fps": 4.06
+        },
+        "contract": true
+      },
+      {
+        "id": "hero-review-front",
+        "expected": {
+          "id": "hero-review-front",
+          "cameraMode": "front",
+          "animation": "Idle",
+          "lod": 0
+        },
+        "screenshot": {
+          "file": "reports/art-previews/hero-commercial/review/hero-review-front.png",
+          "bytes": 144641,
+          "nonEmpty": true
+        },
+        "metadata": {
+          "captureId": "hero-review-front",
+          "capturedAt": "2026-08-03T02:08:29.069Z",
+          "url": "http://127.0.0.1:5181?heroReview=1",
+          "screenshot": "reports/art-previews/hero-commercial/review/hero-review-front.png",
+          "captureMode": "heroReview=1",
+          "cameraMode": "front",
+          "animation": "Idle",
+          "lod": 0,
+          "modelSource": "GLB",
+          "heroWorldPosition": {
+            "x": 0,
+            "y": 0,
+            "z": 0
+          },
+          "screenSpaceBoundingBox": {
+            "x": 482.253,
+            "y": 222.663,
+            "width": 146.247,
+            "height": 244.379,
+            "right": 628.5,
+            "bottom": 467.041
+          },
+          "viewport": {
+            "width": 1120,
+            "height": 630
+          },
+          "uiOccluded": false,
+          "uiPanel": {
+            "x": 16,
+            "y": 16,
+            "width": 248,
+            "height": 258.5
+          },
+          "authoredVisibleMeshCount": 184,
+          "proceduralVisibleMeshCount": 0,
+          "drawCalls": 4244,
+          "activeMeshes": 185,
+          "fps": 4.06
+        },
+        "contract": true
+      },
+      {
+        "id": "hero-review-side",
+        "expected": {
+          "id": "hero-review-side",
+          "cameraMode": "left-side",
+          "animation": "Idle",
+          "lod": 0
+        },
+        "screenshot": {
+          "file": "reports/art-previews/hero-commercial/review/hero-review-side.png",
+          "bytes": 135497,
+          "nonEmpty": true
+        },
+        "metadata": {
+          "captureId": "hero-review-side",
+          "capturedAt": "2026-08-03T02:08:30.746Z",
+          "url": "http://127.0.0.1:5181?heroReview=1",
+          "screenshot": "reports/art-previews/hero-commercial/review/hero-review-side.png",
+          "captureMode": "heroReview=1",
+          "cameraMode": "left-side",
+          "animation": "Idle",
+          "lod": 0,
+          "modelSource": "GLB",
+          "heroWorldPosition": {
+            "x": 0,
+            "y": 0,
+            "z": 0
+          },
+          "screenSpaceBoundingBox": {
+            "x": 481.334,
+            "y": 220.768,
+            "width": 128.52,
+            "height": 253.625,
+            "right": 609.853,
+            "bottom": 474.393
+          },
+          "viewport": {
+            "width": 1120,
+            "height": 630
+          },
+          "uiOccluded": false,
+          "uiPanel": {
+            "x": 16,
+            "y": 16,
+            "width": 248,
+            "height": 258.5
+          },
+          "authoredVisibleMeshCount": 184,
+          "proceduralVisibleMeshCount": 0,
+          "drawCalls": 5963,
+          "activeMeshes": 185,
+          "fps": 4.06
+        },
+        "contract": true
+      },
+      {
+        "id": "hero-review-back",
+        "expected": {
+          "id": "hero-review-back",
+          "cameraMode": "back",
+          "animation": "Idle",
+          "lod": 0
+        },
+        "screenshot": {
+          "file": "reports/art-previews/hero-commercial/review/hero-review-back.png",
+          "bytes": 147111,
+          "nonEmpty": true
+        },
+        "metadata": {
+          "captureId": "hero-review-back",
+          "capturedAt": "2026-08-03T02:08:32.625Z",
+          "url": "http://127.0.0.1:5181?heroReview=1",
+          "screenshot": "reports/art-previews/hero-commercial/review/hero-review-back.png",
+          "captureMode": "heroReview=1",
+          "cameraMode": "back",
+          "animation": "Idle",
+          "lod": 0,
+          "modelSource": "GLB",
+          "heroWorldPosition": {
+            "x": 0,
+            "y": 0,
+            "z": 0
+          },
+          "screenSpaceBoundingBox": {
+            "x": 491.178,
+            "y": 222.663,
+            "width": 149.612,
+            "height": 252.682,
+            "right": 640.79,
+            "bottom": 475.345
+          },
+          "viewport": {
+            "width": 1120,
+            "height": 630
+          },
+          "uiOccluded": false,
+          "uiPanel": {
+            "x": 16,
+            "y": 16,
+            "width": 248,
+            "height": 258.5
+          },
+          "authoredVisibleMeshCount": 184,
+          "proceduralVisibleMeshCount": 0,
+          "drawCalls": 7682,
+          "activeMeshes": 185,
+          "fps": 4.06
+        },
+        "contract": true
+      },
+      {
+        "id": "hero-review-three-quarter",
+        "expected": {
+          "id": "hero-review-three-quarter",
+          "cameraMode": "three-quarter",
+          "animation": "Idle",
+          "lod": 0
+        },
+        "screenshot": {
+          "file": "reports/art-previews/hero-commercial/review/hero-review-three-quarter.png",
+          "bytes": 139169,
+          "nonEmpty": true
+        },
+        "metadata": {
+          "captureId": "hero-review-three-quarter",
+          "capturedAt": "2026-08-03T02:08:34.421Z",
+          "url": "http://127.0.0.1:5181?heroReview=1",
+          "screenshot": "reports/art-previews/hero-commercial/review/hero-review-three-quarter.png",
+          "captureMode": "heroReview=1",
+          "cameraMode": "three-quarter",
+          "animation": "Idle",
+          "lod": 0,
+          "modelSource": "GLB",
+          "heroWorldPosition": {
+            "x": 0,
+            "y": 0,
+            "z": 0
+          },
+          "screenSpaceBoundingBox": {
+            "x": 499.684,
+            "y": 238.214,
+            "width": 114.581,
+            "height": 203.501,
+            "right": 614.265,
+            "bottom": 441.714
+          },
+          "viewport": {
+            "width": 1120,
+            "height": 630
+          },
+          "uiOccluded": false,
+          "uiPanel": {
+            "x": 16,
+            "y": 16,
+            "width": 248,
+            "height": 258.5
+          },
+          "authoredVisibleMeshCount": 184,
+          "proceduralVisibleMeshCount": 0,
+          "drawCalls": 9401,
+          "activeMeshes": 185,
+          "fps": 4.06
+        },
+        "contract": true
+      },
+      {
+        "id": "hero-review-close-up",
+        "expected": {
+          "id": "hero-review-close-up",
+          "cameraMode": "close-up",
+          "animation": "Idle",
+          "lod": 0
+        },
+        "screenshot": {
+          "file": "reports/art-previews/hero-commercial/review/hero-review-close-up.png",
+          "bytes": 188045,
+          "nonEmpty": true
+        },
+        "metadata": {
+          "captureId": "hero-review-close-up",
+          "capturedAt": "2026-08-03T02:08:36.973Z",
+          "url": "http://127.0.0.1:5181?heroReview=1",
+          "screenshot": "reports/art-previews/hero-commercial/review/hero-review-close-up.png",
+          "captureMode": "heroReview=1",
+          "cameraMode": "close-up",
+          "animation": "Idle",
+          "lod": 0,
+          "modelSource": "GLB",
+          "heroWorldPosition": {
+            "x": 0,
+            "y": 0,
+            "z": 0
+          },
+          "screenSpaceBoundingBox": {
+            "x": 421.302,
+            "y": 147.796,
+            "width": 264.672,
+            "height": 436.678,
+            "right": 685.974,
+            "bottom": 584.474
+          },
+          "viewport": {
+            "width": 1120,
+            "height": 630
+          },
+          "uiOccluded": false,
+          "uiPanel": {
+            "x": 16,
+            "y": 16,
+            "width": 248,
+            "height": 258.5
+          },
+          "authoredVisibleMeshCount": 184,
+          "proceduralVisibleMeshCount": 0,
+          "drawCalls": 11120,
+          "activeMeshes": 185,
+          "fps": 4.06
+        },
+        "contract": true
+      },
+      {
+        "id": "hero-review-melee",
+        "expected": {
+          "id": "hero-review-melee",
+          "cameraMode": "three-quarter",
+          "animation": "MeleeAttack",
+          "lod": 0
+        },
+        "screenshot": {
+          "file": "reports/art-previews/hero-commercial/review/hero-review-melee.png",
+          "bytes": 143271,
+          "nonEmpty": true
+        },
+        "metadata": {
+          "captureId": "hero-review-melee",
+          "capturedAt": "2026-08-03T02:08:38.421Z",
+          "url": "http://127.0.0.1:5181?heroReview=1",
+          "screenshot": "reports/art-previews/hero-commercial/review/hero-review-melee.png",
+          "captureMode": "heroReview=1",
+          "cameraMode": "three-quarter",
+          "animation": "MeleeAttack",
+          "lod": 0,
+          "modelSource": "GLB",
+          "heroWorldPosition": {
+            "x": 0,
+            "y": 0,
+            "z": 0
+          },
+          "screenSpaceBoundingBox": {
+            "x": 491.33,
+            "y": 238.214,
+            "width": 122.935,
+            "height": 203.501,
+            "right": 614.265,
+            "bottom": 441.714
+          },
+          "viewport": {
+            "width": 1120,
+            "height": 630
+          },
+          "uiOccluded": false,
+          "uiPanel": {
+            "x": 16,
+            "y": 16,
+            "width": 248,
+            "height": 258.5
+          },
+          "authoredVisibleMeshCount": 184,
+          "proceduralVisibleMeshCount": 0,
+          "drawCalls": 12457,
+          "activeMeshes": 185,
+          "fps": 4.06
+        },
+        "contract": true
+      },
+      {
+        "id": "hero-review-ranged",
+        "expected": {
+          "id": "hero-review-ranged",
+          "cameraMode": "three-quarter",
+          "animation": "RangedAttack",
+          "lod": 0
+        },
+        "screenshot": {
+          "file": "reports/art-previews/hero-commercial/review/hero-review-ranged.png",
+          "bytes": 143651,
+          "nonEmpty": true
+        },
+        "metadata": {
+          "captureId": "hero-review-ranged",
+          "capturedAt": "2026-08-03T02:08:39.903Z",
+          "url": "http://127.0.0.1:5181?heroReview=1",
+          "screenshot": "reports/art-previews/hero-commercial/review/hero-review-ranged.png",
+          "captureMode": "heroReview=1",
+          "cameraMode": "three-quarter",
+          "animation": "RangedAttack",
+          "lod": 0,
+          "modelSource": "GLB",
+          "heroWorldPosition": {
+            "x": 0,
+            "y": 0,
+            "z": 0
+          },
+          "screenSpaceBoundingBox": {
+            "x": 488.833,
+            "y": 238.214,
+            "width": 125.432,
+            "height": 203.501,
+            "right": 614.265,
+            "bottom": 441.714
+          },
+          "viewport": {
+            "width": 1120,
+            "height": 630
+          },
+          "uiOccluded": false,
+          "uiPanel": {
+            "x": 16,
+            "y": 16,
+            "width": 248,
+            "height": 258.5
+          },
+          "authoredVisibleMeshCount": 184,
+          "proceduralVisibleMeshCount": 0,
+          "drawCalls": 13794,
+          "activeMeshes": 185,
+          "fps": 4.06
+        },
+        "contract": true
+      },
+      {
+        "id": "hero-review-death",
+        "expected": {
+          "id": "hero-review-death",
+          "cameraMode": "three-quarter",
+          "animation": "Death",
+          "lod": 0
+        },
+        "screenshot": {
+          "file": "reports/art-previews/hero-commercial/review/hero-review-death.png",
+          "bytes": 133444,
+          "nonEmpty": true
+        },
+        "metadata": {
+          "captureId": "hero-review-death",
+          "capturedAt": "2026-08-03T02:08:41.396Z",
+          "url": "http://127.0.0.1:5181?heroReview=1",
+          "screenshot": "reports/art-previews/hero-commercial/review/hero-review-death.png",
+          "captureMode": "heroReview=1",
+          "cameraMode": "three-quarter",
+          "animation": "Death",
+          "lod": 0,
+          "modelSource": "GLB",
+          "heroWorldPosition": {
+            "x": 0,
+            "y": 0,
+            "z": 0
+          },
+          "screenSpaceBoundingBox": {
+            "x": 510.341,
+            "y": 241.462,
+            "width": 127.453,
+            "height": 200.191,
+            "right": 637.794,
+            "bottom": 441.653
+          },
+          "viewport": {
+            "width": 1120,
+            "height": 630
+          },
+          "uiOccluded": false,
+          "uiPanel": {
+            "x": 16,
+            "y": 16,
+            "width": 248,
+            "height": 258.5
+          },
+          "authoredVisibleMeshCount": 184,
+          "proceduralVisibleMeshCount": 0,
+          "drawCalls": 15131,
+          "activeMeshes": 185,
+          "fps": 4.06
+        },
+        "contract": true
+      },
+      {
+        "id": "hero-review-lod0",
+        "expected": {
+          "id": "hero-review-lod0",
+          "cameraMode": "front",
+          "animation": "Idle",
+          "lod": 0
+        },
+        "screenshot": {
+          "file": "reports/art-previews/hero-commercial/review/hero-review-lod0.png",
+          "bytes": 144930,
+          "nonEmpty": true
+        },
+        "metadata": {
+          "captureId": "hero-review-lod0",
+          "capturedAt": "2026-08-03T02:08:43.367Z",
+          "url": "http://127.0.0.1:5181?heroReview=1",
+          "screenshot": "reports/art-previews/hero-commercial/review/hero-review-lod0.png",
+          "captureMode": "heroReview=1",
+          "cameraMode": "front",
+          "animation": "Idle",
+          "lod": 0,
+          "modelSource": "GLB",
+          "heroWorldPosition": {
+            "x": 0,
+            "y": 0,
+            "z": 0
+          },
+          "screenSpaceBoundingBox": {
+            "x": 482.245,
+            "y": 222.663,
+            "width": 146.255,
+            "height": 244.379,
+            "right": 628.5,
+            "bottom": 467.041
+          },
+          "viewport": {
+            "width": 1120,
+            "height": 630
+          },
+          "uiOccluded": false,
+          "uiPanel": {
+            "x": 16,
+            "y": 16,
+            "width": 248,
+            "height": 258.5
+          },
+          "authoredVisibleMeshCount": 184,
+          "proceduralVisibleMeshCount": 0,
+          "drawCalls": 16850,
+          "activeMeshes": 185,
+          "fps": 4.06
+        },
+        "contract": true
+      },
+      {
+        "id": "hero-review-lod1",
+        "expected": {
+          "id": "hero-review-lod1",
+          "cameraMode": "front",
+          "animation": "Idle",
+          "lod": 1
+        },
+        "screenshot": {
+          "file": "reports/art-previews/hero-commercial/review/hero-review-lod1.png",
+          "bytes": 113142,
+          "nonEmpty": true
+        },
+        "metadata": {
+          "captureId": "hero-review-lod1",
+          "capturedAt": "2026-08-03T02:08:45.037Z",
+          "url": "http://127.0.0.1:5181?heroReview=1",
+          "screenshot": "reports/art-previews/hero-commercial/review/hero-review-lod1.png",
+          "captureMode": "heroReview=1",
+          "cameraMode": "front",
+          "animation": "Idle",
+          "lod": 1,
+          "modelSource": "GLB",
+          "heroWorldPosition": {
+            "x": 0,
+            "y": 0,
+            "z": 0
+          },
+          "screenSpaceBoundingBox": {
+            "x": 515.086,
+            "y": 270.573,
+            "width": 89.828,
+            "height": 173.615,
+            "right": 604.914,
+            "bottom": 444.189
+          },
+          "viewport": {
+            "width": 1120,
+            "height": 630
+          },
+          "uiOccluded": false,
+          "uiPanel": {
+            "x": 16,
+            "y": 16,
+            "width": 248,
+            "height": 242.313
+          },
+          "authoredVisibleMeshCount": 2,
+          "proceduralVisibleMeshCount": 0,
+          "drawCalls": 16931,
+          "activeMeshes": 3,
+          "fps": 4.06
+        },
+        "contract": true
+      },
+      {
+        "id": "hero-review-lod2",
+        "expected": {
+          "id": "hero-review-lod2",
+          "cameraMode": "front",
+          "animation": "Idle",
+          "lod": 2
+        },
+        "screenshot": {
+          "file": "reports/art-previews/hero-commercial/review/hero-review-lod2.png",
+          "bytes": 113196,
+          "nonEmpty": true
+        },
+        "metadata": {
+          "captureId": "hero-review-lod2",
+          "capturedAt": "2026-08-03T02:08:46.561Z",
+          "url": "http://127.0.0.1:5181?heroReview=1",
+          "screenshot": "reports/art-previews/hero-commercial/review/hero-review-lod2.png",
+          "captureMode": "heroReview=1",
+          "cameraMode": "front",
+          "animation": "Idle",
+          "lod": 2,
+          "modelSource": "GLB",
+          "heroWorldPosition": {
+            "x": 0,
+            "y": 0,
+            "z": 0
+          },
+          "screenSpaceBoundingBox": {
+            "x": 516.375,
+            "y": 267.291,
+            "width": 87.249,
+            "height": 183.281,
+            "right": 603.625,
+            "bottom": 450.572
+          },
+          "viewport": {
+            "width": 1120,
+            "height": 630
+          },
+          "uiOccluded": false,
+          "uiPanel": {
+            "x": 16,
+            "y": 16,
+            "width": 248,
+            "height": 242.313
+          },
+          "authoredVisibleMeshCount": 2,
+          "proceduralVisibleMeshCount": 0,
+          "drawCalls": 17012,
+          "activeMeshes": 3,
+          "fps": 4.06
+        },
+        "contract": true
+      }
+    ],
+    "requiredCount": 12,
+    "allRequiredCaptures": true,
+    "sequence": {
+      "present": true,
+      "frameCount": 21,
+      "valid": true,
+      "error": null
+    },
+    "valid": true,
+    "problems": [],
+    "humanReviewNote": "The validator confirms runtime visibility and contracts only; commercial visual quality remains a human review decision."
+  },
   "runtimeEvidence": {
     "formalBabylonScene": true,
     "sourceIndicator": "Hero Model Source: GLB",
@@ -823,7 +1500,8 @@
       "Hit",
       "Death"
     ],
-    "loadBehavior": "Each H1-H6 iteration has a formal Babylon uiVerification reload screenshot; the existing runtime gate retries authored preload before settling on procedural fallback.",
+    "loadBehavior": "The dedicated heroReview=1 runtime instance retries authored preload before capture and exposes model visibility, camera, animation, LOD, screen bounds, and procedural overlap metadata.",
+    "visualEvidencePolicy": "Old masked uiVerification screenshots remain historical only; heroReviewEvidence is required for runtime visual acceptance.",
     "perfCapture": {
       "present": true,
       "scene": "Babylon formal uiVerification scene",

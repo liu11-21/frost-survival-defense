@@ -17,6 +17,7 @@
     "art:buildings": "node scripts/run-blender.mjs scripts/blender/build_buildings.py",
     "art:resources": "node scripts/run-blender.mjs scripts/blender/build_resources.py",
     "art:export": "node scripts/run-blender.mjs scripts/blender/batch_export.py",
+    "art:hero:review": "node scripts/capture-hero-review.mjs",
     "art:validate": "node scripts/validate-models.mjs",
     "art:validate:hero": "node scripts/validate-hero-commercial.mjs",
     "ai:sync": "node scripts/generate-ai-sync.mjs"
