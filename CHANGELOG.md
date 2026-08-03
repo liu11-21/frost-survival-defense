@@ -6,6 +6,7 @@
 - 新增只在 Hero Review 入口暴露的 `window.__heroReviewState`，回報 GLB source、LOD、動畫、可見網格、螢幕邊界與 procedural mesh 數量；新增固定 1600×900 的 Playwright runtime 截圖、JSON 與 console log 證據。
 - 首次 Linux run 的前置步驟全部通過；測試發現 GLB 動畫名稱帶有 `hero.player:` namespace，已將驗證調整為要求七段動畫的 namespace-safe 對應，而非放寬動畫數量或跳過檢查。
 - 後續測試診斷保留每次 API command 的動畫回讀與 timeout state，並將 readiness 等待上限縮為 30 秒，讓真實 runtime state 能直接說明卡住的相機／動畫／LOD。
+- 連續 render loop 在 Linux 1600×900 sequence 截圖中造成 screenshot hang，已改用既有 Review API 的 stop-loop／手動 render 控制；截圖數量與可見性、LOD、動畫及錯誤 gates 均維持不變。
 - 本節只建立遠端驗證鏈，未修改 `hero.blend`、Hero 幾何／材質／動畫或其他正式資產；本機 Vite/esbuild `spawn EPERM` blocker 仍需由 GitHub runner 給出最終 runtime 結果。
 
 ## 2026-08-03｜Hero R4 final silhouette correction

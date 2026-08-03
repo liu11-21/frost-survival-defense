@@ -35,6 +35,8 @@ interface ReviewWindow extends Window {
   __heroReviewState?: ReviewState;
   frostbound?: {
     api(): { heroReview?: ReviewApi };
+    step(dt: number, frames?: number, render?: boolean): void;
+    stopLoop(): void;
   };
 }
 
@@ -127,7 +129,7 @@ test("verifies the production Hero GLB in Babylon runtime", async ({ page }) => 
           );
         },
         expected,
-        { timeout: 30_000 },
+        { polling: 100, timeout: 30_000 },
       );
     } catch (error) {
       const diagnostic = await readReviewState(page);
@@ -146,6 +148,7 @@ test("verifies the production Hero GLB in Babylon runtime", async ({ page }) => 
       review.setAnimation(target.animation);
       review.setLod(target.lod);
       review.resetPerformance();
+      (window as ReviewWindow).frostbound?.step(0.016, 4, true);
       return review.capture()?.animation ?? null;
     }, { camera, animation, lod });
     expect(commandAnimation, `Hero review API did not accept animation ${animation}`).toBe(animation);
@@ -185,6 +188,7 @@ test("verifies the production Hero GLB in Babylon runtime", async ({ page }) => 
       () => Boolean((window as ReviewWindow).__heroReviewState?.ready),
       { timeout: 90_000 },
     );
+    await page.evaluate(() => (window as ReviewWindow).frostbound?.stopLoop());
 
     await capture("hero-review-gameplay", "gameplay", "Idle", 0);
     await capture("hero-review-front", "front", "Idle", 0);
@@ -197,7 +201,7 @@ test("verifies the production Hero GLB in Babylon runtime", async ({ page }) => 
       const name = animation === "MeleeAttack" ? "hero-review-melee" : animation === "RangedAttack" ? "hero-review-ranged" : animation === "Death" ? "hero-review-death" : `hero-review-animation-${slug(animation)}`;
       await capture(name, "three-quarter", animation, 0);
       for (let frame = 1; frame <= 3; frame += 1) {
-        await page.evaluate(() => new Promise<void>((resolveFrame) => requestAnimationFrame(() => resolveFrame())));
+        await page.evaluate(() => (window as ReviewWindow).frostbound?.step(0.016, 1, true));
         const state = await waitForState({ camera: "three-quarter", animation, lod: 0 });
         const frameCapture = await readReviewState(page);
         const sequenceName = `sequence-${String(sequence.length + 1).padStart(3, "0")}-${slug(animation)}-${frame}`;
