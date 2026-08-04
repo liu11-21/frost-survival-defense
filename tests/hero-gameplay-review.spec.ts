@@ -219,17 +219,16 @@ test("verifies Hero in the formal snow, furnace, ally and enemy gameplay context
     }
     writeFileSync(resolve(outputRoot, "lod-automatic-sequence.json"), `${JSON.stringify(automaticLod, null, 2)}\n`, "utf8");
 
-    for (const animation of ["Walk", "Run", "MeleeAttack", "RangedAttack", "Hit", "Death"] as const) {
+    for (const animation of ["Idle", "Walk", "Run", "MeleeAttack", "RangedAttack", "Hit", "Death"] as const) {
       await selectReview("three-quarter", "snow-daylight", "battle", animation);
-      for (let frameIndex = 1; frameIndex <= 3; frameIndex += 1) {
-        await page.evaluate(() => (window as GameplayWindow).frostbound?.step(0.016, 1, true));
-        const state = await waitForState({ camera: "three-quarter", lighting: "snow-daylight", context: "battle", animation });
-        const frame = await readState(page);
-        const name = `sequence-${String(sequence.length + 1).padStart(3, "0")}-${animation.toLowerCase()}-${frameIndex}`;
-        const screenshotPath = resolve(outputRoot, `${name}.png`);
-        await page.screenshot({ path: screenshotPath, fullPage: false });
-        sequence.push({ captureId: name, screenshot: screenshotPath, animation, state, metadata: frame.capture });
-      }
+      const sampledAdvanceFrames = animation === "Idle" ? 1 : 8;
+      await page.evaluate((frames) => (window as GameplayWindow).frostbound?.step(0.016, frames, true), sampledAdvanceFrames);
+      const state = await waitForState({ camera: "three-quarter", lighting: "snow-daylight", context: "battle", animation });
+      const frame = await readState(page);
+      const name = `sequence-${String(sequence.length + 1).padStart(3, "0")}-${animation.toLowerCase()}`;
+      const screenshotPath = resolve(outputRoot, `${name}.png`);
+      await page.screenshot({ path: screenshotPath, fullPage: false });
+      sequence.push({ captureId: name, screenshot: screenshotPath, animation, sampledAdvanceFrames, state, metadata: frame.capture });
     }
 
     if (consoleErrors.length > 0 || pageErrors.length > 0 || requestFailures.length > 0) {
