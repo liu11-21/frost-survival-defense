@@ -4,7 +4,7 @@
   "sourceBranch": "codex/hero-commercial-h1-h6",
   "sourceCommit": "6da6bd523a0545bdc02c3a6ef1d78ab17cb68140",
   "productionBranch": "production/hero-r6",
-  "productionBaseHead": "7c68abb02de63492c400028f6ac2f36903148e2f",
+  "assetRefreshCommit": "7c68abb02de63492c400028f6ac2f36903148e2f",
   "historicalPullRequest": 1,
   "historicalPullRequestStatus": "archival draft; superseded for production integration",
   "assets": {
@@ -55,11 +55,23 @@
     "artifactPath": "reports/hero-gameplay-ci/",
     "artifactIncludes": ["42 normalized samples", "all runtime JSON", "Playwright video", "console log"]
   },
-  "ci": {
-    "run": 30879036594,
-    "url": "https://github.com/liu11-21/frost-survival-defense/actions/runs/30879036594",
-    "artifact": "hero-runtime-verification-30879036594",
-    "conclusion": "success"
+  "validation": {
+    "workflow": "Hero Runtime Verification",
+    "requiredChecks": [
+      "TypeScript check",
+      "Hero static validation",
+      "All authored asset validation",
+      "Production build",
+      "Babylon Hero runtime verification",
+      "Hero gameplay review",
+      "Normalized animation evidence verification"
+    ],
+    "artifactNamePattern": "hero-runtime-verification-<run-id>",
+    "productionRunLocation": "Draft PR #2 checks and artifacts",
+    "sourceValidationReference": {
+      "commit": "6da6bd523a0545bdc02c3a6ef1d78ab17cb68140",
+      "run": 30879036594
+    }
   },
   "decision": "Ready for final human art decision",
   "decisionBoundary": "Commercial art quality is not declared passed by automation."
