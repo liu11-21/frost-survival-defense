@@ -1,0 +1,101 @@
+{
+  "stage": "R6-A",
+  "iteration": 1,
+  "note": "R6-A iteration 1: proportional loop edits for helmet, arms, pelvis-to-leg transition and rescue boots; no mesh or triangle increase.",
+  "recordedAt": "2026-08-04T00:58:42.669Z",
+  "contract": {
+    "source": "GLB",
+    "scene": "Babylon formal uiVerification scene",
+    "requiredNodes": [
+      "HeroRoot",
+      "HeroSkeleton",
+      "weapon_socket.R",
+      "ranged_socket",
+      "LOD1",
+      "LOD2"
+    ],
+    "requiredAnimations": [
+      "Idle",
+      "Walk",
+      "Run",
+      "MeleeAttack",
+      "RangedAttack",
+      "Hit",
+      "Death"
+    ]
+  },
+  "metrics": {
+    "key": "hero",
+    "status": "ok",
+    "path": "public/assets/models/characters/hero.glb",
+    "sizeBytes": 4036808,
+    "nodes": 53,
+    "meshes": 27,
+    "materials": 4,
+    "textures": 1,
+    "skeletons": 1,
+    "rootTransforms": [
+      {
+        "index": 52,
+        "name": "HeroRoot",
+        "translation": [
+          0,
+          0,
+          0
+        ],
+        "scale": [
+          1,
+          1,
+          1
+        ]
+      }
+    ],
+    "bounds": {
+      "min": [
+        -0.7799999713897705,
+        -2.9802322387695312e-8,
+        -0.5099999904632568
+      ],
+      "max": [
+        1.440000057220459,
+        2.2465999126434326,
+        0.7200000882148743
+      ]
+    },
+    "animations": [
+      "Idle",
+      "Walk",
+      "Run",
+      "MeleeAttack",
+      "RangedAttack",
+      "Hit",
+      "Death"
+    ],
+    "animationChannels": {
+      "Idle": 54,
+      "Walk": 54,
+      "Run": 54,
+      "MeleeAttack": 54,
+      "RangedAttack": 54,
+      "Hit": 54,
+      "Death": 54
+    },
+    "triangles": 29044,
+    "lodTriangles": {
+      "LOD0": 19064,
+      "LOD1": 7324,
+      "LOD2": 2656
+    },
+    "surfaceAttributes": {
+      "TEXCOORD_0": true,
+      "COLOR_0": true
+    },
+    "lodProxies": {
+      "LOD1": 7,
+      "LOD2": 5
+    },
+    "missingNodes": [],
+    "missingAnimations": [],
+    "warnings": []
+  }
+}

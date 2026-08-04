@@ -602,3 +602,8 @@ flyingColossus, furnace and crossbow/turret before claiming display readiness.
 - Added R5-D front, side, back, ranged, close-up and LOD evidence plates.
 - This is a weapon silhouette checkpoint only; commercial art quality remains
   open for human review.
+## 2026-08-04 | Hero-R6 A body and boot silhouette checkpoint
+
+- Reshaped the existing Hero helmet/head, sleeve, pelvis-to-leg and rescue-boot loop profiles in place. The pass narrows the crown and upper limbs, creates a clearer elbow/knee rhythm, shortens the boot toe, and keeps the asymmetric expedition silhouette.
+- No render meshes, materials, bones, sockets, animation names or triangle budgets were added. R6-A evidence is under `reports/art-previews/hero-commercial/R6-A/` and `reports/art-previews/hero-commercial-r6/R6-A/`.
+- Static GLB validation remains passing; this checkpoint is ready for human silhouette review and does not claim commercial art quality.

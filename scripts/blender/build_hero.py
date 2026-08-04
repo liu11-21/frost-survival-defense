@@ -147,6 +147,26 @@ def _multi_loft_mesh(name, volumes, materials, target="LOD0"):
     return _mesh_object(name, vertices, faces, materials, material_indices, target=target, smooth=True)
 
 
+def _shape_rings(rings, *, center_y=0.0, y_scale=1.0, x_scale=1.0, z_scale=1.0):
+    """Apply a restrained proportional edit to an existing loop profile.
+
+    R6 reshapes the established loops in place instead of adding primitives;
+    render meshes, UVs and the existing skinning envelopes therefore remain
+    unchanged.
+    """
+    return [
+        (
+            center_y + (y - center_y) * y_scale,
+            radius_x * x_scale,
+            radius_z * z_scale,
+            center_x * x_scale,
+            center_z * z_scale,
+            material_index,
+        )
+        for y, radius_x, radius_z, center_x, center_z, material_index in rings
+    ]
+
+
 def _profile_mesh(name, components, materials, origin=(0.0, 0.0, 0.0), target="LOD0"):
     """Extrude several designed 2D profiles into one equipment mesh.
 
@@ -253,8 +273,8 @@ def _r4_body_rings():
 
 
 def _r4_head_rings():
-    """R5-A compact helmet/head loops with a lower, tapered crown."""
-    return [
+    """R6 compact helmet/head loops with a flatter faceted crown."""
+    return _shape_rings([
         (1.53, 0.21, 0.20, 0.00, 0.00, 0),
         (1.57, 0.24, 0.23, 0.00, 0.00, 0),
         (1.62, 0.28, 0.26, 0.00, 0.00, 0),
@@ -273,89 +293,89 @@ def _r4_head_rings():
         (2.24, 0.13, 0.13, 0.00, -0.02, 3),
         (2.26, 0.07, 0.08, 0.00, -0.02, 3),
         (2.27, 0.03, 0.04, 0.00, -0.02, 3),
-    ]
+    ], center_y=1.88, y_scale=0.94, x_scale=0.95, z_scale=0.94)
 
 
 def _r5_helmet_brow_rings():
-    """A forward brow/visor housing that gives the helmet a readable plane."""
-    return [
+    """A lower, inset brow/visor housing with a readable front plane."""
+    return _shape_rings([
         (1.70, 0.25, 0.055, 0.00, 0.255, 0),
         (1.75, 0.34, 0.070, 0.00, 0.275, 1),
         (1.82, 0.36, 0.075, 0.00, 0.275, 1),
         (1.89, 0.31, 0.065, 0.00, 0.255, 1),
         (1.94, 0.20, 0.045, 0.00, 0.225, 0),
-    ]
+    ], center_y=1.82, y_scale=0.94, x_scale=0.95, z_scale=0.90)
 
 
 def _r5_helmet_cheek_rings(side):
-    """Asymmetric-ready cheek/ear guard volume, mirrored by side."""
+    """Cheek/ear guard volume pulled closer to the head shell."""
     x = side * 0.30
-    return [
+    return _shape_rings([
         (1.61, 0.070, 0.125, x * 0.92, 0.015, 0),
         (1.69, 0.095, 0.145, x, 0.020, 0),
         (1.79, 0.105, 0.155, x * 1.02, 0.015, 1),
         (1.89, 0.090, 0.140, x * 1.01, 0.005, 1),
         (1.98, 0.060, 0.105, x * 0.96, -0.005, 0),
-    ]
+    ], center_y=1.80, y_scale=0.94, x_scale=0.92, z_scale=0.92)
 
 
 def _r5_helmet_rear_ridge_rings():
-    """A low rear ridge that preserves helmet identity in back views."""
-    return [
+    """A low rear ridge with a clear gap above the pack and collar."""
+    return _shape_rings([
         (1.72, 0.070, 0.045, 0.00, -0.285, 0),
         (1.84, 0.085, 0.055, 0.00, -0.305, 1),
         (1.96, 0.080, 0.050, 0.00, -0.295, 1),
         (2.07, 0.050, 0.040, 0.00, -0.255, 0),
-    ]
+    ], center_y=1.88, y_scale=0.94, x_scale=0.92, z_scale=0.90)
 
 
 def _r4_arm_rings(side):
-    """R5-A slimmer sleeves with a slightly narrower shoulder break."""
+    """R6 shaped sleeves with a real elbow break and tapered wrist."""
     shoulder = 0.45 if side < 0 else 0.47
     return [
-        (1.48, 0.17, 0.18, side * shoulder, 0.01, 0),
-        (1.44, 0.20, 0.20, side * (shoulder + 0.04), 0.01, 0),
-        (1.40, 0.21, 0.21, side * (shoulder + 0.07), 0.01, 0),
-        (1.35, 0.21, 0.20, side * (shoulder + 0.09), 0.02, 0),
-        (1.29, 0.19, 0.19, side * (shoulder + 0.10), 0.02, 0),
-        (1.23, 0.18, 0.18, side * (shoulder + 0.10), 0.03, 0),
-        (1.17, 0.17, 0.17, side * (shoulder + 0.09), 0.03, 0),
-        (1.11, 0.16, 0.17, side * (shoulder + 0.08), 0.04, 0),
-        (1.05, 0.15, 0.16, side * (shoulder + 0.07), 0.05, 0),
-        (0.99, 0.15, 0.15, side * (shoulder + 0.06), 0.05, 2),
-        (0.93, 0.14, 0.15, side * (shoulder + 0.05), 0.06, 2),
-        (0.87, 0.14, 0.14, side * (shoulder + 0.04), 0.06, 2),
-        (0.81, 0.13, 0.14, side * (shoulder + 0.03), 0.07, 2),
-        (0.75, 0.13, 0.13, side * (shoulder + 0.02), 0.08, 1),
-        (0.69, 0.12, 0.13, side * (shoulder + 0.01), 0.08, 1),
-        (0.63, 0.11, 0.12, side * shoulder, 0.09, 1),
-        (0.58, 0.10, 0.11, side * (shoulder - 0.01), 0.09, 1),
-        (0.54, 0.09, 0.10, side * (shoulder - 0.02), 0.10, 1),
-        (0.50, 0.08, 0.09, side * (shoulder - 0.03), 0.10, 1),
+        (1.48, 0.155, 0.17, side * shoulder, 0.01, 0),
+        (1.44, 0.176, 0.185, side * (shoulder + 0.035), 0.01, 0),
+        (1.40, 0.184, 0.19, side * (shoulder + 0.060), 0.01, 0),
+        (1.35, 0.178, 0.182, side * (shoulder + 0.078), 0.02, 0),
+        (1.29, 0.164, 0.17, side * (shoulder + 0.084), 0.02, 0),
+        (1.23, 0.154, 0.16, side * (shoulder + 0.078), 0.03, 0),
+        (1.17, 0.148, 0.153, side * (shoulder + 0.068), 0.03, 0),
+        (1.11, 0.152, 0.158, side * (shoulder + 0.058), 0.04, 0),
+        (1.05, 0.160, 0.165, side * (shoulder + 0.050), 0.05, 0),
+        (0.99, 0.150, 0.158, side * (shoulder + 0.042), 0.05, 2),
+        (0.93, 0.140, 0.148, side * (shoulder + 0.034), 0.06, 2),
+        (0.87, 0.132, 0.140, side * (shoulder + 0.026), 0.06, 2),
+        (0.81, 0.124, 0.132, side * (shoulder + 0.018), 0.07, 2),
+        (0.75, 0.122, 0.128, side * (shoulder + 0.010), 0.08, 1),
+        (0.69, 0.116, 0.122, side * (shoulder + 0.004), 0.08, 1),
+        (0.63, 0.108, 0.116, side * shoulder, 0.09, 1),
+        (0.58, 0.098, 0.108, side * (shoulder - 0.008), 0.09, 1),
+        (0.54, 0.088, 0.098, side * (shoulder - 0.016), 0.10, 1),
+        (0.50, 0.078, 0.088, side * (shoulder - 0.024), 0.10, 1),
     ]
 
 
 def _r4_leg_rings(side):
-    """R5-A longer leg loops with a faceted rescue boot and broad toe."""
+    """R6 tapered legs with a distinct knee, shin and rescue-boot stack."""
     hip = 0.22 if side < 0 else 0.23
     return [
-        (0.72, 0.19, 0.20, side * hip, -0.02, 0),
-        (0.66, 0.21, 0.21, side * (hip + 0.01), -0.01, 0),
-        (0.60, 0.22, 0.21, side * (hip + 0.02), 0.00, 0),
-        (0.54, 0.22, 0.20, side * (hip + 0.02), 0.00, 0),
-        (0.48, 0.21, 0.19, side * (hip + 0.02), 0.01, 0),
-        (0.42, 0.19, 0.18, side * (hip + 0.01), 0.02, 0),
-        (0.36, 0.17, 0.17, side * hip, 0.03, 0),
-        (0.30, 0.16, 0.16, side * hip, 0.04, 1),
-        (0.24, 0.15, 0.15, side * hip, 0.05, 1),
-        (0.18, 0.14, 0.14, side * (hip - 0.01), 0.07, 1),
-        (0.12, 0.13, 0.14, side * (hip - 0.01), 0.09, 1),
-        (0.08, 0.14, 0.16, side * (hip - 0.01), 0.12, 2),
-        (0.04, 0.16, 0.21, side * (hip - 0.01), 0.17, 2),
-        (0.01, 0.18, 0.27, side * (hip - 0.01), 0.23, 2),
-        (0.00, 0.18, 0.30, side * (hip - 0.01), 0.28, 2),
-        (0.00, 0.16, 0.26, side * (hip - 0.01), 0.34, 2),
-        (0.01, 0.14, 0.20, side * (hip - 0.01), 0.39, 2),
+        (0.72, 0.170, 0.185, side * hip, -0.02, 0),
+        (0.66, 0.182, 0.192, side * (hip + 0.008), -0.01, 0),
+        (0.60, 0.190, 0.194, side * (hip + 0.014), 0.00, 0),
+        (0.54, 0.188, 0.186, side * (hip + 0.014), 0.00, 0),
+        (0.48, 0.180, 0.176, side * (hip + 0.012), 0.01, 0),
+        (0.42, 0.176, 0.170, side * (hip + 0.006), 0.02, 0),
+        (0.36, 0.182, 0.168, side * hip, 0.03, 0),
+        (0.30, 0.154, 0.154, side * hip, 0.04, 1),
+        (0.24, 0.145, 0.146, side * hip, 0.05, 1),
+        (0.18, 0.134, 0.138, side * (hip - 0.008), 0.07, 1),
+        (0.12, 0.122, 0.132, side * (hip - 0.008), 0.09, 1),
+        (0.08, 0.132, 0.148, side * (hip - 0.008), 0.11, 2),
+        (0.04, 0.148, 0.188, side * (hip - 0.008), 0.14, 2),
+        (0.01, 0.164, 0.232, side * (hip - 0.008), 0.19, 2),
+        (0.00, 0.166, 0.258, side * (hip - 0.008), 0.235, 2),
+        (0.00, 0.150, 0.235, side * (hip - 0.008), 0.285, 2),
+        (0.01, 0.132, 0.180, side * (hip - 0.008), 0.32, 2),
     ]
 
 
@@ -380,8 +400,8 @@ def _r5_jacket_rings():
 
 
 def _r5_helmet_rings():
-    """Compact helmet shell kept separate from the smaller facial head loop."""
-    return [
+    """R6 compact helmet shell with a lower crown and flatter side planes."""
+    return _shape_rings([
         (1.55, 0.23, 0.21, 0.00, 0.00, 0),
         (1.61, 0.28, 0.26, 0.00, 0.00, 0),
         (1.68, 0.32, 0.30, 0.00, 0.00, 0),
@@ -394,7 +414,7 @@ def _r5_helmet_rings():
         (2.21, 0.17, 0.16, 0.00, -0.01, 0),
         (2.25, 0.09, 0.10, 0.00, -0.02, 0),
         (2.27, 0.03, 0.04, 0.00, -0.02, 0),
-    ]
+    ], center_y=1.90, y_scale=0.93, x_scale=0.95, z_scale=0.94)
 
 
 def _add_hero_lods(root, mats):

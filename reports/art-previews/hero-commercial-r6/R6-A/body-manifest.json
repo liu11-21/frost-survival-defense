@@ -1,0 +1,40 @@
+{
+  "stage": "R6-A",
+  "iteration": 1,
+  "source": "assets-source/blender/characters/hero.blend",
+  "method": "existing authored loop profiles; no new render meshes",
+  "views": [
+    {
+      "name": "clay-front",
+      "file": "D:\\codex\\\u904a\u6232\u958b\u767c\\reports\\art-previews\\hero-commercial-r6\\R6-A\\clay-front.png"
+    },
+    {
+      "name": "clay-side",
+      "file": "D:\\codex\\\u904a\u6232\u958b\u767c\\reports\\art-previews\\hero-commercial-r6\\R6-A\\clay-side.png"
+    },
+    {
+      "name": "clay-back",
+      "file": "D:\\codex\\\u904a\u6232\u958b\u767c\\reports\\art-previews\\hero-commercial-r6\\R6-A\\clay-back.png"
+    },
+    {
+      "name": "clay-three-quarter",
+      "file": "D:\\codex\\\u904a\u6232\u958b\u767c\\reports\\art-previews\\hero-commercial-r6\\R6-A\\clay-three-quarter.png"
+    },
+    {
+      "name": "black-silhouette-front",
+      "file": "D:\\codex\\\u904a\u6232\u958b\u767c\\reports\\art-previews\\hero-commercial-r6\\R6-A\\black-silhouette-front.png"
+    },
+    {
+      "name": "black-silhouette-side",
+      "file": "D:\\codex\\\u904a\u6232\u958b\u767c\\reports\\art-previews\\hero-commercial-r6\\R6-A\\black-silhouette-side.png"
+    },
+    {
+      "name": "black-silhouette-back",
+      "file": "D:\\codex\\\u904a\u6232\u958b\u767c\\reports\\art-previews\\hero-commercial-r6\\R6-A\\black-silhouette-back.png"
+    },
+    {
+      "name": "gameplay-distance",
+      "file": "D:\\codex\\\u904a\u6232\u958b\u767c\\reports\\art-previews\\hero-commercial-r6\\R6-A\\gameplay-distance.png"
+    }
+  ]
+}

@@ -1,0 +1,26 @@
+{
+  "stage": "R6-A",
+  "iteration": 1,
+  "before": {
+    "checkpoint": "R5-F / b05053b2a6f28dbeb3454488cb8085f813855cc5",
+    "sizeBytes": 4034616,
+    "lodTriangles": { "LOD0": 19064, "LOD1": 7324, "LOD2": 2656 },
+    "renderMeshes": 15,
+    "materials": 4
+  },
+  "after": {
+    "checkpoint": "R6-A working tree",
+    "sizeBytes": 4036808,
+    "lodTriangles": { "LOD0": 19064, "LOD1": 7324, "LOD2": 2656 },
+    "renderMeshes": 15,
+    "materials": 4,
+    "maxHeight": 2.2466
+  },
+  "deltas": {
+    "sizeBytes": 2192,
+    "lodTriangles": { "LOD0": 0, "LOD1": 0, "LOD2": 0 },
+    "renderMeshes": 0,
+    "materials": 0
+  },
+  "assessment": "Body, boot and helmet loop profiles were reshaped in place; geometry budget and runtime contracts are unchanged. Human silhouette review remains open."
+}
