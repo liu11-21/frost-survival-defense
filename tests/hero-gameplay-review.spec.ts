@@ -187,6 +187,7 @@ test("verifies Hero in the formal snow, furnace, ally and enemy gameplay context
       await page.evaluate((target) => {
         const review = (window as GameplayWindow).frostbound?.api().heroGameplayReview;
         if (!review) throw new Error("Hero gameplay review API is unavailable");
+        review.setCamera("tactical");
         review.setLod(target);
         (window as GameplayWindow).frostbound?.step(0.016, 3, true);
       }, lod);
