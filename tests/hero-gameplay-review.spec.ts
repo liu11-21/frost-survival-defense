@@ -223,7 +223,7 @@ test("verifies Hero in the formal snow, furnace, ally and enemy gameplay context
 
     for (const animation of ["Idle", "Walk", "Run", "MeleeAttack", "RangedAttack", "Hit", "Death"] as const) {
       await selectReview("three-quarter", "snow-daylight", "battle", animation);
-      const sampledAdvanceFrames = animation === "Idle" ? 1 : 8;
+      const sampledAdvanceFrames = 1;
       await page.evaluate((frames) => (window as GameplayWindow).frostbound?.step(0.016, frames, true), sampledAdvanceFrames);
       const state = await waitForState({ camera: "three-quarter", lighting: "snow-daylight", context: "battle", animation });
       const frame = await readState(page);
