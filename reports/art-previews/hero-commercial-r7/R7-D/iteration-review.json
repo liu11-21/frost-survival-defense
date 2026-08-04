@@ -1,0 +1,49 @@
+{
+  "stage": "R7-D",
+  "iteration": 1,
+  "scope": "Re-key existing seven clips and add deterministic Babylon pose sampling; no new bones, clips, or runtime framework.",
+  "observations": {
+    "gameplayCameraTopThree": [
+      "Melee and ranged clips now expose explicit wind-up/aim, impact/fire, recoil, and recovery timeline points.",
+      "Foot, pelvis, chest, head, and arm channels are sampled together so combat poses are not represented by a single arm frame.",
+      "The compact carbine remains visually dominant in some side-on aim views and needs human shape/pose judgment."
+    ],
+    "closeUpTopThree": [
+      "Melee impact has a held silhouette and supported stance rather than an instantaneous single-arm rotation.",
+      "Ranged aim keeps both arm chains engaged and adds small root/foot counterbalance keys.",
+      "The rounded authored volumes and flat carbine profile are still visible in clay; this evidence does not claim commercial quality."
+    ],
+    "remainingProceduralFeel": [
+      "Helmet and limb rings remain readable in close-up.",
+      "The carbine still reads as a broad profile in selected camera angles."
+    ],
+    "regressionsFromR6": [],
+    "budgetImpact": {
+      "newTriangles": 0,
+      "newRenderMeshes": 0,
+      "newMaterials": 0,
+      "newTextures": 0,
+      "newBones": 0,
+      "newAnimationClips": 0,
+      "lodIdentityPreserved": true,
+      "runtimeContractPreserved": true
+    }
+  },
+  "deterministicSampling": {
+    "normalizedTimeline": [0, 0.2, 0.4, 0.6, 0.8, 1],
+    "clips": ["Idle", "Walk", "Run", "MeleeAttack", "RangedAttack", "Hit", "Death"],
+    "bones": ["root", "pelvis", "chest", "head", "upper_arm.L", "upper_arm.R", "lower_arm.L", "lower_arm.R", "hand.L", "hand.R", "thigh.L", "thigh.R", "shin.L", "shin.R", "foot.L", "foot.R"],
+    "continuousStepping": false,
+    "runtimeHook": "window.frostbound.renderReviewFrame + heroGameplayReview.seekAnimation"
+  },
+  "metrics": {
+    "glbBytes": 3903020,
+    "lodTriangles": {"LOD0": 18080, "LOD1": 7324, "LOD2": 2668},
+    "lodRenderPrimitives": {"LOD0": 15, "LOD1": 8, "LOD2": 6},
+    "materials": 4,
+    "embeddedTextures": 1,
+    "bones": 18,
+    "animations": 7
+  },
+  "humanDecision": "Not a commercial-quality pass. Runtime and pose evidence are ready for the final bounded gameplay capture and human art decision."
+}

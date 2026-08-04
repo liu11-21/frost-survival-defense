@@ -445,6 +445,10 @@ export class Game {
 
   stopLoop(): void { this.s.engine.stopRenderLoop(); }
 
+  renderReviewFrame(): void {
+    this.heroGameplayReview?.renderFrame();
+  }
+
   stepManually(dt: number, render = true): void {
     if (this.disposed) return;
     const frameDt = Math.min(0.05, dt);
@@ -493,8 +497,10 @@ export class Game {
             setLighting: (lighting: Parameters<HeroGameplayReviewMode["setLighting"]>[0]) => this.heroGameplayReview?.setLighting(lighting),
             setContext: (context: Parameters<HeroGameplayReviewMode["setContext"]>[0]) => this.heroGameplayReview?.setContext(context),
             setAnimation: (animation: Parameters<HeroGameplayReviewMode["setAnimation"]>[0]) => this.heroGameplayReview?.setAnimation(animation),
+            seekAnimation: (normalized: number) => this.heroGameplayReview?.seekAnimation(normalized),
             setLod: (lod: Parameters<HeroGameplayReviewMode["setLod"]>[0]) => this.heroGameplayReview?.setLod(lod),
             setAutoLod: (enabled = true) => this.heroGameplayReview?.setAutoLod(enabled),
+            renderFrame: () => this.heroGameplayReview?.renderFrame(),
             capture: () => this.heroGameplayReview?.capture() ?? null,
             state: () => this.heroGameplayReview?.state() ?? null,
           }

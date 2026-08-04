@@ -1,0 +1,141 @@
+{
+  "stage": "R7-D",
+  "kind": "deterministic-normalized-animation-key-pose-review",
+  "source": "assets-source/blender/characters/hero.blend",
+  "normalizedTimeline": [
+    0,
+    0.2,
+    0.4,
+    0.6,
+    0.8,
+    1
+  ],
+  "clips": [
+    {
+      "name": "melee-start",
+      "clip": "MeleeAttack",
+      "normalized": 0.0,
+      "frame": 1.0,
+      "stripStart": 1.0,
+      "stripEnd": 16.0,
+      "file": "D:\\codex\\\u904a\u6232\u958b\u767c\\reports\\art-previews\\hero-commercial-r7\\R7-D\\melee-start.png"
+    },
+    {
+      "name": "melee-windup",
+      "clip": "MeleeAttack",
+      "normalized": 0.2,
+      "frame": 4.0,
+      "stripStart": 1.0,
+      "stripEnd": 16.0,
+      "file": "D:\\codex\\\u904a\u6232\u958b\u767c\\reports\\art-previews\\hero-commercial-r7\\R7-D\\melee-windup.png"
+    },
+    {
+      "name": "melee-swing",
+      "clip": "MeleeAttack",
+      "normalized": 0.4,
+      "frame": 7.0,
+      "stripStart": 1.0,
+      "stripEnd": 16.0,
+      "file": "D:\\codex\\\u904a\u6232\u958b\u767c\\reports\\art-previews\\hero-commercial-r7\\R7-D\\melee-swing.png"
+    },
+    {
+      "name": "melee-impact",
+      "clip": "MeleeAttack",
+      "normalized": 0.55,
+      "frame": 9.25,
+      "stripStart": 1.0,
+      "stripEnd": 16.0,
+      "file": "D:\\codex\\\u904a\u6232\u958b\u767c\\reports\\art-previews\\hero-commercial-r7\\R7-D\\melee-impact.png"
+    },
+    {
+      "name": "melee-recover",
+      "clip": "MeleeAttack",
+      "normalized": 0.8,
+      "frame": 13.0,
+      "stripStart": 1.0,
+      "stripEnd": 16.0,
+      "file": "D:\\codex\\\u904a\u6232\u958b\u767c\\reports\\art-previews\\hero-commercial-r7\\R7-D\\melee-recover.png"
+    },
+    {
+      "name": "ranged-low-ready",
+      "clip": "RangedAttack",
+      "normalized": 0.0,
+      "frame": 1.0,
+      "stripStart": 1.0,
+      "stripEnd": 16.0,
+      "file": "D:\\codex\\\u904a\u6232\u958b\u767c\\reports\\art-previews\\hero-commercial-r7\\R7-D\\ranged-low-ready.png"
+    },
+    {
+      "name": "ranged-raise",
+      "clip": "RangedAttack",
+      "normalized": 0.2,
+      "frame": 4.0,
+      "stripStart": 1.0,
+      "stripEnd": 16.0,
+      "file": "D:\\codex\\\u904a\u6232\u958b\u767c\\reports\\art-previews\\hero-commercial-r7\\R7-D\\ranged-raise.png"
+    },
+    {
+      "name": "ranged-aim",
+      "clip": "RangedAttack",
+      "normalized": 0.4,
+      "frame": 7.0,
+      "stripStart": 1.0,
+      "stripEnd": 16.0,
+      "file": "D:\\codex\\\u904a\u6232\u958b\u767c\\reports\\art-previews\\hero-commercial-r7\\R7-D\\ranged-aim.png"
+    },
+    {
+      "name": "ranged-fire",
+      "clip": "RangedAttack",
+      "normalized": 0.6,
+      "frame": 10.0,
+      "stripStart": 1.0,
+      "stripEnd": 16.0,
+      "file": "D:\\codex\\\u904a\u6232\u958b\u767c\\reports\\art-previews\\hero-commercial-r7\\R7-D\\ranged-fire.png"
+    },
+    {
+      "name": "ranged-recoil",
+      "clip": "RangedAttack",
+      "normalized": 0.7,
+      "frame": 11.5,
+      "stripStart": 1.0,
+      "stripEnd": 16.0,
+      "file": "D:\\codex\\\u904a\u6232\u958b\u767c\\reports\\art-previews\\hero-commercial-r7\\R7-D\\ranged-recoil.png"
+    },
+    {
+      "name": "ranged-recover",
+      "clip": "RangedAttack",
+      "normalized": 0.9,
+      "frame": 14.5,
+      "stripStart": 1.0,
+      "stripEnd": 16.0,
+      "file": "D:\\codex\\\u904a\u6232\u958b\u767c\\reports\\art-previews\\hero-commercial-r7\\R7-D\\ranged-recover.png"
+    },
+    {
+      "name": "walk-carry",
+      "clip": "Walk",
+      "normalized": 0.4,
+      "frame": 10.200000000000001,
+      "stripStart": 1.0,
+      "stripEnd": 24.0,
+      "file": "D:\\codex\\\u904a\u6232\u958b\u767c\\reports\\art-previews\\hero-commercial-r7\\R7-D\\walk-carry.png"
+    },
+    {
+      "name": "run-carry",
+      "clip": "Run",
+      "normalized": 0.4,
+      "frame": 7.800000000000001,
+      "stripStart": 1.0,
+      "stripEnd": 18.0,
+      "file": "D:\\codex\\\u904a\u6232\u958b\u767c\\reports\\art-previews\\hero-commercial-r7\\R7-D\\run-carry.png"
+    },
+    {
+      "name": "death-grounded",
+      "clip": "Death",
+      "normalized": 1.0,
+      "frame": 20.0,
+      "stripStart": 1.0,
+      "stripEnd": 20.0,
+      "file": "D:\\codex\\\u904a\u6232\u958b\u767c\\reports\\art-previews\\hero-commercial-r7\\R7-D\\death-grounded.png"
+    }
+  ]
+}

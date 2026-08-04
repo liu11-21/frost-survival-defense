@@ -153,8 +153,20 @@ export class HeroController implements Damageable {
     return this.avatar.currentReviewLod;
   }
 
+  get reviewAnimationNormalized(): number {
+    return this.avatar.currentReviewAnimationNormalized;
+  }
+
+  get reviewBoneSnapshot(): Record<string, { position: [number, number, number]; rotation: [number, number, number, number] }> {
+    return this.avatar.reviewBoneSnapshot;
+  }
+
   setReviewAnimation(name: string): void {
     this.avatar.setReviewAnimation(name);
+  }
+
+  seekReviewAnimation(normalized: number): void {
+    this.avatar.seekReviewAnimation(normalized);
   }
 
   setReviewLod(lod: 0 | 1 | 2): void {

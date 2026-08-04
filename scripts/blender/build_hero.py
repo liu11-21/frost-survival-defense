@@ -1262,12 +1262,15 @@ def build():
     root["heroR5Scope"] = "locomotion and combat animation polish"
     root["heroR6Stage"] = "R6-D"
     root["heroR6Scope"] = "compact carbine, four-slot surface refinement, and combat pose finalization"
+    root["heroR7Stage"] = "R7-D"
+    root["heroR7Scope"] = "final shape language, compact carbine handling, surface response, and deterministic pose evidence"
+    root["heroR7Iteration"] = 1
     root["topologyMethod"] = "authored anatomical and garment edge-loop lofts; no subdivision modifier"
     root["lod0TargetTriangles"] = "16000-25000"
     root["lod1TargetTriangles"] = "6000-10000"
     root["lod2TargetTriangles"] = "1500-3500"
     root["lodBuildMethod"] = "production authored loop reductions from R4-B mid-poly volumes"
-    root["animationReview"] = "R6-D weighted body envelopes with contact-safe locomotion, two-hand ranged aim, melee impact hold, and recovery follow-through"
+    root["animationReview"] = "R7-D deterministic key poses with contact-safe locomotion, two-hand ranged aim, melee impact hold, and recovery follow-through"
     root["feetGrounded"] = True
     root["orientationContract"] = "Babylon Y-up, forward +Z"
     root["animationIteration2"] = "follow-through and recovery keys"
@@ -1319,28 +1322,28 @@ def build():
         # Low-ready: both feet and the torso establish a stable launch point.
         (1, {"upper_arm.R": (-0.70, -0.08, -0.14), "lower_arm.R": (-0.42, 0.18, 0.18), "hand.R": (-0.18, 0.0, 0.0), "upper_arm.L": (-0.12, 0.10, 0.08), "foot.L": (-0.08, 0.0, 0.0), "foot.R": (0.10, 0.0, 0.0), "head": (0.05, 0.02, -0.05), "chest": (0.12, 0.10, -0.08), "pelvis": (0.02, -0.06, 0.0)}),
         # Pull-back: pelvis and chest counter-rotate before the swing.
-        (4, {"upper_arm.R": (-1.58, -0.18, -0.22), "lower_arm.R": (-0.88, 0.26, 0.22), "hand.R": (-0.42, 0.0, 0.05), "upper_arm.L": (0.36, 0.20, 0.12), "foot.L": (0.12, 0.0, 0.0), "foot.R": (-0.16, 0.0, 0.0), "head": (0.16, 0.04, -0.08), "chest": (-0.22, -0.20, -0.16), "pelvis": (0.16, 0.14, 0.05)}),
+        (4, {"root": (0.0, -0.08, 0.05), "upper_arm.R": (-1.58, -0.18, -0.22), "lower_arm.R": (-0.88, 0.26, 0.22), "hand.R": (-0.42, 0.0, 0.05), "upper_arm.L": (0.36, 0.20, 0.12), "foot.L": (0.12, 0.0, 0.0), "foot.R": (-0.16, 0.0, 0.0), "head": (0.16, 0.04, -0.08), "chest": (-0.22, -0.20, -0.16), "pelvis": (0.16, 0.14, 0.05)}),
         # Maximum swing: shoulder, chest, pelvis, and support leg share the arc.
-        (7, {"upper_arm.R": (1.54, 0.22, 0.28), "lower_arm.R": (0.74, -0.16, -0.18), "hand.R": (0.46, 0.0, -0.06), "upper_arm.L": (-0.34, -0.18, -0.08), "foot.L": (-0.10, 0.0, 0.0), "foot.R": (0.18, 0.0, 0.0), "head": (-0.14, -0.05, 0.06), "chest": (0.34, 0.22, 0.22), "pelvis": (-0.14, -0.12, -0.05)}),
+        (7, {"root": (0.0, 0.10, -0.06), "upper_arm.R": (1.54, 0.22, 0.28), "lower_arm.R": (0.74, -0.16, -0.18), "hand.R": (0.46, 0.0, -0.06), "upper_arm.L": (-0.34, -0.18, -0.08), "foot.L": (-0.10, 0.0, 0.0), "foot.R": (0.18, 0.0, 0.0), "head": (-0.14, -0.05, 0.06), "chest": (0.34, 0.22, 0.22), "pelvis": (-0.14, -0.12, -0.05)}),
         # Impact hold: two adjacent keys make the hit readable before recovery.
-        (9, {"upper_arm.R": (1.54, 0.22, 0.28), "lower_arm.R": (0.74, -0.16, -0.18), "hand.R": (0.46, 0.0, -0.06), "upper_arm.L": (-0.34, -0.18, -0.08), "foot.L": (-0.10, 0.0, 0.0), "foot.R": (0.18, 0.0, 0.0), "head": (-0.14, -0.05, 0.06), "chest": (0.34, 0.22, 0.22), "pelvis": (-0.14, -0.12, -0.05)}),
-        (10, {"upper_arm.R": (1.48, 0.20, 0.26), "lower_arm.R": (0.70, -0.14, -0.16), "hand.R": (0.42, 0.0, -0.05), "upper_arm.L": (-0.30, -0.16, -0.07), "foot.L": (-0.08, 0.0, 0.0), "foot.R": (0.16, 0.0, 0.0), "head": (-0.12, -0.04, 0.05), "chest": (0.30, 0.20, 0.19), "pelvis": (-0.12, -0.10, -0.04)}),
+        (9, {"root": (0.0, 0.10, -0.06), "upper_arm.R": (1.54, 0.22, 0.28), "lower_arm.R": (0.74, -0.16, -0.18), "hand.R": (0.46, 0.0, -0.06), "upper_arm.L": (-0.34, -0.18, -0.08), "foot.L": (-0.10, 0.0, 0.0), "foot.R": (0.18, 0.0, 0.0), "head": (-0.14, -0.05, 0.06), "chest": (0.34, 0.22, 0.22), "pelvis": (-0.14, -0.12, -0.05)}),
+        (10, {"root": (0.0, 0.08, -0.04), "upper_arm.R": (1.48, 0.20, 0.26), "lower_arm.R": (0.70, -0.14, -0.16), "hand.R": (0.42, 0.0, -0.05), "upper_arm.L": (-0.30, -0.16, -0.07), "foot.L": (-0.08, 0.0, 0.0), "foot.R": (0.16, 0.0, 0.0), "head": (-0.12, -0.04, 0.05), "chest": (0.30, 0.20, 0.19), "pelvis": (-0.12, -0.10, -0.04)}),
         # Recover into a guarded stance.
         (13, {"upper_arm.R": (0.66, 0.06, 0.12), "lower_arm.R": (0.20, -0.04, -0.05), "hand.R": (0.12, 0.0, 0.0), "upper_arm.L": (-0.08, -0.02, 0.0), "foot.L": (0.03, 0.0, 0.0), "foot.R": (-0.03, 0.0, 0.0), "head": (-0.04, 0.0, 0.02), "chest": (0.10, 0.05, 0.06), "pelvis": (-0.03, -0.02, 0.0)}),
         (16, {})
     ])
     add_armature_clip(skeleton, "RangedAttack", 16, [
         # Low-ready: the carbine starts below the chest with both hands engaged.
-        (1, {"upper_arm.R": (-0.52, -0.06, -0.10), "upper_arm.L": (-0.70, 0.08, 0.10), "lower_arm.L": (-0.34, 0.0, 0.12), "lower_arm.R": (-0.14, 0.0, 0.03), "hand.L": (0.16, 0.0, 0.02), "hand.R": (-0.10, 0.0, 0.0), "head": (-0.04, 0.0, 0.0), "chest": (-0.02, 0.0, -0.02)}),
+        (1, {"root": (0.0, -0.02, 0.0), "upper_arm.R": (-0.52, -0.06, -0.10), "upper_arm.L": (-0.70, 0.08, 0.10), "lower_arm.L": (-0.34, 0.0, 0.12), "lower_arm.R": (-0.14, 0.0, 0.03), "hand.L": (0.16, 0.0, 0.02), "hand.R": (-0.10, 0.0, 0.0), "head": (-0.04, 0.0, 0.0), "chest": (-0.02, 0.0, -0.02), "pelvis": (0.02, 0.0, 0.0), "foot.L": (-0.02, 0.0, 0.0), "foot.R": (0.02, 0.0, 0.0)}),
         # Raise and seat the stock near the shoulder.
-        (4, {"upper_arm.R": (-1.02, -0.10, -0.14), "upper_arm.L": (-1.08, 0.10, 0.12), "lower_arm.L": (-0.50, 0.02, 0.12), "lower_arm.R": (-0.24, 0.02, 0.05), "hand.L": (0.22, 0.0, 0.02), "hand.R": (-0.20, 0.0, 0.0), "head": (-0.10, -0.02, 0.0), "chest": (-0.06, -0.02, -0.04)}),
+        (4, {"root": (0.0, -0.04, 0.02), "upper_arm.R": (-1.02, -0.10, -0.14), "upper_arm.L": (-1.08, 0.10, 0.12), "lower_arm.L": (-0.50, 0.02, 0.12), "lower_arm.R": (-0.24, 0.02, 0.05), "hand.L": (0.22, 0.0, 0.02), "hand.R": (-0.20, 0.0, 0.0), "head": (-0.10, -0.02, 0.0), "chest": (-0.06, -0.02, -0.04), "pelvis": (0.03, 0.0, 0.0), "foot.L": (-0.04, 0.0, 0.0), "foot.R": (0.04, 0.0, 0.0)}),
         # Aim: a compact two-arm triangle and visor line of sight.
-        (7, {"upper_arm.R": (-1.42, -0.14, -0.16), "upper_arm.L": (-1.45, 0.13, 0.13), "lower_arm.L": (-0.68, 0.10, 0.10), "lower_arm.R": (-0.38, 0.06, 0.06), "hand.L": (0.26, 0.0, 0.02), "hand.R": (-0.36, 0.0, 0.0), "head": (-0.18, -0.02, 0.0), "chest": (-0.10, -0.04, -0.07), "pelvis": (0.04, 0.02, 0.0)}),
+        (7, {"root": (0.0, -0.07, 0.03), "upper_arm.R": (-1.42, -0.14, -0.16), "upper_arm.L": (-1.45, 0.13, 0.13), "lower_arm.L": (-0.68, 0.10, 0.10), "lower_arm.R": (-0.38, 0.06, 0.06), "hand.L": (0.26, 0.0, 0.02), "hand.R": (-0.36, 0.0, 0.0), "head": (-0.18, -0.02, 0.0), "chest": (-0.10, -0.04, -0.07), "pelvis": (0.04, 0.02, 0.0), "foot.L": (-0.06, 0.0, 0.0), "foot.R": (0.06, 0.0, 0.0)}),
         # Fire key and a small recoil preparation.
-        (10, {"upper_arm.R": (-1.26, -0.12, -0.13), "upper_arm.L": (-1.30, 0.11, 0.12), "lower_arm.L": (-0.58, 0.09, 0.09), "lower_arm.R": (-0.30, 0.05, 0.05), "hand.L": (0.23, 0.0, 0.02), "hand.R": (-0.28, 0.0, 0.0), "head": (-0.14, -0.02, 0.0), "chest": (-0.07, -0.03, -0.06), "pelvis": (0.03, 0.02, 0.0)}),
-        (11, {"upper_arm.R": (-1.10, -0.10, -0.10), "upper_arm.L": (-1.18, 0.09, 0.09), "lower_arm.L": (-0.52, 0.08, 0.08), "lower_arm.R": (-0.25, 0.04, 0.04), "hand.L": (0.20, 0.0, 0.02), "hand.R": (-0.18, 0.0, 0.0), "head": (-0.09, -0.02, 0.0), "chest": (-0.04, -0.02, -0.03), "pelvis": (0.02, 0.01, 0.0)}),
+        (10, {"root": (0.0, -0.05, 0.02), "upper_arm.R": (-1.26, -0.12, -0.13), "upper_arm.L": (-1.30, 0.11, 0.12), "lower_arm.L": (-0.58, 0.09, 0.09), "lower_arm.R": (-0.30, 0.05, 0.05), "hand.L": (0.23, 0.0, 0.02), "hand.R": (-0.28, 0.0, 0.0), "head": (-0.14, -0.02, 0.0), "chest": (-0.07, -0.03, -0.06), "pelvis": (0.03, 0.02, 0.0), "foot.L": (-0.05, 0.0, 0.0), "foot.R": (0.05, 0.0, 0.0)}),
+        (11, {"root": (0.0, -0.03, 0.01), "upper_arm.R": (-1.10, -0.10, -0.10), "upper_arm.L": (-1.18, 0.09, 0.09), "lower_arm.L": (-0.52, 0.08, 0.08), "lower_arm.R": (-0.25, 0.04, 0.04), "hand.L": (0.20, 0.0, 0.02), "hand.R": (-0.18, 0.0, 0.0), "head": (-0.09, -0.02, 0.0), "chest": (-0.04, -0.02, -0.03), "pelvis": (0.02, 0.01, 0.0), "foot.L": (-0.04, 0.0, 0.0), "foot.R": (0.04, 0.0, 0.0)}),
         # Recover without dropping the left support hand.
-        (14, {"upper_arm.R": (-0.72, -0.04, -0.06), "upper_arm.L": (-0.86, 0.06, 0.07), "lower_arm.L": (-0.30, 0.04, 0.05), "lower_arm.R": (-0.14, 0.02, 0.02), "hand.L": (0.12, 0.0, 0.01), "hand.R": (-0.08, 0.0, 0.0), "head": (-0.04, 0.0, 0.0), "chest": (-0.01, 0.0, 0.0)}),
+        (14, {"root": (0.0, 0.0, 0.0), "upper_arm.R": (-0.72, -0.04, -0.06), "upper_arm.L": (-0.86, 0.06, 0.07), "lower_arm.L": (-0.30, 0.04, 0.05), "lower_arm.R": (-0.14, 0.02, 0.02), "hand.L": (0.12, 0.0, 0.01), "hand.R": (-0.08, 0.0, 0.0), "head": (-0.04, 0.0, 0.0), "chest": (-0.01, 0.0, 0.0)}),
         (16, {})
     ])
     add_armature_clip(skeleton, "Hit", 12, [
@@ -1362,7 +1365,7 @@ def build():
     # to this Hero asset. No other character or facility is regenerated.
     author_surface_paint(parts + lod_parts, seed=53, textured=False)
     atlas = author_hero_atlas(parts + lod_parts, mats)
-    root["heroSurfacePass"] = "R6-C-1024-hero-atlas-surface-refinement"
+    root["heroSurfacePass"] = "R7-C-1024-hero-atlas-material-response"
     root["heroAtlasResolution"] = atlas["resolution"]
     used_material_names = {
         slot.name

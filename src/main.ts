@@ -33,6 +33,7 @@ function bootstrap(): void {
       },
       snapshot: () => instance.debugSnapshot(),
       stopLoop: () => instance.stopLoop(),
+      renderReviewFrame: () => instance.renderReviewFrame(),
       api: () => instance.debugApi(),
     };
   }

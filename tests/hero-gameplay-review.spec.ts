@@ -7,6 +7,10 @@ type CameraName = "gameplay" | "tactical" | "three-quarter" | "back";
 type LightingName = "snow-daylight" | "furnace-warm";
 type ContextName = "alone" | "friends" | "battle";
 type LodName = 0 | 1 | 2;
+type BoneTransform = {
+  position: [number, number, number];
+  rotation: [number, number, number, number];
+};
 
 interface GameplayState {
   ready: boolean;
@@ -23,6 +27,8 @@ interface GameplayState {
   proceduralVisibleMeshes: number;
   allyCount: number;
   enemyCount: number;
+  animationNormalized: number;
+  boneTransforms: Record<string, BoneTransform>;
   animationGroups: string[];
   heroScreenBounds: { x: number; y: number; width: number; height: number; right: number; bottom: number; visible: boolean };
   heroWorldPosition: { x: number; y: number; z: number };
@@ -34,8 +40,10 @@ interface GameplayApi {
   setLighting(lighting: LightingName): void;
   setContext(context: ContextName): void;
   setAnimation(animation: AnimationName): void;
+  seekAnimation(normalized: number): void;
   setLod(lod: LodName): void;
   setAutoLod(enabled?: boolean): void;
+  renderFrame(): void;
   capture(): Record<string, unknown> | null;
 }
 
@@ -44,12 +52,13 @@ interface GameplayWindow extends Window {
   frostbound?: {
     api(): { heroGameplayReview?: GameplayApi };
     step(dt: number, frames?: number, render?: boolean): void;
+    renderReviewFrame(): void;
     stopLoop(): void;
   };
 }
 
 const animations: readonly AnimationName[] = ["Idle", "Walk", "Run", "MeleeAttack", "RangedAttack", "Hit", "Death"];
-const outputRoot = resolve(process.cwd(), process.env.HERO_GAMEPLAY_OUTPUT ?? "reports/art-previews/hero-commercial-r6/R6-E");
+const outputRoot = resolve(process.cwd(), process.env.HERO_GAMEPLAY_OUTPUT ?? "reports/art-previews/hero-commercial-r7/R7-D");
 
 test.use({ video: "on" });
 
@@ -150,9 +159,29 @@ test("verifies Hero in the formal snow, furnace, ally and enemy gameplay context
       review.setLighting(target.lighting);
       review.setContext(target.context);
       review.setAnimation(target.animation);
-      (window as GameplayWindow).frostbound?.step(0.016, 4, true);
+      review.seekAnimation(0);
+      (window as GameplayWindow).frostbound?.renderReviewFrame();
     }, { camera, lighting, context, animation });
     return waitForState({ camera, lighting, context, animation });
+  };
+
+  const seekAndRender = async (normalized: number): Promise<GameplayState> => {
+    await page.evaluate((value) => {
+      const review = (window as GameplayWindow).frostbound?.api().heroGameplayReview;
+      if (!review) throw new Error("Hero gameplay review API is unavailable");
+      review.seekAnimation(value);
+      (window as GameplayWindow).frostbound?.renderReviewFrame();
+    }, normalized);
+    const { state } = await readState(page);
+    validateState(state, {
+      camera: (state as GameplayState | null)?.currentCamera ?? "gameplay",
+      lighting: (state as GameplayState | null)?.lighting ?? "snow-daylight",
+      context: (state as GameplayState | null)?.context ?? "battle",
+      animation: (state as GameplayState | null)?.currentAnimation ?? "Idle",
+    });
+    if (!state) throw new Error("Hero gameplay review state should be published");
+    expect(state.animationNormalized).toBeCloseTo(normalized, 3);
+    return state;
   };
 
   const capture = async (name: string, camera: CameraName, lighting: LightingName, context: ContextName, animation: AnimationName): Promise<GameplayState> => {
@@ -191,7 +220,8 @@ test("verifies Hero in the formal snow, furnace, ally and enemy gameplay context
         if (!review) throw new Error("Hero gameplay review API is unavailable");
         review.setCamera("tactical");
         review.setLod(target);
-        (window as GameplayWindow).frostbound?.step(0.016, 3, true);
+        review.seekAnimation(1);
+        (window as GameplayWindow).frostbound?.renderReviewFrame();
       }, lod);
       const state = await waitForState({ camera: "tactical", lighting: "snow-daylight", context: "battle", animation: "Death" });
       expect(state.currentLod).toBe(`LOD${lod}`);
@@ -212,7 +242,8 @@ test("verifies Hero in the formal snow, furnace, ally and enemy gameplay context
         const review = (window as GameplayWindow).frostbound?.api().heroGameplayReview;
         if (!review) throw new Error("Hero gameplay review API is unavailable");
         review.setCamera(target);
-        (window as GameplayWindow).frostbound?.step(0.016, 4, true);
+        review.seekAnimation(0);
+        (window as GameplayWindow).frostbound?.renderReviewFrame();
       }, camera);
       await page.waitForFunction((target) => (window as GameplayWindow).__heroGameplayReviewState?.currentCamera === target && (window as GameplayWindow).__heroGameplayReviewState?.lodMode === "auto", camera, { timeout: 10_000 });
       const frame = await readState(page);
@@ -221,15 +252,59 @@ test("verifies Hero in the formal snow, furnace, ally and enemy gameplay context
     }
     writeFileSync(resolve(outputRoot, "lod-automatic-sequence.json"), `${JSON.stringify(automaticLod, null, 2)}\n`, "utf8");
 
+    const normalizedTimeline = [0, 0.2, 0.4, 0.6, 0.8, 1];
+    const animationSamples: Record<string, Array<Record<string, unknown>>> = {};
     for (const animation of ["Idle", "Walk", "Run", "MeleeAttack", "RangedAttack", "Hit", "Death"] as const) {
       await selectReview("three-quarter", "snow-daylight", "battle", animation);
-      const sampledAdvanceFrames = 1;
-      await page.evaluate((frames) => (window as GameplayWindow).frostbound?.step(0.016, frames, true), sampledAdvanceFrames);
-      const state = await waitForState({ camera: "three-quarter", lighting: "snow-daylight", context: "battle", animation });
-      const frame = await readState(page);
-      const name = `sequence-${String(sequence.length + 1).padStart(3, "0")}-${animation.toLowerCase()}`;
-      sequence.push({ captureId: name, animation, sampledAdvanceFrames, state, metadata: frame.capture });
+      const samples: Array<Record<string, unknown>> = [];
+      for (const normalized of normalizedTimeline) {
+        const state = await seekAndRender(normalized);
+        const frame = await readState(page);
+        expect(frame.capture?.animationNormalized, `${animation} must expose deterministic normalized time`).toBeCloseTo(normalized, 3);
+        const sample = { animation, normalized, state, metadata: frame.capture };
+        samples.push(sample);
+        sequence.push({
+          captureId: `sequence-${String(sequence.length + 1).padStart(3, "0")}-${animation.toLowerCase()}-${String(normalized).replace(".", "_")}`,
+          sampleMode: "normalized-timeline",
+          ...sample,
+        });
+      }
+      animationSamples[animation] = samples;
     }
+
+    const idleMid = animationSamples.Idle?.find((sample) => sample.normalized === 0.4)?.state as GameplayState | undefined;
+    if (!idleMid) throw new Error("Idle midpoint deterministic sample is missing");
+    const boneDelta = (a: Record<string, BoneTransform>, b: Record<string, BoneTransform>): number => {
+      let max = 0;
+      for (const name of Object.keys(a)) {
+        const left = a[name];
+        const right = b[name];
+        if (!right) continue;
+        const values = [...left.position, ...left.rotation];
+        const other = [...right.position, ...right.rotation];
+        for (let i = 0; i < values.length; i++) max = Math.max(max, Math.abs(values[i] - other[i]));
+      }
+      return max;
+    };
+    const midDeltas: Record<string, number> = {};
+    for (const animation of animations.filter((name) => name !== "Idle")) {
+      const midpoint = animationSamples[animation]?.find((sample) => sample.normalized === 0.4)?.state as GameplayState | undefined;
+      if (!midpoint) throw new Error(`${animation} midpoint deterministic sample is missing`);
+      midDeltas[animation] = boneDelta(idleMid.boneTransforms, midpoint.boneTransforms);
+      expect(midDeltas[animation], `${animation} must differ from Idle at the midpoint`).toBeGreaterThan(0.01);
+    }
+    const meleeMid = animationSamples.MeleeAttack?.find((sample) => sample.normalized === 0.4)?.state as GameplayState | undefined;
+    const rangedMid = animationSamples.RangedAttack?.find((sample) => sample.normalized === 0.4)?.state as GameplayState | undefined;
+    if (!meleeMid || !rangedMid) throw new Error("Combat midpoint deterministic samples are missing");
+    expect(boneDelta(meleeMid.boneTransforms, rangedMid.boneTransforms), "Melee and Ranged midpoint poses must differ").toBeGreaterThan(0.01);
+    const deathFinal = animationSamples.Death?.find((sample) => sample.normalized === 1)?.state as GameplayState | undefined;
+    if (!deathFinal) throw new Error("Death final deterministic sample is missing");
+    expect(deathFinal.heroScreenBounds.visible, "Death final Hero bounds must remain visible").toBe(true);
+    expect(deathFinal.heroScreenBounds.x).toBeGreaterThanOrEqual(0);
+    expect(deathFinal.heroScreenBounds.y).toBeGreaterThanOrEqual(0);
+    expect(deathFinal.heroScreenBounds.right).toBeLessThanOrEqual(1600);
+    expect(deathFinal.heroScreenBounds.bottom).toBeLessThanOrEqual(900);
+    writeFileSync(resolve(outputRoot, "animation-samples.json"), `${JSON.stringify({ sampleMode: "normalized-timeline", normalizedTimeline, midDeltas, animations: animationSamples }, null, 2)}\n`, "utf8");
 
     if (consoleErrors.length > 0 || pageErrors.length > 0 || requestFailures.length > 0) {
       throw new Error(`Browser errors detected: ${JSON.stringify({ consoleErrors, pageErrors, requestFailures })}`);

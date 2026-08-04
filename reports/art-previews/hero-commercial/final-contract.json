@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-08-04T04:41:00.587Z",
+  "generatedAt": "2026-08-04T04:49:14.468Z",
   "asset": "hero",
   "sourcePath": "assets-source/blender/characters/hero.blend",
   "glbPath": "public/assets/models/characters/hero.glb",
@@ -33,7 +33,7 @@
   "artifact": {
     "status": "pass",
     "glb": {
-      "bytes": 3900964,
+      "bytes": 3903020,
       "assetVersion": "2.0",
       "nodes": 53,
       "meshes": 27,
@@ -87,18 +87,21 @@
             "heroR5Scope": "locomotion and combat animation polish",
             "heroR6Stage": "R6-D",
             "heroR6Scope": "compact carbine, four-slot surface refinement, and combat pose finalization",
+            "heroR7Stage": "R7-D",
+            "heroR7Scope": "final shape language, compact carbine handling, surface response, and deterministic pose evidence",
+            "heroR7Iteration": 1,
             "topologyMethod": "authored anatomical and garment edge-loop lofts; no subdivision modifier",
             "lod0TargetTriangles": "16000-25000",
             "lod1TargetTriangles": "6000-10000",
             "lod2TargetTriangles": "1500-3500",
             "lodBuildMethod": "production authored loop reductions from R4-B mid-poly volumes",
-            "animationReview": "R6-D weighted body envelopes with contact-safe locomotion, two-hand ranged aim, melee impact hold, and recovery follow-through",
+            "animationReview": "R7-D deterministic key poses with contact-safe locomotion, two-hand ranged aim, melee impact hold, and recovery follow-through",
             "feetGrounded": true,
             "orientationContract": "Babylon Y-up, forward +Z",
             "animationIteration2": "follow-through and recovery keys",
             "animationIteration3": "R5-F locomotion cadence, counterbalance and combat anticipation",
             "skinningPass": "R3-E-weighted-deformation",
-            "heroSurfacePass": "R6-C-1024-hero-atlas-surface-refinement",
+            "heroSurfacePass": "R7-C-1024-hero-atlas-material-response",
             "heroAtlasResolution": 1024,
             "heroMaterialCount": 4
           }
@@ -114,18 +117,21 @@
         "heroR5Scope": "locomotion and combat animation polish",
         "heroR6Stage": "R6-D",
         "heroR6Scope": "compact carbine, four-slot surface refinement, and combat pose finalization",
+        "heroR7Stage": "R7-D",
+        "heroR7Scope": "final shape language, compact carbine handling, surface response, and deterministic pose evidence",
+        "heroR7Iteration": 1,
         "topologyMethod": "authored anatomical and garment edge-loop lofts; no subdivision modifier",
         "lod0TargetTriangles": "16000-25000",
         "lod1TargetTriangles": "6000-10000",
         "lod2TargetTriangles": "1500-3500",
         "lodBuildMethod": "production authored loop reductions from R4-B mid-poly volumes",
-        "animationReview": "R6-D weighted body envelopes with contact-safe locomotion, two-hand ranged aim, melee impact hold, and recovery follow-through",
+        "animationReview": "R7-D deterministic key poses with contact-safe locomotion, two-hand ranged aim, melee impact hold, and recovery follow-through",
         "feetGrounded": true,
         "orientationContract": "Babylon Y-up, forward +Z",
         "animationIteration2": "follow-through and recovery keys",
         "animationIteration3": "R5-F locomotion cadence, counterbalance and combat anticipation",
         "skinningPass": "R3-E-weighted-deformation",
-        "heroSurfacePass": "R6-C-1024-hero-atlas-surface-refinement",
+        "heroSurfacePass": "R7-C-1024-hero-atlas-material-response",
         "heroAtlasResolution": 1024,
         "heroMaterialCount": 4
       },
@@ -211,7 +217,7 @@
           "name": "MeleeAttack",
           "channels": 54,
           "samplers": 54,
-          "totalInputKeys": 234,
+          "totalInputKeys": 248,
           "maxSamplerKeys": 16,
           "durationSeconds": 0.6666666666666666,
           "targetPaths": [
@@ -224,7 +230,7 @@
           "name": "RangedAttack",
           "channels": 54,
           "samplers": 54,
-          "totalInputKeys": 234,
+          "totalInputKeys": 276,
           "maxSamplerKeys": 16,
           "durationSeconds": 0.6666666666666666,
           "targetPaths": [
@@ -265,7 +271,7 @@
       "renderableCollisionNodes": []
     },
     "source": {
-      "bytes": 658039,
+      "bytes": 657630,
       "exists": true
     },
     "checks": {
