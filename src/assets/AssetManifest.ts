@@ -12,6 +12,7 @@ const UNIT_KEYS = [
 
 const ECONOMY_ASSETS = ["mine", "gold_mine", "lumberyard", "warehouse", "recruit_hall", "auto_collector", "auto_rebuilder"] as const;
 const ATTACK_ASSETS = ["crossbow_tower", "frost_tower", "sniper_tower", "mortar"] as const;
+const ALLY_MELEE_ANIMATIONS = ["Idle", "Walk", "Run", "MeleeAttack", "Hit", "Death"] as const;
 
 export const AUTHORED_ASSET_MANIFEST: readonly AssetSpec[] = [
   {
@@ -43,7 +44,7 @@ export const AUTHORED_ASSET_MANIFEST: readonly AssetSpec[] = [
     rootUrl: "/assets/models/characters/",
     fileName: `${key}.glb`,
     requiredNodes: ["UnitRoot", "UnitSkeleton", "weapon_socket", "attackAnchor", "LOD1", "LOD2"],
-    requiredAnimations: ["Idle", "Walk", "Attack", "Cast", "Hit", "Death"],
+    requiredAnimations: key === "warrior" ? ALLY_MELEE_ANIMATIONS : ["Idle", "Walk", "Attack", "Cast", "Hit", "Death"],
     fallback: "procedural",
   })),
   ...ECONOMY_ASSETS.map((key): AssetSpec => ({

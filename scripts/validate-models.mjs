@@ -9,6 +9,7 @@ const UNIT_KEYS = [
 ];
 const ECONOMY_KEYS = ["mine", "gold_mine", "lumberyard", "warehouse", "recruit_hall", "auto_collector", "auto_rebuilder"];
 const ATTACK_KEYS = ["crossbow_tower", "frost_tower", "sniper_tower", "mortar"];
+const ALLY_MELEE_ANIMATIONS = ["Idle", "Walk", "Run", "MeleeAttack", "Hit", "Death"];
 const specs = [
   { key: "hero", path: "public/assets/models/characters/hero.glb", nodes: ["HeroRoot", "HeroSkeleton", "weapon_socket.R", "ranged_socket", "LOD1", "LOD2"], animations: ["Idle", "Walk", "Run", "MeleeAttack", "RangedAttack", "Hit", "Death"], skeletons: 1 },
   { key: "turret_basic", path: "public/assets/models/buildings/turret_basic.glb", nodes: ["TurretRoot", "yawPivot", "pitchPivot", "barrel", "muzzle", "recoilPart", "LOD1", "LOD2"], animations: ["Idle", "Aim", "Fire", "Recoil", "Reload"] },
@@ -17,7 +18,7 @@ const specs = [
     key,
     path: `public/assets/models/characters/${key}.glb`,
     nodes: ["UnitRoot", "UnitSkeleton", "weapon_socket", "attackAnchor", "LOD1", "LOD2"],
-    animations: ["Idle", "Walk", "Attack", "Cast", "Hit", "Death"],
+    animations: key === "warrior" ? ALLY_MELEE_ANIMATIONS : ["Idle", "Walk", "Attack", "Cast", "Hit", "Death"],
     skeletons: 1,
   })),
   ...ECONOMY_KEYS.map((key) => ({

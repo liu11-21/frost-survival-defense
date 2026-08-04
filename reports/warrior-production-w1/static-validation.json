@@ -1,0 +1,77 @@
+{
+  "generatedAt": "2026-08-04T09:21:56.712Z",
+  "status": "passed",
+  "assetPath": "public/assets/models/characters/warrior.glb",
+  "sizeBytes": 814016,
+  "nodes": 30,
+  "meshes": 6,
+  "materials": 3,
+  "textures": 1,
+  "bones": 18,
+  "animations": [
+    "Idle",
+    "Walk",
+    "Run",
+    "MeleeAttack",
+    "Hit",
+    "Death"
+  ],
+  "animationChannels": {
+    "Idle": 54,
+    "Walk": 54,
+    "Run": 54,
+    "MeleeAttack": 54,
+    "Hit": 54,
+    "Death": 54
+  },
+  "triangles": 10328,
+  "lodTriangles": {
+    "LOD0": 6632,
+    "LOD1": 2680,
+    "LOD2": 1016
+  },
+  "primitivesByLod": {
+    "LOD0": 5,
+    "LOD1": 4,
+    "LOD2": 2
+  },
+  "lodMeshNames": {
+    "LOD0": [
+      "LOD0_PROD_axe",
+      "LOD0_PROD_body"
+    ],
+    "LOD1": [
+      "LOD1_PROD_axe",
+      "LOD1_PROD_body"
+    ],
+    "LOD2": [
+      "LOD2_PROD_axe",
+      "LOD2_PROD_body"
+    ]
+  },
+  "surface": {
+    "hasSkinAttributes": true,
+    "externalUris": 0,
+    "rootScaleUnit": true,
+    "collisionMeshes": []
+  },
+  "budget": {
+    "lod0Triangles": true,
+    "lod1Triangles": true,
+    "lod2Triangles": true,
+    "lod0Primitives": true,
+    "lod1Primitives": true,
+    "lod2Primitives": true,
+    "materials": true,
+    "textures": true,
+    "glbSize": true,
+    "bones": true,
+    "weightedSkinning": true
+  },
+  "identity": {
+    "lod0": true,
+    "lod1": true,
+    "lod2": true
+  },
+  "errors": []
+}
