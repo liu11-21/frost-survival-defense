@@ -118,13 +118,25 @@ attachment); `hand.L` 0.50–0.71 (was 0.92–1.10); pose deltas 0.03–0.64.
 GitHub Actions is still the remote gate and had not been observed for these
 commits at the time of writing.
 
+## Skill-cast VFX (done, separate from the Warrior asset)
+
+`CombatFeedback.heroSkill()` previously fired two expanding rings, a particle
+burst and camera shake all on the same frame — no anticipation beat at all,
+which is why casts read as "the result appeared" rather than "the character
+did something".
+
+Casts are now staged in three beats off the existing update tick:
+converge ring + rising light shaft at t=0, the outward waves/burst/shake at
+t=0.16, and a scorch disc fading over ~1.15 s. New elements come from fixed
+pools (4 columns, 4 afterglows, ring pool 8 → 12) and allocate nothing per
+cast. Per-kind materials are unchanged, so the four skills stay distinct.
+
+`VFXManager`, `BurstDefinitions` and `ParticleSprites` were reviewed and left
+alone — they were already pooled and reused correctly.
+
 ## NOT done — still open
 
-1. **Skill-cast VFX is not started.** `src/effects/` (VFXManager,
-   BurstDefinitions, CombatFeedback, ParticleSprites) and
-   `src/hero/HeroSkills.ts` are untouched this round. This was part of the
-   user's request and remains outstanding.
-2. **Human art review still required.** The doc's completion bar has not been
+1. **Human art review still required.** The doc's completion bar has not been
    met and `Ready for human Warrior art review` must not be claimed yet.
    Honest assessment: this is a large, verifiable improvement over W1 — the
    lathe symmetry, torus collar, box boots, split-hand axe and blown-out
@@ -132,8 +144,8 @@ commits at the time of writing.
    procedural Python primitives and that approach has a real ceiling well
    short of "commercial quality" character art. Closing that gap needs
    authored/sculpted geometry, not more parameters in `build_warrior.py`.
-3. The pauldron still reads heavier than intended from some angles.
-4. `hand.L` contact is measured against the axe bounding-box centre, a coarse
+2. The pauldron still reads heavier than intended from some angles.
+3. `hand.L` contact is measured against the axe bounding-box centre, a coarse
    proxy — the axe has no separate upper/lower grip locator node yet.
 
 ## Prohibitions still in force

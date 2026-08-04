@@ -453,6 +453,7 @@ docs/ai-sync/KNOWN_ISSUES.md
 docs/ai-sync/PROJECT_OVERVIEW.md
 docs/ai-sync/RECENT_CHANGES.md
 docs/ai-sync/SYSTEM_MAP.md
+docs/ai-sync/WARRIOR_W2_STATUS.md
 docs/art/ASSET_STYLE_GUIDE.md
 docs/art/CONCEPT_ART_WORKFLOW.md
 docs/art/CONCEPT_PROMPT_TEMPLATE.md
