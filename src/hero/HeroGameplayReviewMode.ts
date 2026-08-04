@@ -119,10 +119,10 @@ export class HeroGameplayReviewMode {
     this.cameraMode = mode;
     const camera = this.s.camera.camera;
     const presets: Record<HeroGameplayReviewCamera, { position: Vector3; target: Vector3; fov: number }> = {
-      gameplay: { position: new Vector3(0, 10.5, -14.5), target: new Vector3(0, 0.7, 2.0), fov: 0.84 },
-      tactical: { position: new Vector3(0, 18.5, -22.0), target: new Vector3(0, 0.0, 3.5), fov: 0.92 },
-      "three-quarter": { position: new Vector3(10.0, 9.2, -13.0), target: new Vector3(0, 0.8, 1.8), fov: 0.82 },
-      back: { position: new Vector3(0, 9.6, 14.0), target: new Vector3(0, 0.8, -2.2), fov: 0.84 },
+      gameplay: { position: new Vector3(0, 10.5, -14.5), target: new Vector3(0, 0.7, 2.0), fov: 0.72 },
+      tactical: { position: new Vector3(0, 15.5, -19.0), target: new Vector3(0, 0.4, 2.8), fov: 0.78 },
+      "three-quarter": { position: new Vector3(10.0, 9.2, -13.0), target: new Vector3(0, 0.8, 1.8), fov: 0.76 },
+      back: { position: new Vector3(0, 9.6, 14.0), target: new Vector3(0, 0.8, -2.2), fov: 0.72 },
     };
     const preset = presets[mode];
     camera.position.copyFrom(preset.position);
