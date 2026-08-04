@@ -58,7 +58,7 @@ interface GameplayWindow extends Window {
 }
 
 const animations: readonly AnimationName[] = ["Idle", "Walk", "Run", "MeleeAttack", "RangedAttack", "Hit", "Death"];
-const outputRoot = resolve(process.cwd(), process.env.HERO_GAMEPLAY_OUTPUT ?? "reports/art-previews/hero-commercial-r7/R7-D");
+const outputRoot = resolve(process.cwd(), process.env.HERO_GAMEPLAY_OUTPUT ?? "reports/art-previews/hero-commercial-r7/R7-E");
 
 test.use({ video: "on" });
 
@@ -184,8 +184,9 @@ test("verifies Hero in the formal snow, furnace, ally and enemy gameplay context
     return state;
   };
 
-  const capture = async (name: string, camera: CameraName, lighting: LightingName, context: ContextName, animation: AnimationName): Promise<GameplayState> => {
-    const state = await selectReview(camera, lighting, context, animation);
+  const capture = async (name: string, camera: CameraName, lighting: LightingName, context: ContextName, animation: AnimationName, normalized = 0): Promise<GameplayState> => {
+    await selectReview(camera, lighting, context, animation);
+    const state = await seekAndRender(normalized);
     const frame = await readState(page);
     expect(frame.capture?.captureMode, `${name} must come from heroGameplayReview=1`).toBe("heroGameplayReview=1");
     expect(frame.capture?.modelSource, `${name} must use the GLB runtime instance`).toBe("GLB");
@@ -201,18 +202,20 @@ test("verifies Hero in the formal snow, furnace, ally and enemy gameplay context
     await page.waitForFunction(() => Boolean((window as GameplayWindow).__heroGameplayReviewState?.ready), { timeout: 90_000 });
     await page.evaluate(() => (window as GameplayWindow).frostbound?.stopLoop());
 
-    await capture("hero-gameplay-alone", "gameplay", "snow-daylight", "alone", "Idle");
-    await capture("hero-gameplay-friends", "gameplay", "snow-daylight", "friends", "Idle");
-    await capture("hero-gameplay-battle", "gameplay", "snow-daylight", "battle", "Idle");
-    await capture("hero-gameplay-snow", "gameplay", "snow-daylight", "battle", "Idle");
-    await capture("hero-gameplay-furnace", "gameplay", "furnace-warm", "battle", "Idle");
-    await capture("hero-gameplay-back", "back", "snow-daylight", "battle", "Idle");
-    await capture("hero-gameplay-tactical", "tactical", "snow-daylight", "battle", "Idle");
-    await capture("hero-gameplay-walk", "gameplay", "snow-daylight", "battle", "Walk");
-    await capture("hero-gameplay-run", "gameplay", "snow-daylight", "battle", "Run");
-    await capture("hero-gameplay-melee", "gameplay", "snow-daylight", "battle", "MeleeAttack");
-    await capture("hero-gameplay-ranged", "gameplay", "snow-daylight", "battle", "RangedAttack");
-    await capture("hero-gameplay-death", "gameplay", "snow-daylight", "battle", "Death");
+    await capture("hero-alone-snow", "gameplay", "snow-daylight", "alone", "Idle");
+    await capture("hero-alone-furnace", "gameplay", "furnace-warm", "alone", "Idle");
+    await capture("hero-with-allies", "gameplay", "snow-daylight", "friends", "Idle");
+    await capture("hero-battle", "gameplay", "snow-daylight", "battle", "Idle");
+    await capture("gameplay-front", "gameplay", "snow-daylight", "battle", "Idle");
+    await capture("gameplay-back", "back", "snow-daylight", "battle", "Idle");
+    await capture("gameplay-tactical", "tactical", "snow-daylight", "battle", "Idle");
+    await capture("gameplay-walk", "gameplay", "snow-daylight", "battle", "Walk", 0.4);
+    await capture("gameplay-run", "gameplay", "snow-daylight", "battle", "Run", 0.4);
+    await capture("gameplay-melee-windup", "gameplay", "snow-daylight", "battle", "MeleeAttack", 0.2);
+    await capture("gameplay-melee-impact", "gameplay", "snow-daylight", "battle", "MeleeAttack", 0.55);
+    await capture("gameplay-ranged-aim", "gameplay", "snow-daylight", "battle", "RangedAttack", 0.4);
+    await capture("gameplay-ranged-fire", "gameplay", "snow-daylight", "battle", "RangedAttack", 0.6);
+    await capture("gameplay-death", "gameplay", "snow-daylight", "battle", "Death", 1);
 
     for (const lod of [0, 1, 2] as const) {
       await page.evaluate((target) => {
@@ -225,9 +228,9 @@ test("verifies Hero in the formal snow, furnace, ally and enemy gameplay context
       }, lod);
       const state = await waitForState({ camera: "tactical", lighting: "snow-daylight", context: "battle", animation: "Death" });
       expect(state.currentLod).toBe(`LOD${lod}`);
-      const screenshotPath = resolve(outputRoot, `hero-gameplay-lod${lod}.png`);
+      const screenshotPath = resolve(outputRoot, `gameplay-lod${lod}.png`);
       await page.screenshot({ path: screenshotPath, fullPage: false });
-      captures.push({ captureId: `hero-gameplay-lod${lod}`, screenshot: screenshotPath, state, metadata: (await readState(page)).capture });
+      captures.push({ captureId: `gameplay-lod${lod}`, screenshot: screenshotPath, state, metadata: (await readState(page)).capture });
     }
 
     await page.evaluate(() => {
