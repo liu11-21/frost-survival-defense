@@ -149,10 +149,12 @@ def leg_weights(side, y):
 def add_body_geometry(level):
     b = MeshBuilder(level)
     if level == 0:
-        seg = 32
+        # LOD0 keeps a mid-poly faceted surface; the merged mesh remains well
+        # below the 9k triangle ceiling while avoiding the old object count.
+        seg = 80
         profile_scale = 1.0
     elif level == 1:
-        seg = 16
+        seg = 32
         profile_scale = 0.96
     else:
         seg = 8
@@ -226,7 +228,10 @@ def create_armature(root_obj):
     bpy.context.view_layer.objects.active = armature_obj
     armature_obj.select_set(True)
     bpy.ops.object.mode_set(mode="EDIT")
-    armature_data.edit_bones.remove(armature_data.edit_bones[0])
+    # bpy.data.armatures.new() starts empty in Blender 5.x, while older
+    # versions may expose a default bone; remove it only when present.
+    if len(armature_data.edit_bones):
+        armature_data.edit_bones.remove(armature_data.edit_bones[0])
     specs = [
         ("root", (0, 0, 0), (0, 0.22, 0), None),
         ("pelvis", (0, 0.78, 0), (0, 1.03, 0), "root"),
@@ -260,31 +265,34 @@ def create_armature(root_obj):
 
 
 def create_mesh(builder, name, parent, armature_obj, allowed_materials, lod):
-    mesh = bpy.data.meshes.new(name)
-    mesh.from_pydata(builder.vertices, [], builder.faces)
-    mesh.validate(verbose=False)
-    mesh.update()
-    for polygon in mesh.polygons:
+    mesh_data = bpy.data.meshes.new(name)
+    mesh_data.from_pydata(builder.vertices, [], builder.faces)
+    mesh_data.validate(verbose=False)
+    mesh_data.update()
+    for polygon in mesh_data.polygons:
         polygon.use_smooth = True
     for mat_name in allowed_materials:
-        mesh.materials.append(MATERIALS[mat_name])
+        mesh_data.materials.append(MATERIALS[mat_name])
     # Remap source material ids (cloth=0, leather=1, iron=2) to this object's slots.
     remap = {0: allowed_materials.index("cloth") if "cloth" in allowed_materials else 0,
              1: allowed_materials.index("leather") if "leather" in allowed_materials else 0,
              2: allowed_materials.index("iron") if "iron" in allowed_materials else 0}
-    for index, polygon in enumerate(mesh.polygons):
+    for index, polygon in enumerate(mesh_data.polygons):
         polygon.material_index = remap.get(builder.materials[index], 0)
-    uv = mesh.uv_layers.new(name="UVMap")
-    colors = mesh.color_attributes.new(name="ArtTint", type="BYTE_COLOR", domain="CORNER")
+    uv = mesh_data.uv_layers.new(name="UVMap")
+    colors = mesh_data.color_attributes.new(name="ArtTint", type="BYTE_COLOR", domain="CORNER")
     palette = [MATS[mat] for mat in ("cloth", "leather", "iron")]
-    for polygon in mesh.polygons:
+    for polygon in mesh_data.polygons:
         source_mat = builder.materials[polygon.index]
         region = max(0, min(2, source_mat))
         color = (*palette[region], 1.0)
         for loop_index in polygon.loop_indices:
-            vertex = mesh.vertices[mesh.loops[loop_index].vertex_index].co
+            vertex = mesh_data.vertices[mesh_data.loops[loop_index].vertex_index].co
             uv.data[loop_index].uv = ((vertex.x * 0.16 + 0.5) * 0.30 + 0.02 + region * 0.33, (vertex.y * 0.22 + 0.5) * 0.88 + 0.06)
             colors.data[loop_index].color = color
+    mesh = bpy.data.objects.new(name, mesh_data)
+    collection(f"LOD{lod}").objects.link(mesh)
+    mesh.parent = parent
     for bone_name in ("root", "pelvis", "spine", "chest", "neck", "head", "upper_arm.L", "lower_arm.L", "hand.L", "upper_arm.R", "lower_arm.R", "hand.R", "thigh.L", "shin.L", "foot.L", "thigh.R", "shin.R", "foot.R"):
         mesh.vertex_groups.new(name=bone_name)
     for vertex_index, weight_map in enumerate(builder.weights):
@@ -292,12 +300,10 @@ def create_mesh(builder, name, parent, armature_obj, allowed_materials, lod):
             mesh.vertex_groups[bone_name].add([vertex_index], max(0.0, min(1.0, weight)), "REPLACE")
     modifier = mesh.modifiers.new("Warrior weighted skin", "ARMATURE")
     modifier.object = armature_obj
-    mesh.parent = parent
     mesh["lodLevel"] = lod
     mesh["authoredRole"] = "warrior_body" if "body" in name else "warrior_axe"
     mesh["weightedSkinning"] = True
     mesh["componentIdentity"] = "winter militia coat, fur collar, single shoulder, boots, ice axe"
-    collection(f"LOD{lod}").objects.link(mesh)
     return mesh
 
 
