@@ -942,17 +942,34 @@ def author_hero_atlas(objects, mats):
                 wave = math.sin((x + index * 19) * 0.047) * 0.018
                 wave += math.cos((y + index * 11) * 0.031) * 0.014
                 if "metal" in tag:
-                    wave += math.sin((y * 0.18 + x * 0.012) + index) * 0.028
-                    wave += (0.035 if v < 0.30 else (-0.025 if v > 0.76 else 0.0))
+                    # Fine directional brushing and restrained edge wear keep
+                    # gunmetal from reading as a single dark plastic block.
+                    wave += math.sin((y * 0.22 + x * 0.018) + index) * 0.026
+                    wave += math.sin((x * 0.075 + y * 0.012) + index * 0.7) * 0.014
+                    wave += (0.048 if v < 0.16 or v > 0.86 else 0.0)
+                    wave -= 0.018 if 0.42 < u < 0.58 and 0.30 < v < 0.70 else 0.0
                 elif "leather" in tag:
-                    wave += math.sin((x * 0.11 + y * 0.08) + index) * 0.032
-                    wave += 0.045 * math.sin((u * 2.0 + v * 0.7 + index) * math.pi)
+                    # Long grain, a soft warm value break, and small seam
+                    # bands provide a readable worn-leather identity.
+                    wave += math.sin((x * 0.16 + y * 0.045) + index) * 0.034
+                    wave += math.sin((x * 0.035 + y * 0.19) + index * 0.4) * 0.018
+                    wave += 0.042 * math.sin((u * 2.0 + v * 0.7 + index * 0.17) * math.pi)
+                    wave += 0.028 if (int(v * 18.0) % 7) == 0 else 0.0
                 elif "cloth" in tag:
-                    wave += math.sin(x * 0.16 + index) * math.sin(y * 0.12) * 0.020
-                    wave += 0.035 * math.sin((u * 1.5 + v * 0.35 + index * 0.17) * math.pi)
+                    # Low-contrast cross weave and broad fold bands are
+                    # intentionally directional rather than random noise.
+                    weave_x = math.sin(x * 0.42 + index) * 0.012
+                    weave_y = math.sin(y * 0.36 + index * 0.8) * 0.010
+                    wave += weave_x + weave_y + weave_x * weave_y * 1.6
+                    wave += 0.030 * math.sin((u * 1.5 + v * 0.35 + index * 0.17) * math.pi)
+                    wave += 0.026 if v > 0.82 and (int(u * 20.0) % 5) == 0 else 0.0
                 elif "glow" in tag or "accent" in tag:
-                    wave += 0.025 * math.sin((x + y) * 0.035)
-                    wave += 0.035 * (1.0 - abs(0.5 - u) * 1.6)
+                    # A cool visor/trim gradient: brighter through the centre,
+                    # darker at the perimeter, with restrained frost striations.
+                    centre = max(0.0, 1.0 - abs(u - 0.5) * 1.8)
+                    wave += 0.060 * centre - 0.020 * (1.0 - centre)
+                    wave += 0.020 * math.sin((x - y) * 0.09 + index)
+                    wave += 0.022 if (int((u + v) * 24.0) % 11) == 0 else 0.0
                 edge = min(x, y, cell_width - 1 - x, cell_height - 1 - y)
                 value = 0.96 + wave + (0.025 if edge < 10 else 0.0)
                 pixel_index = ((y0 + y) * texture_size + (x0 + x)) * 4
@@ -1217,14 +1234,13 @@ def collapse_hero_material_slots(objects, mats):
 def build():
     reset_scene()
     mats = {
-        # R5-E is a palette and atlas pass only.  Keep the four established
-        # material identities, but give the expedition leader a darker navy
-        # cloth, warm worn leather, readable gunmetal, and a controlled cyan
-        # visor accent that does not clip to white in the review lights.
-        "cloth": material("MAT_hero_cloth", (0.075, 0.16, 0.34), 0.78),
-        "leather": material("MAT_hero_leather", (0.19, 0.055, 0.018), 0.66),
-        "metal": material("MAT_hero_metal", (0.085, 0.14, 0.21), 0.30, 0.88),
-        "accent": material("MAT_hero_accent", (0.018, 0.22, 0.50), 0.36, 0.18),
+        # R6-C retains the four established slots while separating surface
+        # response: matte navy cloth, warm worn leather, restrained gunmetal,
+        # and a cool visor accent that remains readable under furnace light.
+        "cloth": material("MAT_hero_cloth", (0.075, 0.16, 0.34), 0.84),
+        "leather": material("MAT_hero_leather", (0.19, 0.055, 0.018), 0.72),
+        "metal": material("MAT_hero_metal", (0.085, 0.14, 0.21), 0.40, 0.88),
+        "accent": material("MAT_hero_accent", (0.018, 0.22, 0.50), 0.42, 0.18),
     }
     # R4-B keeps four primary material slots. These semantic aliases let the
     # existing mesh authoring code retain its regions without exporting a
@@ -1252,8 +1268,8 @@ def build():
     root["heroR4Stage"] = "R4-D"
     root["heroR5Stage"] = "R5-F"
     root["heroR5Scope"] = "locomotion and combat animation polish"
-    root["heroR6Stage"] = "R6-B"
-    root["heroR6Scope"] = "compact carbine proportions and two-hand ranged hold"
+    root["heroR6Stage"] = "R6-C"
+    root["heroR6Scope"] = "compact carbine, two-hand ranged hold, and four-slot surface refinement"
     root["topologyMethod"] = "authored anatomical and garment edge-loop lofts; no subdivision modifier"
     root["lod0TargetTriangles"] = "16000-25000"
     root["lod1TargetTriangles"] = "6000-10000"
@@ -1340,7 +1356,7 @@ def build():
     # to this Hero asset. No other character or facility is regenerated.
     author_surface_paint(parts + lod_parts, seed=53, textured=False)
     atlas = author_hero_atlas(parts + lod_parts, mats)
-    root["heroSurfacePass"] = "R3-D-1024-hero-atlas"
+    root["heroSurfacePass"] = "R6-C-1024-hero-atlas-surface-refinement"
     root["heroAtlasResolution"] = atlas["resolution"]
     used_material_names = {
         slot.name

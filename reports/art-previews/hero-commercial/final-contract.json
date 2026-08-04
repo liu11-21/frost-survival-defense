@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-08-04T01:09:31.079Z",
+  "generatedAt": "2026-08-04T01:18:09.750Z",
   "asset": "hero",
   "sourcePath": "assets-source/blender/characters/hero.blend",
   "glbPath": "public/assets/models/characters/hero.glb",
@@ -33,7 +33,7 @@
   "artifact": {
     "status": "pass",
     "glb": {
-      "bytes": 4038728,
+      "bytes": 4107928,
       "assetVersion": "2.0",
       "nodes": 53,
       "meshes": 27,
@@ -85,8 +85,8 @@
             "heroR4Stage": "R4-D",
             "heroR5Stage": "R5-F",
             "heroR5Scope": "locomotion and combat animation polish",
-            "heroR6Stage": "R6-B",
-            "heroR6Scope": "compact carbine proportions and two-hand ranged hold",
+            "heroR6Stage": "R6-C",
+            "heroR6Scope": "compact carbine, two-hand ranged hold, and four-slot surface refinement",
             "topologyMethod": "authored anatomical and garment edge-loop lofts; no subdivision modifier",
             "lod0TargetTriangles": "16000-25000",
             "lod1TargetTriangles": "6000-10000",
@@ -98,7 +98,7 @@
             "animationIteration2": "follow-through and recovery keys",
             "animationIteration3": "R5-F locomotion cadence, counterbalance and combat anticipation",
             "skinningPass": "R3-E-weighted-deformation",
-            "heroSurfacePass": "R3-D-1024-hero-atlas",
+            "heroSurfacePass": "R6-C-1024-hero-atlas-surface-refinement",
             "heroAtlasResolution": 1024,
             "heroMaterialCount": 4
           }
@@ -112,8 +112,8 @@
         "heroR4Stage": "R4-D",
         "heroR5Stage": "R5-F",
         "heroR5Scope": "locomotion and combat animation polish",
-        "heroR6Stage": "R6-B",
-        "heroR6Scope": "compact carbine proportions and two-hand ranged hold",
+        "heroR6Stage": "R6-C",
+        "heroR6Scope": "compact carbine, two-hand ranged hold, and four-slot surface refinement",
         "topologyMethod": "authored anatomical and garment edge-loop lofts; no subdivision modifier",
         "lod0TargetTriangles": "16000-25000",
         "lod1TargetTriangles": "6000-10000",
@@ -125,7 +125,7 @@
         "animationIteration2": "follow-through and recovery keys",
         "animationIteration3": "R5-F locomotion cadence, counterbalance and combat anticipation",
         "skinningPass": "R3-E-weighted-deformation",
-        "heroSurfacePass": "R3-D-1024-hero-atlas",
+        "heroSurfacePass": "R6-C-1024-hero-atlas-surface-refinement",
         "heroAtlasResolution": 1024,
         "heroMaterialCount": 4
       },
@@ -265,7 +265,7 @@
       "renderableCollisionNodes": []
     },
     "source": {
-      "bytes": 680637,
+      "bytes": 748565,
       "exists": true
     },
     "checks": {

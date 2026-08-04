@@ -8,6 +8,13 @@
 - Added evidence-only clay, silhouette, carry, aim, fire, recoil, and gameplay-distance renders under `reports/art-previews/hero-commercial-r6/R6-B/` and recorded the R6-A comparison.
 - Hero static validation remains passing with 15 LOD0 render meshes, 4 materials, 1 embedded atlas, and LOD triangles 19,064 / 7,324 / 2,668. Commercial art quality remains a human artist decision.
 
+## 2026-08-04 | Hero-R6 C expedition surface refinement checkpoint
+
+- Kept the existing four material slots and embedded `HERO_ATLAS_1024`; refined the atlas with directional cloth weave, worn-leather grain, gunmetal edge wear, visor centre-to-edge contrast, and restrained frost striations.
+- Tuned the existing scalar roughness response for cloth, leather, metal, and cyan accent without adding maps, materials, geometry, or a shader framework.
+- Added evidence-only neutral, snow-daylight, furnace-warm, shadow, and close-up plates under `reports/art-previews/hero-commercial-r6/R6-C/` and recorded the R6-B comparison.
+- Static Hero validation remains passing with unchanged triangle, render-mesh, material, and atlas budgets. Commercial art quality remains a human artist decision.
+
 ## 2026-08-03 | Hero-R5 E production material and atlas checkpoint
 
 - Repainted the existing four Hero material identities: expedition navy cloth, worn leather, dark gunmetal, and a controlled cyan accent.

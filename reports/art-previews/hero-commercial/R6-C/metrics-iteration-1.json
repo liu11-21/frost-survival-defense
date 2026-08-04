@@ -1,0 +1,101 @@
+{
+  "stage": "R6-C",
+  "iteration": 1,
+  "note": "R6-C iteration 1: refined the existing four-slot 1024 atlas with directional cloth weave, leather grain, gunmetal edge wear, visor gradient, and restrained frost marks; tuned scalar roughness without adding materials or maps.",
+  "recordedAt": "2026-08-04T01:18:10.665Z",
+  "contract": {
+    "source": "GLB",
+    "scene": "Babylon formal uiVerification scene",
+    "requiredNodes": [
+      "HeroRoot",
+      "HeroSkeleton",
+      "weapon_socket.R",
+      "ranged_socket",
+      "LOD1",
+      "LOD2"
+    ],
+    "requiredAnimations": [
+      "Idle",
+      "Walk",
+      "Run",
+      "MeleeAttack",
+      "RangedAttack",
+      "Hit",
+      "Death"
+    ]
+  },
+  "metrics": {
+    "key": "hero",
+    "status": "ok",
+    "path": "public/assets/models/characters/hero.glb",
+    "sizeBytes": 4107928,
+    "nodes": 53,
+    "meshes": 27,
+    "materials": 4,
+    "textures": 1,
+    "skeletons": 1,
+    "rootTransforms": [
+      {
+        "index": 52,
+        "name": "HeroRoot",
+        "translation": [
+          0,
+          0,
+          0
+        ],
+        "scale": [
+          1,
+          1,
+          1
+        ]
+      }
+    ],
+    "bounds": {
+      "min": [
+        -0.7799999713897705,
+        -2.9802322387695312e-8,
+        -0.4099999666213989
+      ],
+      "max": [
+        0.8400000333786011,
+        2.2465999126434326,
+        0.7200000882148743
+      ]
+    },
+    "animations": [
+      "Idle",
+      "Walk",
+      "Run",
+      "MeleeAttack",
+      "RangedAttack",
+      "Hit",
+      "Death"
+    ],
+    "animationChannels": {
+      "Idle": 54,
+      "Walk": 54,
+      "Run": 54,
+      "MeleeAttack": 54,
+      "RangedAttack": 54,
+      "Hit": 54,
+      "Death": 54
+    },
+    "triangles": 29056,
+    "lodTriangles": {
+      "LOD0": 19064,
+      "LOD1": 7324,
+      "LOD2": 2668
+    },
+    "surfaceAttributes": {
+      "TEXCOORD_0": true,
+      "COLOR_0": true
+    },
+    "lodProxies": {
+      "LOD1": 7,
+      "LOD2": 5
+    },
+    "missingNodes": [],
+    "missingAnimations": [],
+    "warnings": []
+  }
+}

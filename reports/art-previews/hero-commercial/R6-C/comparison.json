@@ -1,0 +1,29 @@
+{
+  "stage": "R6-C",
+  "iteration": 1,
+  "before": {
+    "checkpoint": "R6-B / 63ebb39",
+    "sizeBytes": 4038728,
+    "lodTriangles": { "LOD0": 19064, "LOD1": 7324, "LOD2": 2668 },
+    "renderMeshes": 15,
+    "materials": 4,
+    "textures": 1
+  },
+  "after": {
+    "checkpoint": "R6-C working tree",
+    "sizeBytes": 4107928,
+    "lodTriangles": { "LOD0": 19064, "LOD1": 7324, "LOD2": 2668 },
+    "renderMeshes": 15,
+    "materials": 4,
+    "textures": 1,
+    "atlas": { "name": "HERO_ATLAS_1024", "resolution": [1024, 1024] }
+  },
+  "deltas": {
+    "sizeBytes": 69200,
+    "lodTriangles": { "LOD0": 0, "LOD1": 0, "LOD2": 0 },
+    "renderMeshes": 0,
+    "materials": 0,
+    "textures": 0
+  },
+  "assessment": "The existing atlas and four PBR slots now carry directional cloth weave, leather grain, gunmetal edge wear, visor centre-to-edge contrast, and restrained frost striations. Geometry and runtime material budgets remain unchanged; human commercial art review remains open."
+}
