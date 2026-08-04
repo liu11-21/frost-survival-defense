@@ -5,7 +5,7 @@ Frostbound Furnace is a Vite + TypeScript + Babylon.js tower-defence / survival 
 ## Current repository snapshot
 
 - Branch: art/warrior-production-w1
-- Commit: c4454eed10e8094249ef17f55ac68dd8bd28439b
+- Commit: bfbd397db97bb8c7ccc02b07413b9a028f944cc2
 - Authored GLBs: 42 (26 characters, 14 buildings, 2 environment props)
 - Blender source files: 43
 - Static asset validation: 42/42 currently ok
