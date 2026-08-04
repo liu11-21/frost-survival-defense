@@ -1,6 +1,6 @@
 {
-  "generatedAt": "2026-08-04T09:21:56.712Z",
-  "status": "passed",
+  "generatedAt": "2026-08-04T13:19:54.826Z",
+  "status": "failed",
   "assetPath": "public/assets/models/characters/warrior.glb",
   "sizeBytes": 814016,
   "nodes": 30,
@@ -23,6 +23,44 @@
     "MeleeAttack": 54,
     "Hit": 54,
     "Death": 54
+  },
+  "animationChannelHealth": {
+    "Idle": {
+      "present": true,
+      "channelCount": 54,
+      "varyingChannelCount": 1,
+      "anyChannelVaries": true
+    },
+    "Walk": {
+      "present": true,
+      "channelCount": 54,
+      "varyingChannelCount": 5,
+      "anyChannelVaries": true
+    },
+    "Run": {
+      "present": true,
+      "channelCount": 54,
+      "varyingChannelCount": 5,
+      "anyChannelVaries": true
+    },
+    "MeleeAttack": {
+      "present": true,
+      "channelCount": 54,
+      "varyingChannelCount": 8,
+      "anyChannelVaries": true
+    },
+    "Hit": {
+      "present": true,
+      "channelCount": 54,
+      "varyingChannelCount": 2,
+      "anyChannelVaries": true
+    },
+    "Death": {
+      "present": true,
+      "channelCount": 54,
+      "varyingChannelCount": 6,
+      "anyChannelVaries": true
+    }
   },
   "triangles": 10328,
   "lodTriangles": {
@@ -49,13 +87,163 @@
       "LOD2_PROD_body"
     ]
   },
+  "lodGeometry": {
+    "LOD0": {
+      "hasBody": true,
+      "hasAxe": true,
+      "bodyBounds": {
+        "min": [
+          -0.7210640907287598,
+          0.03321310505270958,
+          -0.31999996304512024
+        ],
+        "max": [
+          0.7210640907287598,
+          2.4000000953674316,
+          0.32862505316734314
+        ],
+        "size": [
+          1.4421281814575195,
+          2.366786990314722,
+          0.6486250162124634
+        ],
+        "diagonal": 2.846423854757687
+      },
+      "axeBounds": {
+        "min": [
+          0.09822310507297516,
+          0.5981017351150513,
+          0.2250000238418579
+        ],
+        "max": [
+          0.8399999737739563,
+          1.8009394407272339,
+          0.37500008940696716
+        ],
+        "size": [
+          0.7417768687009811,
+          1.2028377056121826,
+          0.15000006556510925
+        ],
+        "diagonal": 1.4211092458540089
+      },
+      "axeNonZero": true,
+      "axeBodyRatio": 0.4992612900846372,
+      "axeBodyRatioSane": true
+    },
+    "LOD1": {
+      "hasBody": true,
+      "hasAxe": true,
+      "bodyBounds": {
+        "min": [
+          -0.7210640907287598,
+          0.03321310505270958,
+          -0.3099999725818634
+        ],
+        "max": [
+          0.7210640907287598,
+          2.391200065612793,
+          0.3100000321865082
+        ],
+        "size": [
+          1.4421281814575195,
+          2.3579869605600834,
+          0.6200000047683716
+        ],
+        "diagonal": 2.8327082807515023
+      },
+      "axeBounds": {
+        "min": [
+          0.09822310507297516,
+          0.5981017351150513,
+          0.2250000238418579
+        ],
+        "max": [
+          0.8399999737739563,
+          1.8009394407272339,
+          0.37500008940696716
+        ],
+        "size": [
+          0.7417768687009811,
+          1.2028377056121826,
+          0.15000006556510925
+        ],
+        "diagonal": 1.4211092458540089
+      },
+      "axeNonZero": true,
+      "axeBodyRatio": 0.5016786428417529,
+      "axeBodyRatioSane": true
+    },
+    "LOD2": {
+      "hasBody": true,
+      "hasAxe": true,
+      "bodyBounds": {
+        "min": [
+          -0.7210640907287598,
+          0.03321310505270958,
+          -0.2911999821662903
+        ],
+        "max": [
+          0.7210640907287598,
+          2.380199909210205,
+          0.3100000023841858
+        ],
+        "size": [
+          1.4421281814575195,
+          2.3469868041574955,
+          0.6011999845504761
+        ],
+        "diagonal": 2.8194897006491937
+      },
+      "axeBounds": {
+        "min": [
+          0.09822310507297516,
+          0.5981017351150513,
+          0.2250000238418579
+        ],
+        "max": [
+          0.8399999737739563,
+          1.8009394407272339,
+          0.37500008940696716
+        ],
+        "size": [
+          0.7417768687009811,
+          1.2028377056121826,
+          0.15000006556510925
+        ],
+        "diagonal": 1.4211092458540089
+      },
+      "axeNonZero": true,
+      "axeBodyRatio": 0.5040306568691474,
+      "axeBodyRatioSane": true
+    }
+  },
+  "lodRootConsistency": {
+    "LOD1": true,
+    "LOD2": true
+  },
+  "weaponRig": {
+    "LOD0": {
+      "ok": false,
+      "reason": "axe vertex is split-weighted across both hands (hand.L+hand.R), which is explicitly forbidden"
+    },
+    "LOD1": {
+      "ok": false,
+      "reason": "axe vertex is split-weighted across both hands (hand.L+hand.R), which is explicitly forbidden"
+    },
+    "LOD2": {
+      "ok": false,
+      "reason": "axe vertex is split-weighted across both hands (hand.L+hand.R), which is explicitly forbidden"
+    }
+  },
   "surface": {
     "hasSkinAttributes": true,
+    "primitivesMissingSkin": [],
     "externalUris": 0,
     "rootScaleUnit": true,
     "collisionMeshes": []
   },
-  "budget": {
+  "hardCaps": {
     "lod0Triangles": true,
     "lod1Triangles": true,
     "lod2Triangles": true,
@@ -73,5 +261,9 @@
     "lod1": true,
     "lod2": true
   },
-  "errors": []
+  "errors": [
+    "LOD0 weapon rig contract violated: axe vertex is split-weighted across both hands (hand.L+hand.R), which is explicitly forbidden",
+    "LOD1 weapon rig contract violated: axe vertex is split-weighted across both hands (hand.L+hand.R), which is explicitly forbidden",
+    "LOD2 weapon rig contract violated: axe vertex is split-weighted across both hands (hand.L+hand.R), which is explicitly forbidden"
+  ]
 }
