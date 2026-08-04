@@ -1,0 +1,59 @@
+{
+  "stage": "R6-B",
+  "iteration": 1,
+  "source": "assets-source/blender/characters/hero.blend",
+  "views": [
+    {
+      "name": "weapon-clay-front",
+      "file": "D:\\codex\\\u904a\u6232\u958b\u767c\\reports\\art-previews\\hero-commercial-r6\\R6-B\\weapon-clay-front.png"
+    },
+    {
+      "name": "weapon-clay-side",
+      "file": "D:\\codex\\\u904a\u6232\u958b\u767c\\reports\\art-previews\\hero-commercial-r6\\R6-B\\weapon-clay-side.png"
+    },
+    {
+      "name": "weapon-clay-three-quarter",
+      "file": "D:\\codex\\\u904a\u6232\u958b\u767c\\reports\\art-previews\\hero-commercial-r6\\R6-B\\weapon-clay-three-quarter.png"
+    },
+    {
+      "name": "weapon-black-silhouette",
+      "file": "D:\\codex\\\u904a\u6232\u958b\u767c\\reports\\art-previews\\hero-commercial-r6\\R6-B\\weapon-black-silhouette.png"
+    },
+    {
+      "name": "idle-carry",
+      "clip": "Idle",
+      "frame": 1,
+      "file": "D:\\codex\\\u904a\u6232\u958b\u767c\\reports\\art-previews\\hero-commercial-r6\\R6-B\\idle-carry.png"
+    },
+    {
+      "name": "walk-carry",
+      "clip": "Walk",
+      "frame": 8,
+      "file": "D:\\codex\\\u904a\u6232\u958b\u767c\\reports\\art-previews\\hero-commercial-r6\\R6-B\\walk-carry.png"
+    },
+    {
+      "name": "ranged-aim",
+      "clip": "RangedAttack",
+      "frame": 7,
+      "file": "D:\\codex\\\u904a\u6232\u958b\u767c\\reports\\art-previews\\hero-commercial-r6\\R6-B\\ranged-aim.png"
+    },
+    {
+      "name": "ranged-fire",
+      "clip": "RangedAttack",
+      "frame": 11,
+      "file": "D:\\codex\\\u904a\u6232\u958b\u767c\\reports\\art-previews\\hero-commercial-r6\\R6-B\\ranged-fire.png"
+    },
+    {
+      "name": "ranged-recoil",
+      "clip": "RangedAttack",
+      "frame": 12,
+      "file": "D:\\codex\\\u904a\u6232\u958b\u767c\\reports\\art-previews\\hero-commercial-r6\\R6-B\\ranged-recoil.png"
+    },
+    {
+      "name": "gameplay-ranged",
+      "clip": "RangedAttack",
+      "frame": 7,
+      "file": "D:\\codex\\\u904a\u6232\u958b\u767c\\reports\\art-previews\\hero-commercial-r6\\R6-B\\gameplay-ranged.png"
+    }
+  ]
+}

@@ -1,5 +1,13 @@
 # 變更脈絡
 
+## 2026-08-04 | Hero-R6 B compact carbine and two-hand hold checkpoint
+
+- Reshaped the existing ranged Hero mesh into a shorter, thicker compact carbine with a readable receiver, stock, barrel, handguard, grip, and energy-cell silhouette.
+- Repositioned the existing ranged weapon origin to a lower carry position so the visor, chest armor, and belt remain visible in front and three-quarter views.
+- Reused the existing 18-bone skeleton and seven animation clips; RangedAttack now coordinates both arm chains without adding IK, bones, render meshes, materials, or a new runtime system.
+- Added evidence-only clay, silhouette, carry, aim, fire, recoil, and gameplay-distance renders under `reports/art-previews/hero-commercial-r6/R6-B/` and recorded the R6-A comparison.
+- Hero static validation remains passing with 15 LOD0 render meshes, 4 materials, 1 embedded atlas, and LOD triangles 19,064 / 7,324 / 2,668. Commercial art quality remains a human artist decision.
+
 ## 2026-08-03 | Hero-R5 E production material and atlas checkpoint
 
 - Repainted the existing four Hero material identities: expedition navy cloth, worn leather, dark gunmetal, and a controlled cyan accent.

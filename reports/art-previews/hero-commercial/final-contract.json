@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-08-03T15:42:58.095Z",
+  "generatedAt": "2026-08-04T01:09:31.079Z",
   "asset": "hero",
   "sourcePath": "assets-source/blender/characters/hero.blend",
   "glbPath": "public/assets/models/characters/hero.glb",
@@ -33,7 +33,7 @@
   "artifact": {
     "status": "pass",
     "glb": {
-      "bytes": 4034616,
+      "bytes": 4038728,
       "assetVersion": "2.0",
       "nodes": 53,
       "meshes": 27,
@@ -85,6 +85,8 @@
             "heroR4Stage": "R4-D",
             "heroR5Stage": "R5-F",
             "heroR5Scope": "locomotion and combat animation polish",
+            "heroR6Stage": "R6-B",
+            "heroR6Scope": "compact carbine proportions and two-hand ranged hold",
             "topologyMethod": "authored anatomical and garment edge-loop lofts; no subdivision modifier",
             "lod0TargetTriangles": "16000-25000",
             "lod1TargetTriangles": "6000-10000",
@@ -110,6 +112,8 @@
         "heroR4Stage": "R4-D",
         "heroR5Stage": "R5-F",
         "heroR5Scope": "locomotion and combat animation polish",
+        "heroR6Stage": "R6-B",
+        "heroR6Scope": "compact carbine proportions and two-hand ranged hold",
         "topologyMethod": "authored anatomical and garment edge-loop lofts; no subdivision modifier",
         "lod0TargetTriangles": "16000-25000",
         "lod1TargetTriangles": "6000-10000",
@@ -125,11 +129,11 @@
         "heroAtlasResolution": 1024,
         "heroMaterialCount": 4
       },
-      "triangles": 29044,
+      "triangles": 29056,
       "lodTriangles": {
         "LOD0": 19064,
         "LOD1": 7324,
-        "LOD2": 2656
+        "LOD2": 2668
       },
       "lodIdentityParts": [
         "LOD1_PROD_arms",
@@ -220,7 +224,7 @@
           "name": "RangedAttack",
           "channels": 54,
           "samplers": 54,
-          "totalInputKeys": 220,
+          "totalInputKeys": 234,
           "maxSamplerKeys": 16,
           "durationSeconds": 0.6666666666666666,
           "targetPaths": [
@@ -261,7 +265,7 @@
       "renderableCollisionNodes": []
     },
     "source": {
-      "bytes": 678791,
+      "bytes": 680637,
       "exists": true
     },
     "checks": {

@@ -483,19 +483,25 @@ def _add_hero_lods(root, mats):
             ([(-0.21, -0.07), (0.21, -0.07), (0.15, 0.025), (-0.15, 0.025)], 0.02, 0.065, 1),
             ([(-0.030, 0.10), (0.030, 0.10), (0.035, 0.56), (0.0, 0.64), (-0.035, 0.56)], 0.02, 0.045, 2),
         ]
-        # A compact carbine silhouette is kept in the same authored mesh for
-        # both production tiers; it preserves the ranged identity without
-        # creating another LOD render object.
+        # R6 keeps the carbine as one existing authored profile mesh.  The
+        # stock sits near the right hand, while the shortened barrel and
+        # lower receiver leave the chest and visor readable in carry poses.
         carbine = [
-            ([(-0.36, 0.10), (0.20, 0.10), (0.26, 0.25), (0.18, 0.42), (-0.30, 0.42), (-0.42, 0.25)], 0.13, 0.11, 1),
-            ([(0.14, 0.28), (0.82, 0.28), (0.88, 0.35), (0.82, 0.42), (0.14, 0.42)], 0.13, 0.065, 2),
-            ([(-0.58, 0.10), (-0.28, 0.10), (-0.24, 0.27), (-0.54, 0.31), (-0.68, 0.22)], 0.13, 0.09, 1),
-            ([(-0.04, 0.40), (0.08, 0.40), (0.12, 0.58), (-0.02, 0.58)], 0.13, 0.042, 0),
-            ([(-0.02, -0.02), (0.10, -0.02), (0.12, 0.18), (0.00, 0.18)], 0.13, 0.055, 2),
+            # receiver: compact, thicker side profile
+            ([(-0.16, 0.08), (0.22, 0.08), (0.26, 0.22), (0.18, 0.36), (-0.14, 0.36), (-0.22, 0.22)], 0.10, 0.15, 1),
+            # barrel and muzzle: short, narrow and clearly separated
+            ([(-0.70, 0.22), (-0.18, 0.22), (-0.14, 0.28), (-0.18, 0.33), (-0.70, 0.30)], 0.10, 0.095, 2),
+            # stock: small rear wedge, kept close to the right shoulder
+            ([(0.16, 0.10), (0.44, 0.12), (0.48, 0.22), (0.28, 0.30), (0.12, 0.28)], 0.10, 0.14, 1),
+            # handguard and forward support surface
+            ([(-0.46, 0.29), (-0.16, 0.29), (-0.13, 0.39), (-0.42, 0.39)], 0.10, 0.115, 0),
+            # right grip
+            ([(0.00, -0.05), (0.13, -0.05), (0.15, 0.17), (0.02, 0.19)], 0.10, 0.125, 2),
+            # vertical energy cell / magazine
+            ([(-0.10, -0.02), (0.04, -0.02), (0.06, 0.15), (-0.08, 0.15)], 0.10, 0.10, 3),
         ]
         if level == 1:
             blade.append(([(-0.040, 0.14), (0.040, 0.14), (0.040, 0.52), (-0.040, 0.52)], 0.02, 0.07, 0))
-            carbine.append(([(0.40, 0.34), (0.72, 0.34), (0.72, 0.40), (0.40, 0.40)], 0.13, 0.055, 0))
         return blade + carbine
 
     lod_parts = []
@@ -603,7 +609,7 @@ def _add_hero_lods(root, mats):
             f"LOD{level}_PROD_weapon",
             weapon_components(level),
             [mats["metal"], mats["leather"]],
-            origin=(0.56, 0.76, 0.16),
+            origin=(0.30, 0.80, -0.30),
             target=target,
         )
         tag(weapon, level, marker, "melee-ranged-weapons")
@@ -852,15 +858,15 @@ def _build_mesh_parts(mats):
     ranged = _profile_mesh(
         "weapon.rangedCarbine",
         [
-            ([(-0.36, 0.08), (0.22, 0.08), (0.28, 0.24), (0.20, 0.44), (-0.30, 0.44), (-0.44, 0.24)], 0.0, 0.18, 1),
-            ([(0.16, 0.28), (0.92, 0.28), (0.99, 0.36), (0.92, 0.44), (0.16, 0.44)], 0.0, 0.07, 2),
-            ([(-0.68, 0.08), (-0.28, 0.08), (-0.24, 0.28), (-0.58, 0.33), (-0.78, 0.22)], 0.0, 0.10, 0),
-            ([(-0.05, 0.40), (0.09, 0.40), (0.13, 0.62), (-0.03, 0.62)], 0.0, 0.075, 2),
-            ([(-0.03, -0.04), (0.11, -0.04), (0.13, 0.18), (-0.01, 0.18)], 0.0, 0.09, 3),
-            ([(0.42, 0.33), (0.72, 0.33), (0.72, 0.42), (0.42, 0.42)], 0.0, 0.06, 1),
+            ([(-0.16, 0.08), (0.22, 0.08), (0.26, 0.22), (0.18, 0.36), (-0.14, 0.36), (-0.22, 0.22)], 0.0, 0.22, 1),
+            ([(-0.70, 0.22), (-0.18, 0.22), (-0.14, 0.28), (-0.18, 0.33), (-0.70, 0.30)], 0.0, 0.12, 2),
+            ([(0.16, 0.10), (0.44, 0.12), (0.48, 0.22), (0.28, 0.30), (0.12, 0.28)], 0.0, 0.18, 1),
+            ([(-0.46, 0.29), (-0.16, 0.29), (-0.13, 0.39), (-0.42, 0.39)], 0.0, 0.14, 0),
+            ([(0.00, -0.05), (0.13, -0.05), (0.15, 0.17), (0.02, 0.19)], 0.0, 0.15, 2),
+            ([(-0.10, -0.02), (0.04, -0.02), (0.06, 0.15), (-0.08, 0.15)], 0.0, 0.12, 3),
         ],
         [mats["leather"], mats["metal"], mats["metal_light"], mats["glow"]],
-        origin=(0.38, 1.02, -0.42),
+        origin=(0.30, 0.80, -0.30),
     )
     return [body, head, face_marker, jacket, armor, pack, helmet, goggles, *arm_parts, *leg_parts, cape, melee, ranged]
 
@@ -1067,6 +1073,16 @@ def _hero_vertex_weights(object_name, position):
 
     if name.startswith(("head.", "head", "face.")):
         return [("head", 1.0)]
+    if name.startswith("weapon.rangedcarbine"):
+        # The compact carbine is a single mesh, but its forward handguard is
+        # deliberately weighted to the existing left hand bone.  This keeps
+        # the production skeleton/socket contract while allowing the ranged
+        # pose to read as a genuine two-hand hold instead of a one-arm carry.
+        if x < 0.06:
+            return [("hand.L", 1.0)]
+        if x < 0.22:
+            return pair("hand.L", "hand.R", (x - 0.06) / 0.16)
+        return [("hand.R", 1.0)]
     if name.startswith("weapon."):
         return [("hand.R", 1.0)]
     if name.startswith("arm.l"):
@@ -1236,6 +1252,8 @@ def build():
     root["heroR4Stage"] = "R4-D"
     root["heroR5Stage"] = "R5-F"
     root["heroR5Scope"] = "locomotion and combat animation polish"
+    root["heroR6Stage"] = "R6-B"
+    root["heroR6Scope"] = "compact carbine proportions and two-hand ranged hold"
     root["topologyMethod"] = "authored anatomical and garment edge-loop lofts; no subdivision modifier"
     root["lod0TargetTriangles"] = "16000-25000"
     root["lod1TargetTriangles"] = "6000-10000"
@@ -1297,10 +1315,10 @@ def build():
         (16, {})
     ])
     add_armature_clip(skeleton, "RangedAttack", 16, [
-        (1, {"upper_arm.R": (-0.76, 0.0, -0.08), "upper_arm.L": (-0.48, 0.0, 0.07), "lower_arm.L": (-0.20, 0.0, 0.05), "lower_arm.R": (-0.08, 0.0, 0.02), "hand.R": (-0.14, 0.0, 0.0), "head": (-0.06, 0.0, 0.0), "chest": (-0.02, 0.0, -0.02)}),
-        (7, {"upper_arm.R": (-1.64, 0.0, -0.16), "upper_arm.L": (-1.10, 0.0, 0.11), "lower_arm.L": (-0.46, 0.0, 0.07), "lower_arm.R": (-0.30, 0.0, 0.05), "hand.R": (-0.38, 0.0, 0.0), "head": (-0.21, 0.0, 0.0), "chest": (-0.10, 0.0, -0.07), "pelvis": (0.04, 0.0, 0.0)}),
-        (11, {"upper_arm.R": (-1.22, 0.0, -0.09), "upper_arm.L": (-0.86, 0.0, 0.07), "lower_arm.L": (-0.33, 0.0, 0.05), "lower_arm.R": (-0.18, 0.0, 0.03), "hand.R": (-0.20, 0.0, 0.0), "head": (-0.10, 0.0, 0.0), "chest": (-0.04, 0.0, -0.03), "pelvis": (0.02, 0.0, 0.0)}),
-        (14, {"upper_arm.R": (-0.88, 0.0, -0.05), "upper_arm.L": (-0.60, 0.0, 0.04), "lower_arm.L": (-0.16, 0.0, 0.02), "hand.R": (-0.11, 0.0, 0.0), "head": (-0.04, 0.0, 0.0), "chest": (-0.01, 0.0, 0.0)}),
+        (1, {"upper_arm.R": (-0.58, 0.0, -0.10), "upper_arm.L": (-0.78, 0.0, 0.10), "lower_arm.L": (-0.38, 0.0, 0.12), "lower_arm.R": (-0.16, 0.0, 0.03), "hand.L": (0.18, 0.0, 0.02), "hand.R": (-0.12, 0.0, 0.0), "head": (-0.05, 0.0, 0.0), "chest": (-0.02, 0.0, -0.02)}),
+        (7, {"upper_arm.R": (-1.42, 0.0, -0.16), "upper_arm.L": (-1.45, 0.0, 0.13), "lower_arm.L": (-0.68, 0.0, 0.10), "lower_arm.R": (-0.38, 0.0, 0.06), "hand.L": (0.26, 0.0, 0.02), "hand.R": (-0.36, 0.0, 0.0), "head": (-0.18, 0.0, 0.0), "chest": (-0.10, 0.0, -0.07), "pelvis": (0.04, 0.0, 0.0)}),
+        (11, {"upper_arm.R": (-1.10, 0.0, -0.10), "upper_arm.L": (-1.18, 0.0, 0.09), "lower_arm.L": (-0.52, 0.0, 0.08), "lower_arm.R": (-0.25, 0.0, 0.04), "hand.L": (0.20, 0.0, 0.02), "hand.R": (-0.18, 0.0, 0.0), "head": (-0.09, 0.0, 0.0), "chest": (-0.04, 0.0, -0.03), "pelvis": (0.02, 0.0, 0.0)}),
+        (14, {"upper_arm.R": (-0.78, 0.0, -0.06), "upper_arm.L": (-0.92, 0.0, 0.06), "lower_arm.L": (-0.34, 0.0, 0.05), "lower_arm.R": (-0.16, 0.0, 0.02), "hand.L": (0.12, 0.0, 0.01), "hand.R": (-0.10, 0.0, 0.0), "head": (-0.04, 0.0, 0.0), "chest": (-0.01, 0.0, 0.0)}),
         (16, {})
     ])
     add_armature_clip(skeleton, "Hit", 12, [
