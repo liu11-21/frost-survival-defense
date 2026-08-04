@@ -40,6 +40,11 @@ declare global {
     proceduralVisibleMeshes: number;
     allyCount: number;
     enemyCount: number;
+    animationNormalized: number;
+    boneTransforms: Record<string, {
+      position: [number, number, number];
+      rotation: [number, number, number, number];
+    }>;
     animationGroups: string[];
     heroWorldPosition: { x: number; y: number; z: number };
     heroScreenBounds: {
@@ -66,6 +71,7 @@ declare global {
       step(dt: number, frames?: number, render?: boolean): void;
       snapshot(): Record<string, number | string | boolean>;
       stopLoop(): void;
+      renderReviewFrame(): void;
       api(): Record<string, unknown>;
     };
     __heroReviewState?: HeroReviewRuntimeState;

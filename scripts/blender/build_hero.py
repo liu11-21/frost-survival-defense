@@ -1,10 +1,9 @@
 """Build the authored Hero as a small set of continuous character meshes.
 
-This pass intentionally keeps the existing gameplay contract (root, skeleton,
-sockets and animation clip names) while replacing the previous 184-piece
-primitive assembly with a handful of lofted body, clothing and equipment
-meshes.  The low-detail tiers are authored silhouette meshes too; they are not
-the generic head-and-cylinder proxies used by the shared unit builder.
+R7 keeps the production contract and reallocates the existing authored loops,
+profiles, atlas values and animation keys.  No new render objects, bones or
+LOD systems are introduced; the low-detail tiers remain authored silhouette
+meshes rather than generic head-and-cylinder proxies.
 """
 
 import math
@@ -246,175 +245,168 @@ def _cape_mesh(name, origin, materials, target="LOD0", detail=4):
 
 
 def _r4_body_rings():
-    """R5-A anatomy loops: long torso, narrow waist, controlled shoulders."""
+    """R7-A anatomy loops: chest-to-waist rhythm with a shaped hip break."""
     return [
-        (0.43, 0.22, 0.21, 0.00, -0.02, 1),
-        (0.48, 0.27, 0.24, 0.00, -0.02, 1),
-        (0.54, 0.32, 0.27, 0.00, -0.01, 1),
-        (0.60, 0.36, 0.29, 0.00, 0.00, 1),
-        (0.66, 0.37, 0.29, 0.00, 0.00, 1),
-        (0.72, 0.34, 0.27, 0.00, 0.00, 0),
-        (0.78, 0.30, 0.24, 0.00, 0.00, 0),
-        (0.84, 0.27, 0.23, 0.00, 0.00, 0),
-        (0.90, 0.28, 0.24, 0.00, 0.00, 0),
-        (0.96, 0.31, 0.26, 0.00, 0.00, 0),
-        (1.02, 0.35, 0.28, 0.00, 0.01, 0),
-        (1.08, 0.40, 0.30, 0.00, 0.01, 0),
-        (1.14, 0.44, 0.32, 0.00, 0.02, 0),
-        (1.20, 0.47, 0.34, 0.00, 0.02, 0),
-        (1.26, 0.49, 0.35, 0.00, 0.02, 2),
-        (1.32, 0.50, 0.35, 0.00, 0.02, 2),
-        (1.38, 0.48, 0.33, 0.00, 0.02, 0),
-        (1.44, 0.43, 0.30, 0.00, 0.01, 0),
-        (1.50, 0.35, 0.26, 0.00, 0.00, 0),
-        (1.55, 0.27, 0.21, 0.00, 0.00, 0),
-        (1.58, 0.20, 0.17, 0.00, 0.00, 0),
+        (0.43, 0.24, 0.20, 0.00, -0.030, 1),
+        (0.48, 0.30, 0.23, 0.00, -0.030, 1),
+        (0.54, 0.34, 0.25, 0.00, -0.020, 1),
+        (0.60, 0.35, 0.26, 0.00, -0.010, 1),
+        (0.66, 0.33, 0.25, 0.00, 0.000, 1),
+        (0.72, 0.29, 0.23, 0.00, 0.000, 0),
+        (0.78, 0.25, 0.21, 0.00, 0.000, 0),
+        (0.84, 0.24, 0.205, 0.00, 0.010, 0),
+        (0.90, 0.27, 0.22, 0.00, 0.020, 0),
+        (0.98, 0.33, 0.26, 0.00, 0.030, 0),
+        (1.06, 0.39, 0.29, 0.00, 0.030, 0),
+        (1.14, 0.44, 0.31, 0.00, 0.025, 0),
+        (1.22, 0.48, 0.33, 0.00, 0.020, 0),
+        (1.28, 0.50, 0.34, 0.00, 0.010, 2),
+        (1.34, 0.48, 0.33, 0.00, 0.000, 2),
+        (1.40, 0.43, 0.30, 0.00, -0.005, 0),
+        (1.46, 0.38, 0.27, 0.00, -0.010, 0),
+        (1.52, 0.29, 0.22, 0.00, -0.020, 0),
+        (1.57, 0.21, 0.18, 0.00, -0.020, 0),
+        (1.59, 0.16, 0.15, 0.00, -0.020, 0),
     ]
 
 
 def _r4_head_rings():
-    """R6 compact helmet/head loops with a flatter faceted crown."""
+    """R7-A compact helmet/head loops with a directional crown and neck gap."""
     return _shape_rings([
-        (1.53, 0.21, 0.20, 0.00, 0.00, 0),
-        (1.57, 0.24, 0.23, 0.00, 0.00, 0),
-        (1.62, 0.28, 0.26, 0.00, 0.00, 0),
-        (1.67, 0.31, 0.29, 0.00, 0.00, 0),
-        (1.72, 0.33, 0.31, 0.00, 0.00, 0),
-        (1.77, 0.34, 0.32, 0.00, 0.01, 2),
-        (1.82, 0.34, 0.32, 0.00, 0.01, 2),
-        (1.87, 0.33, 0.31, 0.00, 0.01, 2),
-        (1.92, 0.32, 0.30, 0.00, 0.01, 2),
-        (1.97, 0.31, 0.29, 0.00, 0.01, 0),
-        (2.02, 0.30, 0.28, 0.00, 0.01, 0),
-        (2.07, 0.28, 0.26, 0.00, 0.00, 0),
-        (2.12, 0.26, 0.24, 0.00, -0.01, 3),
-        (2.17, 0.23, 0.21, 0.00, -0.01, 3),
-        (2.21, 0.19, 0.18, 0.00, -0.02, 3),
-        (2.24, 0.13, 0.13, 0.00, -0.02, 3),
-        (2.26, 0.07, 0.08, 0.00, -0.02, 3),
-        (2.27, 0.03, 0.04, 0.00, -0.02, 3),
-    ], center_y=1.88, y_scale=0.94, x_scale=0.95, z_scale=0.94)
+        (1.53, 0.20, 0.19, 0.00, -0.020, 0),
+        (1.58, 0.24, 0.22, 0.00, -0.015, 0),
+        (1.64, 0.28, 0.25, 0.00, -0.005, 0),
+        (1.70, 0.31, 0.28, 0.00, 0.005, 0),
+        (1.77, 0.33, 0.30, 0.00, 0.012, 0),
+        (1.84, 0.33, 0.30, 0.00, 0.016, 2),
+        (1.91, 0.32, 0.29, 0.00, 0.012, 2),
+        (1.98, 0.30, 0.27, 0.00, 0.005, 0),
+        (2.05, 0.27, 0.24, 0.00, -0.005, 0),
+        (2.11, 0.22, 0.20, 0.00, -0.015, 3),
+        (2.16, 0.17, 0.16, 0.00, -0.022, 3),
+        (2.20, 0.11, 0.11, 0.00, -0.025, 3),
+        (2.23, 0.05, 0.06, 0.00, -0.025, 3),
+    ], center_y=1.88, y_scale=0.95, x_scale=0.94, z_scale=0.93)
 
 
 def _r5_helmet_brow_rings():
-    """A lower, inset brow/visor housing with a readable front plane."""
+    """R7-A visor housing with a stepped brow rather than parallel bands."""
     return _shape_rings([
-        (1.70, 0.25, 0.055, 0.00, 0.255, 0),
-        (1.75, 0.34, 0.070, 0.00, 0.275, 1),
-        (1.82, 0.36, 0.075, 0.00, 0.275, 1),
-        (1.89, 0.31, 0.065, 0.00, 0.255, 1),
-        (1.94, 0.20, 0.045, 0.00, 0.225, 0),
-    ], center_y=1.82, y_scale=0.94, x_scale=0.95, z_scale=0.90)
+        (1.69, 0.23, 0.050, 0.00, 0.245, 0),
+        (1.75, 0.31, 0.066, 0.00, 0.270, 1),
+        (1.81, 0.35, 0.074, 0.00, 0.278, 1),
+        (1.88, 0.30, 0.062, 0.00, 0.252, 1),
+        (1.96, 0.18, 0.042, 0.00, 0.215, 0),
+    ], center_y=1.82, y_scale=0.96, x_scale=0.92, z_scale=0.88)
 
 
 def _r5_helmet_cheek_rings(side):
-    """Cheek/ear guard volume pulled closer to the head shell."""
-    x = side * 0.30
+    """Cheek/ear guard volume pulled close with an angled lower break."""
+    x = side * 0.285
     return _shape_rings([
-        (1.61, 0.070, 0.125, x * 0.92, 0.015, 0),
-        (1.69, 0.095, 0.145, x, 0.020, 0),
-        (1.79, 0.105, 0.155, x * 1.02, 0.015, 1),
-        (1.89, 0.090, 0.140, x * 1.01, 0.005, 1),
-        (1.98, 0.060, 0.105, x * 0.96, -0.005, 0),
-    ], center_y=1.80, y_scale=0.94, x_scale=0.92, z_scale=0.92)
+        (1.61, 0.065, 0.115, x * 0.90, 0.012, 0),
+        (1.69, 0.090, 0.135, x, 0.022, 0),
+        (1.78, 0.098, 0.145, x * 1.03, 0.014, 1),
+        (1.87, 0.082, 0.126, x * 1.01, -0.002, 1),
+        (1.96, 0.050, 0.090, x * 0.94, -0.018, 0),
+    ], center_y=1.80, y_scale=0.96, x_scale=0.90, z_scale=0.90)
 
 
 def _r5_helmet_rear_ridge_rings():
-    """A low rear ridge with a clear gap above the pack and collar."""
+    """A low rear ridge with a sloped top and a clear pack/collar gap."""
     return _shape_rings([
-        (1.72, 0.070, 0.045, 0.00, -0.285, 0),
-        (1.84, 0.085, 0.055, 0.00, -0.305, 1),
-        (1.96, 0.080, 0.050, 0.00, -0.295, 1),
-        (2.07, 0.050, 0.040, 0.00, -0.255, 0),
-    ], center_y=1.88, y_scale=0.94, x_scale=0.92, z_scale=0.90)
+        (1.72, 0.060, 0.042, 0.00, -0.275, 0),
+        (1.84, 0.078, 0.052, 0.00, -0.300, 1),
+        (1.95, 0.070, 0.046, 0.00, -0.292, 1),
+        (2.05, 0.040, 0.034, 0.00, -0.245, 0),
+    ], center_y=1.88, y_scale=0.96, x_scale=0.90, z_scale=0.88)
 
 
 def _r4_arm_rings(side):
-    """R6 shaped sleeves with a real elbow break and tapered wrist."""
-    shoulder = 0.45 if side < 0 else 0.47
+    """R7-A faceted sleeves with distinct deltoid, elbow and wrist breaks."""
+    shoulder = 0.46 if side < 0 else 0.45
     return [
-        (1.48, 0.155, 0.17, side * shoulder, 0.01, 0),
-        (1.44, 0.176, 0.185, side * (shoulder + 0.035), 0.01, 0),
-        (1.40, 0.184, 0.19, side * (shoulder + 0.060), 0.01, 0),
-        (1.35, 0.178, 0.182, side * (shoulder + 0.078), 0.02, 0),
-        (1.29, 0.164, 0.17, side * (shoulder + 0.084), 0.02, 0),
-        (1.23, 0.154, 0.16, side * (shoulder + 0.078), 0.03, 0),
-        (1.17, 0.148, 0.153, side * (shoulder + 0.068), 0.03, 0),
-        (1.11, 0.152, 0.158, side * (shoulder + 0.058), 0.04, 0),
-        (1.05, 0.160, 0.165, side * (shoulder + 0.050), 0.05, 0),
-        (0.99, 0.150, 0.158, side * (shoulder + 0.042), 0.05, 2),
-        (0.93, 0.140, 0.148, side * (shoulder + 0.034), 0.06, 2),
-        (0.87, 0.132, 0.140, side * (shoulder + 0.026), 0.06, 2),
-        (0.81, 0.124, 0.132, side * (shoulder + 0.018), 0.07, 2),
-        (0.75, 0.122, 0.128, side * (shoulder + 0.010), 0.08, 1),
-        (0.69, 0.116, 0.122, side * (shoulder + 0.004), 0.08, 1),
-        (0.63, 0.108, 0.116, side * shoulder, 0.09, 1),
-        (0.58, 0.098, 0.108, side * (shoulder - 0.008), 0.09, 1),
-        (0.54, 0.088, 0.098, side * (shoulder - 0.016), 0.10, 1),
-        (0.50, 0.078, 0.088, side * (shoulder - 0.024), 0.10, 1),
+        (1.48, 0.150, 0.145, side * shoulder, 0.00, 0),
+        (1.44, 0.178, 0.160, side * (shoulder + 0.032), 0.01, 0),
+        (1.39, 0.192, 0.172, side * (shoulder + 0.056), 0.02, 0),
+        (1.33, 0.182, 0.160, side * (shoulder + 0.072), 0.035, 0),
+        (1.26, 0.164, 0.145, side * (shoulder + 0.076), 0.050, 0),
+        (1.20, 0.142, 0.128, side * (shoulder + 0.064), 0.065, 0),
+        (1.14, 0.130, 0.118, side * (shoulder + 0.052), 0.078, 0),
+        (1.08, 0.145, 0.126, side * (shoulder + 0.044), 0.090, 0),
+        (1.02, 0.156, 0.134, side * (shoulder + 0.038), 0.100, 0),
+        (0.96, 0.145, 0.126, side * (shoulder + 0.030), 0.105, 2),
+        (0.90, 0.134, 0.118, side * (shoulder + 0.022), 0.105, 2),
+        (0.84, 0.124, 0.110, side * (shoulder + 0.015), 0.102, 2),
+        (0.78, 0.118, 0.104, side * (shoulder + 0.008), 0.098, 2),
+        (0.72, 0.114, 0.100, side * shoulder, 0.095, 1),
+        (0.66, 0.108, 0.096, side * (shoulder - 0.006), 0.092, 1),
+        (0.60, 0.100, 0.090, side * (shoulder - 0.014), 0.090, 1),
+        (0.55, 0.090, 0.082, side * (shoulder - 0.022), 0.090, 1),
+        (0.51, 0.078, 0.073, side * (shoulder - 0.030), 0.090, 1),
     ]
 
 
 def _r4_leg_rings(side):
-    """R6 tapered legs with a distinct knee, shin and rescue-boot stack."""
-    hip = 0.22 if side < 0 else 0.23
+    """R7-A anatomical legs with a forward knee and compact rescue boot."""
+    hip = 0.215 if side < 0 else 0.225
     return [
-        (0.72, 0.170, 0.185, side * hip, -0.02, 0),
-        (0.66, 0.182, 0.192, side * (hip + 0.008), -0.01, 0),
-        (0.60, 0.190, 0.194, side * (hip + 0.014), 0.00, 0),
-        (0.54, 0.188, 0.186, side * (hip + 0.014), 0.00, 0),
-        (0.48, 0.180, 0.176, side * (hip + 0.012), 0.01, 0),
-        (0.42, 0.176, 0.170, side * (hip + 0.006), 0.02, 0),
-        (0.36, 0.182, 0.168, side * hip, 0.03, 0),
-        (0.30, 0.154, 0.154, side * hip, 0.04, 1),
-        (0.24, 0.145, 0.146, side * hip, 0.05, 1),
-        (0.18, 0.134, 0.138, side * (hip - 0.008), 0.07, 1),
-        (0.12, 0.122, 0.132, side * (hip - 0.008), 0.09, 1),
-        (0.08, 0.132, 0.148, side * (hip - 0.008), 0.11, 2),
-        (0.04, 0.148, 0.188, side * (hip - 0.008), 0.14, 2),
-        (0.01, 0.164, 0.232, side * (hip - 0.008), 0.19, 2),
-        (0.00, 0.166, 0.258, side * (hip - 0.008), 0.235, 2),
-        (0.00, 0.150, 0.235, side * (hip - 0.008), 0.285, 2),
-        (0.01, 0.132, 0.180, side * (hip - 0.008), 0.32, 2),
+        (0.72, 0.160, 0.160, side * hip, -0.040, 0),
+        (0.66, 0.178, 0.172, side * (hip + 0.008), -0.015, 0),
+        (0.60, 0.188, 0.180, side * (hip + 0.014), 0.010, 0),
+        (0.54, 0.184, 0.172, side * (hip + 0.014), 0.020, 0),
+        (0.48, 0.170, 0.160, side * (hip + 0.012), 0.030, 0),
+        (0.42, 0.160, 0.150, side * (hip + 0.006), 0.042, 0),
+        (0.36, 0.158, 0.142, side * hip, 0.050, 0),
+        (0.30, 0.145, 0.132, side * hip, 0.055, 1),
+        (0.24, 0.132, 0.122, side * hip, 0.060, 1),
+        (0.18, 0.122, 0.112, side * (hip - 0.008), 0.070, 1),
+        (0.12, 0.110, 0.105, side * (hip - 0.008), 0.082, 1),
+        (0.08, 0.118, 0.118, side * (hip - 0.008), 0.105, 2),
+        (0.04, 0.136, 0.150, side * (hip - 0.008), 0.145, 2),
+        (0.01, 0.150, 0.182, side * (hip - 0.008), 0.190, 2),
+        (0.00, 0.152, 0.196, side * (hip - 0.008), 0.235, 2),
+        (0.00, 0.142, 0.182, side * (hip - 0.008), 0.275, 2),
+        (0.01, 0.126, 0.150, side * (hip - 0.008), 0.310, 2),
     ]
 
 
 def _r5_jacket_rings():
-    """Tailored coat shell with a visible waist pinch and shoulder sweep."""
+    """R7-A tailored coat with non-parallel collar, waist and hip breaks."""
     return [
-        (0.52, 0.34, 0.28, 0.00, -0.01, 0),
-        (0.60, 0.38, 0.30, 0.00, 0.00, 0),
-        (0.68, 0.39, 0.30, 0.00, 0.00, 0),
-        (0.76, 0.35, 0.28, 0.00, 0.00, 0),
-        (0.84, 0.32, 0.26, 0.00, 0.00, 0),
-        (0.92, 0.31, 0.26, 0.00, 0.00, 0),
-        (1.00, 0.34, 0.28, 0.00, 0.01, 0),
-        (1.08, 0.39, 0.30, 0.00, 0.01, 0),
-        (1.16, 0.44, 0.32, 0.00, 0.02, 0),
-        (1.24, 0.48, 0.34, 0.00, 0.02, 0),
-        (1.32, 0.51, 0.35, 0.00, 0.02, 0),
-        (1.40, 0.50, 0.34, 0.00, 0.02, 0),
-        (1.48, 0.44, 0.30, 0.00, 0.01, 0),
-        (1.55, 0.34, 0.25, 0.00, 0.00, 0),
+        (0.52, 0.31, 0.255, 0.00, -0.020, 0),
+        (0.60, 0.36, 0.280, 0.00, -0.005, 0),
+        (0.68, 0.38, 0.290, 0.00, 0.005, 0),
+        (0.76, 0.32, 0.250, 0.00, 0.010, 0),
+        (0.84, 0.28, 0.220, 0.00, 0.015, 0),
+        (0.92, 0.27, 0.220, 0.00, 0.020, 0),
+        (1.00, 0.31, 0.250, 0.00, 0.025, 0),
+        (1.08, 0.36, 0.280, 0.00, 0.030, 0),
+        (1.16, 0.42, 0.300, 0.00, 0.025, 0),
+        (1.24, 0.46, 0.320, 0.00, 0.020, 0),
+        (1.31, 0.49, 0.330, 0.00, 0.010, 0),
+        (1.38, 0.47, 0.310, 0.00, 0.000, 0),
+        (1.45, 0.40, 0.280, 0.00, -0.010, 0),
+        (1.51, 0.30, 0.230, 0.00, -0.020, 0),
     ]
 
 
 def _r5_helmet_rings():
-    """R6 compact helmet shell with a lower crown and flatter side planes."""
+    """R7-A helmet shell with a low directional dome and rear extension."""
     return _shape_rings([
-        (1.55, 0.23, 0.21, 0.00, 0.00, 0),
-        (1.61, 0.28, 0.26, 0.00, 0.00, 0),
-        (1.68, 0.32, 0.30, 0.00, 0.00, 0),
-        (1.76, 0.34, 0.32, 0.00, 0.00, 0),
-        (1.84, 0.34, 0.32, 0.00, 0.00, 0),
-        (1.92, 0.33, 0.31, 0.00, 0.00, 0),
-        (2.00, 0.31, 0.29, 0.00, 0.00, 0),
-        (2.08, 0.28, 0.26, 0.00, 0.00, 0),
-        (2.15, 0.23, 0.21, 0.00, -0.01, 0),
-        (2.21, 0.17, 0.16, 0.00, -0.01, 0),
-        (2.25, 0.09, 0.10, 0.00, -0.02, 0),
-        (2.27, 0.03, 0.04, 0.00, -0.02, 0),
-    ], center_y=1.90, y_scale=0.93, x_scale=0.95, z_scale=0.94)
+        (1.55, 0.21, 0.19, 0.00, -0.020, 0),
+        (1.61, 0.26, 0.23, 0.00, -0.010, 0),
+        (1.68, 0.30, 0.27, 0.00, 0.000, 0),
+        (1.75, 0.32, 0.29, 0.00, 0.008, 0),
+        (1.82, 0.33, 0.30, 0.00, 0.012, 0),
+        (1.90, 0.32, 0.29, 0.00, 0.010, 0),
+        (1.98, 0.30, 0.27, 0.00, 0.002, 0),
+        (2.05, 0.26, 0.23, 0.00, -0.008, 0),
+        (2.11, 0.21, 0.19, 0.00, -0.016, 0),
+        (2.16, 0.16, 0.15, 0.00, -0.022, 0),
+        (2.20, 0.10, 0.10, 0.00, -0.025, 0),
+        (2.23, 0.04, 0.05, 0.00, -0.025, 0),
+    ], center_y=1.90, y_scale=0.95, x_scale=0.94, z_scale=0.93)
 
 
 def _add_hero_lods(root, mats):
@@ -483,22 +475,22 @@ def _add_hero_lods(root, mats):
             ([(-0.21, -0.07), (0.21, -0.07), (0.15, 0.025), (-0.15, 0.025)], 0.02, 0.065, 1),
             ([(-0.030, 0.10), (0.030, 0.10), (0.035, 0.56), (0.0, 0.64), (-0.035, 0.56)], 0.02, 0.045, 2),
         ]
-        # R6 keeps the carbine as one existing authored profile mesh.  The
-        # stock sits near the right hand, while the shortened barrel and
-        # lower receiver leave the chest and visor readable in carry poses.
+        # R7-B keeps the carbine as one existing authored profile mesh.  The
+        # stock sits near the right hand, the receiver has a thicker centre,
+        # and the lowered carry line leaves the chest and visor readable.
         carbine = [
-            # receiver: compact, thicker side profile
-            ([(-0.16, 0.08), (0.22, 0.08), (0.26, 0.22), (0.18, 0.36), (-0.14, 0.36), (-0.22, 0.22)], 0.10, 0.15, 1),
-            # barrel and muzzle: short, narrow and clearly separated
-            ([(-0.70, 0.22), (-0.18, 0.22), (-0.14, 0.28), (-0.18, 0.33), (-0.70, 0.30)], 0.10, 0.095, 2),
-            # stock: small rear wedge, kept close to the right shoulder
-            ([(0.16, 0.10), (0.44, 0.12), (0.48, 0.22), (0.28, 0.30), (0.12, 0.28)], 0.10, 0.14, 1),
-            # handguard and forward support surface
-            ([(-0.46, 0.29), (-0.16, 0.29), (-0.13, 0.39), (-0.42, 0.39)], 0.10, 0.115, 0),
-            # right grip
-            ([(0.00, -0.05), (0.13, -0.05), (0.15, 0.17), (0.02, 0.19)], 0.10, 0.125, 2),
+            # receiver: compact centre with a deeper lower rail
+            ([(-0.11, 0.07), (0.18, 0.07), (0.21, 0.17), (0.16, 0.29), (-0.10, 0.31), (-0.17, 0.19)], 0.10, 0.24, 1),
+            # barrel and muzzle: short, narrow, and stepped away from receiver
+            ([(-0.56, 0.17), (-0.16, 0.17), (-0.13, 0.22), (-0.17, 0.27), (-0.56, 0.24)], 0.10, 0.13, 2),
+            # stock: compact wedge, angled toward the right shoulder
+            ([(0.12, 0.10), (0.34, 0.12), (0.40, 0.18), (0.28, 0.25), (0.10, 0.24)], 0.10, 0.18, 1),
+            # handguard: a raised support rail for the left hand
+            ([(-0.40, 0.22), (-0.15, 0.22), (-0.12, 0.31), (-0.36, 0.32)], 0.10, 0.17, 0),
+            # right grip: diagonal enough to read in silhouette
+            ([(-0.01, -0.04), (0.11, -0.04), (0.13, 0.14), (0.01, 0.17)], 0.10, 0.18, 2),
             # vertical energy cell / magazine
-            ([(-0.10, -0.02), (0.04, -0.02), (0.06, 0.15), (-0.08, 0.15)], 0.10, 0.10, 3),
+            ([(-0.08, -0.04), (0.04, -0.04), (0.06, 0.11), (-0.06, 0.11)], 0.10, 0.15, 3),
         ]
         if level == 1:
             blade.append(([(-0.040, 0.14), (0.040, 0.14), (0.040, 0.52), (-0.040, 0.52)], 0.02, 0.07, 0))
@@ -609,7 +601,7 @@ def _add_hero_lods(root, mats):
             f"LOD{level}_PROD_weapon",
             weapon_components(level),
             [mats["metal"], mats["leather"]],
-            origin=(0.30, 0.80, -0.30),
+            origin=(0.28, 0.66, -0.24),
             target=target,
         )
         tag(weapon, level, marker, "melee-ranged-weapons")
@@ -858,15 +850,15 @@ def _build_mesh_parts(mats):
     ranged = _profile_mesh(
         "weapon.rangedCarbine",
         [
-            ([(-0.16, 0.08), (0.22, 0.08), (0.26, 0.22), (0.18, 0.36), (-0.14, 0.36), (-0.22, 0.22)], 0.0, 0.22, 1),
-            ([(-0.70, 0.22), (-0.18, 0.22), (-0.14, 0.28), (-0.18, 0.33), (-0.70, 0.30)], 0.0, 0.12, 2),
-            ([(0.16, 0.10), (0.44, 0.12), (0.48, 0.22), (0.28, 0.30), (0.12, 0.28)], 0.0, 0.18, 1),
-            ([(-0.46, 0.29), (-0.16, 0.29), (-0.13, 0.39), (-0.42, 0.39)], 0.0, 0.14, 0),
-            ([(0.00, -0.05), (0.13, -0.05), (0.15, 0.17), (0.02, 0.19)], 0.0, 0.15, 2),
-            ([(-0.10, -0.02), (0.04, -0.02), (0.06, 0.15), (-0.08, 0.15)], 0.0, 0.12, 3),
+            ([(-0.11, 0.07), (0.18, 0.07), (0.21, 0.17), (0.16, 0.29), (-0.10, 0.31), (-0.17, 0.19)], 0.0, 0.24, 1),
+            ([(-0.56, 0.17), (-0.16, 0.17), (-0.13, 0.22), (-0.17, 0.27), (-0.56, 0.24)], 0.0, 0.13, 2),
+            ([(0.12, 0.10), (0.34, 0.12), (0.40, 0.18), (0.28, 0.25), (0.10, 0.24)], 0.0, 0.18, 1),
+            ([(-0.40, 0.22), (-0.15, 0.22), (-0.12, 0.31), (-0.36, 0.32)], 0.0, 0.17, 0),
+            ([(-0.01, -0.04), (0.11, -0.04), (0.13, 0.14), (0.01, 0.17)], 0.0, 0.18, 2),
+            ([(-0.08, -0.04), (0.04, -0.04), (0.06, 0.11), (-0.06, 0.11)], 0.0, 0.15, 3),
         ],
         [mats["leather"], mats["metal"], mats["metal_light"], mats["glow"]],
-        origin=(0.30, 0.80, -0.30),
+        origin=(0.28, 0.66, -0.24),
     )
     return [body, head, face_marker, jacket, armor, pack, helmet, goggles, *arm_parts, *leg_parts, cape, melee, ranged]
 
@@ -967,11 +959,11 @@ def author_hero_atlas(objects, mats):
                     # A cool visor/trim gradient: brighter through the centre,
                     # darker at the perimeter, with restrained frost striations.
                     centre = max(0.0, 1.0 - abs(u - 0.5) * 1.8)
-                    wave += 0.060 * centre - 0.020 * (1.0 - centre)
-                    wave += 0.020 * math.sin((x - y) * 0.09 + index)
-                    wave += 0.022 if (int((u + v) * 24.0) % 11) == 0 else 0.0
+                    wave += 0.038 * centre - 0.026 * (1.0 - centre)
+                    wave += 0.014 * math.sin((x - y) * 0.09 + index)
+                    wave += 0.012 if (int((u + v) * 24.0) % 11) == 0 else 0.0
                 edge = min(x, y, cell_width - 1 - x, cell_height - 1 - y)
-                value = 0.96 + wave + (0.025 if edge < 10 else 0.0)
+                value = 0.90 + wave + (0.010 if edge < 10 else 0.0)
                 pixel_index = ((y0 + y) * texture_size + (x0 + x)) * 4
                 pixels[pixel_index] = max(0.0, min(1.0, base[0] * value))
                 pixels[pixel_index + 1] = max(0.0, min(1.0, base[1] * value))
@@ -1095,10 +1087,10 @@ def _hero_vertex_weights(object_name, position):
         # deliberately weighted to the existing left hand bone.  This keeps
         # the production skeleton/socket contract while allowing the ranged
         # pose to read as a genuine two-hand hold instead of a one-arm carry.
-        if x < 0.06:
+        if x < -0.12:
             return [("hand.L", 1.0)]
-        if x < 0.22:
-            return pair("hand.L", "hand.R", (x - 0.06) / 0.16)
+        if x < 0.18:
+            return pair("hand.L", "hand.R", (x + 0.12) / 0.30)
         return [("hand.R", 1.0)]
     if name.startswith("weapon."):
         return [("hand.R", 1.0)]
@@ -1234,13 +1226,13 @@ def collapse_hero_material_slots(objects, mats):
 def build():
     reset_scene()
     mats = {
-        # R6-C retains the four established slots while separating surface
-        # response: matte navy cloth, warm worn leather, restrained gunmetal,
-        # and a cool visor accent that remains readable under furnace light.
-        "cloth": material("MAT_hero_cloth", (0.075, 0.16, 0.34), 0.84),
-        "leather": material("MAT_hero_leather", (0.19, 0.055, 0.018), 0.72),
-        "metal": material("MAT_hero_metal", (0.085, 0.14, 0.21), 0.40, 0.88),
-        "accent": material("MAT_hero_accent", (0.018, 0.22, 0.50), 0.42, 0.18),
+        # R7-C keeps the established four slots while lowering the broad
+        # highlight response: matte navy cloth, worn brown leather, deep
+        # gunmetal, and a restrained cyan visor accent.
+        "cloth": material("MAT_hero_cloth", (0.040, 0.085, 0.19), 0.92),
+        "leather": material("MAT_hero_leather", (0.135, 0.032, 0.010), 0.78),
+        "metal": material("MAT_hero_metal", (0.045, 0.070, 0.105), 0.58, 0.76),
+        "accent": material("MAT_hero_accent", (0.008, 0.115, 0.285), 0.55, 0.12),
     }
     # R4-B keeps four primary material slots. These semantic aliases let the
     # existing mesh authoring code retain its regions without exporting a
@@ -1254,9 +1246,9 @@ def build():
     if glow_shader:
         emission_color = glow_shader.inputs.get("Emission Color")
         if emission_color:
-            emission_color.default_value = (0.018, 0.22, 0.50, 1.0)
+            emission_color.default_value = (0.008, 0.115, 0.285, 1.0)
         if glow_shader.inputs.get("Emission Strength"):
-            glow_shader.inputs["Emission Strength"].default_value = 0.65
+            glow_shader.inputs["Emission Strength"].default_value = 0.26
 
     root = orient_for_babylon(empty("HeroRoot", target="EXPORT", display="PLAIN_AXES"))
     # Keep the existing H6 metadata required by the established asset gate;
@@ -1270,12 +1262,15 @@ def build():
     root["heroR5Scope"] = "locomotion and combat animation polish"
     root["heroR6Stage"] = "R6-D"
     root["heroR6Scope"] = "compact carbine, four-slot surface refinement, and combat pose finalization"
+    root["heroR7Stage"] = "R7-D"
+    root["heroR7Scope"] = "final shape language, compact carbine handling, surface response, and deterministic pose evidence"
+    root["heroR7Iteration"] = 1
     root["topologyMethod"] = "authored anatomical and garment edge-loop lofts; no subdivision modifier"
     root["lod0TargetTriangles"] = "16000-25000"
     root["lod1TargetTriangles"] = "6000-10000"
     root["lod2TargetTriangles"] = "1500-3500"
     root["lodBuildMethod"] = "production authored loop reductions from R4-B mid-poly volumes"
-    root["animationReview"] = "R6-D weighted body envelopes with contact-safe locomotion, two-hand ranged aim, melee impact hold, and recovery follow-through"
+    root["animationReview"] = "R7-D deterministic key poses with contact-safe locomotion, two-hand ranged aim, melee impact hold, and recovery follow-through"
     root["feetGrounded"] = True
     root["orientationContract"] = "Babylon Y-up, forward +Z"
     root["animationIteration2"] = "follow-through and recovery keys"
@@ -1327,28 +1322,28 @@ def build():
         # Low-ready: both feet and the torso establish a stable launch point.
         (1, {"upper_arm.R": (-0.70, -0.08, -0.14), "lower_arm.R": (-0.42, 0.18, 0.18), "hand.R": (-0.18, 0.0, 0.0), "upper_arm.L": (-0.12, 0.10, 0.08), "foot.L": (-0.08, 0.0, 0.0), "foot.R": (0.10, 0.0, 0.0), "head": (0.05, 0.02, -0.05), "chest": (0.12, 0.10, -0.08), "pelvis": (0.02, -0.06, 0.0)}),
         # Pull-back: pelvis and chest counter-rotate before the swing.
-        (4, {"upper_arm.R": (-1.58, -0.18, -0.22), "lower_arm.R": (-0.88, 0.26, 0.22), "hand.R": (-0.42, 0.0, 0.05), "upper_arm.L": (0.36, 0.20, 0.12), "foot.L": (0.12, 0.0, 0.0), "foot.R": (-0.16, 0.0, 0.0), "head": (0.16, 0.04, -0.08), "chest": (-0.22, -0.20, -0.16), "pelvis": (0.16, 0.14, 0.05)}),
+        (4, {"root": (0.0, -0.08, 0.05), "upper_arm.R": (-1.58, -0.18, -0.22), "lower_arm.R": (-0.88, 0.26, 0.22), "hand.R": (-0.42, 0.0, 0.05), "upper_arm.L": (0.36, 0.20, 0.12), "foot.L": (0.12, 0.0, 0.0), "foot.R": (-0.16, 0.0, 0.0), "head": (0.16, 0.04, -0.08), "chest": (-0.22, -0.20, -0.16), "pelvis": (0.16, 0.14, 0.05)}),
         # Maximum swing: shoulder, chest, pelvis, and support leg share the arc.
-        (7, {"upper_arm.R": (1.54, 0.22, 0.28), "lower_arm.R": (0.74, -0.16, -0.18), "hand.R": (0.46, 0.0, -0.06), "upper_arm.L": (-0.34, -0.18, -0.08), "foot.L": (-0.10, 0.0, 0.0), "foot.R": (0.18, 0.0, 0.0), "head": (-0.14, -0.05, 0.06), "chest": (0.34, 0.22, 0.22), "pelvis": (-0.14, -0.12, -0.05)}),
+        (7, {"root": (0.0, 0.10, -0.06), "upper_arm.R": (1.54, 0.22, 0.28), "lower_arm.R": (0.74, -0.16, -0.18), "hand.R": (0.46, 0.0, -0.06), "upper_arm.L": (-0.34, -0.18, -0.08), "foot.L": (-0.10, 0.0, 0.0), "foot.R": (0.18, 0.0, 0.0), "head": (-0.14, -0.05, 0.06), "chest": (0.34, 0.22, 0.22), "pelvis": (-0.14, -0.12, -0.05)}),
         # Impact hold: two adjacent keys make the hit readable before recovery.
-        (9, {"upper_arm.R": (1.54, 0.22, 0.28), "lower_arm.R": (0.74, -0.16, -0.18), "hand.R": (0.46, 0.0, -0.06), "upper_arm.L": (-0.34, -0.18, -0.08), "foot.L": (-0.10, 0.0, 0.0), "foot.R": (0.18, 0.0, 0.0), "head": (-0.14, -0.05, 0.06), "chest": (0.34, 0.22, 0.22), "pelvis": (-0.14, -0.12, -0.05)}),
-        (10, {"upper_arm.R": (1.48, 0.20, 0.26), "lower_arm.R": (0.70, -0.14, -0.16), "hand.R": (0.42, 0.0, -0.05), "upper_arm.L": (-0.30, -0.16, -0.07), "foot.L": (-0.08, 0.0, 0.0), "foot.R": (0.16, 0.0, 0.0), "head": (-0.12, -0.04, 0.05), "chest": (0.30, 0.20, 0.19), "pelvis": (-0.12, -0.10, -0.04)}),
+        (9, {"root": (0.0, 0.10, -0.06), "upper_arm.R": (1.54, 0.22, 0.28), "lower_arm.R": (0.74, -0.16, -0.18), "hand.R": (0.46, 0.0, -0.06), "upper_arm.L": (-0.34, -0.18, -0.08), "foot.L": (-0.10, 0.0, 0.0), "foot.R": (0.18, 0.0, 0.0), "head": (-0.14, -0.05, 0.06), "chest": (0.34, 0.22, 0.22), "pelvis": (-0.14, -0.12, -0.05)}),
+        (10, {"root": (0.0, 0.08, -0.04), "upper_arm.R": (1.48, 0.20, 0.26), "lower_arm.R": (0.70, -0.14, -0.16), "hand.R": (0.42, 0.0, -0.05), "upper_arm.L": (-0.30, -0.16, -0.07), "foot.L": (-0.08, 0.0, 0.0), "foot.R": (0.16, 0.0, 0.0), "head": (-0.12, -0.04, 0.05), "chest": (0.30, 0.20, 0.19), "pelvis": (-0.12, -0.10, -0.04)}),
         # Recover into a guarded stance.
         (13, {"upper_arm.R": (0.66, 0.06, 0.12), "lower_arm.R": (0.20, -0.04, -0.05), "hand.R": (0.12, 0.0, 0.0), "upper_arm.L": (-0.08, -0.02, 0.0), "foot.L": (0.03, 0.0, 0.0), "foot.R": (-0.03, 0.0, 0.0), "head": (-0.04, 0.0, 0.02), "chest": (0.10, 0.05, 0.06), "pelvis": (-0.03, -0.02, 0.0)}),
         (16, {})
     ])
     add_armature_clip(skeleton, "RangedAttack", 16, [
         # Low-ready: the carbine starts below the chest with both hands engaged.
-        (1, {"upper_arm.R": (-0.52, -0.06, -0.10), "upper_arm.L": (-0.70, 0.08, 0.10), "lower_arm.L": (-0.34, 0.0, 0.12), "lower_arm.R": (-0.14, 0.0, 0.03), "hand.L": (0.16, 0.0, 0.02), "hand.R": (-0.10, 0.0, 0.0), "head": (-0.04, 0.0, 0.0), "chest": (-0.02, 0.0, -0.02)}),
+        (1, {"root": (0.0, -0.02, 0.0), "upper_arm.R": (-0.52, -0.06, -0.10), "upper_arm.L": (-0.70, 0.08, 0.10), "lower_arm.L": (-0.34, 0.0, 0.12), "lower_arm.R": (-0.14, 0.0, 0.03), "hand.L": (0.16, 0.0, 0.02), "hand.R": (-0.10, 0.0, 0.0), "head": (-0.04, 0.0, 0.0), "chest": (-0.02, 0.0, -0.02), "pelvis": (0.02, 0.0, 0.0), "foot.L": (-0.02, 0.0, 0.0), "foot.R": (0.02, 0.0, 0.0)}),
         # Raise and seat the stock near the shoulder.
-        (4, {"upper_arm.R": (-1.02, -0.10, -0.14), "upper_arm.L": (-1.08, 0.10, 0.12), "lower_arm.L": (-0.50, 0.02, 0.12), "lower_arm.R": (-0.24, 0.02, 0.05), "hand.L": (0.22, 0.0, 0.02), "hand.R": (-0.20, 0.0, 0.0), "head": (-0.10, -0.02, 0.0), "chest": (-0.06, -0.02, -0.04)}),
+        (4, {"root": (0.0, -0.04, 0.02), "upper_arm.R": (-1.02, -0.10, -0.14), "upper_arm.L": (-1.08, 0.10, 0.12), "lower_arm.L": (-0.50, 0.02, 0.12), "lower_arm.R": (-0.24, 0.02, 0.05), "hand.L": (0.22, 0.0, 0.02), "hand.R": (-0.20, 0.0, 0.0), "head": (-0.10, -0.02, 0.0), "chest": (-0.06, -0.02, -0.04), "pelvis": (0.03, 0.0, 0.0), "foot.L": (-0.04, 0.0, 0.0), "foot.R": (0.04, 0.0, 0.0)}),
         # Aim: a compact two-arm triangle and visor line of sight.
-        (7, {"upper_arm.R": (-1.42, -0.14, -0.16), "upper_arm.L": (-1.45, 0.13, 0.13), "lower_arm.L": (-0.68, 0.10, 0.10), "lower_arm.R": (-0.38, 0.06, 0.06), "hand.L": (0.26, 0.0, 0.02), "hand.R": (-0.36, 0.0, 0.0), "head": (-0.18, -0.02, 0.0), "chest": (-0.10, -0.04, -0.07), "pelvis": (0.04, 0.02, 0.0)}),
+        (7, {"root": (0.0, -0.07, 0.03), "upper_arm.R": (-1.42, -0.14, -0.16), "upper_arm.L": (-1.45, 0.13, 0.13), "lower_arm.L": (-0.68, 0.10, 0.10), "lower_arm.R": (-0.38, 0.06, 0.06), "hand.L": (0.26, 0.0, 0.02), "hand.R": (-0.36, 0.0, 0.0), "head": (-0.18, -0.02, 0.0), "chest": (-0.10, -0.04, -0.07), "pelvis": (0.04, 0.02, 0.0), "foot.L": (-0.06, 0.0, 0.0), "foot.R": (0.06, 0.0, 0.0)}),
         # Fire key and a small recoil preparation.
-        (10, {"upper_arm.R": (-1.26, -0.12, -0.13), "upper_arm.L": (-1.30, 0.11, 0.12), "lower_arm.L": (-0.58, 0.09, 0.09), "lower_arm.R": (-0.30, 0.05, 0.05), "hand.L": (0.23, 0.0, 0.02), "hand.R": (-0.28, 0.0, 0.0), "head": (-0.14, -0.02, 0.0), "chest": (-0.07, -0.03, -0.06), "pelvis": (0.03, 0.02, 0.0)}),
-        (11, {"upper_arm.R": (-1.10, -0.10, -0.10), "upper_arm.L": (-1.18, 0.09, 0.09), "lower_arm.L": (-0.52, 0.08, 0.08), "lower_arm.R": (-0.25, 0.04, 0.04), "hand.L": (0.20, 0.0, 0.02), "hand.R": (-0.18, 0.0, 0.0), "head": (-0.09, -0.02, 0.0), "chest": (-0.04, -0.02, -0.03), "pelvis": (0.02, 0.01, 0.0)}),
+        (10, {"root": (0.0, -0.05, 0.02), "upper_arm.R": (-1.26, -0.12, -0.13), "upper_arm.L": (-1.30, 0.11, 0.12), "lower_arm.L": (-0.58, 0.09, 0.09), "lower_arm.R": (-0.30, 0.05, 0.05), "hand.L": (0.23, 0.0, 0.02), "hand.R": (-0.28, 0.0, 0.0), "head": (-0.14, -0.02, 0.0), "chest": (-0.07, -0.03, -0.06), "pelvis": (0.03, 0.02, 0.0), "foot.L": (-0.05, 0.0, 0.0), "foot.R": (0.05, 0.0, 0.0)}),
+        (11, {"root": (0.0, -0.03, 0.01), "upper_arm.R": (-1.10, -0.10, -0.10), "upper_arm.L": (-1.18, 0.09, 0.09), "lower_arm.L": (-0.52, 0.08, 0.08), "lower_arm.R": (-0.25, 0.04, 0.04), "hand.L": (0.20, 0.0, 0.02), "hand.R": (-0.18, 0.0, 0.0), "head": (-0.09, -0.02, 0.0), "chest": (-0.04, -0.02, -0.03), "pelvis": (0.02, 0.01, 0.0), "foot.L": (-0.04, 0.0, 0.0), "foot.R": (0.04, 0.0, 0.0)}),
         # Recover without dropping the left support hand.
-        (14, {"upper_arm.R": (-0.72, -0.04, -0.06), "upper_arm.L": (-0.86, 0.06, 0.07), "lower_arm.L": (-0.30, 0.04, 0.05), "lower_arm.R": (-0.14, 0.02, 0.02), "hand.L": (0.12, 0.0, 0.01), "hand.R": (-0.08, 0.0, 0.0), "head": (-0.04, 0.0, 0.0), "chest": (-0.01, 0.0, 0.0)}),
+        (14, {"root": (0.0, 0.0, 0.0), "upper_arm.R": (-0.72, -0.04, -0.06), "upper_arm.L": (-0.86, 0.06, 0.07), "lower_arm.L": (-0.30, 0.04, 0.05), "lower_arm.R": (-0.14, 0.02, 0.02), "hand.L": (0.12, 0.0, 0.01), "hand.R": (-0.08, 0.0, 0.0), "head": (-0.04, 0.0, 0.0), "chest": (-0.01, 0.0, 0.0)}),
         (16, {})
     ])
     add_armature_clip(skeleton, "Hit", 12, [
@@ -1370,7 +1365,7 @@ def build():
     # to this Hero asset. No other character or facility is regenerated.
     author_surface_paint(parts + lod_parts, seed=53, textured=False)
     atlas = author_hero_atlas(parts + lod_parts, mats)
-    root["heroSurfacePass"] = "R6-C-1024-hero-atlas-surface-refinement"
+    root["heroSurfacePass"] = "R7-C-1024-hero-atlas-material-response"
     root["heroAtlasResolution"] = atlas["resolution"]
     used_material_names = {
         slot.name

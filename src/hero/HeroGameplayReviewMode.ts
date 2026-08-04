@@ -26,6 +26,8 @@ export interface HeroGameplayReviewCaptureMetadata {
   enemyCount: number;
   visible: boolean;
   uiOccluded: boolean;
+  animationNormalized: number;
+  boneTransforms: Record<string, { position: [number, number, number]; rotation: [number, number, number, number] }>;
   fps: number;
   drawCalls: number;
   activeMeshes: number;
@@ -111,8 +113,17 @@ export class HeroGameplayReviewMode {
 
   update(dt = 0.016): void {
     this.s.hero.updateReview(dt);
-    this.updatePanel(this.capture());
-    this.publishTestState(this.capture());
+    const metadata = this.capture();
+    this.updatePanel(metadata);
+    this.publishTestState(metadata);
+  }
+
+  /** Render one paused frame after a deterministic animation seek. */
+  renderFrame(): void {
+    this.s.scene.render();
+    const metadata = this.capture();
+    this.updatePanel(metadata);
+    this.publishTestState(metadata);
   }
 
   setCamera(mode: HeroGameplayReviewCamera): void {
@@ -149,6 +160,13 @@ export class HeroGameplayReviewMode {
   setAnimation(animation: HeroGameplayReviewAnimation): void {
     this.animation = animation;
     this.s.hero.setReviewAnimation(animation);
+  }
+
+  seekAnimation(normalized: number): void {
+    this.s.hero.seekReviewAnimation(normalized);
+    const metadata = this.capture();
+    this.updatePanel(metadata);
+    this.publishTestState(metadata);
   }
 
   setLod(lod: HeroGameplayReviewLod): void {
@@ -229,6 +247,8 @@ export class HeroGameplayReviewMode {
       enemyCount: this.s.world.enemies.filter((unit) => unit.alive).length,
       visible,
       uiOccluded,
+      animationNormalized: this.s.hero.reviewAnimationNormalized,
+      boneTransforms: this.s.hero.reviewBoneSnapshot,
       fps: round(this.s.engine.getFps()),
       drawCalls,
       activeMeshes: this.s.scene.getActiveMeshes().length,
@@ -261,7 +281,7 @@ export class HeroGameplayReviewMode {
     text("[data-review-camera]")!.textContent = `Camera: ${metadata.cameraMode}`;
     text("[data-review-lighting]")!.textContent = `Lighting: ${metadata.lighting}`;
     text("[data-review-context]")!.textContent = `Context: ${metadata.context}`;
-    text("[data-review-animation]")!.textContent = `Animation: ${metadata.animation}`;
+    text("[data-review-animation]")!.textContent = `Animation: ${metadata.animation} (${metadata.animationNormalized.toFixed(2)})`;
     text("[data-review-lod]")!.textContent = `LOD: LOD${metadata.lod}`;
     text("[data-review-roster]")!.textContent = `Allies / enemies: ${metadata.allyCount} / ${metadata.enemyCount}`;
     text("[data-review-geometry]")!.textContent = `Authored / procedural: ${metadata.authoredVisibleMeshCount} / ${metadata.proceduralVisibleMeshCount}`;

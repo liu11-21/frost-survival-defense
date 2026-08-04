@@ -55,6 +55,7 @@ export class CharacterAvatar {
   private reviewAnimation: string | null = null;
   private reviewGroup: AnimationGroup | null = null;
   private reviewElapsed = 0;
+  private reviewNormalized = 0;
   private reviewLod: 0 | 1 | 2 = 0;
   private reviewLodAuto = false;
 
@@ -112,6 +113,40 @@ export class CharacterAvatar {
     return name.startsWith("LOD2_PROXY") || name.startsWith("LOD2_PROD") ? 2 : name.startsWith("LOD1_PROXY") || name.startsWith("LOD1_PROD") ? 1 : 0;
   }
 
+  get currentReviewAnimationNormalized(): number {
+    return this.reviewNormalized;
+  }
+
+  /**
+   * A compact, deterministic pose sample for the Hero gameplay-art review.
+   * The snapshot intentionally exposes only the existing production bones;
+   * it is test evidence, not a second animation or IK system.
+   */
+  get reviewBoneSnapshot(): Record<string, { position: [number, number, number]; rotation: [number, number, number, number] }> {
+    const snapshot: Record<string, { position: [number, number, number]; rotation: [number, number, number, number] }> = {};
+    const bones = this.authored?.skeletons?.[0]?.bones ?? [];
+    const required = new Set([
+      "root", "pelvis", "chest", "head",
+      "upper_arm.L", "upper_arm.R", "lower_arm.L", "lower_arm.R",
+      "hand.L", "hand.R", "thigh.L", "thigh.R", "shin.L", "shin.R",
+      "foot.L", "foot.R",
+    ]);
+    for (const bone of bones) {
+      const name = bone.name.split(":").pop() ?? bone.name;
+      if (!required.has(name)) continue;
+      const position = bone.position;
+      const rotation = bone.rotationQuaternion;
+      const euler = bone.rotation;
+      snapshot[name] = {
+        position: [roundReview(position.x), roundReview(position.y), roundReview(position.z)],
+        rotation: rotation
+          ? [roundReview(rotation.x), roundReview(rotation.y), roundReview(rotation.z), roundReview(rotation.w)]
+          : [roundReview(euler.x), roundReview(euler.y), roundReview(euler.z), 1],
+      };
+    }
+    return snapshot;
+  }
+
   /** Replaces only the visible body; movement/collision still use the rig root. */
   attachAuthored(instance: AssetInstance): void {
     this.authored?.dispose();
@@ -128,6 +163,7 @@ export class CharacterAvatar {
     this.reviewAnimation = null;
     this.reviewGroup = null;
     this.reviewElapsed = 0;
+    this.reviewNormalized = 0;
     this.reviewLod = 0;
     this.reviewLodAuto = false;
     this.applyLodVisibility();
@@ -178,10 +214,14 @@ export class CharacterAvatar {
     this.reviewAnimation = name;
     this.reviewGroup = group;
     this.reviewElapsed = 0;
+    this.reviewNormalized = 0;
     this.authoredState = `review:${name}`;
     this.authoredAttack = null;
     for (const candidate of this.authored.animationGroups) candidate.stop();
     group.start(name === "Idle" || name === "Walk" || name === "Run", 1);
+    // The review harness seeks exact frames; Babylon must not advance the
+    // group between the seek and the single manual render.
+    group.pause();
     group.goToFrame(group.from);
   }
 
@@ -194,7 +234,21 @@ export class CharacterAvatar {
     this.reviewElapsed += Math.max(0, dt) * group.speedRatio;
     const offset = this.reviewElapsed * frameRate;
     const frame = group.from + (group.loopAnimation ? offset % frameSpan : Math.min(offset, frameSpan));
+    this.reviewNormalized = Math.max(0, Math.min(1, (frame - group.from) / frameSpan));
     group.goToFrame(frame);
+  }
+
+  /** Seeks the selected authored clip to an exact normalized timeline value. */
+  seekReviewAnimation(normalized: number): void {
+    if (!this.reviewGroup) return;
+    const group = this.reviewGroup;
+    const clamped = Math.max(0, Math.min(1, normalized));
+    const frameSpan = Math.max(1, group.to - group.from);
+    const frameRate = group.targetedAnimations[0]?.animation.framePerSecond ?? 24;
+    this.reviewNormalized = clamped;
+    this.reviewElapsed = (clamped * frameSpan) / frameRate;
+    group.pause();
+    group.goToFrame(group.from + clamped * frameSpan);
   }
 
   /** Selects the authored LOD mesh tier for the isolated review scene. */
@@ -282,5 +336,9 @@ export function createWorkerAvatar(
 ): CharacterAvatar {
   const palette = index % 2 === 0 ? PALETTES.workerA : PALETTES.workerB;
   return new CharacterAvatar(scene, materials, palette, `worker${index}`);
+}
+
+function roundReview(value: number): number {
+  return Number(value.toFixed(4));
 }
 
