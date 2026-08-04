@@ -120,7 +120,7 @@ export class HeroGameplayReviewMode {
     const camera = this.s.camera.camera;
     const presets: Record<HeroGameplayReviewCamera, { position: Vector3; target: Vector3; fov: number }> = {
       gameplay: { position: new Vector3(0, 10.5, -14.5), target: new Vector3(0, 0.7, 2.0), fov: 0.72 },
-      tactical: { position: new Vector3(0, 15.5, -19.0), target: new Vector3(0, 0.4, 2.8), fov: 0.78 },
+      tactical: { position: new Vector3(0, 12.5, -16.0), target: new Vector3(0, 0.8, 1.8), fov: 0.58 },
       "three-quarter": { position: new Vector3(10.0, 9.2, -13.0), target: new Vector3(0, 0.8, 1.8), fov: 0.76 },
       back: { position: new Vector3(0, 8.2, 9.0), target: new Vector3(0, 0.8, -2.2), fov: 0.72 },
     };
