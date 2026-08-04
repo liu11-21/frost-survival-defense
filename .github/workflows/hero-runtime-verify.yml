@@ -23,8 +23,7 @@ on:
       - "scripts/blender/build_hero.py"
       - "scripts/validate-hero-commercial.mjs"
       - "scripts/validate-models.mjs"
-      - "reports/art-previews/hero-commercial/review/**"
-      - "reports/hero-r6-production/**"
+      - "reports/hero-r7-production/**"
       - "tests/hero-runtime.spec.ts"
       - "tests/hero-gameplay-review.spec.ts"
       - "playwright.config.ts"
@@ -105,10 +104,27 @@ jobs:
           HERO_RUNTIME_OUTPUT: reports/hero-runtime-ci
         run: npx playwright test tests/hero-runtime.spec.ts
 
-      - name: Run Hero gameplay art review smoke test
+      - name: Run Hero gameplay review and deterministic animation sampling
         env:
           HERO_GAMEPLAY_OUTPUT: reports/hero-gameplay-ci
         run: npm run test:hero:gameplay
+
+      - name: Verify normalized animation evidence
+        shell: bash
+        run: |
+          set -euo pipefail
+          node --input-type=module <<'NODE'
+          import { readFileSync } from "node:fs";
+          const report = JSON.parse(readFileSync("reports/hero-gameplay-ci/animation-samples.json", "utf8"));
+          const expected = [0, 0.2, 0.4, 0.6, 0.8, 1];
+          const names = ["Idle", "Walk", "Run", "MeleeAttack", "RangedAttack", "Hit", "Death"];
+          if (report.sampleMode !== "normalized-timeline") throw new Error("normalized sampling mode missing");
+          if (JSON.stringify(report.normalizedTimeline) !== JSON.stringify(expected)) throw new Error("normalized timeline mismatch");
+          const sampleCount = names.reduce((total, name) => total + (report.animations?.[name]?.length ?? 0), 0);
+          if (sampleCount !== 42) throw new Error(`expected 42 normalized samples, received ${sampleCount}`);
+          if (!report.midDeltas?.MeleeAttack || !report.midDeltas?.RangedAttack) throw new Error("combat midpoint deltas missing");
+          console.log(`normalized animation samples: ${sampleCount}`);
+          NODE
 
       - name: Stop preview server
         if: always()
@@ -127,7 +143,7 @@ jobs:
           path: |
             reports/hero-runtime-ci/**
             reports/hero-gameplay-ci/**
-            reports/hero-r6-production/**
+            reports/hero-r7-production/**
             reports/art-validation.json
             ${{ runner.temp }}/hero-preview.log
             test-results/**

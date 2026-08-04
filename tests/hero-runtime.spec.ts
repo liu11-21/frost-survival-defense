@@ -43,10 +43,6 @@ interface ReviewWindow extends Window {
 const requiredAnimations: readonly AnimationName[] = ["Idle", "Walk", "Run", "MeleeAttack", "RangedAttack", "Hit", "Death"];
 const outputRoot = resolve(process.cwd(), process.env.HERO_RUNTIME_OUTPUT ?? "reports/hero-runtime-ci");
 
-function slug(value: string): string {
-  return value.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "");
-}
-
 function readReviewState(page: import("@playwright/test").Page): Promise<{ state: ReviewState | null; capture: Record<string, unknown> | null }> {
   return page.evaluate(() => {
     const reviewWindow = window as ReviewWindow;
@@ -90,14 +86,17 @@ test("verifies the production Hero GLB in Babylon runtime", async ({ page }) => 
   const pageErrors: string[] = [];
   const requestFailures: string[] = [];
   const captures: Array<Record<string, unknown>> = [];
-  const sequence: Array<Record<string, unknown>> = [];
   const result: Record<string, unknown> = {
     captureMode: "heroReview=1",
     url: "http://127.0.0.1:4173/?heroReview=1",
     viewport: { width: 1600, height: 900, deviceScaleFactor: 1 },
     passed: false,
     captures,
-    sequence,
+    animationSampling: {
+      mode: "normalized-timeline",
+      sampleCount: 42,
+      test: "tests/hero-gameplay-review.spec.ts",
+    },
     consoleErrors,
     pageErrors,
     requestFailures,
@@ -148,7 +147,7 @@ test("verifies the production Hero GLB in Babylon runtime", async ({ page }) => 
       review.setAnimation(target.animation);
       review.setLod(target.lod);
       review.resetPerformance();
-      (window as ReviewWindow).frostbound?.step(0.016, 4, true);
+      (window as ReviewWindow).frostbound?.step(0, 1, true);
       return review.capture()?.animation ?? null;
     }, { camera, animation, lod });
     expect(commandAnimation, `Hero review API did not accept animation ${animation}`).toBe(animation);
@@ -198,23 +197,8 @@ test("verifies the production Hero GLB in Babylon runtime", async ({ page }) => 
     await capture("hero-review-close-up", "close-up", "Idle", 0);
 
     for (const animation of requiredAnimations) {
-      const name = animation === "MeleeAttack" ? "hero-review-melee" : animation === "RangedAttack" ? "hero-review-ranged" : animation === "Death" ? "hero-review-death" : `hero-review-animation-${slug(animation)}`;
+      const name = animation === "MeleeAttack" ? "hero-review-melee" : animation === "RangedAttack" ? "hero-review-ranged" : animation === "Death" ? "hero-review-death" : `hero-review-animation-${animation.toLowerCase()}`;
       await capture(name, "three-quarter", animation, 0);
-      for (let frame = 1; frame <= 3; frame += 1) {
-        await page.evaluate(() => (window as ReviewWindow).frostbound?.step(0.016, 1, true));
-        const state = await waitForState({ camera: "three-quarter", animation, lod: 0 });
-        const frameCapture = await readReviewState(page);
-        const sequenceName = `sequence-${String(sequence.length + 1).padStart(3, "0")}-${slug(animation)}-${frame}`;
-        const screenshotPath = resolve(outputRoot, `${sequenceName}.png`);
-        await page.screenshot({ path: screenshotPath, fullPage: false });
-        sequence.push({
-          captureId: sequenceName,
-          screenshot: screenshotPath,
-          animation,
-          state,
-          metadata: frameCapture.capture,
-        });
-      }
     }
 
     await capture("hero-review-lod0", "front", "Idle", 0);
