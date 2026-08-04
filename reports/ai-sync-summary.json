@@ -1,13 +1,13 @@
 {
-  "generatedAt": "2026-08-02T13:56:43.657Z",
-  "branch": "main",
-  "commit": "bc0d552fea2f1a4a40681bea684796e559fef65c",
+  "generatedAt": "2026-08-04T14:24:52.832Z",
+  "branch": "art/warrior-production-w1",
+  "commit": "c138bea0965ad8d54c7f340be291c3d223c4a82a",
   "remoteConfigured": true,
   "glbs": 42,
   "blendSources": 43,
   "validationOk": 42,
   "validationTotal": 42,
-  "sourceFiles": 220,
-  "workingTreeClean": null,
-  "gitStatusAvailable": false
+  "sourceFiles": 227,
+  "workingTreeClean": false,
+  "gitStatusAvailable": true
 }

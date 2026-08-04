@@ -1,1 +1,92 @@
-Git diff unavailable in this managed Node session (spawnSync EPERM).
+diff --git a/tests/warrior-runtime.spec.ts b/tests/warrior-runtime.spec.ts
+index fbf0a4c..a120d97 100644
+--- a/tests/warrior-runtime.spec.ts
++++ b/tests/warrior-runtime.spec.ts
+@@ -311,11 +311,13 @@ test("runs a real 9 Warrior + 12 Grunt pressure scenario with genuine engagement
+   let meleeAttackObserved = false;
+   let anyDeathObserved = false;
+   let simSeconds = 0;
+-  const CHUNK_SECONDS = 1;
++  // Sampled at 0.2s, not 1s: a MeleeAttack clip is shorter than a second, so
++  // coarser sampling steps over swings and under-reports engagement.
++  const CHUNK_SECONDS = 0.2;
+   const DT = 0.05;
+   const STEPS_PER_CHUNK = Math.round(CHUNK_SECONDS / DT);
+-  const WARMUP_CHUNKS = 2;
+-  const ENGAGEMENT_CHUNKS = 10; // 10s of real engagement, well over the 5s floor.
++  const WARMUP_CHUNKS = 10; // 2s warm-up
++  const ENGAGEMENT_CHUNKS = 50; // 10s of real engagement, well over the 5s floor.
+   const initial = await page.evaluate(() => {
+     const api = (window as ReviewWindow).frostbound?.api() as Record<string, unknown>;
+     return {
+@@ -469,9 +471,14 @@ test("drives a real Warrior combat lifecycle: engage, single death, squad wipe,
+     const api = (window as ReviewWindow).frostbound?.api() as Record<string, unknown>;
+     return ((api.allUnitsOf as (id: string) => Array<Record<string, unknown>>)("grunt")[0]?.hp as number) ?? 0;
+   });
++  // A MeleeAttack clip only occupies a fraction of a second, so the observer
++  // has to sample faster than the swing. Stepping a full second at a time
++  // (as the first version of this test did) steps straight over the attack
++  // and reports "never attacked" while combat is demonstrably happening.
+   let meleeSeenA = false;
+-  for (let i = 0; i < 12; i++) {
+-    await stepChunk(0.05, 20); // 1s per chunk
++  let gruntDamagedA = false;
++  for (let i = 0; i < 60; i++) {
++    await stepChunk(0.05, 4); // 0.2s per sample
+     const state = await page.evaluate(() => {
+       const api = (window as ReviewWindow).frostbound?.api() as Record<string, unknown>;
+       return {
+@@ -480,7 +487,8 @@ test("drives a real Warrior combat lifecycle: engage, single death, squad wipe,
+       };
+     });
+     if (state.warriors.some((u) => u.currentAuthoredAnimation === "MeleeAttack")) meleeSeenA = true;
+-    if (meleeSeenA && (state.grunts.length === 0 || (state.grunts[0]?.hp as number) < gruntInitialHp)) break;
++    if (state.grunts.length === 0 || state.grunts.some((g) => (g.hp as number) < gruntInitialHp)) gruntDamagedA = true;
++    if (meleeSeenA && gruntDamagedA) break;
+   }
+   const afterEngage = await page.evaluate(() => {
+     const api = (window as ReviewWindow).frostbound?.api() as Record<string, unknown>;
+@@ -565,14 +573,22 @@ test("drives a real Warrior combat lifecycle: engage, single death, squad wipe,
+     (api.spawnEnemy as (id: string, x: number, z: number) => unknown)("grunt", 0, 4);
+   });
+   let meleeSeenC = false;
+-  for (let i = 0; i < 12; i++) {
+-    await stepChunk(0.05, 20);
+-    const warriors = await page.evaluate(() =>
+-      (((window as ReviewWindow).frostbound?.api() as Record<string, unknown>).allUnitsOf as (id: string) => Array<Record<string, unknown>>)("warrior"),
+-    );
+-    if (warriors.some((u) => u.currentAuthoredAnimation === "MeleeAttack")) { meleeSeenC = true; break; }
++  let enemyDownedC = false;
++  for (let i = 0; i < 60; i++) {
++    await stepChunk(0.05, 4); // 0.2s per sample, same reason as phase A
++    const state = await page.evaluate(() => {
++      const api = (window as ReviewWindow).frostbound?.api() as Record<string, unknown>;
++      return {
++        warriors: (api.allUnitsOf as (id: string) => Array<Record<string, unknown>>)("warrior"),
++        grunts: (api.allUnitsOf as (id: string) => Array<Record<string, unknown>>)("grunt"),
++      };
++    });
++    if (state.warriors.some((u) => u.currentAuthoredAnimation === "MeleeAttack")) meleeSeenC = true;
++    if (state.grunts.length === 0 || state.grunts.some((g) => (g.hp as number) < 100)) enemyDownedC = true;
++    if (meleeSeenC && enemyDownedC) break;
+   }
+-  expect(meleeSeenC, "the re-recruited squad must be able to move and attack").toBe(true);
++  expect(meleeSeenC, "the re-recruited squad must play MeleeAttack in real combat").toBe(true);
++  expect(enemyDownedC, "the re-recruited squad must actually damage the enemy it engages").toBe(true);
+ 
+   expect(consoleErrors).toEqual([]);
+   expect(pageErrors).toEqual([]);
+@@ -581,11 +597,11 @@ test("drives a real Warrior combat lifecycle: engage, single death, squad wipe,
+     resolve(output, "lifecycle-result.json"),
+     `${JSON.stringify(
+       {
+-        engage: { meleeSeen: meleeSeenA, gruntInitialHp, afterEngage },
++        engage: { meleeSeen: meleeSeenA, gruntDamaged: gruntDamagedA, gruntInitialHp, afterEngage },
+         singleDeath: { warriorSquadBefore, deathSeen },
+         fullWipe: { wipedWarriorSquad },
+         reRecruit: reRecruited,
+-        reEngage: { meleeSeen: meleeSeenC },
++        reEngage: { meleeSeen: meleeSeenC, enemyDowned: enemyDownedC },
+         consoleErrors,
+         pageErrors,
+         requestFailures,

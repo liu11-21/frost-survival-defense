@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-08-02T13:56:43.649Z",
+  "generatedAt": "2026-08-04T14:24:52.753Z",
   "glbSummary": {
     "total": 42,
     "characters": 26,
@@ -589,14 +589,14 @@
     },
     {
       "path": "public/assets/models/characters/hero.glb",
-      "bytes": 1094084,
+      "bytes": 3903020,
       "category": "character",
       "status": "ok",
-      "nodes": 123,
-      "meshes": 97,
-      "materials": 10,
+      "nodes": 53,
+      "meshes": 27,
+      "materials": 4,
       "skeletons": 1,
-      "triangles": 14252,
+      "triangles": 28072,
       "animations": [
         "Idle",
         "Walk",
@@ -761,19 +761,19 @@
     },
     {
       "path": "public/assets/models/characters/warrior.glb",
-      "bytes": 1188740,
+      "bytes": 1173576,
       "category": "character",
       "status": "ok",
-      "nodes": 140,
-      "meshes": 114,
-      "materials": 13,
+      "nodes": 30,
+      "meshes": 6,
+      "materials": 3,
       "skeletons": 1,
-      "triangles": 14880,
+      "triangles": 3684,
       "animations": [
         "Idle",
         "Walk",
-        "Attack",
-        "Cast",
+        "Run",
+        "MeleeAttack",
         "Hit",
         "Death"
       ]
@@ -928,7 +928,7 @@
       },
       {
         "path": "assets-source/blender/characters/hero.blend",
-        "bytes": 235926
+        "bytes": 657630
       },
       {
         "path": "assets-source/blender/characters/icearmor.blend",
@@ -964,7 +964,7 @@
       },
       {
         "path": "assets-source/blender/characters/warrior.blend",
-        "bytes": 258919
+        "bytes": 1047606
       },
       {
         "path": "assets-source/blender/environment/resource_rock.blend",

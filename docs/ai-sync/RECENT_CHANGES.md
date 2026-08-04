@@ -1,14 +1,13 @@
 # Recent changes
 
-## Warrior-W1 production template (2026-08-04)
-
-- Scope is limited to `warrior`; Hero and every other role/asset remain untouched.
-- Replaced the high-count Warrior assembly with a weighted 18-bone GLB using one merged body mesh and one merged axe mesh per LOD.
-- Final static contract: LOD0/LOD1/LOD2 = 6632/2680/1016 triangles, 5/4/2 primitives, 3 materials, 1 embedded texture, 6 authored animations.
-- Added the reusable `?unitReview=warrior` review mode, deterministic 36-sample animation evidence, three-squad runtime verification, and the 9-Warrior/12-Grunt development pressure smoke test.
-- Local gates currently pass: TypeScript, Warrior static validation, all-authored-asset validation, production build, and all three Warrior Playwright tests. GitHub Actions remains the final remote gate.
-
-Git log unavailable in this managed Node session (spawnSync EPERM).
+c138bea test(warrior): sample combat at 0.2s so swings are not stepped over
+fcd28c6 fix(warrior-review): neutral review lighting and correctly sized framing
+e009d26 art(warrior): rebuild silhouette from real cross-sections, rigid ice axe
+0f49024 test(warrior): strengthen static GLB contract validator
+4c2e306 test(warrior): verify pose deltas and combat lifecycle
+b310027 fix(animation): constrain authored unit animation fallbacks
+ee226a3 test(warrior): add squad runtime verification
+2b7d519 fix(warrior): integrate authored model in gameplay
 
 ## Working-tree diff at sync time
 
