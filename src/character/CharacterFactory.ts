@@ -1,4 +1,4 @@
-import { AnimationGroup, Scene, TransformNode, Vector3 } from "@babylonjs/core";
+import { AbstractMesh, AnimationGroup, Scene, TransformNode, Vector3 } from "@babylonjs/core";
 import { MaterialFactory } from "../scene/MaterialFactory";
 import { CharacterAnimator } from "./CharacterAnimator";
 import { createHumanoid, type HumanoidPalette, type HumanoidRig } from "./ProceduralHumanoid";
@@ -145,6 +145,76 @@ export class CharacterAvatar {
       };
     }
     return snapshot;
+  }
+
+  /**
+   * Rigid-weapon evidence for units whose GLB exposes a `weapon_socket` node
+   * and a `LOD{n}_PROD_axe` mesh (currently Warrior). `axeWorldCenter` is read
+   * from the mesh's skeleton-applied bounding box, not the mesh's own local
+   * transform, because a skinned weapon mesh's node transform stays static
+   * while the skeleton deforms its vertices — the bounding box is the only
+   * cheap signal that actually reflects the current pose. `handContactL/R`
+   * approximate grip distance as hand-bone-to-axe-bounding-box-center; that is
+   * a coarse proxy (the axe currently has no separate upper/lower grip
+   * locator), not a precise per-grip measurement.
+   */
+  get reviewWeaponEvidence(): {
+    socket: { position: [number, number, number]; rotation: [number, number, number, number] } | null;
+    axeWorldCenter: [number, number, number] | null;
+    axeWorldExtents: [number, number, number] | null;
+    handContactL: number | null;
+    handContactR: number | null;
+  } {
+    const empty = { socket: null, axeWorldCenter: null, axeWorldExtents: null, handContactL: null, handContactR: null };
+    if (!this.authored) return empty;
+    const stripped = (name: string) => name.split(":").pop() ?? name;
+    const socketNode = this.authored.nodes.find((node) => stripped(node.name) === "weapon_socket") as TransformNode | undefined;
+    const socket = socketNode
+      ? {
+          position: [roundReview(socketNode.position.x), roundReview(socketNode.position.y), roundReview(socketNode.position.z)] as [number, number, number],
+          rotation: socketNode.rotationQuaternion
+            ? [roundReview(socketNode.rotationQuaternion.x), roundReview(socketNode.rotationQuaternion.y), roundReview(socketNode.rotationQuaternion.z), roundReview(socketNode.rotationQuaternion.w)] as [number, number, number, number]
+            : [roundReview(socketNode.rotation.x), roundReview(socketNode.rotation.y), roundReview(socketNode.rotation.z), 1] as [number, number, number, number],
+        }
+      : null;
+    // The glTF loader splits a multi-primitive mesh into separate Babylon
+    // meshes named `<name>_primitive0`, `<name>_primitive1`, ... — there is
+    // no single Babylon mesh literally named `LOD{n}_PROD_axe` once a mesh
+    // has more than one primitive, so match on the prefix and combine every
+    // matching primitive's bounds.
+    const axeName = `LOD${this.currentReviewLod}_PROD_axe`;
+    const axeMeshes = this.authoredMeshes.filter((mesh) => {
+      const name = stripped(mesh.name);
+      return name === axeName || name.startsWith(`${axeName}_primitive`);
+    }) as AbstractMesh[];
+    let axeWorldCenter: [number, number, number] | null = null;
+    let axeWorldExtents: [number, number, number] | null = null;
+    let handContactL: number | null = null;
+    let handContactR: number | null = null;
+    if (axeMeshes.length > 0) {
+      let min: Vector3 | null = null;
+      let max: Vector3 | null = null;
+      for (const mesh of axeMeshes) {
+        mesh.refreshBoundingInfo({ applySkeleton: true });
+        const box = mesh.getBoundingInfo().boundingBox;
+        min = min ? Vector3.Minimize(min, box.minimumWorld) : box.minimumWorld.clone();
+        max = max ? Vector3.Maximize(max, box.maximumWorld) : box.maximumWorld.clone();
+      }
+      const center = min!.add(max!).scale(0.5);
+      const extents = max!.subtract(min!).scale(0.5);
+      axeWorldCenter = [roundReview(center.x), roundReview(center.y), roundReview(center.z)];
+      axeWorldExtents = [roundReview(extents.x), roundReview(extents.y), roundReview(extents.z)];
+      const skeleton = this.authored.skeletons?.[0];
+      const referenceMesh = this.authoredMeshes.find((mesh) => (mesh as AbstractMesh).skeleton === skeleton) as AbstractMesh | undefined;
+      if (skeleton && referenceMesh) {
+        const handL = skeleton.bones.find((bone) => stripped(bone.name) === "hand.L");
+        const handR = skeleton.bones.find((bone) => stripped(bone.name) === "hand.R");
+        const contactPoint = Vector3.FromArray(axeWorldCenter);
+        if (handL) handContactL = roundReview(Vector3.Distance(handL.getAbsolutePosition(referenceMesh), contactPoint));
+        if (handR) handContactR = roundReview(Vector3.Distance(handR.getAbsolutePosition(referenceMesh), contactPoint));
+      }
+    }
+    return { socket, axeWorldCenter, axeWorldExtents, handContactL, handContactR };
   }
 
   /** Replaces only the visible body; movement/collision still use the rig root. */

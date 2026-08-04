@@ -14,6 +14,8 @@ temp/
 tmp/
 blender-cache/
 reports/runtime/
+.runtime/
+test-results/
 screenshots/
 recordings/
 *.log

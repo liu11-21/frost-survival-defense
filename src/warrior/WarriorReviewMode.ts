@@ -20,6 +20,14 @@ export interface WarriorReviewCapture {
   proceduralVisibleMeshCount: number;
   animationNormalized: number;
   animationGroups: string[];
+  boneTransforms: Record<string, { position: [number, number, number]; rotation: [number, number, number, number] }>;
+  weaponTransform: {
+    socket: { position: [number, number, number]; rotation: [number, number, number, number] } | null;
+    axeWorldCenter: [number, number, number] | null;
+    axeWorldExtents: [number, number, number] | null;
+    handContactL: number | null;
+    handContactR: number | null;
+  };
   visible: boolean;
   uiOccluded: boolean;
   fps: number;
@@ -163,6 +171,10 @@ export class WarriorReviewMode {
     const projected: Vector3[] = [];
     for (const mesh of this.avatar.authoredMeshes) {
       if (!mesh.isEnabled() || !mesh.isVisible) continue;
+      // Without this, a skinned mesh's bounding box stays frozen at its rest
+      // pose -- screenSpaceBoundingBox/visible would silently describe the
+      // Idle silhouette no matter which animation is actually selected.
+      if (mesh.skeleton) mesh.refreshBoundingInfo({ applySkeleton: true });
       for (const corner of mesh.getBoundingInfo().boundingBox.vectorsWorld) {
         projected.push(Vector3.Project(corner, Matrix.Identity(), this.s.scene.getTransformMatrix(), viewport));
       }
@@ -193,6 +205,8 @@ export class WarriorReviewMode {
       proceduralVisibleMeshCount: this.avatar.proceduralVisibleMeshCount,
       animationNormalized: this.avatar.currentReviewAnimationNormalized,
       animationGroups: [...this.avatar.authoredAnimationNames],
+      boneTransforms: this.avatar.reviewBoneSnapshot,
+      weaponTransform: this.avatar.reviewWeaponEvidence,
       visible,
       uiOccluded,
       fps: round(this.s.engine.getFps()),
