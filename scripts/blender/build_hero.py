@@ -959,11 +959,11 @@ def author_hero_atlas(objects, mats):
                     # A cool visor/trim gradient: brighter through the centre,
                     # darker at the perimeter, with restrained frost striations.
                     centre = max(0.0, 1.0 - abs(u - 0.5) * 1.8)
-                    wave += 0.060 * centre - 0.020 * (1.0 - centre)
-                    wave += 0.020 * math.sin((x - y) * 0.09 + index)
-                    wave += 0.022 if (int((u + v) * 24.0) % 11) == 0 else 0.0
+                    wave += 0.038 * centre - 0.026 * (1.0 - centre)
+                    wave += 0.014 * math.sin((x - y) * 0.09 + index)
+                    wave += 0.012 if (int((u + v) * 24.0) % 11) == 0 else 0.0
                 edge = min(x, y, cell_width - 1 - x, cell_height - 1 - y)
-                value = 0.96 + wave + (0.025 if edge < 10 else 0.0)
+                value = 0.90 + wave + (0.010 if edge < 10 else 0.0)
                 pixel_index = ((y0 + y) * texture_size + (x0 + x)) * 4
                 pixels[pixel_index] = max(0.0, min(1.0, base[0] * value))
                 pixels[pixel_index + 1] = max(0.0, min(1.0, base[1] * value))
@@ -1226,13 +1226,13 @@ def collapse_hero_material_slots(objects, mats):
 def build():
     reset_scene()
     mats = {
-        # R6-C retains the four established slots while separating surface
-        # response: matte navy cloth, warm worn leather, restrained gunmetal,
-        # and a cool visor accent that remains readable under furnace light.
-        "cloth": material("MAT_hero_cloth", (0.075, 0.16, 0.34), 0.84),
-        "leather": material("MAT_hero_leather", (0.19, 0.055, 0.018), 0.72),
-        "metal": material("MAT_hero_metal", (0.085, 0.14, 0.21), 0.40, 0.88),
-        "accent": material("MAT_hero_accent", (0.018, 0.22, 0.50), 0.42, 0.18),
+        # R7-C keeps the established four slots while lowering the broad
+        # highlight response: matte navy cloth, worn brown leather, deep
+        # gunmetal, and a restrained cyan visor accent.
+        "cloth": material("MAT_hero_cloth", (0.040, 0.085, 0.19), 0.92),
+        "leather": material("MAT_hero_leather", (0.135, 0.032, 0.010), 0.78),
+        "metal": material("MAT_hero_metal", (0.045, 0.070, 0.105), 0.58, 0.76),
+        "accent": material("MAT_hero_accent", (0.008, 0.115, 0.285), 0.55, 0.12),
     }
     # R4-B keeps four primary material slots. These semantic aliases let the
     # existing mesh authoring code retain its regions without exporting a
@@ -1246,9 +1246,9 @@ def build():
     if glow_shader:
         emission_color = glow_shader.inputs.get("Emission Color")
         if emission_color:
-            emission_color.default_value = (0.018, 0.22, 0.50, 1.0)
+            emission_color.default_value = (0.008, 0.115, 0.285, 1.0)
         if glow_shader.inputs.get("Emission Strength"):
-            glow_shader.inputs["Emission Strength"].default_value = 0.65
+            glow_shader.inputs["Emission Strength"].default_value = 0.26
 
     root = orient_for_babylon(empty("HeroRoot", target="EXPORT", display="PLAIN_AXES"))
     # Keep the existing H6 metadata required by the established asset gate;

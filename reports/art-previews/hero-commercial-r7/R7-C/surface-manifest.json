@@ -1,0 +1,46 @@
+{
+  "stage": "R7-C",
+  "kind": "four-material-value-and-response-review",
+  "source": "assets-source/blender/characters/hero.blend",
+  "materials": [
+    "MAT_hero_accent",
+    "MAT_hero_cloth",
+    "MAT_hero_leather",
+    "MAT_hero_metal"
+  ],
+  "atlas": {
+    "name": "HERO_ATLAS_1024",
+    "resolution": [
+      1024,
+      1024
+    ]
+  },
+  "contract": "4 materials, one embedded HERO_ATLAS_1024, no new shader maps",
+  "views": [
+    {
+      "mode": "neutral",
+      "name": "neutral-front",
+      "file": "D:\\codex\\\u904a\u6232\u958b\u767c\\reports\\art-previews\\hero-commercial-r7\\R7-C\\neutral-front.png"
+    },
+    {
+      "mode": "snow-daylight",
+      "name": "snow-daylight",
+      "file": "D:\\codex\\\u904a\u6232\u958b\u767c\\reports\\art-previews\\hero-commercial-r7\\R7-C\\snow-daylight.png"
+    },
+    {
+      "mode": "furnace-warm",
+      "name": "furnace-warm",
+      "file": "D:\\codex\\\u904a\u6232\u958b\u767c\\reports\\art-previews\\hero-commercial-r7\\R7-C\\furnace-warm.png"
+    },
+    {
+      "mode": "shadow",
+      "name": "shadow-read",
+      "file": "D:\\codex\\\u904a\u6232\u958b\u767c\\reports\\art-previews\\hero-commercial-r7\\R7-C\\shadow-read.png"
+    },
+    {
+      "mode": "multi-light",
+      "name": "battle-surface-close-up",
+      "file": "D:\\codex\\\u904a\u6232\u958b\u767c\\reports\\art-previews\\hero-commercial-r7\\R7-C\\battle-surface-close-up.png"
+    }
+  ]
+}

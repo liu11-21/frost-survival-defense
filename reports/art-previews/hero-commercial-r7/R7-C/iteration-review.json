@@ -1,0 +1,49 @@
+{
+  "stage": "R7-C",
+  "iteration": 1,
+  "scope": "Rebalance existing four-material response and the embedded 1024 atlas without adding meshes, maps, or shader systems.",
+  "observations": {
+    "gameplayCameraTopThree": [
+      "The darker navy cloth and narrower highlights keep the Hero separated from snow and furnace lighting.",
+      "The cyan visor remains readable without washing the helmet to white.",
+      "Carbine silhouette and residual rounded body forms still need deterministic runtime pose evidence; this is not a material-only pass condition."
+    ],
+    "closeUpTopThree": [
+      "Cloth, worn leather, gunmetal, and visor now separate through value, roughness, and restrained emission rather than only hue.",
+      "The shared atlas still exposes authored loop seams and rounded profile language; material response cannot replace a later human shape decision.",
+      "Boot and arm surface readability is improved, but the underlying silhouette and two-hand pose must be judged in the existing gameplay review mode."
+    ],
+    "remainingProceduralFeel": [
+      "Some helmet and limb rings remain visible in close-up clay/read lighting.",
+      "The R7-B carbine still reads side-on in part of the aim profile."
+    ],
+    "regressionsFromR6": [],
+    "budgetImpact": {
+      "newTriangles": 0,
+      "newRenderMeshes": 0,
+      "newMaterials": 0,
+      "newTextures": 0,
+      "lodIdentityPreserved": true,
+      "animationContractPreserved": true
+    }
+  },
+  "metrics": {
+    "glbBytes": 3900964,
+    "lodTriangles": {
+      "LOD0": 18080,
+      "LOD1": 7324,
+      "LOD2": 2668
+    },
+    "lodRenderPrimitives": {
+      "LOD0": 15,
+      "LOD1": 8,
+      "LOD2": 6
+    },
+    "materials": 4,
+    "embeddedTextures": 1,
+    "textureResolution": "1024x1024",
+    "bones": 18,
+    "animations": 7
+  },
+  "humanDecision": "Not a commercial-quality pass. Ready for the next bounded R7 deterministic pose and gameplay evidence step."
+}

@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-08-04T04:35:23.901Z",
+  "generatedAt": "2026-08-04T04:41:00.587Z",
   "asset": "hero",
   "sourcePath": "assets-source/blender/characters/hero.blend",
   "glbPath": "public/assets/models/characters/hero.glb",
@@ -33,7 +33,7 @@
   "artifact": {
     "status": "pass",
     "glb": {
-      "bytes": 3977860,
+      "bytes": 3900964,
       "assetVersion": "2.0",
       "nodes": 53,
       "meshes": 27,
@@ -265,7 +265,7 @@
       "renderableCollisionNodes": []
     },
     "source": {
-      "bytes": 734251,
+      "bytes": 658039,
       "exists": true
     },
     "checks": {
