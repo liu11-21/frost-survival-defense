@@ -21,6 +21,8 @@ export function createDebugApi(s: GameSystems, controls: DebugControls): Record<
   return {
       startStage: (id: string) => controls.startRun("stage", id),
       startEndless: () => controls.startRun("endless"),
+      assetsReady: () => s.assets.isReady,
+      assetStatus: (key: string) => ({ ready: s.assets.isReady, loaded: s.assets.has(key), report: s.assets.report(key) ?? null }),
       teleport: (x: number, z: number) => s.hero.setPosition(x, z),
       setAutoRebuild: (enabled: boolean) => {
         s.buildings.autoRebuildEnabled = enabled;

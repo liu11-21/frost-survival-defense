@@ -24,7 +24,9 @@ function bootstrap(): void {
   const params = new URLSearchParams(window.location.search);
   const heroReview = params.get("heroReview") === "1";
   const heroGameplayReview = params.get("heroGameplayReview") === "1";
-  if (import.meta.env.DEV || heroReview || heroGameplayReview) {
+  const warriorReview = params.get("unitReview") === "warrior";
+  const uiVerification = params.get("uiVerification") === "1";
+  if (import.meta.env.DEV || heroReview || heroGameplayReview || warriorReview || uiVerification) {
     const instance = game;
     window.frostbound = {
       game: instance,

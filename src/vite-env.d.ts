@@ -60,6 +60,23 @@ declare global {
     uiOccluded: boolean;
   }
 
+  interface WarriorReviewRuntimeState {
+    ready: boolean;
+    unit: "warrior";
+    captureMode: "unitReview=warrior";
+    modelSource: "GLB" | "procedural";
+    currentCamera: string;
+    currentAnimation: string;
+    currentLod: "LOD0" | "LOD1" | "LOD2";
+    authoredVisibleMeshes: number;
+    proceduralVisibleMeshes: number;
+    animationGroups: string[];
+    consoleErrors: string[];
+    heroScreenBounds: { x: number; y: number; width: number; height: number; right: number; bottom: number; visible: boolean };
+    visible: boolean;
+    uiOccluded: boolean;
+  }
+
   interface Window {
     /**
      * Development and heroReview-only handle used by the headless test
@@ -76,6 +93,7 @@ declare global {
     };
     __heroReviewState?: HeroReviewRuntimeState;
     __heroGameplayReviewState?: HeroGameplayReviewRuntimeState;
+    __warriorReviewState?: WarriorReviewRuntimeState;
   }
 }
 

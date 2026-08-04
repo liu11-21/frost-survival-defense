@@ -15,6 +15,7 @@ import { InputDebugOverlay } from "../ui/InputDebugOverlay";
 import { updateHaltedDeathLifecycle } from "../combat/HaltedDeathLifecycle";
 import { HeroReviewMode } from "../hero/HeroReviewMode";
 import { HeroGameplayReviewMode } from "../hero/HeroGameplayReviewMode";
+import { WarriorReviewMode } from "../warrior/WarriorReviewMode";
 
 /** Owns the engine loop and the glue between input, rules and presentation. */
 export class Game {
@@ -28,6 +29,7 @@ export class Game {
   private readonly inputDebug: InputDebugOverlay | null;
   private heroReview: HeroReviewMode | null = null;
   private heroGameplayReview: HeroGameplayReviewMode | null = null;
+  private warriorReview: WarriorReviewMode | null = null;
 
   constructor(canvas: HTMLCanvasElement) {
     this.s = new GameSystems(canvas);
@@ -351,6 +353,15 @@ export class Game {
       this.s.engine.runRenderLoop(this.frame);
       return;
     }
+    if (params.get("unitReview") === "warrior") {
+      this.startRun("stage", "stage-1");
+      this.warriorReview = new WarriorReviewMode(this.s);
+      this.warriorReview.enter();
+      this.inMenu = false;
+      this.paused = false;
+      this.s.engine.runRenderLoop(this.frame);
+      return;
+    }
     if (params.get("heroReview") === "1") {
       this.heroReview = new HeroReviewMode(this.s);
       this.heroReview.enter();
@@ -417,6 +428,11 @@ export class Game {
       this.s.scene.render();
       return;
     }
+    if (this.warriorReview) {
+      this.warriorReview.update();
+      this.s.scene.render();
+      return;
+    }
     renderFrame(this.s, this.paused || this.inMenu, (dt) => this.update(dt));
   };
 
@@ -447,6 +463,7 @@ export class Game {
 
   renderReviewFrame(): void {
     this.heroGameplayReview?.renderFrame();
+    this.warriorReview?.renderFrame();
   }
 
   stepManually(dt: number, render = true): void {
@@ -464,6 +481,11 @@ export class Game {
     if (this.heroGameplayReview) {
       this.heroGameplayReview.update(0.016);
       if (render) this.s.scene.render();
+      return;
+    }
+    if (this.warriorReview) {
+      if (render) this.warriorReview.renderFrame();
+      else this.warriorReview.update();
       return;
     }
     if (!this.paused && !this.inMenu) this.update(frameDt);
@@ -505,6 +527,18 @@ export class Game {
             state: () => this.heroGameplayReview?.state() ?? null,
           }
         : null,
+      warriorReview: this.warriorReview
+        ? {
+            setCamera: (mode: Parameters<WarriorReviewMode["setCamera"]>[0]) => this.warriorReview?.setCamera(mode),
+            setAnimation: (animation: Parameters<WarriorReviewMode["setAnimation"]>[0]) => this.warriorReview?.setAnimation(animation),
+            seekAnimation: (normalized: number) => this.warriorReview?.seekAnimation(normalized),
+            setLod: (lod: Parameters<WarriorReviewMode["setLod"]>[0]) => this.warriorReview?.setLod(lod),
+            setAutoLod: (enabled = true) => this.warriorReview?.setAutoLod(enabled),
+            renderFrame: () => this.warriorReview?.renderFrame(),
+            capture: () => this.warriorReview?.capture() ?? null,
+            state: () => this.warriorReview?.state() ?? null,
+          }
+        : null,
       pointerDebug: () => ({ ...this.pointerRouter.debug }),
     };
   }
@@ -519,6 +553,8 @@ export class Game {
     this.heroReview = null;
     this.heroGameplayReview?.dispose();
     this.heroGameplayReview = null;
+    this.warriorReview?.dispose();
+    this.warriorReview = null;
     window.removeEventListener("resize", this.onResize);
     this.s.dispose();
   }
