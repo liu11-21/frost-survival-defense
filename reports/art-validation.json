@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-08-04T13:19:45.044Z",
+  "generatedAt": "2026-08-04T14:21:07.431Z",
   "blenderRequired": true,
   "assets": [
     {
@@ -218,7 +218,7 @@
       "key": "warrior",
       "status": "ok",
       "path": "public/assets/models/characters/warrior.glb",
-      "sizeBytes": 814016,
+      "sizeBytes": 1173576,
       "nodes": 30,
       "meshes": 6,
       "materials": 3,
@@ -242,14 +242,14 @@
       ],
       "bounds": {
         "min": [
-          -0.7210640907287598,
-          0.03321310505270958,
-          -0.31999996304512024
+          -0.6579999923706055,
+          -1.2414034245011862e-8,
+          -0.23799997568130493
         ],
         "max": [
-          0.8399999737739563,
-          2.4000000953674316,
-          0.37500008940696716
+          0.9278600215911865,
+          2.4700000286102295,
+          0.3000001013278961
         ]
       },
       "animations": [
@@ -268,11 +268,11 @@
         "Hit": 54,
         "Death": 54
       },
-      "triangles": 10328,
+      "triangles": 3684,
       "lodTriangles": {
-        "LOD0": 6632,
-        "LOD1": 2680,
-        "LOD2": 1016
+        "LOD0": 1860,
+        "LOD1": 1122,
+        "LOD2": 702
       },
       "surfaceAttributes": {
         "TEXCOORD_0": true,
