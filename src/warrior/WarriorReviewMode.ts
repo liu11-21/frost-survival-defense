@@ -1,6 +1,23 @@
-import { AbstractMesh, Color4, Matrix, MeshBuilder, Node, Vector3 } from "@babylonjs/core";
+import { AbstractMesh, Color3, Color4, Matrix, MeshBuilder, Node, Scene, Vector3 } from "@babylonjs/core";
 import type { GameSystems } from "../game/GameSystems";
 import { CharacterAvatar, PALETTES } from "../character/CharacterFactory";
+
+/** Everything the review temporarily overrides, so gameplay is untouched. */
+interface SavedReviewRenderState {
+  ambientColor: Color3;
+  fogMode: number;
+  toneMappingEnabled: boolean;
+  exposure: number;
+  contrast: number;
+  vignetteEnabled: boolean;
+  bloomEnabled: boolean;
+  imageProcessingEnabled: boolean;
+  sunIntensity: number;
+  sunDiffuse: Color3;
+  sunSpecular: Color3;
+  skyIntensity: number;
+  furnaceIntensity: number;
+}
 
 export type WarriorReviewCamera = "gameplay" | "front" | "side" | "back" | "three-quarter" | "close-up";
 export type WarriorReviewAnimation = "Idle" | "Walk" | "Run" | "MeleeAttack" | "Hit" | "Death";
@@ -41,6 +58,7 @@ export class WarriorReviewMode {
   private readonly avatar: CharacterAvatar;
   private readonly hiddenSceneRoots: Array<{ node: Node; enabled: boolean }> = [];
   private reviewGround: AbstractMesh | null = null;
+  private savedRender: SavedReviewRenderState | null = null;
   private previousClearColor: Color4 | undefined;
   private previousRootDisplay = "";
   private cameraMode: WarriorReviewCamera = "gameplay";
@@ -73,6 +91,7 @@ export class WarriorReviewMode {
     this.s.refs.root.style.display = "none";
     this.previousClearColor = this.s.scene.clearColor?.clone();
     this.s.scene.clearColor = new Color4(0.045, 0.07, 0.105, 1);
+    this.configureReviewLighting();
     const avatarChain = new Set<Node>();
     let avatarNode: Node | null = this.avatar.root;
     while (avatarNode) {
@@ -92,16 +111,92 @@ export class WarriorReviewMode {
       root.setEnabled(false);
     }
     this.reviewGround = MeshBuilder.CreateGround("WarriorReviewGround", { width: 12, height: 12 }, this.s.scene);
+    // A deliberately dark, matte floor. The review key light is bright enough
+    // that a mid-grey ground bounced back into the camera and flattened the
+    // silhouette; this keeps the contrast on the character.
     this.reviewGround.material = this.s.materials.pbr("warriorReviewGround", {
-      color: [0.16, 0.2, 0.23],
-      roughness: 0.92,
-      metallic: 0.02,
+      color: [0.055, 0.07, 0.085],
+      roughness: 0.98,
+      metallic: 0.0,
     });
     this.reviewGround.receiveShadows = false;
     this.avatar.setReviewLod(this.lod);
     this.avatar.setReviewAnimation(this.animation);
     this.setCamera(this.cameraMode);
     this.renderFrame();
+  }
+
+  /**
+   * Neutral, unclipped review lighting.
+   *
+   * The formal arena lights the settlement with a 130-intensity warm point
+   * light sitting 2.6m above the origin (the furnace). The review parks the
+   * Warrior at exactly that origin, so W1's evidence frames were lit from
+   * directly overhead at close range: the cap, fur collar and shoulders blew
+   * out to pure white while the coat crushed to near-black, and nothing about
+   * the silhouette could actually be judged. Bloom then smeared the clipped
+   * highlights further.
+   *
+   * This swaps in a restrained key/fill pair for the duration of the review
+   * only; every value is restored in dispose(), so gameplay lighting and the
+   * Hero review are unaffected.
+   */
+  private configureReviewLighting(): void {
+    const { scene, pipeline, lighting } = this.s;
+    const image = scene.imageProcessingConfiguration;
+    this.savedRender = {
+      ambientColor: scene.ambientColor.clone(),
+      fogMode: scene.fogMode,
+      toneMappingEnabled: image.toneMappingEnabled,
+      exposure: image.exposure,
+      contrast: image.contrast,
+      vignetteEnabled: image.vignetteEnabled,
+      bloomEnabled: pipeline.bloomEnabled,
+      imageProcessingEnabled: pipeline.imageProcessingEnabled,
+      sunIntensity: lighting.sun.intensity,
+      sunDiffuse: lighting.sun.diffuse.clone(),
+      sunSpecular: lighting.sun.specular.clone(),
+      skyIntensity: lighting.sky.intensity,
+      furnaceIntensity: lighting.furnaceLight.intensity,
+    };
+    // The furnace is the direct cause of the blow-out; it has no business
+    // lighting an isolated character turntable.
+    lighting.furnaceLight.intensity = 0;
+    // Key light: slightly cool, well under the clipping point.
+    lighting.sun.intensity = 1.45;
+    lighting.sun.diffuse = new Color3(0.94, 0.96, 1.0);
+    lighting.sun.specular = new Color3(0.22, 0.25, 0.32);
+    // Fill: enough ambient that dark cloth keeps readable detail.
+    lighting.sky.intensity = 0.62;
+    scene.ambientColor = new Color3(0.17, 0.19, 0.24);
+    scene.fogMode = Scene.FOGMODE_NONE;
+    image.toneMappingEnabled = false;
+    image.exposure = 0.92;
+    image.contrast = 1.06;
+    image.vignetteEnabled = false;
+    pipeline.bloomEnabled = false;
+    pipeline.imageProcessingEnabled = true;
+  }
+
+  private restoreReviewLighting(): void {
+    const state = this.savedRender;
+    if (!state) return;
+    const { scene, pipeline, lighting } = this.s;
+    const image = scene.imageProcessingConfiguration;
+    scene.ambientColor = state.ambientColor;
+    scene.fogMode = state.fogMode;
+    image.toneMappingEnabled = state.toneMappingEnabled;
+    image.exposure = state.exposure;
+    image.contrast = state.contrast;
+    image.vignetteEnabled = state.vignetteEnabled;
+    pipeline.bloomEnabled = state.bloomEnabled;
+    pipeline.imageProcessingEnabled = state.imageProcessingEnabled;
+    lighting.sun.intensity = state.sunIntensity;
+    lighting.sun.diffuse = state.sunDiffuse;
+    lighting.sun.specular = state.sunSpecular;
+    lighting.sky.intensity = state.skyIntensity;
+    lighting.furnaceLight.intensity = state.furnaceIntensity;
+    this.savedRender = null;
   }
 
   update(): void {
@@ -118,15 +213,26 @@ export class WarriorReviewMode {
   setCamera(mode: WarriorReviewCamera): void {
     this.cameraMode = mode;
     const presets: Record<WarriorReviewCamera, { position: Vector3; target: Vector3; fov: number }> = {
+      // Orthographic-feeling turntable framing: the character should fill the
+      // frame so the silhouette can actually be judged. W1's presets sat far
+      // enough back that the Warrior occupied a small fraction of the image.
       gameplay: { position: new Vector3(0, 4.8, -7.5), target: new Vector3(0, 1.15, 0), fov: 0.72 },
       // Authored units use local +Z as their forward direction.  Keep the
       // review labels aligned with that contract so "front" shows the
       // authored face/weapon side and "back" shows the pack side.
-      front: { position: new Vector3(0, 3.15, 6.2), target: new Vector3(0, 1.15, 0), fov: 0.62 },
-      side: { position: new Vector3(6.2, 3.15, 0), target: new Vector3(0, 1.15, 0), fov: 0.62 },
-      back: { position: new Vector3(0, 3.15, -6.2), target: new Vector3(0, 1.15, 0), fov: 0.62 },
-      "three-quarter": { position: new Vector3(5.2, 3.8, 5.8), target: new Vector3(0, 1.15, 0), fov: 0.68 },
-      "close-up": { position: new Vector3(3.8, 3.4, 5.4), target: new Vector3(0, 1.25, 0), fov: 0.64 },
+      // Distances are set from the actual authored height (crown at y≈2.47)
+      // and the review fov: below ~3.7 units the model overflows the frame,
+      // which would break the "fully on screen" evidence contract.
+      front: { position: new Vector3(0, 1.55, 4.75), target: new Vector3(0, 1.20, 0), fov: 0.72 },
+      side: { position: new Vector3(4.75, 1.55, 0), target: new Vector3(0, 1.20, 0), fov: 0.72 },
+      back: { position: new Vector3(0, 1.55, -4.75), target: new Vector3(0, 1.20, 0), fov: 0.72 },
+      // three-quarter is the camera the animation sweep samples from, so it
+      // has to contain the *widest* authored pose, not just Idle. Measured
+      // worst case is Death @0.6, which sprawls to a 1.31 horizontal radius
+      // and spans y -0.41..2.47; the target is lowered to centre that span.
+      "three-quarter": { position: new Vector3(3.62, 2.32, 4.64), target: new Vector3(0, 1.05, 0), fov: 0.72 },
+      // The tightest framing that still keeps the whole silhouette on screen.
+      "close-up": { position: new Vector3(2.55, 1.95, 2.95), target: new Vector3(0, 1.24, 0), fov: 0.72 },
     };
     const preset = presets[mode];
     this.s.camera.camera.position.copyFrom(preset.position);
@@ -221,6 +327,7 @@ export class WarriorReviewMode {
   }
 
   dispose(): void {
+    this.restoreReviewLighting();
     this.avatar.dispose();
     this.reviewGround?.dispose();
     this.reviewGround = null;
