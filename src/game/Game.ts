@@ -14,6 +14,7 @@ import { PointerRouter } from "../input/PointerRouter";
 import { InputDebugOverlay } from "../ui/InputDebugOverlay";
 import { updateHaltedDeathLifecycle } from "../combat/HaltedDeathLifecycle";
 import { HeroReviewMode } from "../hero/HeroReviewMode";
+import { HeroGameplayReviewMode } from "../hero/HeroGameplayReviewMode";
 
 /** Owns the engine loop and the glue between input, rules and presentation. */
 export class Game {
@@ -26,6 +27,7 @@ export class Game {
   private readonly pointerRouter: PointerRouter;
   private readonly inputDebug: InputDebugOverlay | null;
   private heroReview: HeroReviewMode | null = null;
+  private heroGameplayReview: HeroGameplayReviewMode | null = null;
 
   constructor(canvas: HTMLCanvasElement) {
     this.s = new GameSystems(canvas);
@@ -165,7 +167,7 @@ export class Game {
 
   private handleAction(action: ActionKey): void {
     const s = this.s;
-    if (this.heroReview) return;
+    if (this.heroReview || this.heroGameplayReview) return;
     if (action === "pause") {
       // Esc unwinds one layer at a time: dialog, then codex, then highlight,
       // then panels, and only then does it pause the run.
@@ -339,7 +341,17 @@ export class Game {
     this.refitCamera();
     this.s.codex.onClose = () => this.closeCodex();
     this.s.markers.setStrength(this.s.markerStrength);
-    if (new URLSearchParams(window.location.search).get("heroReview") === "1") {
+    const params = new URLSearchParams(window.location.search);
+    if (params.get("heroGameplayReview") === "1") {
+      this.startRun("stage", "stage-1");
+      this.heroGameplayReview = new HeroGameplayReviewMode(this.s);
+      this.heroGameplayReview.enter();
+      this.inMenu = false;
+      this.paused = false;
+      this.s.engine.runRenderLoop(this.frame);
+      return;
+    }
+    if (params.get("heroReview") === "1") {
       this.heroReview = new HeroReviewMode(this.s);
       this.heroReview.enter();
       this.inMenu = false;
@@ -400,6 +412,11 @@ export class Game {
       this.heroReview.afterRender();
       return;
     }
+    if (this.heroGameplayReview) {
+      this.heroGameplayReview.update(0.016);
+      this.s.scene.render();
+      return;
+    }
     renderFrame(this.s, this.paused || this.inMenu, (dt) => this.update(dt));
   };
 
@@ -440,6 +457,11 @@ export class Game {
       this.heroReview.afterRender();
       return;
     }
+    if (this.heroGameplayReview) {
+      this.heroGameplayReview.update(0.016);
+      if (render) this.s.scene.render();
+      return;
+    }
     if (!this.paused && !this.inMenu) this.update(frameDt);
     else updateHaltedDeathLifecycle(this.s.squads, this.s.world, frameDt);
     if (render) this.s.scene.render();
@@ -465,6 +487,18 @@ export class Game {
             state: () => this.heroReview?.panelState() ?? null,
           }
         : null,
+      heroGameplayReview: this.heroGameplayReview
+        ? {
+            setCamera: (mode: Parameters<HeroGameplayReviewMode["setCamera"]>[0]) => this.heroGameplayReview?.setCamera(mode),
+            setLighting: (lighting: Parameters<HeroGameplayReviewMode["setLighting"]>[0]) => this.heroGameplayReview?.setLighting(lighting),
+            setContext: (context: Parameters<HeroGameplayReviewMode["setContext"]>[0]) => this.heroGameplayReview?.setContext(context),
+            setAnimation: (animation: Parameters<HeroGameplayReviewMode["setAnimation"]>[0]) => this.heroGameplayReview?.setAnimation(animation),
+            setLod: (lod: Parameters<HeroGameplayReviewMode["setLod"]>[0]) => this.heroGameplayReview?.setLod(lod),
+            setAutoLod: (enabled = true) => this.heroGameplayReview?.setAutoLod(enabled),
+            capture: () => this.heroGameplayReview?.capture() ?? null,
+            state: () => this.heroGameplayReview?.state() ?? null,
+          }
+        : null,
       pointerDebug: () => ({ ...this.pointerRouter.debug }),
     };
   }
@@ -477,6 +511,8 @@ export class Game {
     this.s.engine.stopRenderLoop();
     this.heroReview?.dispose();
     this.heroReview = null;
+    this.heroGameplayReview?.dispose();
+    this.heroGameplayReview = null;
     window.removeEventListener("resize", this.onResize);
     this.s.dispose();
   }

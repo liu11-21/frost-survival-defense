@@ -26,6 +26,35 @@ declare global {
     uiOccluded: boolean;
   }
 
+  interface HeroGameplayReviewRuntimeState {
+    ready: boolean;
+    modelSource: "GLB" | "procedural";
+    currentCamera: string;
+    currentAnimation: string;
+    currentLod: "LOD0" | "LOD1" | "LOD2";
+    lighting: "snow-daylight" | "furnace-warm";
+    context: "alone" | "friends" | "battle";
+    lod: 0 | 1 | 2;
+    lodMode: "auto" | "forced";
+    authoredVisibleMeshes: number;
+    proceduralVisibleMeshes: number;
+    allyCount: number;
+    enemyCount: number;
+    animationGroups: string[];
+    heroWorldPosition: { x: number; y: number; z: number };
+    heroScreenBounds: {
+      x: number;
+      y: number;
+      width: number;
+      height: number;
+      right: number;
+      bottom: number;
+      visible: boolean;
+    };
+    consoleErrors: string[];
+    uiOccluded: boolean;
+  }
+
   interface Window {
     /**
      * Development and heroReview-only handle used by the headless test
@@ -40,6 +69,7 @@ declare global {
       api(): Record<string, unknown>;
     };
     __heroReviewState?: HeroReviewRuntimeState;
+    __heroGameplayReviewState?: HeroGameplayReviewRuntimeState;
   }
 }
 

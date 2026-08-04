@@ -56,6 +56,7 @@ export class CharacterAvatar {
   private reviewGroup: AnimationGroup | null = null;
   private reviewElapsed = 0;
   private reviewLod: 0 | 1 | 2 = 0;
+  private reviewLodAuto = false;
 
   constructor(
     scene: Scene,
@@ -105,7 +106,10 @@ export class CharacterAvatar {
   }
 
   get currentReviewLod(): 0 | 1 | 2 {
-    return this.reviewLod;
+    if (!this.reviewLodAuto) return this.reviewLod;
+    const visible = this.authoredMeshes.find((mesh) => mesh.isEnabled() && mesh.isVisible);
+    const name = visible?.name.split(":").pop() ?? "";
+    return name.startsWith("LOD2_PROXY") || name.startsWith("LOD2_PROD") ? 2 : name.startsWith("LOD1_PROXY") || name.startsWith("LOD1_PROD") ? 1 : 0;
   }
 
   /** Replaces only the visible body; movement/collision still use the rig root. */
@@ -125,6 +129,7 @@ export class CharacterAvatar {
     this.reviewGroup = null;
     this.reviewElapsed = 0;
     this.reviewLod = 0;
+    this.reviewLodAuto = false;
     this.applyLodVisibility();
   }
 
@@ -194,8 +199,16 @@ export class CharacterAvatar {
 
   /** Selects the authored LOD mesh tier for the isolated review scene. */
   setReviewLod(lod: 0 | 1 | 2): void {
+    this.reviewLodAuto = false;
     this.reviewLod = lod;
     this.authored?.setLodTier?.(lod);
+    this.applyLodVisibility();
+  }
+
+  /** Restores the production distance-based LOD observer for gameplay review. */
+  setReviewLodAuto(): void {
+    this.reviewLodAuto = true;
+    this.authored?.setLodTier?.(null);
     this.applyLodVisibility();
   }
 

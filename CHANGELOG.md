@@ -1,5 +1,11 @@
 # 變更脈絡
 
+## 2026-08-04 | Hero-R6 E gameplay-context art review checkpoint
+
+- Added the development-only `?heroGameplayReview=1` entry point. It reuses the production snow arena, furnace, Hero GLB instance, real ally/enemy spawn paths, gameplay/tactical/back cameras, snow-daylight and furnace-warm lighting, and the existing distance-based LOD observer.
+- Added deterministic review contexts for Hero alone, Hero with allies, and Hero in the mixed battle roster, plus seven animation selectors, forced LOD0/LOD1/LOD2 capture, and automatic near/mid/far LOD evidence.
+- Added `tests/hero-gameplay-review.spec.ts` and Linux CI artifact collection for gameplay screenshots, JSON metadata, animation sequences, and console/page/request error logs. This evidence supports a final human commercial art decision; it does not claim commercial art quality passed.
+
 ## 2026-08-04 | Hero-R6 B compact carbine and two-hand hold checkpoint
 
 - Reshaped the existing ranged Hero mesh into a shorter, thicker compact carbine with a readable receiver, stock, barrel, handguard, grip, and energy-cell silhouette.

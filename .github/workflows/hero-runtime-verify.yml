@@ -12,12 +12,15 @@ on:
       - "public/assets/models/characters/hero.glb"
       - "src/hero/**"
       - "src/character/**"
+      - "src/game/Game.ts"
       - "src/main.ts"
+      - "src/ui.css"
       - "src/vite-env.d.ts"
       - "scripts/capture-hero-review.mjs"
       - "scripts/validate-hero-commercial.mjs"
       - "reports/art-previews/hero-commercial/**"
       - "tests/hero-runtime.spec.ts"
+      - "tests/hero-gameplay-review.spec.ts"
       - "playwright.config.ts"
       - "package.json"
       - "package-lock.json"
@@ -96,6 +99,11 @@ jobs:
           HERO_RUNTIME_OUTPUT: reports/hero-runtime-ci
         run: npx playwright test tests/hero-runtime.spec.ts
 
+      - name: Run Hero gameplay art review smoke test
+        env:
+          HERO_GAMEPLAY_OUTPUT: reports/hero-gameplay-ci
+        run: npx playwright test tests/hero-gameplay-review.spec.ts
+
       - name: Stop preview server
         if: always()
         shell: bash
@@ -112,5 +120,6 @@ jobs:
           if-no-files-found: warn
           path: |
             reports/hero-runtime-ci/**
+            reports/hero-gameplay-ci/**
             ${{ runner.temp }}/hero-preview.log
             test-results/**

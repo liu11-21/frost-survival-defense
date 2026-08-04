@@ -81,6 +81,40 @@ body.hero-review #uiRoot > *:not(#heroReviewPanel) {
   grid-column: 1 / -1;
 }
 
+/* ------------------------------------------------ Hero gameplay art review --- */
+body.hero-gameplay-review #uiRoot > *:not(#heroGameplayReviewPanel) {
+  display: none !important;
+}
+
+.hero-gameplay-review-panel {
+  position: absolute;
+  top: 16px;
+  left: 16px;
+  z-index: 80;
+  width: 248px;
+  padding: 9px 11px;
+  pointer-events: none;
+  color: #e8f2ff;
+  background: rgba(10, 17, 28, 0.84);
+  border: 1px solid rgba(151, 194, 235, 0.42);
+  border-radius: 8px;
+  box-shadow: 0 8px 28px rgba(0, 0, 0, 0.42);
+  font: 12px/1.45 "Segoe UI", "Microsoft JhengHei", sans-serif;
+}
+
+.hero-gameplay-review-title {
+  margin-bottom: 5px;
+  color: #ffd28a;
+  font-weight: 800;
+  letter-spacing: 0.11em;
+}
+
+.hero-gameplay-review-panel [data-review-source] {
+  margin-bottom: 4px;
+  color: #b9e6ff;
+  font-weight: 700;
+}
+
 .hud {
   position: absolute;
   inset: 0;

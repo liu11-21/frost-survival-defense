@@ -161,6 +161,10 @@ export class HeroController implements Damageable {
     this.avatar.setReviewLod(lod);
   }
 
+  setReviewLodAuto(): void {
+    this.avatar.setReviewLodAuto();
+  }
+
   /** Keeps authored animation groups advancing without running gameplay AI. */
   updateReview(dt = 0.016): void {
     // Review captures stop Babylon's render loop, so advance the selected
