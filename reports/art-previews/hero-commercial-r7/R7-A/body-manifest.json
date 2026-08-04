@@ -1,0 +1,48 @@
+{
+  "stage": "R7-A",
+  "kind": "body-language-clay-and-silhouette",
+  "source": "assets-source/blender/characters/hero.blend",
+  "method": "existing authored ring profiles; no new render meshes, bones or materials",
+  "views": [
+    {
+      "name": "clay-front",
+      "file": "D:\\codex\\\u904a\u6232\u958b\u767c\\reports\\art-previews\\hero-commercial-r7\\R7-A\\clay-front.png"
+    },
+    {
+      "name": "clay-side",
+      "file": "D:\\codex\\\u904a\u6232\u958b\u767c\\reports\\art-previews\\hero-commercial-r7\\R7-A\\clay-side.png"
+    },
+    {
+      "name": "clay-back",
+      "file": "D:\\codex\\\u904a\u6232\u958b\u767c\\reports\\art-previews\\hero-commercial-r7\\R7-A\\clay-back.png"
+    },
+    {
+      "name": "clay-three-quarter",
+      "file": "D:\\codex\\\u904a\u6232\u958b\u767c\\reports\\art-previews\\hero-commercial-r7\\R7-A\\clay-three-quarter.png"
+    },
+    {
+      "name": "clay-close-up",
+      "file": "D:\\codex\\\u904a\u6232\u958b\u767c\\reports\\art-previews\\hero-commercial-r7\\R7-A\\clay-close-up.png"
+    },
+    {
+      "name": "silhouette-front",
+      "file": "D:\\codex\\\u904a\u6232\u958b\u767c\\reports\\art-previews\\hero-commercial-r7\\R7-A\\silhouette-front.png"
+    },
+    {
+      "name": "silhouette-side",
+      "file": "D:\\codex\\\u904a\u6232\u958b\u767c\\reports\\art-previews\\hero-commercial-r7\\R7-A\\silhouette-side.png"
+    },
+    {
+      "name": "silhouette-back",
+      "file": "D:\\codex\\\u904a\u6232\u958b\u767c\\reports\\art-previews\\hero-commercial-r7\\R7-A\\silhouette-back.png"
+    },
+    {
+      "name": "silhouette-three-quarter",
+      "file": "D:\\codex\\\u904a\u6232\u958b\u767c\\reports\\art-previews\\hero-commercial-r7\\R7-A\\silhouette-three-quarter.png"
+    },
+    {
+      "name": "gameplay-distance",
+      "file": "D:\\codex\\\u904a\u6232\u958b\u767c\\reports\\art-previews\\hero-commercial-r7\\R7-A\\gameplay-distance.png"
+    }
+  ]
+}

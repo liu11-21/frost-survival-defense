@@ -1,0 +1,20 @@
+{
+  "stage": "R7-A",
+  "iteration": 1,
+  "gameplayCameraTopThree": [
+    "Carbine still reads as a horizontal block; R7-B must reduce its projection.",
+    "Chest and collar remain too rounded in the front read.",
+    "Helmet direction is improved, but the crown still needs a stronger front-to-back wedge."
+  ],
+  "closeUpTopThree": [
+    "Arm volumes are separated at the elbow but remain softly cylindrical.",
+    "Boot toe is shorter but still needs a flatter rescue-boot sole break.",
+    "Visor and cheek planes still need value separation in R7-C."
+  ],
+  "remainingProceduralRead": ["helmet dome", "arm tubes", "boot toe", "carbine slab"],
+  "regressionsFromR6": ["LOD and primitive counts remain within budget; no new render object was added."],
+  "triangleBudget": {"LOD0": 18080, "LOD1": 7324, "LOD2": 2668},
+  "newClipping": "Not yet evaluated by deterministic runtime sampling; covered by R7-D.",
+  "lodIdentity": "Static validator pass; LOD1/LOD2 identity parts preserved.",
+  "nextThreeFixes": ["compact and thicken carbine", "lower material highlight response", "deterministic animation pose sampling"]
+}
