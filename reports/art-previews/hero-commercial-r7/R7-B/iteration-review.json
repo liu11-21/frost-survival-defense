@@ -1,0 +1,20 @@
+{
+  "stage": "R7-B",
+  "iteration": 1,
+  "gameplayCameraTopThree": [
+    "The shorter carbine no longer spans the full chest, but the aim pose still reads mostly side-on.",
+    "The left-hand support is visible, while the right stock-to-shoulder contact needs runtime confirmation.",
+    "The lower carry line exposes the visor and upper chest; the belt remains partially covered."
+  ],
+  "closeUpTopThree": [
+    "Receiver thickness and separate magazine read better than R6, but the barrel still has a planar profile.",
+    "Grip and handguard are distinct profile regions without adding a render object.",
+    "Muzzle alignment remains tied to the existing ranged_socket contract and needs runtime verification."
+  ],
+  "remainingProceduralRead": ["side-on carbine profile", "soft forearm tubes"],
+  "regressionsFromR6": ["No mesh, primitive, material, bone or LOD count increase."],
+  "triangleBudget": {"LOD0": 18080, "LOD1": 7324, "LOD2": 2668},
+  "newClipping": "Static key-pose renders show no new weapon/torso intersection; runtime deterministic sampling remains R7-D.",
+  "lodIdentity": "Static validator pass; LOD weapon profile remains present in both authored tiers.",
+  "nextThreeFixes": ["rebalance final material values", "sample every animation timeline deterministically", "confirm gameplay muzzle and shoulder read"]
+}

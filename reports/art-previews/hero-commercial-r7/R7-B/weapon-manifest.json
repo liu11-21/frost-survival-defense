@@ -1,0 +1,96 @@
+{
+  "stage": "R7-B",
+  "kind": "compact-carbine-and-two-hand-handling",
+  "source": "assets-source/blender/characters/hero.blend",
+  "method": "existing ranged profile and existing arm/hand bones; no new render object or IK system",
+  "views": [
+    {
+      "name": "carbine-clay-front",
+      "file": "D:\\codex\\\u904a\u6232\u958b\u767c\\reports\\art-previews\\hero-commercial-r7\\R7-B\\carbine-clay-front.png"
+    },
+    {
+      "name": "carbine-clay-side",
+      "file": "D:\\codex\\\u904a\u6232\u958b\u767c\\reports\\art-previews\\hero-commercial-r7\\R7-B\\carbine-clay-side.png"
+    },
+    {
+      "name": "carbine-clay-three-quarter",
+      "file": "D:\\codex\\\u904a\u6232\u958b\u767c\\reports\\art-previews\\hero-commercial-r7\\R7-B\\carbine-clay-three-quarter.png"
+    },
+    {
+      "name": "carbine-black-silhouette",
+      "file": "D:\\codex\\\u904a\u6232\u958b\u767c\\reports\\art-previews\\hero-commercial-r7\\R7-B\\carbine-black-silhouette.png"
+    },
+    {
+      "name": "idle-carry-front",
+      "clip": "Idle",
+      "frame": 1,
+      "stripStart": 1.0,
+      "stripEnd": 24.0,
+      "file": "D:\\codex\\\u904a\u6232\u958b\u767c\\reports\\art-previews\\hero-commercial-r7\\R7-B\\idle-carry-front.png"
+    },
+    {
+      "name": "idle-carry-three-quarter",
+      "clip": "Idle",
+      "frame": 1,
+      "stripStart": 1.0,
+      "stripEnd": 24.0,
+      "file": "D:\\codex\\\u904a\u6232\u958b\u767c\\reports\\art-previews\\hero-commercial-r7\\R7-B\\idle-carry-three-quarter.png"
+    },
+    {
+      "name": "walk-carry",
+      "clip": "Walk",
+      "frame": 8,
+      "stripStart": 1.0,
+      "stripEnd": 24.0,
+      "file": "D:\\codex\\\u904a\u6232\u958b\u767c\\reports\\art-previews\\hero-commercial-r7\\R7-B\\walk-carry.png"
+    },
+    {
+      "name": "ranged-raise",
+      "clip": "RangedAttack",
+      "frame": 4,
+      "stripStart": 1.0,
+      "stripEnd": 16.0,
+      "file": "D:\\codex\\\u904a\u6232\u958b\u767c\\reports\\art-previews\\hero-commercial-r7\\R7-B\\ranged-raise.png"
+    },
+    {
+      "name": "ranged-aim",
+      "clip": "RangedAttack",
+      "frame": 7,
+      "stripStart": 1.0,
+      "stripEnd": 16.0,
+      "file": "D:\\codex\\\u904a\u6232\u958b\u767c\\reports\\art-previews\\hero-commercial-r7\\R7-B\\ranged-aim.png"
+    },
+    {
+      "name": "ranged-fire",
+      "clip": "RangedAttack",
+      "frame": 10,
+      "stripStart": 1.0,
+      "stripEnd": 16.0,
+      "file": "D:\\codex\\\u904a\u6232\u958b\u767c\\reports\\art-previews\\hero-commercial-r7\\R7-B\\ranged-fire.png"
+    },
+    {
+      "name": "ranged-recoil",
+      "clip": "RangedAttack",
+      "frame": 11,
+      "stripStart": 1.0,
+      "stripEnd": 16.0,
+      "file": "D:\\codex\\\u904a\u6232\u958b\u767c\\reports\\art-previews\\hero-commercial-r7\\R7-B\\ranged-recoil.png"
+    },
+    {
+      "name": "ranged-recover",
+      "clip": "RangedAttack",
+      "frame": 14,
+      "stripStart": 1.0,
+      "stripEnd": 16.0,
+      "file": "D:\\codex\\\u904a\u6232\u958b\u767c\\reports\\art-previews\\hero-commercial-r7\\R7-B\\ranged-recover.png"
+    },
+    {
+      "name": "gameplay-ranged",
+      "clip": "RangedAttack",
+      "frame": 7,
+      "stripStart": 1.0,
+      "stripEnd": 16.0,
+      "file": "D:\\codex\\\u904a\u6232\u958b\u767c\\reports\\art-previews\\hero-commercial-r7\\R7-B\\gameplay-ranged.png"
+    }
+  ]
+}

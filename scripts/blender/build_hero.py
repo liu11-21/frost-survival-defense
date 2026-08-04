@@ -475,22 +475,22 @@ def _add_hero_lods(root, mats):
             ([(-0.21, -0.07), (0.21, -0.07), (0.15, 0.025), (-0.15, 0.025)], 0.02, 0.065, 1),
             ([(-0.030, 0.10), (0.030, 0.10), (0.035, 0.56), (0.0, 0.64), (-0.035, 0.56)], 0.02, 0.045, 2),
         ]
-        # R6 keeps the carbine as one existing authored profile mesh.  The
-        # stock sits near the right hand, while the shortened barrel and
-        # lower receiver leave the chest and visor readable in carry poses.
+        # R7-B keeps the carbine as one existing authored profile mesh.  The
+        # stock sits near the right hand, the receiver has a thicker centre,
+        # and the lowered carry line leaves the chest and visor readable.
         carbine = [
-            # receiver: compact, thicker side profile
-            ([(-0.16, 0.08), (0.22, 0.08), (0.26, 0.22), (0.18, 0.36), (-0.14, 0.36), (-0.22, 0.22)], 0.10, 0.15, 1),
-            # barrel and muzzle: short, narrow and clearly separated
-            ([(-0.70, 0.22), (-0.18, 0.22), (-0.14, 0.28), (-0.18, 0.33), (-0.70, 0.30)], 0.10, 0.095, 2),
-            # stock: small rear wedge, kept close to the right shoulder
-            ([(0.16, 0.10), (0.44, 0.12), (0.48, 0.22), (0.28, 0.30), (0.12, 0.28)], 0.10, 0.14, 1),
-            # handguard and forward support surface
-            ([(-0.46, 0.29), (-0.16, 0.29), (-0.13, 0.39), (-0.42, 0.39)], 0.10, 0.115, 0),
-            # right grip
-            ([(0.00, -0.05), (0.13, -0.05), (0.15, 0.17), (0.02, 0.19)], 0.10, 0.125, 2),
+            # receiver: compact centre with a deeper lower rail
+            ([(-0.11, 0.07), (0.18, 0.07), (0.21, 0.17), (0.16, 0.29), (-0.10, 0.31), (-0.17, 0.19)], 0.10, 0.24, 1),
+            # barrel and muzzle: short, narrow, and stepped away from receiver
+            ([(-0.56, 0.17), (-0.16, 0.17), (-0.13, 0.22), (-0.17, 0.27), (-0.56, 0.24)], 0.10, 0.13, 2),
+            # stock: compact wedge, angled toward the right shoulder
+            ([(0.12, 0.10), (0.34, 0.12), (0.40, 0.18), (0.28, 0.25), (0.10, 0.24)], 0.10, 0.18, 1),
+            # handguard: a raised support rail for the left hand
+            ([(-0.40, 0.22), (-0.15, 0.22), (-0.12, 0.31), (-0.36, 0.32)], 0.10, 0.17, 0),
+            # right grip: diagonal enough to read in silhouette
+            ([(-0.01, -0.04), (0.11, -0.04), (0.13, 0.14), (0.01, 0.17)], 0.10, 0.18, 2),
             # vertical energy cell / magazine
-            ([(-0.10, -0.02), (0.04, -0.02), (0.06, 0.15), (-0.08, 0.15)], 0.10, 0.10, 3),
+            ([(-0.08, -0.04), (0.04, -0.04), (0.06, 0.11), (-0.06, 0.11)], 0.10, 0.15, 3),
         ]
         if level == 1:
             blade.append(([(-0.040, 0.14), (0.040, 0.14), (0.040, 0.52), (-0.040, 0.52)], 0.02, 0.07, 0))
@@ -601,7 +601,7 @@ def _add_hero_lods(root, mats):
             f"LOD{level}_PROD_weapon",
             weapon_components(level),
             [mats["metal"], mats["leather"]],
-            origin=(0.30, 0.80, -0.30),
+            origin=(0.28, 0.66, -0.24),
             target=target,
         )
         tag(weapon, level, marker, "melee-ranged-weapons")
@@ -850,15 +850,15 @@ def _build_mesh_parts(mats):
     ranged = _profile_mesh(
         "weapon.rangedCarbine",
         [
-            ([(-0.16, 0.08), (0.22, 0.08), (0.26, 0.22), (0.18, 0.36), (-0.14, 0.36), (-0.22, 0.22)], 0.0, 0.22, 1),
-            ([(-0.70, 0.22), (-0.18, 0.22), (-0.14, 0.28), (-0.18, 0.33), (-0.70, 0.30)], 0.0, 0.12, 2),
-            ([(0.16, 0.10), (0.44, 0.12), (0.48, 0.22), (0.28, 0.30), (0.12, 0.28)], 0.0, 0.18, 1),
-            ([(-0.46, 0.29), (-0.16, 0.29), (-0.13, 0.39), (-0.42, 0.39)], 0.0, 0.14, 0),
-            ([(0.00, -0.05), (0.13, -0.05), (0.15, 0.17), (0.02, 0.19)], 0.0, 0.15, 2),
-            ([(-0.10, -0.02), (0.04, -0.02), (0.06, 0.15), (-0.08, 0.15)], 0.0, 0.12, 3),
+            ([(-0.11, 0.07), (0.18, 0.07), (0.21, 0.17), (0.16, 0.29), (-0.10, 0.31), (-0.17, 0.19)], 0.0, 0.24, 1),
+            ([(-0.56, 0.17), (-0.16, 0.17), (-0.13, 0.22), (-0.17, 0.27), (-0.56, 0.24)], 0.0, 0.13, 2),
+            ([(0.12, 0.10), (0.34, 0.12), (0.40, 0.18), (0.28, 0.25), (0.10, 0.24)], 0.0, 0.18, 1),
+            ([(-0.40, 0.22), (-0.15, 0.22), (-0.12, 0.31), (-0.36, 0.32)], 0.0, 0.17, 0),
+            ([(-0.01, -0.04), (0.11, -0.04), (0.13, 0.14), (0.01, 0.17)], 0.0, 0.18, 2),
+            ([(-0.08, -0.04), (0.04, -0.04), (0.06, 0.11), (-0.06, 0.11)], 0.0, 0.15, 3),
         ],
         [mats["leather"], mats["metal"], mats["metal_light"], mats["glow"]],
-        origin=(0.30, 0.80, -0.30),
+        origin=(0.28, 0.66, -0.24),
     )
     return [body, head, face_marker, jacket, armor, pack, helmet, goggles, *arm_parts, *leg_parts, cape, melee, ranged]
 
@@ -1087,10 +1087,10 @@ def _hero_vertex_weights(object_name, position):
         # deliberately weighted to the existing left hand bone.  This keeps
         # the production skeleton/socket contract while allowing the ranged
         # pose to read as a genuine two-hand hold instead of a one-arm carry.
-        if x < 0.06:
+        if x < -0.12:
             return [("hand.L", 1.0)]
-        if x < 0.22:
-            return pair("hand.L", "hand.R", (x - 0.06) / 0.16)
+        if x < 0.18:
+            return pair("hand.L", "hand.R", (x + 0.12) / 0.30)
         return [("hand.R", 1.0)]
     if name.startswith("weapon."):
         return [("hand.R", 1.0)]
