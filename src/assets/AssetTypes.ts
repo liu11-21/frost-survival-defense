@@ -30,6 +30,10 @@ export interface AssetInstance {
   key: AssetKey;
   root: TransformNode;
   meshes: AbstractMesh[];
+  /** All visible runtime meshes, including LOD1/LOD2 proxies for review tooling. */
+  allMeshes?: AbstractMesh[];
+  /** Optional runtime LOD override used by the isolated visual review. */
+  setLodTier?: (tier: 0 | 1 | 2 | null) => void;
   nodes: Node[];
   skeletons: Skeleton[];
   animationGroups: AnimationGroup[];

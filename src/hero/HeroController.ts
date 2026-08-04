@@ -131,6 +131,46 @@ export class HeroController implements Damageable {
   get facingYaw(): number {
     return this.avatar.root.rotation.y;
   }
+  get modelSource(): "GLB" | "procedural" {
+    return this.avatar.modelSource;
+  }
+  get authoredAnimationNames(): readonly string[] {
+    return this.avatar.authoredAnimationNames;
+  }
+  get authoredMeshes(): readonly import("@babylonjs/core").AbstractMesh[] {
+    return this.avatar.authoredMeshes;
+  }
+  get authoredVisibleMeshCount(): number {
+    return this.avatar.authoredVisibleMeshCount;
+  }
+  get proceduralVisibleMeshCount(): number {
+    return this.avatar.proceduralVisibleMeshCount;
+  }
+  get currentAuthoredAnimation(): string | null {
+    return this.avatar.currentAuthoredAnimation;
+  }
+  get reviewLod(): 0 | 1 | 2 {
+    return this.avatar.currentReviewLod;
+  }
+
+  setReviewAnimation(name: string): void {
+    this.avatar.setReviewAnimation(name);
+  }
+
+  setReviewLod(lod: 0 | 1 | 2): void {
+    this.avatar.setReviewLod(lod);
+  }
+
+  setReviewLodAuto(): void {
+    this.avatar.setReviewLodAuto();
+  }
+
+  /** Keeps authored animation groups advancing without running gameplay AI. */
+  updateReview(dt = 0.016): void {
+    // Review captures stop Babylon's render loop, so advance the selected
+    // authored clip explicitly while leaving gameplay AI and movement idle.
+    this.avatar.advanceReview(dt);
+  }
   /** A live combat lock, rather than merely facing a recently-dead target. */
   get isAttacking(): boolean {
     return this._alive && this.target?.alive === true && !this.outOfRange(this.target);
@@ -303,6 +343,7 @@ export class HeroController implements Damageable {
     this.attackTimer = this.stats.attackInterval;
     this.gatherSwing = false;
     this.avatar.animator.strikeOnce();
+    this.avatar.playAuthoredAttack(this.inMelee ? "MeleeAttack" : "RangedAttack");
     if (this.inMelee) {
       this.meleeSlow = 0.28;
       this.ctx.vfx.sound("heroMelee", 0.6, 0.9 + Math.random() * 0.2);

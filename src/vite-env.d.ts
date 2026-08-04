@@ -3,10 +3,63 @@
 import type { Game } from "./game/Game";
 
 declare global {
+  interface HeroReviewRuntimeState {
+    ready: boolean;
+    modelSource: "GLB" | "procedural";
+    currentCamera: string;
+    currentAnimation: string;
+    currentLod: "LOD0" | "LOD1" | "LOD2";
+    authoredVisibleMeshes: number;
+    proceduralVisibleMeshes: number;
+    visibleVertices: number;
+    visibleTriangles: number;
+    heroWorldPosition: { x: number; y: number; z: number };
+    heroScreenBounds: {
+      x: number;
+      y: number;
+      width: number;
+      height: number;
+      visible: boolean;
+    };
+    animationGroups: string[];
+    consoleErrors: string[];
+    uiOccluded: boolean;
+  }
+
+  interface HeroGameplayReviewRuntimeState {
+    ready: boolean;
+    modelSource: "GLB" | "procedural";
+    currentCamera: string;
+    currentAnimation: string;
+    currentLod: "LOD0" | "LOD1" | "LOD2";
+    lighting: "snow-daylight" | "furnace-warm";
+    context: "alone" | "friends" | "battle";
+    lod: 0 | 1 | 2;
+    lodMode: "auto" | "forced";
+    authoredVisibleMeshes: number;
+    proceduralVisibleMeshes: number;
+    allyCount: number;
+    enemyCount: number;
+    animationGroups: string[];
+    heroWorldPosition: { x: number; y: number; z: number };
+    heroScreenBounds: {
+      x: number;
+      y: number;
+      width: number;
+      height: number;
+      right: number;
+      bottom: number;
+      visible: boolean;
+    };
+    consoleErrors: string[];
+    uiOccluded: boolean;
+  }
+
   interface Window {
     /**
-     * Development-only handle used by the headless test harness. Tree-shaken
-     * out of production builds.
+     * Development and heroReview-only handle used by the headless test
+     * harness. It is intentionally exposed in production only for the
+     * explicit ?heroReview=1 review entry point.
      */
     frostbound?: {
       game: Game;
@@ -15,6 +68,8 @@ declare global {
       stopLoop(): void;
       api(): Record<string, unknown>;
     };
+    __heroReviewState?: HeroReviewRuntimeState;
+    __heroGameplayReviewState?: HeroGameplayReviewRuntimeState;
   }
 }
 

@@ -73,13 +73,13 @@ function parseGlb(buffer) {
 function validate(spec, glb) {
   const { json } = parseGlb(glb);
   const names = new Set((json.nodes ?? []).map((node) => node.name).filter(Boolean));
-  const lodProxyNodes = (json.nodes ?? []).filter((node) => {
+  const lodNodes = (json.nodes ?? []).filter((node) => {
     const name = String(node.name ?? "");
-    return (name.startsWith("LOD1_PROXY") || name.startsWith("LOD2_PROXY")) && node.mesh !== undefined;
+    return (name.startsWith("LOD1_PROXY") || name.startsWith("LOD2_PROXY") || name.startsWith("LOD1_PROD") || name.startsWith("LOD2_PROD")) && node.mesh !== undefined;
   });
   const lodProxies = {
-    LOD1: lodProxyNodes.filter((node) => String(node.name).startsWith("LOD1_PROXY")).length,
-    LOD2: lodProxyNodes.filter((node) => String(node.name).startsWith("LOD2_PROXY")).length,
+    LOD1: lodNodes.filter((node) => { const name = String(node.name); return name.startsWith("LOD1_PROXY") || name.startsWith("LOD1_PROD"); }).length,
+    LOD2: lodNodes.filter((node) => { const name = String(node.name); return name.startsWith("LOD2_PROXY") || name.startsWith("LOD2_PROD"); }).length,
   };
   const animationRecords = (json.animations ?? []).filter((animation) => animation.name);
   const animations = new Set(animationRecords.map((animation) => animation.name));
@@ -90,10 +90,18 @@ function validate(spec, glb) {
   const externalUris = [];
   for (const image of json.images ?? []) if (image.uri) externalUris.push(image.uri);
   for (const buffer of json.buffers ?? []) if (buffer.uri) externalUris.push(buffer.uri);
-  const triangles = (json.meshes ?? []).reduce((sum, mesh) => sum + (mesh.primitives ?? []).reduce((inner, primitive) => {
+  const primitiveTriangles = (primitive) => {
     const accessor = json.accessors?.[primitive.indices];
-    return inner + (accessor ? Math.floor((accessor.count ?? 0) / 3) : 0);
-  }, 0), 0);
+    return accessor ? Math.floor((accessor.count ?? 0) / 3) : 0;
+  };
+  const triangles = (json.meshes ?? []).reduce((sum, mesh) => sum + (mesh.primitives ?? []).reduce((inner, primitive) => inner + primitiveTriangles(primitive), 0), 0);
+  const lodTriangles = { LOD0: 0, LOD1: 0, LOD2: 0 };
+  for (const node of json.nodes ?? []) {
+    if (node.mesh === undefined) continue;
+    const name = String(node.name ?? "");
+    const tier = name.startsWith("LOD1_PROXY") || name.startsWith("LOD1_PROD") ? "LOD1" : name.startsWith("LOD2_PROXY") || name.startsWith("LOD2_PROD") ? "LOD2" : "LOD0";
+    for (const primitive of json.meshes?.[node.mesh]?.primitives ?? []) lodTriangles[tier] += primitiveTriangles(primitive);
+  }
   const renderPrimitives = (json.meshes ?? []).flatMap((mesh) => mesh.primitives ?? []);
   const hasUv0 = renderPrimitives.some((primitive) => primitive.attributes?.TEXCOORD_0 !== undefined);
   const hasColor0 = renderPrimitives.some((primitive) => primitive.attributes?.COLOR_0 !== undefined);
@@ -106,7 +114,7 @@ function validate(spec, glb) {
   if ((json.meshes ?? []).length < 2 || triangles < 24) warnings.push("Asset is too small to be a finished authored model.");
   if (!hasUv0) warnings.push("Authored UV channel TEXCOORD_0 is missing.");
   if (!hasColor0) warnings.push("Authored surface paint COLOR_0 is missing.");
-  if (lodProxies.LOD1 < 1 || lodProxies.LOD2 < 1) warnings.push("LOD1/LOD2 proxy geometry is missing.");
+  if (lodProxies.LOD1 < 1 || lodProxies.LOD2 < 1) warnings.push("LOD1/LOD2 geometry is missing.");
   const collisionNodes = (json.nodes ?? []).filter((node) => {
     const name = String(node.name ?? "").toLowerCase();
     return name.includes("col_") || name.includes("collision") || name.includes("collider");
@@ -134,15 +142,18 @@ function validate(spec, glb) {
     key: spec.key,
     status: missingNodes.length || missingAnimations.length || externalUris.length || skeletonCount < (spec.skeletons ?? 0) || lodProxies.LOD1 < 1 || lodProxies.LOD2 < 1 || !hasUv0 || !hasColor0 || warnings.some((warning) => warning.includes("Absolute filesystem") || warning.includes("too small")) ? "invalid" : "ok",
     path: spec.path,
+    sizeBytes: glb.length,
     nodes: (json.nodes ?? []).length,
     meshes: (json.meshes ?? []).length,
     materials: (json.materials ?? []).length,
+    textures: (json.images ?? []).length,
     skeletons: skeletonCount,
     rootTransforms,
     bounds: bounds.min[0] === Infinity ? null : bounds,
     animations: [...animations],
     animationChannels: Object.fromEntries(animationRecords.map((animation) => [animation.name, animation.channels?.length ?? 0])),
     triangles,
+    lodTriangles,
     surfaceAttributes: { TEXCOORD_0: hasUv0, COLOR_0: hasColor0 },
     lodProxies,
     missingNodes,

@@ -34,20 +34,33 @@ export class ModelLoader {
         mesh.isPickable = false;
       }
     }
-    const visibleMeshes = meshes.filter((mesh) => !mesh.name.includes("COL_") && !mesh.name.toLowerCase().includes("collision") && !mesh.name.toLowerCase().includes("collider"));
+    const visibleMeshes = meshes.filter((mesh) =>
+      !mesh.name.includes("COL_") &&
+      !mesh.name.toLowerCase().includes("collision") &&
+      !mesh.name.toLowerCase().includes("collider"),
+    );
     const proxyLevel = (mesh: AbstractMesh): 0 | 1 | 2 => {
       const segments = mesh.name.split(":");
       const name = segments[segments.length - 1] ?? mesh.name;
-      if (name.startsWith("LOD1_PROXY")) return 1;
-      if (name.startsWith("LOD2_PROXY")) return 2;
+      if (name.startsWith("LOD1_PROXY") || name.startsWith("LOD1_PROD")) return 1;
+      if (name.startsWith("LOD2_PROXY") || name.startsWith("LOD2_PROD")) return 2;
       return 0;
     };
     const lodMeshes: [AbstractMesh[], AbstractMesh[], AbstractMesh[]] = [[], [], []];
     for (const mesh of visibleMeshes) lodMeshes[proxyLevel(mesh)].push(mesh);
+    let forcedTier: 0 | 1 | 2 | null = null;
     const setTier = (tier: 0 | 1 | 2): void => {
       for (let index = 0; index < lodMeshes.length; index += 1) {
         const enabled = index === tier;
         for (const mesh of lodMeshes[index]) {
+          // Babylon's glTF importer exposes a synthetic __root__ mesh that is
+          // the hierarchy parent for the authored model. It must stay enabled
+          // while individual LOD leaves switch underneath it.
+          if (mesh.name.endsWith(":__root__")) {
+            mesh.setEnabled(true);
+            mesh.isVisible = false;
+            continue;
+          }
           mesh.isVisible = enabled;
           mesh.setEnabled(enabled);
         }
@@ -57,6 +70,10 @@ export class ModelLoader {
     const lodObserver = this.scene.onBeforeRenderObservable.add(() => {
       const camera = this.scene.activeCamera;
       if (!camera || root.isDisposed()) return;
+      if (forcedTier !== null) {
+        setTier(forcedTier);
+        return;
+      }
       const distance = Vector3.Distance(camera.globalPosition, root.getAbsolutePosition());
       setTier(distance >= 34 ? 2 : distance >= 18 ? 1 : 0);
     });
@@ -67,6 +84,11 @@ export class ModelLoader {
       // internally so construction stages and character attachments cannot
       // accidentally re-enable distance proxies as part of their body list.
       meshes: lodMeshes[0],
+      allMeshes: visibleMeshes,
+      setLodTier: (tier) => {
+        forcedTier = tier;
+        if (tier !== null) setTier(tier);
+      },
       nodes,
       skeletons: entries.skeletons,
       animationGroups: entries.animationGroups,

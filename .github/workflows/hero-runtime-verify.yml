@@ -1,0 +1,133 @@
+name: Hero Runtime Verification
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - production/hero-r6
+  pull_request:
+    paths:
+      - ".github/workflows/hero-runtime-verify.yml"
+      - "assets-source/blender/characters/hero.blend"
+      - "public/assets/models/characters/hero.glb"
+      - "src/hero/**"
+      - "src/character/**"
+      - "src/assets/**"
+      - "src/game/Game.ts"
+      - "src/game/GameSystems.ts"
+      - "src/main.ts"
+      - "src/ui.css"
+      - "src/ui/**"
+      - "src/vite-env.d.ts"
+      - "scripts/run-blender.mjs"
+      - "scripts/blender/build_hero.py"
+      - "scripts/validate-hero-commercial.mjs"
+      - "scripts/validate-models.mjs"
+      - "reports/art-previews/hero-commercial/review/**"
+      - "reports/hero-r6-production/**"
+      - "tests/hero-runtime.spec.ts"
+      - "tests/hero-gameplay-review.spec.ts"
+      - "playwright.config.ts"
+      - "package.json"
+      - "package-lock.json"
+      - "vite.config.ts"
+
+concurrency:
+  group: hero-runtime-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  verify:
+    name: Linux Babylon runtime verification
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - name: Checkout repository with LFS assets
+        uses: actions/checkout@v4
+        with:
+          lfs: true
+          fetch-depth: 0
+
+      - name: Set up Node.js 22 with npm cache
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Verify Hero LFS files are materialized
+        shell: bash
+        run: |
+          set -euo pipefail
+          for file in assets-source/blender/characters/hero.blend public/assets/models/characters/hero.glb; do
+            test -s "$file"
+            if grep -a -m1 -q "version https://git-lfs.github.com/spec/v1" "$file"; then
+              echo "LFS pointer was checked out instead of the materialized asset: $file" >&2
+              exit 1
+            fi
+          done
+          test "$(od -An -t x1 -N4 public/assets/models/characters/hero.glb | tr -d ' \n')" = "676c5446"
+
+      - name: Install npm dependencies
+        run: npm ci
+
+      - name: Install Chromium for runtime verification
+        run: npx playwright install --with-deps chromium
+
+      - name: TypeScript check
+        run: npm run typecheck
+
+      - name: Validate Hero static contract
+        run: npm run art:validate:hero
+
+      - name: Validate all authored assets
+        run: npm run art:validate
+
+      - name: Build production bundle
+        run: npm run build
+
+      - name: Start production preview server
+        shell: bash
+        run: |
+          set -euo pipefail
+          npm run preview -- --host 127.0.0.1 --port 4173 > "$RUNNER_TEMP/hero-preview.log" 2>&1 &
+          echo $! > "$RUNNER_TEMP/hero-preview.pid"
+          for attempt in $(seq 1 60); do
+            if curl --fail --silent http://127.0.0.1:4173/ > /dev/null; then
+              exit 0
+            fi
+            sleep 1
+          done
+          cat "$RUNNER_TEMP/hero-preview.log"
+          exit 1
+
+      - name: Run Babylon Hero runtime verification
+        env:
+          HERO_RUNTIME_OUTPUT: reports/hero-runtime-ci
+        run: npx playwright test tests/hero-runtime.spec.ts
+
+      - name: Run Hero gameplay art review smoke test
+        env:
+          HERO_GAMEPLAY_OUTPUT: reports/hero-gameplay-ci
+        run: npm run test:hero:gameplay
+
+      - name: Stop preview server
+        if: always()
+        shell: bash
+        run: |
+          if test -f "$RUNNER_TEMP/hero-preview.pid"; then
+            kill "$(cat "$RUNNER_TEMP/hero-preview.pid")" 2>/dev/null || true
+          fi
+
+      - name: Upload Hero runtime evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: hero-runtime-verification-${{ github.run_id }}
+          if-no-files-found: warn
+          path: |
+            reports/hero-runtime-ci/**
+            reports/hero-gameplay-ci/**
+            reports/hero-r6-production/**
+            reports/art-validation.json
+            ${{ runner.temp }}/hero-preview.log
+            test-results/**

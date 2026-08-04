@@ -1,4 +1,4 @@
-import { Scene, TransformNode, Vector3 } from "@babylonjs/core";
+import { AnimationGroup, Scene, TransformNode, Vector3 } from "@babylonjs/core";
 import { MaterialFactory } from "../scene/MaterialFactory";
 import { CharacterAnimator } from "./CharacterAnimator";
 import { createHumanoid, type HumanoidPalette, type HumanoidRig } from "./ProceduralHumanoid";
@@ -51,6 +51,12 @@ export class CharacterAvatar {
   private readonly velocity = new Vector3();
   private authored: AssetInstance | null = null;
   private authoredState = "";
+  private authoredAttack: "MeleeAttack" | "RangedAttack" | null = null;
+  private reviewAnimation: string | null = null;
+  private reviewGroup: AnimationGroup | null = null;
+  private reviewElapsed = 0;
+  private reviewLod: 0 | 1 | 2 = 0;
+  private reviewLodAuto = false;
 
   constructor(
     scene: Scene,
@@ -71,6 +77,41 @@ export class CharacterAvatar {
     return this.authored?.meshes ?? this.rig.meshes;
   }
 
+  /** The visible source is exposed for the runtime verification panel and test API. */
+  get modelSource(): "GLB" | "procedural" {
+    return this.authored ? "GLB" : "procedural";
+  }
+
+  get authoredAnimationNames(): readonly string[] {
+    return this.authored?.animationGroups.map((group) => group.name) ?? [];
+  }
+
+  /** Meshes from the authored runtime instance, including inactive LOD proxies. */
+  get authoredMeshes(): readonly import("@babylonjs/core").AbstractMesh[] {
+    return this.authored?.allMeshes ?? this.authored?.meshes ?? [];
+  }
+
+  get authoredVisibleMeshCount(): number {
+    return this.authoredMeshes.filter((mesh) => mesh.isEnabled() && mesh.isVisible).length;
+  }
+
+  get proceduralVisibleMeshCount(): number {
+    return this.rig.meshes.filter((mesh) => mesh.isEnabled() && mesh.isVisible).length;
+  }
+
+  get currentAuthoredAnimation(): string | null {
+    if (this.reviewAnimation) return this.reviewAnimation;
+    if (!this.authoredState) return null;
+    return this.authoredState.split(":").slice(1).join(":") || null;
+  }
+
+  get currentReviewLod(): 0 | 1 | 2 {
+    if (!this.reviewLodAuto) return this.reviewLod;
+    const visible = this.authoredMeshes.find((mesh) => mesh.isEnabled() && mesh.isVisible);
+    const name = visible?.name.split(":").pop() ?? "";
+    return name.startsWith("LOD2_PROXY") || name.startsWith("LOD2_PROD") ? 2 : name.startsWith("LOD1_PROXY") || name.startsWith("LOD1_PROD") ? 1 : 0;
+  }
+
   /** Replaces only the visible body; movement/collision still use the rig root. */
   attachAuthored(instance: AssetInstance): void {
     this.authored?.dispose();
@@ -83,6 +124,22 @@ export class CharacterAvatar {
       mesh.setEnabled(false);
     }
     this.authoredState = "";
+    this.authoredAttack = null;
+    this.reviewAnimation = null;
+    this.reviewGroup = null;
+    this.reviewElapsed = 0;
+    this.reviewLod = 0;
+    this.reviewLodAuto = false;
+    this.applyLodVisibility();
+  }
+
+  /** Starts one authored attack clip while the shared procedural pose drives timing. */
+  playAuthoredAttack(name: "MeleeAttack" | "RangedAttack"): void {
+    if (!this.authored) return;
+    this.reviewAnimation = null;
+    this.authoredAttack = name;
+    this.authoredState = "";
+    this.updateAuthoredAnimation();
   }
 
   get yaw(): number {
@@ -108,6 +165,53 @@ export class CharacterAvatar {
     this.updateAuthoredAnimation();
   }
 
+  /**
+   * Review-only animation selector. Babylon advances the selected group during
+   * scene rendering, so no gameplay animator state is changed in this mode.
+   */
+  setReviewAnimation(name: string): void {
+    if (!this.authored) return;
+    const group = this.authored.animationGroups.find(
+      (candidate) => candidate.name === name || candidate.name.endsWith(`:${name}`),
+    );
+    if (!group) return;
+    this.reviewAnimation = name;
+    this.reviewGroup = group;
+    this.reviewElapsed = 0;
+    this.authoredState = `review:${name}`;
+    this.authoredAttack = null;
+    for (const candidate of this.authored.animationGroups) candidate.stop();
+    group.start(name === "Idle" || name === "Walk" || name === "Run", 1);
+    group.goToFrame(group.from);
+  }
+
+  /** Advances the isolated review clip deterministically when the render loop is paused. */
+  advanceReview(dt: number): void {
+    if (!this.reviewGroup) return;
+    const group = this.reviewGroup;
+    const frameRate = group.targetedAnimations[0]?.animation.framePerSecond ?? 24;
+    const frameSpan = Math.max(1, group.to - group.from);
+    this.reviewElapsed += Math.max(0, dt) * group.speedRatio;
+    const offset = this.reviewElapsed * frameRate;
+    const frame = group.from + (group.loopAnimation ? offset % frameSpan : Math.min(offset, frameSpan));
+    group.goToFrame(frame);
+  }
+
+  /** Selects the authored LOD mesh tier for the isolated review scene. */
+  setReviewLod(lod: 0 | 1 | 2): void {
+    this.reviewLodAuto = false;
+    this.reviewLod = lod;
+    this.authored?.setLodTier?.(lod);
+    this.applyLodVisibility();
+  }
+
+  /** Restores the production distance-based LOD observer for gameplay review. */
+  setReviewLodAuto(): void {
+    this.reviewLodAuto = true;
+    this.authored?.setLodTier?.(null);
+    this.applyLodVisibility();
+  }
+
   setEnabled(enabled: boolean): void {
     this.rig.root.setEnabled(enabled);
     this.authored?.root.setEnabled(enabled);
@@ -121,13 +225,49 @@ export class CharacterAvatar {
 
   private updateAuthoredAnimation(): void {
     if (!this.authored) return;
+    if (this.reviewAnimation) return;
     const state = this.animator.currentState;
-    if (state === this.authoredState) return;
-    this.authoredState = state;
+    if (state !== "chop") this.authoredAttack = null;
+    const name = this.authoredAttack ?? (state === "sprint" ? "Run" : state === "walk" || state === "carryWalk" ? "Walk" : state === "chop" ? "MeleeAttack" : state === "frozen" ? "Hit" : state === "wakeUp" ? "Idle" : "Idle");
+    const stateKey = `${state}:${name}`;
+    if (stateKey === this.authoredState) return;
+    this.authoredState = stateKey;
     for (const group of this.authored.animationGroups) group.stop();
-    const name = state === "sprint" ? "Run" : state === "walk" || state === "carryWalk" ? "Walk" : state === "chop" ? "MeleeAttack" : state === "frozen" ? "Hit" : state === "wakeUp" ? "Idle" : "Idle";
     const group = this.authored.animationGroups.find((candidate) => candidate.name === name || candidate.name.endsWith(`:${name}`));
     group?.start(name === "Idle" || name === "Walk" || name === "Run", 1);
+  }
+
+  private applyLodVisibility(): void {
+    if (!this.authored) return;
+    for (const mesh of this.authored.meshes) {
+      const name = mesh.name.split(":").pop() ?? mesh.name;
+      if (name === "__root__") {
+        mesh.isVisible = false;
+        mesh.setEnabled(true);
+        continue;
+      }
+      const tier = name.startsWith("LOD1_PROXY") || name.startsWith("LOD1_PROD") ? 1 : name.startsWith("LOD2_PROXY") || name.startsWith("LOD2_PROD") ? 2 : 0;
+      const enabled = tier === this.reviewLod;
+      mesh.isVisible = enabled;
+      mesh.setEnabled(enabled);
+    }
+    // The exported proxy meshes sit below explicit LOD1/LOD2 transform
+    // groups. Those groups are disabled by the glTF scene default, so the
+    // review override must activate the selected group as well as its meshes.
+    for (const mesh of this.authoredMeshes) {
+      const name = mesh.name.split(":").pop() ?? mesh.name;
+      const tier = name.startsWith("LOD1_PROXY") || name.startsWith("LOD1_PROD") ? 1 : name.startsWith("LOD2_PROXY") || name.startsWith("LOD2_PROD") ? 2 : 0;
+      if (tier === 0) continue;
+      let parent = mesh.parent;
+      while (parent && parent !== this.rig.root) {
+        const parentName = parent.name.split(":").pop() ?? parent.name;
+        if (parentName === "LOD1" || parentName === "LOD2") {
+          parent.setEnabled(tier === this.reviewLod);
+          break;
+        }
+        parent = parent.parent;
+      }
+    }
   }
 }
 
