@@ -1,0 +1,31 @@
+{
+  "stage": "R6-D",
+  "iteration": 1,
+  "before": {
+    "checkpoint": "R6-C / b798ca1",
+    "sizeBytes": 4107928,
+    "lodTriangles": { "LOD0": 19064, "LOD1": 7324, "LOD2": 2668 },
+    "renderMeshes": 15,
+    "materials": 4,
+    "textures": 1,
+    "animationKeys": { "MeleeAttack": 206, "RangedAttack": 234 }
+  },
+  "after": {
+    "checkpoint": "R6-D working tree",
+    "sizeBytes": 4109268,
+    "lodTriangles": { "LOD0": 19064, "LOD1": 7324, "LOD2": 2668 },
+    "renderMeshes": 15,
+    "materials": 4,
+    "textures": 1,
+    "animationKeys": { "MeleeAttack": 234, "RangedAttack": 234 }
+  },
+  "deltas": {
+    "sizeBytes": 1340,
+    "lodTriangles": { "LOD0": 0, "LOD1": 0, "LOD2": 0 },
+    "renderMeshes": 0,
+    "materials": 0,
+    "textures": 0,
+    "animationKeys": { "MeleeAttack": 28, "RangedAttack": 0 }
+  },
+  "assessment": "Existing seven clip names, skeleton, sockets, and geometry budgets are unchanged. MeleeAttack now exposes launch, counter-rotation, swing, impact hold, and recovery; RangedAttack exposes low-ready, raise, aim, fire/recoil, and recovery with both arm chains. Human animation and commercial art review remains open."
+}

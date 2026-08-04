@@ -1,0 +1,119 @@
+{
+  "stage": "R6-D",
+  "kind": "existing-clip-combat-pose-review",
+  "source": "assets-source/blender/characters/hero.blend",
+  "clips": [
+    {
+      "name": "melee-start",
+      "clip": "MeleeAttack",
+      "frame": 1,
+      "stripStart": 1.0,
+      "stripEnd": 16.0,
+      "file": "D:\\codex\\\u904a\u6232\u958b\u767c\\reports\\art-previews\\hero-commercial-r6\\R6-D\\melee-start.png"
+    },
+    {
+      "name": "melee-windup",
+      "clip": "MeleeAttack",
+      "frame": 4,
+      "stripStart": 1.0,
+      "stripEnd": 16.0,
+      "file": "D:\\codex\\\u904a\u6232\u958b\u767c\\reports\\art-previews\\hero-commercial-r6\\R6-D\\melee-windup.png"
+    },
+    {
+      "name": "melee-swing",
+      "clip": "MeleeAttack",
+      "frame": 7,
+      "stripStart": 1.0,
+      "stripEnd": 16.0,
+      "file": "D:\\codex\\\u904a\u6232\u958b\u767c\\reports\\art-previews\\hero-commercial-r6\\R6-D\\melee-swing.png"
+    },
+    {
+      "name": "melee-impact",
+      "clip": "MeleeAttack",
+      "frame": 9,
+      "stripStart": 1.0,
+      "stripEnd": 16.0,
+      "file": "D:\\codex\\\u904a\u6232\u958b\u767c\\reports\\art-previews\\hero-commercial-r6\\R6-D\\melee-impact.png"
+    },
+    {
+      "name": "melee-recover",
+      "clip": "MeleeAttack",
+      "frame": 13,
+      "stripStart": 1.0,
+      "stripEnd": 16.0,
+      "file": "D:\\codex\\\u904a\u6232\u958b\u767c\\reports\\art-previews\\hero-commercial-r6\\R6-D\\melee-recover.png"
+    },
+    {
+      "name": "ranged-low-ready",
+      "clip": "RangedAttack",
+      "frame": 1,
+      "stripStart": 1.0,
+      "stripEnd": 16.0,
+      "file": "D:\\codex\\\u904a\u6232\u958b\u767c\\reports\\art-previews\\hero-commercial-r6\\R6-D\\ranged-low-ready.png"
+    },
+    {
+      "name": "ranged-raise",
+      "clip": "RangedAttack",
+      "frame": 4,
+      "stripStart": 1.0,
+      "stripEnd": 16.0,
+      "file": "D:\\codex\\\u904a\u6232\u958b\u767c\\reports\\art-previews\\hero-commercial-r6\\R6-D\\ranged-raise.png"
+    },
+    {
+      "name": "ranged-aim",
+      "clip": "RangedAttack",
+      "frame": 7,
+      "stripStart": 1.0,
+      "stripEnd": 16.0,
+      "file": "D:\\codex\\\u904a\u6232\u958b\u767c\\reports\\art-previews\\hero-commercial-r6\\R6-D\\ranged-aim.png"
+    },
+    {
+      "name": "ranged-fire",
+      "clip": "RangedAttack",
+      "frame": 10,
+      "stripStart": 1.0,
+      "stripEnd": 16.0,
+      "file": "D:\\codex\\\u904a\u6232\u958b\u767c\\reports\\art-previews\\hero-commercial-r6\\R6-D\\ranged-fire.png"
+    },
+    {
+      "name": "ranged-recoil",
+      "clip": "RangedAttack",
+      "frame": 11,
+      "stripStart": 1.0,
+      "stripEnd": 16.0,
+      "file": "D:\\codex\\\u904a\u6232\u958b\u767c\\reports\\art-previews\\hero-commercial-r6\\R6-D\\ranged-recoil.png"
+    },
+    {
+      "name": "ranged-recover",
+      "clip": "RangedAttack",
+      "frame": 14,
+      "stripStart": 1.0,
+      "stripEnd": 16.0,
+      "file": "D:\\codex\\\u904a\u6232\u958b\u767c\\reports\\art-previews\\hero-commercial-r6\\R6-D\\ranged-recover.png"
+    },
+    {
+      "name": "walk-carry",
+      "clip": "Walk",
+      "frame": 8,
+      "stripStart": 1.0,
+      "stripEnd": 24.0,
+      "file": "D:\\codex\\\u904a\u6232\u958b\u767c\\reports\\art-previews\\hero-commercial-r6\\R6-D\\walk-carry.png"
+    },
+    {
+      "name": "run-carry",
+      "clip": "Run",
+      "frame": 6,
+      "stripStart": 1.0,
+      "stripEnd": 18.0,
+      "file": "D:\\codex\\\u904a\u6232\u958b\u767c\\reports\\art-previews\\hero-commercial-r6\\R6-D\\run-carry.png"
+    },
+    {
+      "name": "death-grounded",
+      "clip": "Death",
+      "frame": 16,
+      "stripStart": 1.0,
+      "stripEnd": 20.0,
+      "file": "D:\\codex\\\u904a\u6232\u958b\u767c\\reports\\art-previews\\hero-commercial-r6\\R6-D\\death-grounded.png"
+    }
+  ]
+}

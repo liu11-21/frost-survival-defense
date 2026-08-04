@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-08-04T01:18:09.750Z",
+  "generatedAt": "2026-08-04T01:24:57.310Z",
   "asset": "hero",
   "sourcePath": "assets-source/blender/characters/hero.blend",
   "glbPath": "public/assets/models/characters/hero.glb",
@@ -33,7 +33,7 @@
   "artifact": {
     "status": "pass",
     "glb": {
-      "bytes": 4107928,
+      "bytes": 4109268,
       "assetVersion": "2.0",
       "nodes": 53,
       "meshes": 27,
@@ -85,14 +85,14 @@
             "heroR4Stage": "R4-D",
             "heroR5Stage": "R5-F",
             "heroR5Scope": "locomotion and combat animation polish",
-            "heroR6Stage": "R6-C",
-            "heroR6Scope": "compact carbine, two-hand ranged hold, and four-slot surface refinement",
+            "heroR6Stage": "R6-D",
+            "heroR6Scope": "compact carbine, four-slot surface refinement, and combat pose finalization",
             "topologyMethod": "authored anatomical and garment edge-loop lofts; no subdivision modifier",
             "lod0TargetTriangles": "16000-25000",
             "lod1TargetTriangles": "6000-10000",
             "lod2TargetTriangles": "1500-3500",
             "lodBuildMethod": "production authored loop reductions from R4-B mid-poly volumes",
-            "animationReview": "R5-F weighted body envelopes with contact-safe locomotion, anticipation and combat follow-through",
+            "animationReview": "R6-D weighted body envelopes with contact-safe locomotion, two-hand ranged aim, melee impact hold, and recovery follow-through",
             "feetGrounded": true,
             "orientationContract": "Babylon Y-up, forward +Z",
             "animationIteration2": "follow-through and recovery keys",
@@ -112,14 +112,14 @@
         "heroR4Stage": "R4-D",
         "heroR5Stage": "R5-F",
         "heroR5Scope": "locomotion and combat animation polish",
-        "heroR6Stage": "R6-C",
-        "heroR6Scope": "compact carbine, two-hand ranged hold, and four-slot surface refinement",
+        "heroR6Stage": "R6-D",
+        "heroR6Scope": "compact carbine, four-slot surface refinement, and combat pose finalization",
         "topologyMethod": "authored anatomical and garment edge-loop lofts; no subdivision modifier",
         "lod0TargetTriangles": "16000-25000",
         "lod1TargetTriangles": "6000-10000",
         "lod2TargetTriangles": "1500-3500",
         "lodBuildMethod": "production authored loop reductions from R4-B mid-poly volumes",
-        "animationReview": "R5-F weighted body envelopes with contact-safe locomotion, anticipation and combat follow-through",
+        "animationReview": "R6-D weighted body envelopes with contact-safe locomotion, two-hand ranged aim, melee impact hold, and recovery follow-through",
         "feetGrounded": true,
         "orientationContract": "Babylon Y-up, forward +Z",
         "animationIteration2": "follow-through and recovery keys",
@@ -211,7 +211,7 @@
           "name": "MeleeAttack",
           "channels": 54,
           "samplers": 54,
-          "totalInputKeys": 206,
+          "totalInputKeys": 234,
           "maxSamplerKeys": 16,
           "durationSeconds": 0.6666666666666666,
           "targetPaths": [
@@ -265,7 +265,7 @@
       "renderableCollisionNodes": []
     },
     "source": {
-      "bytes": 748565,
+      "bytes": 750808,
       "exists": true
     },
     "checks": {

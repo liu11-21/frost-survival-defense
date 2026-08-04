@@ -15,6 +15,13 @@
 - Added evidence-only neutral, snow-daylight, furnace-warm, shadow, and close-up plates under `reports/art-previews/hero-commercial-r6/R6-C/` and recorded the R6-B comparison.
 - Static Hero validation remains passing with unchanged triangle, render-mesh, material, and atlas budgets. Commercial art quality remains a human artist decision.
 
+## 2026-08-04 | Hero-R6 D combat pose finalization checkpoint
+
+- Kept the existing seven animation clips and 18-bone skeleton; MeleeAttack now has explicit launch, counter-rotation, swing, impact hold, and recovery keys.
+- RangedAttack now exposes low-ready, raise, aim, fire/recoil, and recovery with both existing arm chains participating; no IK system, new bones, clips, or runtime framework were added.
+- Added evidence-only key-pose sequence under `reports/art-previews/hero-commercial-r6/R6-D/` for melee, ranged, walk, run, and grounded death.
+- Static Hero validation remains passing with unchanged triangle, render-mesh, material, and atlas budgets. Commercial art quality remains a human artist decision.
+
 ## 2026-08-03 | Hero-R5 E production material and atlas checkpoint
 
 - Repainted the existing four Hero material identities: expedition navy cloth, worn leather, dark gunmetal, and a controlled cyan accent.
