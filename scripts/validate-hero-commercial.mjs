@@ -1,27 +1,24 @@
 import { createHash } from "node:crypto";
-import { mkdir, readFile, stat, writeFile } from "node:fs/promises";
+import { mkdir, readFile, writeFile } from "node:fs/promises";
 import { dirname, resolve } from "node:path";
 
 const root = process.cwd();
 const sourceRelative = "assets-source/blender/characters/hero.blend";
 const glbRelative = "public/assets/models/characters/hero.glb";
-const reviewRelative = "reports/art-previews/hero-commercial/review";
-const reportRelative = "reports/hero-r6-production/static-validation.json";
+const reportRelative = "reports/hero-r7-production/static-validation.json";
+const productionEvidenceRelative = "reports/hero-r7-production";
+const sourceCommit = "6da6bd523a0545bdc02c3a6ef1d78ab17cb68140";
 const requiredNodes = ["HeroRoot", "HeroSkeleton", "weapon_socket.R", "ranged_socket", "LOD1", "LOD2"];
 const requiredAnimations = ["Idle", "Walk", "Run", "MeleeAttack", "RangedAttack", "Hit", "Death"];
-const requiredCaptures = [
-  ["hero-review-gameplay", "gameplay", "Idle", 0],
-  ["hero-review-front", "front", "Idle", 0],
-  ["hero-review-side", "left-side", "Idle", 0],
-  ["hero-review-back", "back", "Idle", 0],
-  ["hero-review-three-quarter", "three-quarter", "Idle", 0],
-  ["hero-review-close-up", "close-up", "Idle", 0],
-  ["hero-review-melee", "three-quarter", "MeleeAttack", 0],
-  ["hero-review-ranged", "three-quarter", "RangedAttack", 0],
-  ["hero-review-death", "three-quarter", "Death", 0],
-  ["hero-review-lod0", "front", "Idle", 0],
-  ["hero-review-lod1", "front", "Idle", 1],
-  ["hero-review-lod2", "front", "Idle", 2],
+const requiredProductionEvidence = [
+  "hero-front.png",
+  "hero-three-quarter.png",
+  "hero-gameplay-snow.png",
+  "hero-gameplay-furnace.png",
+  "hero-gameplay-battle.png",
+  "hero-melee-impact.png",
+  "hero-ranged-fire.png",
+  "hero-death.png",
 ];
 
 function parseGlb(buffer) {
@@ -112,6 +109,7 @@ function auditGlb(glb) {
     primitiveBudget: lodRenderPrimitives.LOD0 <= 15 && lodRenderPrimitives.LOD1 <= 8 && lodRenderPrimitives.LOD2 <= 6,
     triangleBudget: lodTriangles.LOD0 >= 18_000 && lodTriangles.LOD0 <= 20_500 && lodTriangles.LOD1 >= 6_500 && lodTriangles.LOD1 <= 8_000 && lodTriangles.LOD2 >= 2_000 && lodTriangles.LOD2 <= 3_000,
     rootExtras: rootExtras.commercialStage === "H6" && rootExtras.commercialIteration === 2,
+    r7RootExtras: rootExtras.heroR7Stage === "R7-D" && rootExtras.heroR7Iteration === 1,
   };
   return {
     bytes: glb.length,
@@ -131,23 +129,20 @@ function auditGlb(glb) {
   };
 }
 
-async function auditReviewEvidence() {
+async function auditProductionEvidence() {
   const captures = [];
-  for (const [id, cameraMode, animation, lod] of requiredCaptures) {
-    const screenshotPath = resolve(root, `${reviewRelative}/${id}.png`);
-    const metadataPath = resolve(root, `${reviewRelative}/${id}.json`);
+  for (const file of requiredProductionEvidence) {
+    const screenshotPath = resolve(root, `${productionEvidenceRelative}/${file}`);
     try {
-      const [screenshot, metadata] = await Promise.all([stat(screenshotPath), readFile(metadataPath, "utf8").then(JSON.parse)]);
-      const box = metadata.screenSpaceBoundingBox;
-      const viewport = metadata.viewport;
-      const boundsValid = box && viewport && [box.x, box.y, box.width, box.height, box.right, box.bottom, viewport.width, viewport.height].every(Number.isFinite) && box.width >= 40 && box.height >= 80 && box.x >= 0 && box.y >= 0 && box.right <= viewport.width && box.bottom <= viewport.height;
-      const valid = screenshot.size > 10_000 && metadata.captureMode === "heroReview=1" && metadata.cameraMode === cameraMode && metadata.animation === animation && metadata.lod === lod && metadata.modelSource === "GLB" && metadata.proceduralVisibleMeshCount === 0 && metadata.authoredVisibleMeshCount > 0 && metadata.uiOccluded === false && boundsValid;
-      captures.push({ id, screenshotBytes: screenshot.size, metadata, valid });
+      const bytes = await readFile(screenshotPath);
+      const resolution = pngResolution(bytes);
+      const valid = bytes.length > 10_000 && resolution?.width >= 320 && resolution?.height >= 180;
+      captures.push({ file, screenshotBytes: bytes.length, resolution, valid });
     } catch (error) {
-      captures.push({ id, valid: false, error: String(error.message ?? error) });
+      captures.push({ file, valid: false, error: String(error.message ?? error) });
     }
   }
-  return { requiredCount: requiredCaptures.length, captures, valid: captures.length === requiredCaptures.length && captures.every((capture) => capture.valid) };
+  return { requiredCount: requiredProductionEvidence.length, captures, valid: captures.length === requiredProductionEvidence.length && captures.every((capture) => capture.valid) };
 }
 
 const sourcePath = resolve(root, sourceRelative);
@@ -156,12 +151,12 @@ let output;
 try {
   const [sourceBytes, glbBytes] = await Promise.all([readFile(sourcePath), readFile(glbPath)]);
   const glbAudit = auditGlb(glbBytes);
-  const evidence = await auditReviewEvidence();
+  const evidence = await auditProductionEvidence();
   const sourceIsPointer = sourceBytes.subarray(0, 64).toString("utf8").includes("git-lfs.github.com/spec/v1");
   const checks = {
     sourceArtifact: sourceBytes.length > 100_000 && !sourceIsPointer,
     ...glbAudit.checks,
-    runtimeReviewEvidence: evidence.valid,
+    productionEvidence: evidence.valid,
   };
   output = {
     generatedAt: new Date().toISOString(),
@@ -169,11 +164,11 @@ try {
     sourcePath: sourceRelative,
     glbPath: glbRelative,
     status: Object.values(checks).every(Boolean) ? "pass" : "fail",
-    source: { bytes: sourceBytes.length, sha256: sha256(sourceBytes), lfsPointer: sourceIsPointer },
+    source: { commit: sourceCommit, bytes: sourceBytes.length, sha256: sha256(sourceBytes), lfsPointer: sourceIsPointer },
     glb: { sha256: sha256(glbBytes), ...glbAudit },
     checks,
-    runtimeReviewEvidence: evidence,
-    humanReviewNote: "This validator proves asset/runtime contracts and visibility only. Commercial art quality remains a human decision.",
+    productionEvidence: evidence,
+    runtimeVerificationNote: "Babylon runtime, normalized animation samples, and gameplay visibility are authoritative in the GitHub Actions artifact; this static validator does not judge commercial art quality.",
   };
 } catch (error) {
   output = { generatedAt: new Date().toISOString(), asset: "hero", status: "blocked", checks: { sourceArtifact: false }, error: String(error.message ?? error) };

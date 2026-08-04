@@ -1,0 +1,66 @@
+{
+  "asset": "hero",
+  "sourceRepository": "liu11-21/frost-survival-defense",
+  "sourceBranch": "codex/hero-commercial-h1-h6",
+  "sourceCommit": "6da6bd523a0545bdc02c3a6ef1d78ab17cb68140",
+  "productionBranch": "production/hero-r6",
+  "productionBaseHead": "7c68abb02de63492c400028f6ac2f36903148e2f",
+  "historicalPullRequest": 1,
+  "historicalPullRequestStatus": "archival draft; superseded for production integration",
+  "assets": {
+    "blend": {
+      "path": "assets-source/blender/characters/hero.blend",
+      "bytes": 657630,
+      "sha256": "0804440184fc2cd2646644df79393a3cacae748b4c526a4e4be5fb5fc23075f1",
+      "gitBlob": "f32d7fa7eec405034feae5f7cd09e02cb07e699f"
+    },
+    "glb": {
+      "path": "public/assets/models/characters/hero.glb",
+      "bytes": 3903020,
+      "sha256": "1f895fd3274c9044a1a6414bd75b1b971e8c5fa2850ca7b9b36eb13da6724465",
+      "gitBlob": "258fdedacfbe6093c9f8b4aacbca41cdcc3cebc4"
+    }
+  },
+  "contract": {
+    "lodTriangles": { "LOD0": 18080, "LOD1": 7324, "LOD2": 2668 },
+    "lodRenderPrimitives": { "LOD0": 15, "LOD1": 8, "LOD2": 6 },
+    "materials": 4,
+    "embeddedTextures": 1,
+    "atlas": "HERO_ATLAS_1024 1024x1024",
+    "bones": 18,
+    "animations": ["Idle", "Walk", "Run", "MeleeAttack", "RangedAttack", "Hit", "Death"],
+    "nodes": ["HeroRoot", "HeroSkeleton", "weapon_socket.R", "ranged_socket", "LOD1", "LOD2"]
+  },
+  "deterministicAnimationSampling": {
+    "mode": "normalized-timeline",
+    "timeline": [0, 0.2, 0.4, 0.6, 0.8, 1],
+    "animations": ["Idle", "Walk", "Run", "MeleeAttack", "RangedAttack", "Hit", "Death"],
+    "sampleCount": 42,
+    "renderFramesPerSample": 1,
+    "artifactPath": "reports/hero-gameplay-ci/animation-samples.json"
+  },
+  "runtimeEvidence": {
+    "mode": "heroGameplayReview=1",
+    "finalCaptureCount": 17,
+    "committedCaptures": [
+      "hero-front.png",
+      "hero-three-quarter.png",
+      "hero-gameplay-snow.png",
+      "hero-gameplay-furnace.png",
+      "hero-gameplay-battle.png",
+      "hero-melee-impact.png",
+      "hero-ranged-fire.png",
+      "hero-death.png"
+    ],
+    "artifactPath": "reports/hero-gameplay-ci/",
+    "artifactIncludes": ["42 normalized samples", "all runtime JSON", "Playwright video", "console log"]
+  },
+  "ci": {
+    "run": 30879036594,
+    "url": "https://github.com/liu11-21/frost-survival-defense/actions/runs/30879036594",
+    "artifact": "hero-runtime-verification-30879036594",
+    "conclusion": "success"
+  },
+  "decision": "Ready for final human art decision",
+  "decisionBoundary": "Commercial art quality is not declared passed by automation."
+}
