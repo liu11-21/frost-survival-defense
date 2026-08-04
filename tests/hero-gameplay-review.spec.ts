@@ -51,6 +51,8 @@ interface GameplayWindow extends Window {
 const animations: readonly AnimationName[] = ["Idle", "Walk", "Run", "MeleeAttack", "RangedAttack", "Hit", "Death"];
 const outputRoot = resolve(process.cwd(), process.env.HERO_GAMEPLAY_OUTPUT ?? "reports/art-previews/hero-commercial-r6/R6-E");
 
+test.use({ video: "on" });
+
 function readState(page: import("@playwright/test").Page): Promise<{ state: GameplayState | null; capture: Record<string, unknown> | null }> {
   return page.evaluate(() => {
     const reviewWindow = window as GameplayWindow;
@@ -226,9 +228,7 @@ test("verifies Hero in the formal snow, furnace, ally and enemy gameplay context
       const state = await waitForState({ camera: "three-quarter", lighting: "snow-daylight", context: "battle", animation });
       const frame = await readState(page);
       const name = `sequence-${String(sequence.length + 1).padStart(3, "0")}-${animation.toLowerCase()}`;
-      const screenshotPath = resolve(outputRoot, `${name}.png`);
-      await page.screenshot({ path: screenshotPath, fullPage: false });
-      sequence.push({ captureId: name, screenshot: screenshotPath, animation, sampledAdvanceFrames, state, metadata: frame.capture });
+      sequence.push({ captureId: name, animation, sampledAdvanceFrames, state, metadata: frame.capture });
     }
 
     if (consoleErrors.length > 0 || pageErrors.length > 0 || requestFailures.length > 0) {
