@@ -142,6 +142,18 @@ export class CombatUnit implements Damageable {
       ? `${this.def.name} Lv.${this.furnaceLevelValue}`
       : this.def.name;
   }
+  get modelSource(): "GLB" | "procedural" { return this.rig.authored ? "GLB" : "procedural"; }
+  get authoredVisibleMeshCount(): number { return this.rig.authored?.meshes.filter((mesh) => mesh.isEnabled() && mesh.isVisible).length ?? 0; }
+  get proceduralVisibleMeshCount(): number { return this.rig.parts.filter((mesh) => mesh.isEnabled() && mesh.isVisible).length; }
+  get currentLod(): "LOD0" | "LOD1" | "LOD2" {
+    const visible = this.rig.authored?.allMeshes?.find((mesh) => mesh.isEnabled() && mesh.isVisible);
+    const name = visible?.name.split(":").pop() ?? "";
+    return name.startsWith("LOD2_") ? "LOD2" : name.startsWith("LOD1_") ? "LOD1" : "LOD0";
+  }
+  get currentAuthoredAnimation(): string | null {
+    const active = this.rig.authored?.animationGroups.find((group) => group.isPlaying);
+    return active?.name.split(":").pop() ?? null;
+  }
   get hitRadius(): number { return 0.42 * this.def.scale; }
   get isFlying(): boolean { return this.def.isFlying === true; }
   get level(): number { return this.def.level ?? 0; }

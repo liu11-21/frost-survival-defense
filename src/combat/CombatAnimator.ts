@@ -172,22 +172,23 @@ export class CombatAnimator {
   private syncAuthoredAnimation(): void {
     const authored = this.rig.authored;
     if (!authored) return;
-    const state = this.state === "walk"
-      ? "Walk"
+    const candidates = this.state === "walk"
+      ? ["Walk", "Run"]
       : this.state === "attack"
-        ? "Attack"
+        ? ["Attack", "MeleeAttack"]
         : this.state === "cast"
-          ? "Cast"
+          ? ["Cast", "MeleeAttack"]
           : this.state === "death"
-            ? "Death"
+            ? ["Death"]
             : this.state === "hit"
-              ? "Hit"
-              : "Idle";
+              ? ["Hit"]
+              : ["Idle"];
+    const state = candidates.find((name) => authored.animationGroups.some((candidate) => candidate.name === name || candidate.name.endsWith(`:${name}`))) ?? candidates[0];
     if (state === this.authoredState) return;
     this.authoredState = state;
     for (const group of authored.animationGroups) group.stop();
     const group = authored.animationGroups.find((candidate) => candidate.name === state || candidate.name.endsWith(`:${state}`));
-    group?.start(state === "Idle" || state === "Walk", 1);
+    group?.start(state === "Idle" || state === "Walk" || state === "Run", 1);
   }
 
   /** 0..1, how far through the death animation the corpse is. */
