@@ -14,6 +14,7 @@
     "art:turret": "node scripts/run-blender.mjs scripts/blender/build_turret.py",
     "art:wall": "node scripts/run-blender.mjs scripts/blender/build_wall_gate.py",
     "art:units": "node scripts/run-blender.mjs scripts/blender/build_units.py",
+    "art:warrior": "node scripts/run-blender.mjs scripts/blender/build_warrior.py",
     "art:buildings": "node scripts/run-blender.mjs scripts/blender/build_buildings.py",
     "art:resources": "node scripts/run-blender.mjs scripts/blender/build_resources.py",
     "art:export": "node scripts/run-blender.mjs scripts/blender/batch_export.py",
@@ -21,6 +22,7 @@
     "test:hero:gameplay": "playwright test tests/hero-gameplay-review.spec.ts",
     "art:validate": "node scripts/validate-models.mjs",
     "art:validate:hero": "node scripts/validate-hero-commercial.mjs",
+    "art:validate:warrior": "node scripts/validate-warrior-production.mjs",
     "ai:sync": "node scripts/generate-ai-sync.mjs"
   },
   "dependencies": {
