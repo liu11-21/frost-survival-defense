@@ -64,8 +64,12 @@ being boxes stuck onto a flat face.
   its own node (`resource_canopy0/1/2`, `resource_ore0/1/2`, …), so merging
   cannot cut node count here. The available win is materials 8→3 and images
   7→1, not draw calls.
-- **Batch 7** — the four hero skills still differ only by colour. Shape,
-  direction, area and weight are not differentiated.
+- ~~**Batch 7**~~ — **done.** `SKILL_SHAPE` in `CombatFeedback` varies spread,
+  wave count and cadence, vertical vs ground-borne, and linger per skill, each
+  matched to what the skill does to the simulation. `infiniteFirepower` gets no
+  ground wave or scorch at all, because it touches no ground. Verified by
+  counting visible effect meshes at peak; `seismicWave` casts through the same
+  path but was not visually inspected, because it only auto-casts.
 - **Depth passes.** Batches 1, 3 and 4 each had one authoring pass. Silhouettes
   are separated and contracts hold, but none went through the
   rewrite → look → iterate loop the Warrior did, and the facilities were not

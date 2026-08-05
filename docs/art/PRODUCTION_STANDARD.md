@@ -157,8 +157,10 @@ sustain → dissipation**. A single-frame pop reads as "the result appeared"
 rather than "the character did something".
 
 Skills must differ in **colour, shape, direction, area and weight** — not
-only colour. Current state: the four hero skills share one ring/column/
-afterglow set tinted differently. That is an open gap (see §5).
+only colour. Implemented as `SKILL_SHAPE` in `CombatFeedback`: each skill's
+profile is chosen to match what it does to the simulation, so a
+buildings-only buff gets no ground wave and a ground-borne cone gets no
+vertical column.
 
 Weapon swings trace their path from the weapon's own tip locator.
 
@@ -220,7 +222,7 @@ Ordered by player exposure per unit of work, as requested.
 | **4** ✅ | `turret_basic` (33→7 nodes, 33→10 prims) and `wall_gate` (52→5 nodes, 52→9 prims) | Constantly in view during combat | Medium |
 | **5** | Hero R8 pass to the new standard | Already "production validated" at R7; least broken | Medium |
 | **6** | Resources (`resource_tree`, `resource_rock`). **Note:** their manifest contract names every harvest stage as its own node (`resource_canopy0/1/2`, `resource_ore0/1/2`, …), so merging cannot cut node count the way it did elsewhere — the win here is materials 8→3 and images 7→1, not draw calls | Background mass | Lower |
-| **7** | Skill VFX differentiation — per-skill shape/direction/area language | Independent of the model pipeline; can run in parallel | High, parallel |
+| **7** ✅ | Skill VFX differentiation — `SKILL_SHAPE` varies spread, waves, vertical-vs-ground and linger per skill | Independent of the model pipeline | High |
 
 Batches 1–4 are the bulk of the visible upgrade.
 
@@ -271,7 +273,6 @@ produced the data.
   (288 corners, 0 overlaps) rather than eyeballed; a LOD0/1/2 contact sheet
   is produced into the runtime output.
 - ~~Performance separation~~ — **closed.** See §3.7.
-- The four hero skills are not visually differentiated beyond colour.
 - Hero is at R7 and predates this standard.
 - The whole library, Warrior included, remains procedural-primitive art. See
   §2 on what that ceiling means.
