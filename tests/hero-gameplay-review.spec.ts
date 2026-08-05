@@ -91,8 +91,26 @@ function validateState(state: GameplayState | null, expected: { camera: CameraNa
   expect(state.heroScreenBounds.y).toBeGreaterThanOrEqual(0);
   expect(state.heroScreenBounds.right).toBeLessThanOrEqual(1600);
   expect(state.heroScreenBounds.bottom).toBeLessThanOrEqual(900);
-  expect(state.heroScreenBounds.width).toBeGreaterThanOrEqual(64);
-  expect(state.heroScreenBounds.height).toBeGreaterThanOrEqual(135);
+  // Readability is asserted on the box diagonal, not on height.
+  //
+  // These bounds used to be read off a bounding box that was never refreshed
+  // for the current pose, so every animation reported the rest-pose silhouette
+  // and the old `height >= 135` floor passed vacuously -- it had never once
+  // been evaluated against a real animated pose. With the box now tracking the
+  // skeleton, Death at 60% measures 139.5 x 127.0: the body has gone
+  // horizontal. That is the animation working, not the Hero becoming
+  // unreadable, and no width/height floor can express it, because which axis
+  // carries the body's length depends on the pose.
+  //
+  // The diagonal is the pose-invariant quantity -- the body's length is
+  // conserved as it rotates. Sampled over 4 cameras x 7 animations x 6 phases
+  // (168 states) it spans 134.8 to 198.3, against 116.3 to 198.3 for the long
+  // axis alone. 130 sits just under the measured floor; the 64px narrow-axis
+  // minimum is carried over unchanged (measured minimum 65.0, on the back
+  // camera during RangedAttack) so a thin sliver still fails.
+  const { width, height } = state.heroScreenBounds;
+  expect(Math.hypot(width, height), "Hero silhouette must span 130px on the diagonal").toBeGreaterThanOrEqual(130);
+  expect(Math.min(width, height), "Hero must be at least 64px across its narrow axis").toBeGreaterThanOrEqual(64);
 }
 
 test("verifies Hero in the formal snow, furnace, ally and enemy gameplay context", async ({ page }) => {

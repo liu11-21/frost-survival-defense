@@ -205,6 +205,12 @@ export class HeroGameplayReviewMode {
     const projected: Vector3[] = [];
     for (const mesh of this.s.hero.authoredMeshes) {
       if (!mesh.isEnabled() || !mesh.isVisible) continue;
+      // Without this a skinned mesh's bounding box stays frozen at its rest
+      // pose, so these bounds described the Idle silhouette no matter which
+      // animation was selected -- the same defect already fixed in
+      // WarriorReviewMode. Every bounds assertion in the Hero gameplay suite
+      // was checking a static box.
+      if (mesh.skeleton) mesh.refreshBoundingInfo({ applySkeleton: true });
       for (const corner of mesh.getBoundingInfo().boundingBox.vectorsWorld) {
         projected.push(Vector3.Project(corner, Matrix.Identity(), this.s.scene.getTransformMatrix(), viewport));
       }
