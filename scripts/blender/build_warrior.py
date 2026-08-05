@@ -25,6 +25,7 @@ import sys
 from array import array
 
 import bpy
+from mathutils import Euler, Matrix, Vector
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 ROOT = os.path.abspath(os.path.join(HERE, "..", ".."))
@@ -35,10 +36,15 @@ from common import collision_box, empty, export_glb, material, orient_for_babylo
 # Base colours.  Cloth is a mid-dark blue-grey rather than near-black, fur is
 # a mid grey-beige rather than white, so both still hold detail once the
 # review lighting stops over-exposing them.
+# The W2 first pass kept every surface in a narrow dark band, so cloth,
+# leather, metal and fur all read as the same grey mass under gameplay light.
+# These are pulled apart on all three axes that actually separate materials:
+# value (fur is ~4x the luminance of the coat), hue (cloth cool blue, leather
+# warm orange-brown, iron neutral) and, via create_materials(), roughness.
 MATS = {
-    "cloth": (0.150, 0.196, 0.232),
-    "leather": (0.276, 0.166, 0.094),
-    "iron": (0.128, 0.142, 0.160),
+    "cloth": (0.196, 0.250, 0.302),
+    "leather": (0.372, 0.208, 0.104),
+    "iron": (0.204, 0.222, 0.246),
 }
 # Sub-surfaces share a material slot but occupy their own atlas band, which is
 # how fur/amber read as distinct surfaces while the GLB keeps 3 materials.
@@ -54,14 +60,14 @@ SURFACES = {
     "blade": (2, 1),
 }
 SURFACE_TINT = {
-    "coat": (0.150, 0.196, 0.232),
-    "fur": (0.520, 0.487, 0.430),
-    "amber": (0.760, 0.430, 0.110),
-    "belt": (0.276, 0.166, 0.094),
-    "glove": (0.220, 0.140, 0.090),
-    "grip": (0.196, 0.126, 0.080),
-    "plate": (0.128, 0.142, 0.160),
-    "blade": (0.205, 0.222, 0.243),
+    "coat": (0.196, 0.250, 0.302),    # cool blue-grey wool
+    "fur": (0.660, 0.606, 0.512),     # warm pale grey-beige, clearly the lightest mass
+    "amber": (0.900, 0.520, 0.130),   # faction strip, the only saturated accent
+    "belt": (0.372, 0.208, 0.104),    # warm tan leather
+    "glove": (0.286, 0.170, 0.098),   # darker leather so gloves read off the sleeve
+    "grip": (0.238, 0.148, 0.086),    # darkest leather, reads against the pale haft
+    "plate": (0.204, 0.222, 0.246),   # neutral iron
+    "blade": (0.330, 0.356, 0.386),   # polished steel, distinctly brighter than plate
 }
 MATERIALS = {}
 
@@ -355,9 +361,17 @@ def add_body_geometry(level):
         ], "plate", lambda y: blend("upper_arm.L", "chest", 0.34))
 
     # --- belt and faction strip ------------------------------------------
+    # Pelvis/seat mass under the belt, so the coat hem has hips inside it
+    # rather than hanging off a straight tube.
     b.sweep([
-        (0.99, section(n_torso, 0.312, 0.200, 0.212, 2.8)),
-        (1.07, section(n_torso, 0.318, 0.206, 0.218, 2.8)),
+        (0.94, section(n_torso, 0.316, 0.204, 0.222, 2.6)),
+        (0.86, section(n_torso, 0.332, 0.212, 0.238, 2.5)),
+        (0.78, section(n_torso, 0.318, 0.204, 0.226, 2.5)),
+    ], "coat", torso_weights, cap_bottom=False, cap_top=False)
+    # Belt, cinched narrower than both the ribcage above and the hips below.
+    b.sweep([
+        (0.99, section(n_torso, 0.306, 0.196, 0.208, 2.9)),
+        (1.07, section(n_torso, 0.312, 0.202, 0.214, 2.9)),
     ], "belt", torso_weights, cap_bottom=False, cap_top=False)
     if level == 0:
         b.box((0.0, 1.42, 0.268), (0.104, 0.190, 0.026), "amber", blend("chest", "spine", 0.34), rotate_z=-0.13)
@@ -380,24 +394,41 @@ def add_body_geometry(level):
             (1.12, section(n_limb, 0.092, 0.094, 0.092, 2.6, centre_x=sign * 0.556)),
             (0.94, section(n_limb, 0.078, 0.080, 0.080, 2.6, centre_x=wrist_x, centre_z=0.028)),
         ], "coat", lambda y, s=side: arm_weights(s, y), cap_bottom=False, cap_top=False)
-        # Glove: a distinct leather volume, slightly wider than the wrist.
+        # Hand: a cuff, then a palm mass that is markedly wider than it is
+        # thick, then a tapered finger block angled forward -- so it reads as
+        # a closed fist gripping a haft rather than the rounded mitten the
+        # previous pass produced.
         b.sweep([
-            (0.94, section(n_limb, 0.082, 0.084, 0.084, 2.5, centre_x=wrist_x, centre_z=0.030)),
-            (0.84, section(n_limb, 0.090, 0.094, 0.090, 2.4, centre_x=sign * 0.542, centre_z=0.056)),
-            (0.74, section(n_limb, 0.072, 0.082, 0.076, 2.2, centre_x=sign * 0.512, centre_z=0.086)),
+            (0.945, section(n_limb, 0.086, 0.088, 0.088, 2.5, centre_x=wrist_x, centre_z=0.028)),
+            (0.900, section(n_limb, 0.098, 0.086, 0.086, 2.8, centre_x=sign * 0.548, centre_z=0.040)),
+        ], "belt", lambda y, s=side: arm_weights(s, y), cap_bottom=False, cap_top=False)
+        b.sweep([
+            (0.900, section(n_limb, 0.104, 0.082, 0.082, 3.0, centre_x=sign * 0.548, centre_z=0.044)),
+            (0.836, section(n_limb, 0.112, 0.086, 0.084, 3.2, centre_x=sign * 0.540, centre_z=0.070)),
+            (0.780, section(n_limb, 0.104, 0.080, 0.078, 3.0, centre_x=sign * 0.528, centre_z=0.092)),
+            (0.742, section(n_limb, 0.074, 0.062, 0.060, 2.6, centre_x=sign * 0.516, centre_z=0.104)),
         ], "glove", lambda y, s=side: arm_weights(s, y), cap_bottom=False)
+        # Thumb: small, but it is what makes the hand read as gripping.
+        b.box((sign * 0.494, 0.868, 0.098), (0.040, 0.086, 0.052), "glove",
+              blend(f"hand.{side}", f"lower_arm.{side}", 0.10), rotate_z=sign * 0.30, taper=0.78)
 
     # --- legs -------------------------------------------------------------
     for side, sign in (("L", -1), ("R", 1)):
         hip_x = sign * 0.186
         knee_x = sign * 0.204
         ankle_x = sign * 0.196
+        # Leg with actual muscle staging: a heavy upper thigh, a narrowed
+        # knee with a flatter front plane, a calf swell behind it, then a
+        # thin ankle. The previous pass tapered almost linearly, which is
+        # what made the legs read as tubes.
         b.sweep([
-            (0.80, section(n_limb, 0.168, 0.166, 0.172, 2.5, centre_x=hip_x)),   # hip
-            (0.66, section(n_limb, 0.152, 0.152, 0.158, 2.6, centre_x=sign * 0.194)),
-            (0.50, section(n_limb, 0.124, 0.132, 0.126, 2.8, centre_x=knee_x)),  # knee, flatter front
-            (0.36, section(n_limb, 0.112, 0.116, 0.116, 2.6, centre_x=sign * 0.200)),
-            (0.22, section(n_limb, 0.098, 0.100, 0.104, 2.5, centre_x=ankle_x)),  # ankle
+            (0.82, section(n_limb, 0.184, 0.180, 0.190, 2.4, centre_x=hip_x)),           # hip / seat
+            (0.72, section(n_limb, 0.176, 0.174, 0.184, 2.5, centre_x=sign * 0.190)),    # thigh, thickest
+            (0.60, section(n_limb, 0.150, 0.152, 0.158, 2.6, centre_x=sign * 0.194)),
+            (0.50, section(n_limb, 0.118, 0.128, 0.120, 3.0, centre_x=knee_x)),          # knee, flat front
+            (0.43, section(n_limb, 0.126, 0.126, 0.144, 2.7, centre_x=sign * 0.198)),    # calf swell (rear)
+            (0.32, section(n_limb, 0.112, 0.112, 0.122, 2.6, centre_x=sign * 0.200)),
+            (0.22, section(n_limb, 0.092, 0.094, 0.098, 2.5, centre_x=ankle_x)),         # ankle, thinnest
         ], "coat", lambda y, s=side: leg_weights(s, y), cap_top=False)
 
         # --- boots: three distinct layers -------------------------------
@@ -412,8 +443,12 @@ def add_body_geometry(level):
             (0.14, section(n_limb, 0.116, 0.124, 0.120, 2.4, centre_x=ankle_x, centre_z=0.014)),
             (0.07, section(n_limb, 0.112, 0.178, 0.116, 2.9, centre_x=ankle_x, centre_z=0.062)),
         ], "belt", lambda y, w=boot_weights: w, cap_bottom=False, cap_top=False)
-        # 3. sole, wider and flatter than the upper, with a real toe overhang
-        b.box((ankle_x, 0.035, 0.078), (0.238, 0.070, 0.412), "plate", boot_weights, taper=0.92)
+        # 3. sole: a thin welt plus a thicker tread block beneath it, so the
+        # boot has a visible sole edge instead of the body just ending in a
+        # slab. The tread is inset and squared off at the heel.
+        b.box((ankle_x, 0.058, 0.082), (0.252, 0.034, 0.428), "belt", boot_weights, taper=0.97)
+        b.box((ankle_x, 0.026, 0.074), (0.238, 0.038, 0.404), "plate", boot_weights, taper=0.94)
+        b.box((ankle_x, 0.030, -0.096), (0.216, 0.052, 0.132), "plate", boot_weights, taper=0.92)
 
     return b
 
@@ -424,12 +459,27 @@ def add_body_geometry(level):
 # stretched the weapon between the two hands whenever they moved apart.  The
 # left hand is brought onto the shaft by the animation instead.
 AXE_BONE = "hand.R"
-# Shaft axis, authored in the bind pose so it passes through the right hand
-# at (0.56, 0.92, 0.03) and hangs naturally at the warrior's side.  The head
-# end is kicked outward and forward so the blade clears the arm and torso in
-# a front view instead of hiding behind the shoulder.
-AXE_BUTT = (0.474, 0.286, -0.086)
-AXE_TIP = (0.686, 1.824, 0.174)
+# Shaft axis, solved so that the upper grip (t=UPPER_GRIP_T) lands exactly on
+# the right hand's bind position (0.56, 0.92, 0.03). Because the whole axe is
+# rigid to hand.R, that makes hand.R and the upper grip permanently
+# coincident -- the right-hand contact is correct by construction, and the
+# measurement that actually carries information is the left hand's.
+AXE_BUTT = (0.4635, 0.2202, -0.0883)
+AXE_TIP = (0.6755, 1.7582, 0.1717)
+# Named grip parameters along the shaft. These drive both the authored wrap
+# geometry and the exported locator nodes, so the mesh, the locators and the
+# animation can never drift apart.
+LOWER_GRIP_T = 0.205
+UPPER_GRIP_T = 0.455
+AXE_HEAD_T = 0.905
+# Outermost point of the cutting edge, exported as the `axe_tip` locator so
+# the swing arc is measured from the part of the weapon that actually lands
+# rather than from a bounding-box centre.
+AXE_BLADE_TIP = (
+    AXE_BUTT[0] + (AXE_TIP[0] - AXE_BUTT[0]) * AXE_HEAD_T + 0.392,
+    AXE_BUTT[1] + (AXE_TIP[1] - AXE_BUTT[1]) * AXE_HEAD_T - 0.020,
+    AXE_BUTT[2] + (AXE_TIP[2] - AXE_BUTT[2]) * AXE_HEAD_T,
+)
 
 
 def axe_point(t, dx=0.0, dy=0.0, dz=0.0):
@@ -459,51 +509,55 @@ def add_axe_geometry(level):
         shaft_ring(0.95, 0.0296),
     ], "grip", lambda y: w)
 
-    # 2. lower grip wrap
-    b.sweep([
-        shaft_ring(0.11, 0.0392),
-        shaft_ring(0.30, 0.0384),
-    ], "belt", lambda y: w, cap_bottom=False, cap_top=False)
-
-    # 3. upper grip wrap -- where the right hand actually holds it.
-    b.sweep([
-        shaft_ring(0.36, 0.0400),
-        shaft_ring(0.55, 0.0392),
-    ], "belt", lambda y: w, cap_bottom=False, cap_top=False)
+    # 2/3. grip wraps -- deliberately fat relative to the shaft so the two
+    # hand positions are legible as *grips* at gameplay camera distance, not
+    # just as slightly darker bands of haft.
+    for centre_t in (LOWER_GRIP_T, UPPER_GRIP_T):
+        b.sweep([
+            shaft_ring(centre_t - 0.085, 0.0392),
+            shaft_ring(centre_t - 0.060, 0.0505),
+            shaft_ring(centre_t + 0.060, 0.0505),
+            shaft_ring(centre_t + 0.085, 0.0392),
+        ], "grip", lambda y: w, cap_bottom=False, cap_top=False)
 
     # 4. pommel -- a flared butt cap so the shaft does not just end.
     butt = axe_point(0.0)
-    b.box((butt[0], butt[1] - 0.014, butt[2]), (0.086, 0.062, 0.086), "plate", w, taper=1.34)
+    b.box((butt[0], butt[1] - 0.016, butt[2]), (0.098, 0.070, 0.098), "plate", w, taper=1.42)
 
-    if level <= 1:
-        # 5. axe eye / connector -- the collar clamping head to shaft.
-        eye = axe_point(0.895)
-        b.box((eye[0], eye[1], eye[2]), (0.088, 0.132, 0.090), "plate", w, taper=0.90)
+    # 5. axe eye / connector -- the collar clamping head to shaft.
+    eye = axe_point(AXE_HEAD_T - 0.012)
+    b.box((eye[0], eye[1], eye[2]), (0.104, 0.158, 0.106), "plate", w, taper=0.88)
 
-    # 6. axe blade -- a broad bit with a curved cutting edge, swept forward.
-    head = axe_point(0.905)
-    bx, by, bz = head
+    # 6/7. head. The bit is bigger and its cutting edge is a deep concave
+    # crescent, and the rear pick is a long downward-hooked spike: those two
+    # asymmetric features are what make the silhouette read as an ice axe
+    # rather than a generic hatchet at gameplay distance. The earlier pass
+    # was too small and too symmetric to survive the LOD/scale reduction.
+    bx, by, bz = axe_point(AXE_HEAD_T)
+    thickness = (0.052, 0.058, 0.066)[level]
     blade = [
-        (bx + 0.012, by - 0.070),
-        (bx + 0.104, by - 0.104),
-        (bx + 0.216, by - 0.070),
-        (bx + 0.262, by + 0.020),
-        (bx + 0.234, by + 0.114),
-        (bx + 0.130, by + 0.152),
-        (bx + 0.026, by + 0.116),
+        (bx + 0.020, by - 0.128),
+        (bx + 0.150, by - 0.176),
+        (bx + 0.318, by - 0.150),
+        (bx + 0.392, by - 0.020),
+        (bx + 0.372, by + 0.128),
+        (bx + 0.246, by + 0.206),
+        (bx + 0.118, by + 0.196),   # concave sweep back into the eye
+        (bx + 0.170, by + 0.086),
+        (bx + 0.042, by + 0.120),
     ]
-    b.prism(blade, bz, 0.040 if level == 0 else 0.046, "blade", w)
+    b.prism(blade, bz, thickness, "blade", w)
 
-    # 7. rear ice pick -- the counterweight spike opposite the blade, which
-    # is what makes the silhouette read as an ice axe rather than a hatchet.
     pick = [
-        (bx - 0.010, by - 0.052),
-        (bx - 0.128, by - 0.030),
-        (bx - 0.226, by + 0.036),
-        (bx - 0.132, by + 0.038),
-        (bx - 0.014, by + 0.086),
+        (bx - 0.014, by - 0.096),
+        (bx - 0.150, by - 0.104),
+        (bx - 0.300, by - 0.062),
+        (bx - 0.398, by + 0.048),   # hooked tip
+        (bx - 0.286, by + 0.030),
+        (bx - 0.152, by + 0.028),
+        (bx - 0.018, by + 0.104),
     ]
-    b.prism(pick, bz, 0.034 if level == 0 else 0.040, "blade", w)
+    b.prism(pick, bz * 1.0, thickness * 0.82, "blade", w)
     return b
 
 
@@ -704,27 +758,257 @@ def make_atlas():
             links.new(tex.outputs["Color"], base_input)
 
 
+def _rigid_axe_point(armature_obj, local_point):
+    """Where an axe-local point currently is, in armature space.
+
+    The axe is skinned 100% to hand.R, so it moves with exactly that bone's
+    rigid transform: pose matrix composed with the inverse of the rest matrix.
+    """
+    hand = armature_obj.pose.bones[AXE_BONE]
+    rigid = hand.matrix @ hand.bone.matrix_local.inverted()
+    return rigid @ Vector(local_point)
+
+
+def _aim_bone(pose_bone, tail_target, roll_hint):
+    """Point a bone's +Y axis at a target without translating it.
+
+    Only the rotation is authored; the head stays wherever the parent chain
+    puts it, so the arm cannot detach from the shoulder.
+    """
+    head = pose_bone.head.copy()
+    y = (tail_target - head)
+    if y.length < 1e-6:
+        return
+    y.normalize()
+    x = roll_hint.cross(y)
+    if x.length < 1e-5:
+        x = Vector((1.0, 0.0, 0.0)).cross(y)
+        if x.length < 1e-5:
+            x = Vector((0.0, 0.0, 1.0)).cross(y)
+    x.normalize()
+    # Right-handed basis: X x Y = Z. Using y.cross(x) here yields a
+    # determinant of -1 -- a reflection. Blender still lands the bone's +Y on
+    # the target, so the in-memory residual reads 0.0000m and looks correct,
+    # but the rotation decomposed out of a reflection is meaningless and the
+    # exported quaternion channels are wrong. That is exactly how the left
+    # hand ended up 1.4m off the haft in the GLB while every Blender-side
+    # check reported a perfect grip.
+    z = x.cross(y)
+    matrix = Matrix((x, y, z)).transposed().to_4x4()
+    matrix.translation = head
+    pose_bone.matrix = matrix
+    bpy.context.view_layer.update()
+
+
+def _solve_two_bone(armature_obj, upper_name, lower_name, target, pole_reference):
+    """Analytic two-bone IK. Returns the residual distance to the target."""
+    pose = armature_obj.pose
+    upper = pose.bones[upper_name]
+    lower = pose.bones[lower_name]
+    bpy.context.view_layer.update()
+    shoulder = upper.head.copy()
+    l1 = (upper.tail - upper.head).length
+    l2 = (lower.tail - lower.head).length
+    to_target = target - shoulder
+    distance = to_target.length
+    if distance < 1e-5:
+        return 0.0
+    direction = to_target / distance
+    reach = min(max(distance, abs(l1 - l2) + 1e-4), (l1 + l2) - 1e-4)
+    along = (l1 * l1 - l2 * l2 + reach * reach) / (2.0 * reach)
+    height = math.sqrt(max(0.0, l1 * l1 - along * along))
+    perpendicular = pole_reference - direction * pole_reference.dot(direction)
+    if perpendicular.length < 1e-5:
+        perpendicular = Vector((0.0, 0.0, 1.0)) - direction * direction.z
+    perpendicular.normalize()
+    elbow = shoulder + direction * along + perpendicular * height
+    _aim_bone(upper, elbow, perpendicular)
+    _aim_bone(lower, target, perpendicular)
+    return (lower.tail - target).length
+
+
+def pose_weapon(armature_obj, grip, shaft_dir):
+    """Author the pose from the weapon outward instead of from joint angles.
+
+    Hand-authoring Euler angles for a two-handed weapon does not work: the
+    left hand has to land on a haft whose position is a consequence of the
+    right arm, so any hand-tuned value is wrong the moment the right arm
+    moves. Here the caller states where the upper grip should be and which
+    way the shaft should point -- i.e. the thing the player actually sees --
+    and both arms are solved to match.
+
+    Returns (right_residual, left_residual, blade_tip) so the bake can prove
+    the grip closed rather than assume it.
+    """
+    grip = Vector(grip)
+    shaft_dir = Vector(shaft_dir).normalized()
+
+    # Right arm carries the weapon: hand.R's origin *is* the upper grip.
+    right_residual = _solve_two_bone(
+        armature_obj, "upper_arm.R", "lower_arm.R", grip, Vector((0.45, -1.0, -0.35)),
+    )
+
+    # Orient hand.R so the rigid axe's shaft points where the caller asked.
+    hand = armature_obj.pose.bones[AXE_BONE]
+    rest_rotation = hand.bone.matrix_local.to_3x3()
+    rest_shaft = (Vector(AXE_TIP) - Vector(AXE_BUTT)).normalized()
+    local_shaft = rest_rotation.inverted() @ rest_shaft
+    rotation = local_shaft.rotation_difference(shaft_dir).to_matrix().to_4x4()
+    rotation.translation = hand.head.copy()
+    hand.matrix = rotation
+    bpy.context.view_layer.update()
+
+    # Left hand supports on the lower grip, which is now fully determined.
+    lower_target = grip - shaft_dir * (Vector(axe_point(UPPER_GRIP_T)) - Vector(axe_point(LOWER_GRIP_T))).length
+    left_residual = _solve_two_bone(
+        armature_obj, "upper_arm.L", "lower_arm.L", lower_target, Vector((-0.35, -1.0, -0.45)),
+    )
+    blade_tip = _rigid_axe_point(armature_obj, AXE_BLADE_TIP)
+    return right_residual, left_residual, blade_tip
+
+
+def solve_left_hand_onto_grip(armature_obj):
+    """Analytic two-bone IK putting hand.L's origin on the axe's lower grip.
+
+    The left hand cannot reach the lower grip from the bind pose -- the axe
+    hangs at the right side, 1.40m from the left shoulder against a 0.72m arm
+    -- so the two-hand grip only exists once the right arm has carried the
+    weapon inward. Solving it here rather than hand-tuning Euler angles means
+    the grip is correct in every authored pose, and the returned residual is
+    the honest measure of whether it actually closed.
+    """
+    pose = armature_obj.pose
+    upper = pose.bones["upper_arm.L"]
+    lower = pose.bones["lower_arm.L"]
+    bpy.context.view_layer.update()
+    target = _rigid_axe_point(armature_obj, axe_point(LOWER_GRIP_T))
+
+    shoulder = upper.head.copy()
+    l1 = (upper.tail - upper.head).length
+    l2 = (lower.tail - lower.head).length
+    to_target = target - shoulder
+    distance = to_target.length
+    if distance < 1e-5:
+        return 0.0
+    direction = to_target / distance
+    # Clamp into the annulus the two-bone chain can actually span.
+    reach = min(max(distance, abs(l1 - l2) + 1e-4), (l1 + l2) - 1e-4)
+    along = (l1 * l1 - l2 * l2 + reach * reach) / (2.0 * reach)
+    height = math.sqrt(max(0.0, l1 * l1 - along * along))
+    # Pole: the elbow drops down and away from the chest, which is where a
+    # support hand's elbow actually sits on a two-handed haft.
+    reference = Vector((-0.35, -1.0, -0.45))
+    perpendicular = reference - direction * reference.dot(direction)
+    if perpendicular.length < 1e-5:
+        perpendicular = Vector((0.0, 0.0, 1.0)) - direction * direction.z
+    perpendicular.normalize()
+    elbow = shoulder + direction * along + perpendicular * height
+
+    _aim_bone(upper, elbow, perpendicular)
+    _aim_bone(lower, target, perpendicular)
+    return (lower.tail - target).length
+
+
 def add_clip(armature_obj, name, frame_end, poses):
+    """Key a clip in two passes.
+
+    Pass 1 keys the torso and legs. Pass 2 re-enters each frame so the body
+    is evaluated *from the action*, then solves both arms onto the weapon and
+    keys them. Doing it in one interleaved pass silently failed: the solved
+    arm pose lived only in memory, so the residual printed 0.0000m while the
+    exported clip actually put the left hand 1.4m off the haft. The verify
+    pass below re-reads the action after zeroing the pose, which is what
+    makes it a real check rather than a reading of stale in-memory state.
+    """
     if not armature_obj.animation_data:
         armature_obj.animation_data_create()
     armature_obj.animation_data.action = None
+
+    def reset_pose():
+        for bone in armature_obj.pose.bones:
+            bone.rotation_mode = "QUATERNION"
+            bone.rotation_quaternion = (1.0, 0.0, 0.0, 0.0)
+            bone.location = (0.0, 0.0, 0.0)
+
+    # --- pass 1: body -----------------------------------------------------
     for frame, pose in poses:
         bpy.context.scene.frame_set(frame)
-        for bone in armature_obj.pose.bones:
-            bone.rotation_mode = "XYZ"
-            bone.rotation_euler = (0.0, 0.0, 0.0)
-            bone.location = (0.0, 0.0, 0.0)
+        reset_pose()
         for bone_name, values in pose.items():
+            if bone_name == "__weapon__":
+                continue
             bone = armature_obj.pose.bones.get(bone_name)
             if not bone:
                 continue
             if "r" in values:
-                bone.rotation_euler = values["r"]
-                bone.keyframe_insert(data_path="rotation_euler", frame=frame)
+                bone.rotation_quaternion = Euler(values["r"], "XYZ").to_quaternion()
+                bone.keyframe_insert(data_path="rotation_quaternion", frame=frame)
             if "l" in values:
                 bone.location = values["l"]
                 bone.keyframe_insert(data_path="location", frame=frame)
+
+    # --- pass 2: arms solved from the weapon, on every frame --------------
+    # Solving only at the authored keys is not enough: between keys the arms
+    # interpolate independently of the weapon they are holding, so the left
+    # hand drifted up to 0.42m off the haft mid-swing even though every key
+    # was exact. The weapon pose is interpolated here and the IK re-solved
+    # per frame, which makes the grip true at every frame the exporter
+    # samples rather than only at the keys.
+    ARM_BONES = ("upper_arm.R", "lower_arm.R", AXE_BONE, "upper_arm.L", "lower_arm.L")
+    weapon_keys = [(frame, pose["__weapon__"]) for frame, pose in poses if "__weapon__" in pose]
+    residuals = []
+    if weapon_keys:
+        first_frame = weapon_keys[0][0]
+        last_frame = weapon_keys[-1][0]
+
+        def weapon_at(frame):
+            if frame <= first_frame:
+                return weapon_keys[0][1]
+            if frame >= last_frame:
+                return weapon_keys[-1][1]
+            for (fa, wa), (fb, wb) in zip(weapon_keys, weapon_keys[1:]):
+                if fa <= frame <= fb:
+                    span = max(1, fb - fa)
+                    t = (frame - fa) / span
+                    grip = tuple(wa[0][i] + (wb[0][i] - wa[0][i]) * t for i in range(3))
+                    direction = Vector(wa[1]).normalized().lerp(Vector(wb[1]).normalized(), t)
+                    return (grip, tuple(direction))
+            return weapon_keys[-1][1]
+
+        for frame in range(first_frame, last_frame + 1):
+            bpy.context.scene.frame_set(frame)
+            bpy.context.view_layer.update()
+            grip, direction = weapon_at(frame)
+            right, left, tip = pose_weapon(armature_obj, grip, direction)
+            residuals.append((frame, right, left, tip))
+            for bone_name in ARM_BONES:
+                armature_obj.pose.bones[bone_name].keyframe_insert(data_path="rotation_quaternion", frame=frame)
+    if residuals:
+        worst_left = max(residuals, key=lambda item: item[2])
+        worst_right = max(residuals, key=lambda item: item[1])
+        tips = [item[3] for item in residuals]
+        arc = max((a - b).length for a in tips for b in tips)
+        print(
+            f"  grip[{name}] solve: worst right {worst_right[1]:.4f}m @f{worst_right[0]} | "
+            f"worst left {worst_left[2]:.4f}m @f{worst_left[0]} | blade-tip arc {arc:.3f}m"
+        )
+
+    # --- verify: zero the pose, then read it back from the action ---------
+    baked = []
+    for frame, pose in poses:
+        if "__weapon__" not in pose:
+            continue
+        reset_pose()
+        bpy.context.view_layer.update()
+        bpy.context.scene.frame_set(frame)
+        bpy.context.view_layer.update()
+        target = _rigid_axe_point(armature_obj, axe_point(LOWER_GRIP_T))
+        baked.append((frame, (armature_obj.pose.bones["lower_arm.L"].tail - target).length))
+    if baked:
+        worst = max(baked, key=lambda item: item[1])
+        print(f"  grip[{name}] BAKED: worst left {worst[1]:.4f}m @f{worst[0]}")
     action = armature_obj.animation_data.action
+
     if action is None:
         raise RuntimeError(f"No animation action created for {name}")
     action.name = name
@@ -741,13 +1025,14 @@ def add_clip(armature_obj, name, frame_end, poses):
 # weapon and the left arm is posed onto the shaft below it.  These offsets
 # are shared by every clip so the grip stays consistent; per-clip poses layer
 # on top of them.
+# The right arm carries the weapon; the left arm is not authored here at all,
+# because it is solved onto the lower grip by IK after every pose is applied.
 GRIP_R = {"upper_arm.R": (-0.30, 0.00, -0.46), "lower_arm.R": (-0.62, 0.10, -0.30), "hand.R": (0.00, 0.00, -0.18)}
-GRIP_L = {"upper_arm.L": (-0.52, 0.00, 0.86), "lower_arm.L": (-1.02, -0.22, 0.30), "hand.L": (0.00, 0.00, 0.20)}
 
 
 def grip(**overrides):
-    """Base two-hand grip pose, with optional per-bone overrides."""
-    pose = {bone: {"r": value} for bone, value in {**GRIP_R, **GRIP_L}.items()}
+    """Base weapon-carry pose, with optional per-bone overrides."""
+    pose = {bone: {"r": value} for bone, value in GRIP_R.items()}
     for bone, value in overrides.items():
         bone_name = bone.replace("__", ".")
         if bone_name in pose:
@@ -758,73 +1043,117 @@ def grip(**overrides):
 
 
 def add_animations(armature_obj):
+    """Author every clip from the weapon outward.
+
+    Each key states where the upper grip sits and which way the shaft points;
+    both arms are then solved onto it. This is what makes the two-hand grip
+    survive posing, and it is also what makes the swing readable -- the arc
+    is authored as the blade's path, which is the thing the player watches.
+    """
+    # Ready stance: haft diagonal across the chest, head up over the right
+    # shoulder. Both grips comfortably inside arm reach.
+    READY = ((0.10, 1.44, 0.30), (0.45, 0.86, 0.24))
+    # Carry while moving: dropped and tucked slightly closer to the body.
+    CARRY = ((0.13, 1.38, 0.26), (0.42, 0.88, 0.22))
+
     add_clip(armature_obj, "Idle", 30, [
-        (1, grip(chest={"r": (0.0, 0.0, 0.0)})),
-        (15, grip(chest={"r": (-0.030, 0.0, 0.016)}, neck={"r": (0.022, 0.0, 0.0)},
-                  pelvis={"l": (0.0, 0.012, 0.0)})),
-        (30, grip(chest={"r": (0.0, 0.0, 0.0)})),
+        (1, {"__weapon__": READY, "chest": {"r": (0.0, -0.10, 0.0)}}),
+        (15, {"__weapon__": ((0.10, 1.455, 0.305), (0.45, 0.86, 0.24)),
+              "chest": {"r": (-0.030, -0.10, 0.016)}, "neck": {"r": (0.022, 0.0, 0.0)},
+              "pelvis": {"l": (0.0, 0.012, 0.0)}}),
+        (30, {"__weapon__": READY, "chest": {"r": (0.0, -0.10, 0.0)}}),
     ])
     add_clip(armature_obj, "Walk", 24, [
-        (1, grip(thigh__L={"r": (0.44, 0, 0)}, thigh__R={"r": (-0.44, 0, 0)}, shin__L={"r": (-0.18, 0, 0)},
-                 chest={"r": (0.04, 0.10, 0)}, pelvis={"r": (0, -0.10, 0), "l": (0, 0.018, 0)})),
-        (7, grip(thigh__L={"r": (-0.40, 0, 0)}, thigh__R={"r": (0.40, 0, 0)}, shin__R={"r": (-0.20, 0, 0)},
-                 chest={"r": (0.04, -0.10, 0)}, pelvis={"r": (0, 0.10, 0)})),
-        (13, grip(thigh__L={"r": (0.44, 0, 0)}, thigh__R={"r": (-0.44, 0, 0)}, shin__L={"r": (-0.18, 0, 0)},
-                  chest={"r": (0.04, 0.10, 0)}, pelvis={"r": (0, -0.10, 0), "l": (0, 0.018, 0)})),
-        (19, grip(thigh__L={"r": (-0.40, 0, 0)}, thigh__R={"r": (0.40, 0, 0)}, shin__R={"r": (-0.20, 0, 0)},
-                  chest={"r": (0.04, -0.10, 0)}, pelvis={"r": (0, 0.10, 0)})),
-        (24, grip(thigh__L={"r": (0.44, 0, 0)}, thigh__R={"r": (-0.44, 0, 0)}, shin__L={"r": (-0.18, 0, 0)},
-                  chest={"r": (0.04, 0.10, 0)}, pelvis={"r": (0, -0.10, 0), "l": (0, 0.018, 0)})),
+        (1, {"__weapon__": CARRY, "thigh.L": {"r": (0.44, 0, 0)}, "thigh.R": {"r": (-0.44, 0, 0)},
+             "shin.L": {"r": (-0.18, 0, 0)}, "chest": {"r": (0.04, 0.02, 0)},
+             "pelvis": {"r": (0, -0.10, 0), "l": (0, 0.018, 0)}}),
+        (7, {"__weapon__": CARRY, "thigh.L": {"r": (-0.40, 0, 0)}, "thigh.R": {"r": (0.40, 0, 0)},
+             "shin.R": {"r": (-0.20, 0, 0)}, "chest": {"r": (0.04, -0.18, 0)},
+             "pelvis": {"r": (0, 0.10, 0)}}),
+        (13, {"__weapon__": CARRY, "thigh.L": {"r": (0.44, 0, 0)}, "thigh.R": {"r": (-0.44, 0, 0)},
+              "shin.L": {"r": (-0.18, 0, 0)}, "chest": {"r": (0.04, 0.02, 0)},
+              "pelvis": {"r": (0, -0.10, 0), "l": (0, 0.018, 0)}}),
+        (19, {"__weapon__": CARRY, "thigh.L": {"r": (-0.40, 0, 0)}, "thigh.R": {"r": (0.40, 0, 0)},
+              "shin.R": {"r": (-0.20, 0, 0)}, "chest": {"r": (0.04, -0.18, 0)},
+              "pelvis": {"r": (0, 0.10, 0)}}),
+        (24, {"__weapon__": CARRY, "thigh.L": {"r": (0.44, 0, 0)}, "thigh.R": {"r": (-0.44, 0, 0)},
+              "shin.L": {"r": (-0.18, 0, 0)}, "chest": {"r": (0.04, 0.02, 0)},
+              "pelvis": {"r": (0, -0.10, 0), "l": (0, 0.018, 0)}}),
     ])
     add_clip(armature_obj, "Run", 18, [
-        (1, grip(pelvis={"r": (0.13, -0.12, 0), "l": (0, 0.036, 0)}, thigh__L={"r": (0.70, 0, 0)},
-                 thigh__R={"r": (-0.70, 0, 0)}, shin__L={"r": (-0.42, 0, 0)}, chest={"r": (0.10, 0.14, 0)})),
-        (5, grip(pelvis={"r": (0.13, 0.12, 0)}, thigh__L={"r": (-0.64, 0, 0)}, thigh__R={"r": (0.64, 0, 0)},
-                 shin__R={"r": (-0.46, 0, 0)}, chest={"r": (0.10, -0.14, 0)})),
-        (9, grip(pelvis={"r": (0.13, -0.12, 0), "l": (0, 0.036, 0)}, thigh__L={"r": (0.70, 0, 0)},
-                 thigh__R={"r": (-0.70, 0, 0)}, shin__L={"r": (-0.42, 0, 0)}, chest={"r": (0.10, 0.14, 0)})),
-        (13, grip(pelvis={"r": (0.13, 0.12, 0)}, thigh__L={"r": (-0.64, 0, 0)}, thigh__R={"r": (0.64, 0, 0)},
-                  shin__R={"r": (-0.46, 0, 0)}, chest={"r": (0.10, -0.14, 0)})),
-        (18, grip(pelvis={"r": (0.13, -0.12, 0), "l": (0, 0.036, 0)}, thigh__L={"r": (0.70, 0, 0)},
-                  thigh__R={"r": (-0.70, 0, 0)}, shin__L={"r": (-0.42, 0, 0)}, chest={"r": (0.10, 0.14, 0)})),
+        (1, {"__weapon__": CARRY, "pelvis": {"r": (0.13, -0.12, 0), "l": (0, 0.036, 0)},
+             "thigh.L": {"r": (0.70, 0, 0)}, "thigh.R": {"r": (-0.70, 0, 0)},
+             "shin.L": {"r": (-0.42, 0, 0)}, "chest": {"r": (0.12, 0.04, 0)}}),
+        (5, {"__weapon__": CARRY, "pelvis": {"r": (0.13, 0.12, 0)}, "thigh.L": {"r": (-0.64, 0, 0)},
+             "thigh.R": {"r": (0.64, 0, 0)}, "shin.R": {"r": (-0.46, 0, 0)},
+             "chest": {"r": (0.12, -0.20, 0)}}),
+        (9, {"__weapon__": CARRY, "pelvis": {"r": (0.13, -0.12, 0), "l": (0, 0.036, 0)},
+             "thigh.L": {"r": (0.70, 0, 0)}, "thigh.R": {"r": (-0.70, 0, 0)},
+             "shin.L": {"r": (-0.42, 0, 0)}, "chest": {"r": (0.12, 0.04, 0)}}),
+        (13, {"__weapon__": CARRY, "pelvis": {"r": (0.13, 0.12, 0)}, "thigh.L": {"r": (-0.64, 0, 0)},
+              "thigh.R": {"r": (0.64, 0, 0)}, "shin.R": {"r": (-0.46, 0, 0)},
+              "chest": {"r": (0.12, -0.20, 0)}}),
+        (18, {"__weapon__": CARRY, "pelvis": {"r": (0.13, -0.12, 0), "l": (0, 0.036, 0)},
+              "thigh.L": {"r": (0.70, 0, 0)}, "thigh.R": {"r": (-0.70, 0, 0)},
+              "shin.L": {"r": (-0.42, 0, 0)}, "chest": {"r": (0.12, 0.04, 0)}}),
     ])
-    # MeleeAttack: a committed overhead chop.  The axe is rigid to hand.R, so
-    # rotating the shoulder through this arc swings the whole weapon.
+    # A four-beat chop: settle, load high behind the right shoulder, drive
+    # down across the body, then recover. Measured blade-tip travel from
+    # wind-up to impact is ~2.1m, so the swing is legible from the gameplay
+    # camera rather than only in the pose data.
     add_clip(armature_obj, "MeleeAttack", 30, [
-        (1, grip(chest={"r": (0.0, 0.0, 0.0)})),
-        # wind-up: weight back, weapon cocked high over the right shoulder
-        (9, grip(
-            upper_arm__R={"r": (-1.72, 0.10, -0.30)}, lower_arm__R={"r": (-1.02, 0.16, -0.22)},
-            upper_arm__L={"r": (-1.34, 0.00, 0.62)}, lower_arm__L={"r": (-1.20, -0.20, 0.24)},
-            chest={"r": (-0.24, 0.52, 0.10)}, pelvis={"r": (0.0, 0.30, 0.0)},
-            thigh__L={"r": (-0.20, 0, 0)}, thigh__R={"r": (0.24, 0, 0)}, head={"r": (0.16, -0.20, 0)})),
-        # impact: driven down and across the body
-        (16, grip(
-            upper_arm__R={"r": (0.86, -0.14, -0.58)}, lower_arm__R={"r": (-0.22, 0.06, -0.34)},
-            upper_arm__L={"r": (0.30, 0.00, 0.92)}, lower_arm__L={"r": (-0.72, -0.24, 0.34)},
-            chest={"r": (0.34, -0.70, -0.10)}, pelvis={"r": (0.0, -0.34, 0.0), "l": (0.0, -0.036, 0.0)},
-            thigh__L={"r": (0.30, 0, 0)}, thigh__R={"r": (-0.34, 0, 0)}, head={"r": (-0.18, 0.16, 0)})),
-        # follow-through
-        (21, grip(
-            upper_arm__R={"r": (0.52, -0.10, -0.54)}, lower_arm__R={"r": (-0.40, 0.08, -0.32)},
-            upper_arm__L={"r": (0.06, 0.00, 0.90)}, lower_arm__L={"r": (-0.86, -0.24, 0.32)},
-            chest={"r": (0.22, -0.52, -0.08)}, pelvis={"r": (0.0, -0.24, 0.0)})),
-        (30, grip(chest={"r": (0.0, 0.0, 0.0)})),
+        (1, {"__weapon__": READY, "chest": {"r": (0.0, -0.10, 0.0)}}),
+        (6, {"__weapon__": ((0.22, 1.52, 0.06), (0.38, 0.86, -0.34)),
+             "chest": {"r": (-0.14, 0.30, 0.06)}, "pelvis": {"r": (0.0, 0.18, 0.0)},
+             "thigh.L": {"r": (-0.12, 0, 0)}, "thigh.R": {"r": (0.14, 0, 0)},
+             "head": {"r": (0.10, -0.14, 0)}}),
+        # wind-up: fully loaded, weight on the back foot
+        (10, {"__weapon__": ((0.34, 1.62, -0.12), (0.30, 0.80, -0.52)),
+              "chest": {"r": (-0.26, 0.54, 0.10)}, "pelvis": {"r": (0.0, 0.32, 0.0)},
+              "thigh.L": {"r": (-0.22, 0, 0)}, "thigh.R": {"r": (0.26, 0, 0)},
+              "shin.R": {"r": (-0.24, 0, 0)}, "head": {"r": (0.16, -0.22, 0)}}),
+        # The swing is the fastest part of the clip, so it carries extra keys.
+        # Sparse keys here left the interpolated left hand up to 0.15m off the
+        # haft between wind-up and impact -- the grip is only rigid at keys,
+        # because the arms interpolate independently of the weapon they hold.
+        (12, {"__weapon__": ((0.30, 1.56, 0.02), (0.24, 0.58, -0.28)),
+              "chest": {"r": (-0.18, 0.42, 0.08)}, "pelvis": {"r": (0.0, 0.20, 0.0)},
+              "thigh.L": {"r": (-0.10, 0, 0)}, "thigh.R": {"r": (0.14, 0, 0)},
+              "head": {"r": (0.08, -0.12, 0)}}),
+        (14, {"__weapon__": ((0.18, 1.36, 0.26), (-0.10, -0.06, 0.36)),
+              "chest": {"r": (0.14, -0.18, -0.04)}, "pelvis": {"r": (0.0, -0.10, 0.0)},
+              "thigh.L": {"r": (0.16, 0, 0)}, "thigh.R": {"r": (-0.18, 0, 0)},
+              "head": {"r": (-0.10, 0.06, 0)}}),
+        # impact: blade driven low and forward, hips and chest snapped through
+        (16, {"__weapon__": ((0.06, 1.20, 0.44), (-0.42, -0.55, 0.72)),
+              "chest": {"r": (0.36, -0.62, -0.12)}, "pelvis": {"r": (0.0, -0.36, 0.0), "l": (0.0, -0.040, 0.0)},
+              "thigh.L": {"r": (0.34, 0, 0)}, "thigh.R": {"r": (-0.38, 0, 0)},
+              "shin.L": {"r": (-0.30, 0, 0)}, "head": {"r": (-0.20, 0.18, 0)}}),
+        # follow-through: the weapon keeps travelling past the target
+        (20, {"__weapon__": ((0.00, 1.06, 0.40), (-0.52, -0.62, 0.58)),
+              "chest": {"r": (0.30, -0.52, -0.10)}, "pelvis": {"r": (0.0, -0.28, 0.0), "l": (0.0, -0.028, 0.0)},
+              "thigh.L": {"r": (0.28, 0, 0)}, "thigh.R": {"r": (-0.30, 0, 0)},
+              "head": {"r": (-0.14, 0.12, 0)}}),
+        # recovery back to guard
+        (30, {"__weapon__": READY, "chest": {"r": (0.0, -0.10, 0.0)}}),
     ])
     add_clip(armature_obj, "Hit", 14, [
-        (1, grip(chest={"r": (0.0, 0.0, 0.0)})),
-        (5, grip(chest={"r": (0.16, -0.26, 0.0)}, head={"r": (0.14, 0.0, 0.0)},
-                 pelvis={"r": (0.0, -0.18, 0.0), "l": (0.0, -0.020, 0.0)},
-                 thigh__R={"r": (0.16, 0, 0)})),
-        (14, grip(chest={"r": (0.0, 0.0, 0.0)}, head={"r": (0.0, 0.0, 0.0)})),
+        (1, {"__weapon__": READY, "chest": {"r": (0.0, -0.10, 0.0)}}),
+        (5, {"__weapon__": ((0.16, 1.40, 0.18), (0.48, 0.82, 0.14)),
+             "chest": {"r": (0.18, -0.30, 0.0)}, "head": {"r": (0.16, 0.0, 0.0)},
+             "pelvis": {"r": (0.0, -0.20, 0.0), "l": (0.0, -0.022, 0.0)},
+             "thigh.R": {"r": (0.18, 0, 0)}}),
+        (14, {"__weapon__": READY, "chest": {"r": (0.0, -0.10, 0.0)}, "head": {"r": (0.0, 0.0, 0.0)}}),
     ])
-    # Death keeps the grip until the collapse, then the arms splay as the
-    # body settles onto the ground.
+    # Death keeps the two-hand grip through the stumble, then releases: the
+    # last two keys author the arms directly so the body can sprawl.
     add_clip(armature_obj, "Death", 30, [
-        (1, grip(pelvis={"r": (0.0, 0.0, 0.0)})),
-        (10, grip(pelvis={"r": (0.0, -0.36, 0.0), "l": (0.0, -0.14, 0.0)},
-                  thigh__L={"r": (0.58, 0, 0)}, thigh__R={"r": (-0.32, 0, 0)}, shin__L={"r": (-0.50, 0, 0)},
-                  chest={"r": (0.88, 0.0, 0.20)}, head={"r": (0.36, 0.0, 0.0)})),
+        (1, {"__weapon__": READY, "pelvis": {"r": (0.0, 0.0, 0.0)}}),
+        (10, {"__weapon__": ((0.14, 1.24, 0.30), (0.40, 0.80, 0.44)),
+              "pelvis": {"r": (0.0, -0.36, 0.0), "l": (0.0, -0.14, 0.0)},
+              "thigh.L": {"r": (0.58, 0, 0)}, "thigh.R": {"r": (-0.32, 0, 0)},
+              "shin.L": {"r": (-0.50, 0, 0)}, "chest": {"r": (0.88, 0.0, 0.20)},
+              "head": {"r": (0.36, 0.0, 0.0)}}),
         (22, {
             "pelvis": {"r": (1.30, 0.0, 0.0), "l": (0.0, -0.56, 0.0)},
             "thigh.L": {"r": (0.84, 0, 0)}, "thigh.R": {"r": (-0.50, 0, 0)},
@@ -844,9 +1173,12 @@ def add_animations(armature_obj):
 
 
 def create_materials():
-    MATERIALS["cloth"] = material("Warrior_Cloth", MATS["cloth"], 0.86, 0.02)
-    MATERIALS["leather"] = material("Warrior_Leather", MATS["leather"], 0.64, 0.04)
-    MATERIALS["iron"] = material("Warrior_Iron", MATS["iron"], 0.46, 0.72)
+    # Roughness is the third separation axis and the one that survives at
+    # distance: matte wool, semi-gloss leather, and a genuinely specular iron
+    # so the axe head catches a highlight the cloth never will.
+    MATERIALS["cloth"] = material("Warrior_Cloth", MATS["cloth"], 0.94, 0.0)
+    MATERIALS["leather"] = material("Warrior_Leather", MATS["leather"], 0.58, 0.06)
+    MATERIALS["iron"] = material("Warrior_Iron", MATS["iron"], 0.30, 0.88)
     make_atlas()
 
 
@@ -878,13 +1210,32 @@ def main():
         else:
             body.parent = root_obj
             axe.parent = root_obj
-    # The socket sits on the shaft at the right hand's grip point, so runtime
-    # tooling can reason about the weapon without unpacking skin weights.
-    socket_point = axe_point(0.455)
-    socket = empty("weapon_socket", socket_point, "EXPORT", "PLAIN_AXES")
-    socket.parent = root_obj
-    socket["socketRole"] = "two-hand ice axe grip"
-    socket["rigidBone"] = AXE_BONE
+    # Weapon locators. These are bone-parented to hand.R, so they travel with
+    # the axe through every animation and the runtime can measure real grip
+    # contact and a real weapon arc instead of inferring either from a
+    # bounding box. `weapon_socket` stays coincident with the upper grip for
+    # backwards compatibility with the existing manifest contract.
+    locators = {
+        "weapon_socket": (axe_point(UPPER_GRIP_T), "two-hand ice axe grip"),
+        "upper_grip": (axe_point(UPPER_GRIP_T), "right-hand grip point"),
+        "lower_grip": (axe_point(LOWER_GRIP_T), "left-hand support grip point"),
+        "axe_tip": (AXE_BLADE_TIP, "cutting-edge tip, drives the swing arc"),
+    }
+    bone = armature_obj.data.bones[AXE_BONE]
+    # Blender parents to the bone *tail*, so the parent-inverse has to undo
+    # both that offset and the bone's rest orientation. With it applied, the
+    # empty's local location is simply the authored armature-space point.
+    tail_space = bone.matrix_local @ Matrix.Translation(Vector((0.0, bone.length, 0.0)))
+    for name, (point, role) in locators.items():
+        node = empty(name, (0, 0, 0), "EXPORT", "PLAIN_AXES")
+        node.parent = armature_obj
+        node.parent_type = "BONE"
+        node.parent_bone = AXE_BONE
+        node.matrix_parent_inverse = tail_space.inverted()
+        node.location = Vector(point)
+        node["socketRole"] = role
+        node["rigidBone"] = AXE_BONE
+    socket = bpy.data.objects["weapon_socket"]
     anchor = empty("attackAnchor", (0.0, 1.10, 0.52), "EXPORT", "PLAIN_AXES")
     anchor.parent = root_obj
     anchor["socketRole"] = "melee attack origin"
