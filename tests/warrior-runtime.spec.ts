@@ -107,8 +107,12 @@ test("verifies Warrior GLB review mode and normalized animation evidence", async
 
   for (const camera of cameras) {
     await select(camera, "Idle", 0, 0);
+    // `warrior-gameplay.png` is deliberately NOT captured here. Review mode
+    // is an isolated turntable with its own lighting and an empty scene, so
+    // a shot from its "gameplay" camera preset is not gameplay evidence --
+    // it only looks like it. That image is produced by the squad test below,
+    // in the real arena.
     const evidenceName: Partial<Record<Camera, string>> = {
-      gameplay: "warrior-gameplay.png",
       front: "warrior-front.png",
       side: "warrior-side.png",
       back: "warrior-back.png",
@@ -125,6 +129,14 @@ test("verifies Warrior GLB review mode and normalized animation evidence", async
       if (animation === "MeleeAttack" && normalized === 0.6) await captureEvidence("warrior-melee-impact.png");
       if (animation === "Death" && normalized === 0.8) await captureEvidence("warrior-death.png");
     }
+  }
+  // LOD contact sheet: the same camera and pose at each tier, so a reviewer
+  // can compare identity retention across the switch rather than trusting a
+  // triangle count. Goes to the runtime output dir, not the 8 canonical
+  // repo evidence PNGs.
+  for (const lod of [0, 1, 2] as const) {
+    await select("three-quarter", "Idle", lod, 0);
+    await page.screenshot({ path: resolve(outputRoot, `warrior-lod${lod}.png`), fullPage: false });
   }
   await select("front", "Idle", 1, 0.5);
   await select("front", "Idle", 2, 0.5);
@@ -304,7 +316,100 @@ test("loads three Warrior squads from the authored GLB path", async ({ page }) =
   expect(result.units.every((unit) => unit.modelSource === "GLB")).toBe(true);
   expect(result.units.every((unit) => unit.proceduralVisibleMeshCount === 0)).toBe(true);
   expect(result.units.every((unit) => unit.authoredVisibleMeshCount > 0)).toBe(true);
+
+  // `?uiVerification=1` opens the debug-verify overlay, which is the large
+  // panel that was covering the squad in the committed evidence. Close it and
+  // let the scene settle before capturing.
+  await page.evaluate(() => {
+    const api = (window as ReviewWindow).frostbound?.api() as Record<string, unknown>;
+    if ((api.isVerifyOpen as () => boolean)()) (api.toggleVerify as () => void)();
+    return 0;
+  });
+  await page.evaluate(() => { (window as ReviewWindow).frostbound?.step(0.05, 20, true); return 0; });
+
+  /**
+   * Occlusion is asserted, not eyeballed. The squad's projected screen box is
+   * compared against every visible HUD element's client rect; the previous
+   * evidence was accepted purely by looking at it, which is how a shot with a
+   * debug panel across the subject got committed in the first place.
+   */
+  const framing = await page.evaluate(() => {
+    const w = window as ReviewWindow;
+    const game = (w.frostbound as unknown as { game: { s: Record<string, any> } }).game;
+    const scene = game.s.scene;
+    const camera = game.s.camera.camera;
+    const engine = game.s.engine;
+    const canvas = engine.getRenderingCanvas() as HTMLCanvasElement;
+    const rw = engine.getRenderWidth();
+    const rh = engine.getRenderHeight();
+    const viewport = camera.viewport.toGlobal(rw, rh);
+    const scaleX = canvas.clientWidth / rw;
+    const scaleY = canvas.clientHeight / rh;
+    const transform = scene.getTransformMatrix();
+
+    // Project the authored warrior meshes, skeleton applied. Babylon is
+    // bundled, not global, so the view-projection is applied by hand rather
+    // than via BABYLON.Vector3.Project.
+    const m = transform.m as ArrayLike<number>;
+    const project = (v: { x: number; y: number; z: number }) => {
+      const rx = v.x * m[0] + v.y * m[4] + v.z * m[8] + m[12];
+      const ry = v.x * m[1] + v.y * m[5] + v.z * m[9] + m[13];
+      const rw = v.x * m[3] + v.y * m[7] + v.z * m[11] + m[15];
+      if (Math.abs(rw) < 1e-6) return null;
+      const ndcX = rx / rw;
+      const ndcY = ry / rw;
+      return {
+        x: (viewport.x + (1 + ndcX) * viewport.width * 0.5) * scaleX,
+        y: (viewport.y + (1 - ndcY) * viewport.height * 0.5) * scaleY,
+      };
+    };
+    const points: Array<{ x: number; y: number }> = [];
+    for (const mesh of scene.meshes) {
+      // Any LOD tier: at gameplay camera distance the squad is already on
+      // LOD1/LOD2, so matching only LOD0 finds nothing and the occlusion
+      // check would silently pass on an empty set.
+      if (!/^unit\..*:LOD\d_PROD/.test(mesh.name)) continue;
+      if (!mesh.isEnabled() || !mesh.isVisible) continue;
+      mesh.refreshBoundingInfo({ applySkeleton: true });
+      for (const corner of mesh.getBoundingInfo().boundingBox.vectorsWorld) {
+        const p = project(corner);
+        if (p) points.push(p);
+      }
+    }
+    if (points.length === 0) return { projected: 0 };
+    const box = {
+      left: Math.min(...points.map((p) => p.x)),
+      right: Math.max(...points.map((p) => p.x)),
+      top: Math.min(...points.map((p) => p.y)),
+      bottom: Math.max(...points.map((p) => p.y)),
+    };
+    const canvasRect = canvas.getBoundingClientRect();
+    const overlaps: string[] = [];
+    for (const element of Array.from(document.querySelectorAll<HTMLElement>("body *"))) {
+      if (element === canvas || element.contains(canvas)) continue;
+      const style = getComputedStyle(element);
+      if (style.display === "none" || style.visibility === "hidden" || Number(style.opacity) < 0.05) continue;
+      if (style.pointerEvents === "none" && Number(style.opacity) < 0.3) continue;
+      const r = element.getBoundingClientRect();
+      if (r.width < 24 || r.height < 24) continue;
+      // Only leaf-ish panels; containers spanning the whole screen are the
+      // HUD root, not something that visually covers the subject.
+      if (r.width > canvasRect.width * 0.95 && r.height > canvasRect.height * 0.95) continue;
+      const ex = { left: r.left - canvasRect.left, right: r.right - canvasRect.left, top: r.top - canvasRect.top, bottom: r.bottom - canvasRect.top };
+      const hit = ex.left < box.right && ex.right > box.left && ex.top < box.bottom && ex.bottom > box.top;
+      if (hit) overlaps.push(`${element.tagName.toLowerCase()}#${element.id || "-"}.${(element.className || "").toString().split(" ")[0] || "-"}`);
+    }
+    return { projected: points.length, box, overlaps, canvas: { w: canvas.clientWidth, h: canvas.clientHeight } };
+  });
+
+  expect(framing.projected, "the squad must be projectable on screen for the evidence shot").toBeGreaterThan(0);
+  expect(framing.overlaps, `HUD elements cover the squad in warrior-squad.png: ${JSON.stringify(framing.overlaps)}`).toEqual([]);
+
   await page.screenshot({ path: resolve(evidenceRoot, "warrior-squad.png"), fullPage: false });
+  // Real formal-gameplay evidence: the actual arena, arena lighting, the
+  // gameplay camera and the real spawn path -- not the review turntable.
+  await page.screenshot({ path: resolve(evidenceRoot, "warrior-gameplay.png"), fullPage: false });
+  writeFileSync(resolve(outputRoot, "squad-framing.json"), `${JSON.stringify(framing, null, 2)}\n`, "utf8");
 });
 
 test("runs a real 9 Warrior + 12 Grunt pressure scenario with genuine engagement", async ({ page }) => {
@@ -416,20 +521,59 @@ test("runs a real 9 Warrior + 12 Grunt pressure scenario with genuine engagement
     };
   });
 
-  // A short burst of rendered frames, purely to give the "manual stepping
-  // FPS" numbers something to average over. Explicitly not claimed as real
-  // player framerate below.
-  const fpsSamples: number[] = [];
+  // --- manual-step sample (NOT a performance measurement) ---------------
+  // Kept only as a smoke signal that stepping renders at all. It is paced by
+  // Playwright round-trips, not by requestAnimationFrame, so it says nothing
+  // about player-facing framerate and is labelled as such in the artifact.
+  const stepFps: number[] = [];
   for (let i = 0; i < 20; i++) {
     const fps = await page.evaluate(() => {
       const w = window as ReviewWindow;
       w.frostbound?.step(0.016, 1, true);
       return ((w.frostbound?.api() as Record<string, unknown>).perf as () => { fps: number })().fps;
     });
-    fpsSamples.push(fps);
+    stepFps.push(fps);
   }
-  fpsSamples.sort((a, b) => a - b);
-  const percentile = (p: number): number => fpsSamples[Math.min(fpsSamples.length - 1, Math.floor(p * fpsSamples.length))];
+  stepFps.sort((a, b) => a - b);
+  const percentile = (values: number[], p: number): number => values[Math.min(values.length - 1, Math.floor(p * values.length))];
+
+  // --- real render-loop sample ------------------------------------------
+  // The engine's own requestAnimationFrame loop has been running throughout;
+  // the phase above merely stepped the simulation on top of it. To get a
+  // number that means something, stop stepping entirely and let the loop run
+  // alone for longer than the monitor's rolling window.
+  //
+  // PerformanceMonitor.avgFps5s is computed over the last 5 seconds of frame
+  // times, so after an 8s quiet window it contains only frames the render
+  // loop produced by itself -- the manual-step frames have aged out. That is
+  // why no accumulator reset is needed, and why the wait has to exceed the
+  // window rather than merely being "long enough to feel safe".
+  const RENDER_WINDOW_SECONDS = 8;
+  await page.waitForTimeout(RENDER_WINDOW_SECONDS * 1000);
+  const renderLoop = await page.evaluate(() => {
+    const api = (window as ReviewWindow).frostbound?.api() as Record<string, unknown>;
+    const perf = (api.perf as () => Record<string, number>)();
+    return {
+      avgFps5s: perf.avgFps5s,
+      avgFps30s: perf.avgFps30s,
+      lowFps1pct: perf.lowFps1pct,
+      frameMs: perf.frameMs,
+      simulationMs: perf.simulationMs,
+      renderMs: perf.renderMs,
+      drawCalls: perf.drawCalls,
+      activeMeshes: perf.activeMeshes,
+      totalVertices: perf.totalVertices,
+      allies: perf.allies,
+      enemies: perf.enemies,
+      totalUnits: perf.totalUnits,
+      hardwareScaling: perf.hardwareScaling,
+      qualityLevel: String((api.quality as () => unknown)()),
+    };
+  });
+  // The window must have actually produced frames, otherwise the numbers
+  // describe a stalled loop rather than a fast one.
+  expect(renderLoop.avgFps5s, "the real render loop must have produced frames during the sample window").toBeGreaterThan(0);
+  expect(renderLoop.drawCalls, "draw calls must be observable in the real render loop").toBeGreaterThan(0);
 
   expect(final.warriorGlbCount, "every Warrior must remain GLB-backed through combat").toBe(9);
   expect(final.warriorProceduralVisible, "procedural visible mesh count must stay 0").toBe(0);
@@ -455,12 +599,29 @@ test("runs a real 9 Warrior + 12 Grunt pressure scenario with genuine engagement
         meleeAttackObserved,
         anyDeathObserved,
         final,
-        perfSamples: {
-          manualSteppingUnreliable: true,
-          note: "fps/frame numbers below come from Playwright manual-stepping (frostbound.step), not real requestAnimationFrame pacing; treat as a smoke signal, not a player-facing benchmark.",
-          fps: fpsSamples,
-          fpsP50: percentile(0.5),
-          fpsP95: percentile(0.95),
+        // Two clearly separated datasets. Only `renderLoop` may be cited as
+        // performance; `manualStep` exists to show stepping renders at all.
+        renderLoop: {
+          source: "requestAnimationFrame",
+          windowSeconds: RENDER_WINDOW_SECONDS,
+          // Being precise about which fields the window actually cleans:
+          // avgFps5s covers a rolling 5s and is fully inside the quiet
+          // window. avgFps30s and lowFps1pct read longer history that still
+          // contains manual-step frames, so they are reported but must not
+          // be cited. Instantaneous fields (frameMs, drawCalls, activeMeshes)
+          // describe the most recent real frame and are fine.
+          citable: ["avgFps5s", "frameMs", "simulationMs", "renderMs", "drawCalls", "activeMeshes", "totalVertices"],
+          contaminated: ["avgFps30s", "lowFps1pct"],
+          contaminationNote: `The frame-time history is longer than the ${RENDER_WINDOW_SECONDS}s quiet window, so any statistic spanning more than 5s still includes manual-step frames.`,
+          ...renderLoop,
+        },
+        manualStep: {
+          source: "frostbound.step via Playwright round-trips",
+          usableAsPerformanceEvidence: false,
+          note: "Paced by test round-trips, not requestAnimationFrame. Smoke signal that stepping renders; says nothing about player-facing framerate.",
+          fps: stepFps,
+          fpsP50: percentile(stepFps, 0.5),
+          fpsP95: percentile(stepFps, 0.95),
         },
         consoleErrors,
         pageErrors,
