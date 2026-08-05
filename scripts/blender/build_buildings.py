@@ -42,7 +42,9 @@ BUILDINGS = {
     "frost_tower": {"body": (0.18, 0.46, 0.64), "accent": (0.42, 0.94, 1.0), "kind": "frostTower"},
     "sniper_tower": {"body": (0.3, 0.32, 0.4), "accent": (0.5, 0.85, 1.0), "kind": "sniperTower"},
     "mortar": {"body": (0.24, 0.25, 0.3), "accent": (1.0, 0.3, 0.1), "kind": "mortar"},
-    "furnace": {"body": (0.28, 0.24, 0.2), "accent": (1.0, 0.42, 0.12), "kind": "furnace"},
+    # furnace moved to its own generator (scripts/blender/build_furnace.py):
+    # it is the centrepiece prop and is authored bespoke, like Hero and
+    # Warrior. Leaving it here would overwrite that asset on the next run.
 }
 
 

@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-08-05T07:21:46.659Z",
+  "generatedAt": "2026-08-05T09:02:57.905Z",
   "blenderRequired": true,
   "assets": [
     {
@@ -2832,15 +2832,15 @@
       "key": "furnace",
       "status": "ok",
       "path": "public/assets/models/buildings/furnace.glb",
-      "sizeBytes": 1014088,
-      "nodes": 100,
-      "meshes": 94,
-      "materials": 10,
-      "textures": 9,
+      "sizeBytes": 316732,
+      "nodes": 13,
+      "meshes": 9,
+      "materials": 3,
+      "textures": 1,
       "skeletons": 0,
       "rootTransforms": [
         {
-          "index": 99,
+          "index": 12,
           "name": "FurnaceRoot",
           "translation": [
             0,
@@ -2856,47 +2856,41 @@
       ],
       "bounds": {
         "min": [
-          -1.9547743797302246,
-          -1.350000023841858,
-          -2.619999885559082
+          -1.9370399713516235,
+          -1.940999984741211,
+          -2.995563507080078
         ],
         "max": [
-          1.9547743797302246,
-          1.350000023841858,
-          1.9547743797302246
+          1.9370399713516235,
+          1.8571200370788574,
+          0
         ]
       },
       "animations": [
         "Idle",
         "Operate",
-        "Aim",
-        "Fire",
-        "Recoil",
         "Damaged",
         "Destroyed"
       ],
       "animationChannels": {
-        "Idle": 1,
-        "Operate": 2,
-        "Aim": 1,
-        "Fire": 2,
-        "Recoil": 1,
+        "Idle": 2,
+        "Operate": 3,
         "Damaged": 1,
         "Destroyed": 1
       },
-      "triangles": 14276,
+      "triangles": 1952,
       "lodTriangles": {
-        "LOD0": 13508,
-        "LOD1": 440,
-        "LOD2": 328
+        "LOD0": 1124,
+        "LOD1": 532,
+        "LOD2": 296
       },
       "surfaceAttributes": {
         "TEXCOORD_0": true,
         "COLOR_0": true
       },
       "lodProxies": {
-        "LOD1": 2,
-        "LOD2": 2
+        "LOD1": 3,
+        "LOD2": 3
       },
       "missingNodes": [],
       "missingAnimations": [],

@@ -16,6 +16,7 @@
     "art:units": "node scripts/run-blender.mjs scripts/blender/build_units.py",
     "art:warrior": "node scripts/run-blender.mjs scripts/blender/build_warrior.py",
     "art:buildings": "node scripts/run-blender.mjs scripts/blender/build_buildings.py",
+    "art:furnace": "node scripts/run-blender.mjs scripts/blender/build_furnace.py",
     "art:resources": "node scripts/run-blender.mjs scripts/blender/build_resources.py",
     "art:export": "node scripts/run-blender.mjs scripts/blender/batch_export.py",
     "test:hero:runtime": "playwright test tests/hero-runtime.spec.ts",
