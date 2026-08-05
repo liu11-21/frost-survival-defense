@@ -1,6 +1,7 @@
 import { damp, easeOutCubic } from "../util/MathUtil";
 import type { LiteRig } from "./LiteHumanoid";
 import { EffectSettingsState } from "../effects/EffectSettingsState";
+import { weaponTrailFor } from "../effects/WeaponTrail";
 
 export type CombatAnimState = "idle" | "walk" | "attack" | "hit" | "death" | "cast" | "taunt";
 
@@ -195,6 +196,14 @@ export class CombatAnimator {
     for (const group of authored.animationGroups) group.stop();
     const group = authored.animationGroups.find((candidate) => candidate.name === state || candidate.name.endsWith(`:${state}`));
     group?.start(state === "Idle" || state === "Walk" || state === "Run", 1);
+    // The weapon swoosh is tied to the clip, not to the attack *event*: it
+    // runs for exactly as long as the swing animation does, so it cannot be
+    // left streaming behind a unit whose attack was interrupted.
+    const trail = weaponTrailFor(authored);
+    if (trail) {
+      if (state === "MeleeAttack" || state === "Attack") trail.start();
+      else trail.stop();
+    }
   }
 
   /** 0..1, how far through the death animation the corpse is. */

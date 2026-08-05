@@ -19,4 +19,8 @@ export const EffectSettingsState = {
   damageNumbersEnabled: true,
   /** 0.6 / 1.0 / 1.5 for low / medium / high. */
   flashIntensity: 1,
+  /** Weapon swoosh ribbons. Each active trail rebuilds a small strip of
+   * geometry per frame, so this is the knob that turns them off on low
+   * quality rather than paying for one per simultaneously-swinging unit. */
+  weaponTrailsEnabled: true,
 };
