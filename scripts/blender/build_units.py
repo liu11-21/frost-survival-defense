@@ -1,1069 +1,681 @@
-"""Build the stylized unit library used by allies and enemies.
+"""Build the 25 authored roster units against the shared art standard.
 
-The combat simulation still owns movement, targeting and hit timing. These
-assets own only the authored silhouette and animation clips, so a missing or
-invalid GLB can safely fall back to the existing pooled LiteHumanoid rig.
+This script owns every ally and enemy except Hero and Warrior, which have
+their own generators.
+
+Why this was rewritten
+----------------------
+The previous version assembled each unit from ~95 separate rigid primitives,
+shipping 118 primitives, 13 materials and 12 embedded images per unit. Every
+role shared one body and differed only by colour, a hat and a prop, which is
+why the whole roster read as the same placeholder in different costumes. It
+was also where the frame's draw calls went.
+
+The rewrite follows ``docs/art/PRODUCTION_STANDARD.md``:
+
+* bodies are swept explicit cross-sections from ``authoring.py`` -- the same
+  language the Warrior rebuild uses -- merged into ONE skinned body mesh and
+  ONE skinned weapon mesh per LOD;
+* roles differ by **archetype**, which changes actual mass distribution,
+  height, stance and silhouette, not just palette;
+* three materials and one atlas per unit.
+
+The archetype is the important part. A marksman and a juggernaut are not the
+same figure in different hats: one is narrow, upright and long-limbed, the
+other is broad, hunched and short-necked, and that difference has to survive
+being seen from the gameplay camera in a crowd.
 """
 import math
 import os
 import sys
+from array import array
 
 import bpy
+from mathutils import Euler
 
 HERE = os.path.dirname(os.path.abspath(__file__))
+ROOT = os.path.abspath(os.path.join(HERE, "..", ".."))
 sys.path.append(HERE)
-from common import (  # noqa: E402
-    add_simple_animation,
-    add_lod_markers,
-    author_surface_paint,
-    assign_surface_variants,
-    box,
-    collision_box,
-    cone,
-    cylinder,
-    ellipsoid,
-    empty,
-    material,
-    move_to,
-    orient_for_babylon,
-    parent_all,
-    prism,
-    reset_scene,
-    save_source,
-    sphere,
-    torus,
-    vertical_cylinder,
-    export_glb,
-)
+from common import collision_box, empty, export_glb, material, orient_for_babylon, reset_scene, save_source, collection  # noqa: E402
+from authoring import MeshBuilder, section  # noqa: E402
 
 
-# One shared palette family keeps allies warm and enemies cold-violet while
-# each role gets a distinct silhouette and a functional prop.
-UNITS = {
-    "warrior": {"faction": "ally", "body": (0.78, 0.24, 0.12), "accent": (1.0, 0.68, 0.22), "crest": "helm", "weapon": "sword", "armor": "shoulders"},
-    "shield": {"faction": "ally", "body": (0.2, 0.42, 0.58), "accent": (0.55, 0.9, 1.0), "crest": "greatHelm", "weapon": "club", "armor": "shield"},
-    "archer": {"faction": "ally", "body": (0.22, 0.52, 0.28), "accent": (0.75, 1.0, 0.55), "crest": "hood", "weapon": "bow", "armor": "quiver"},
-    "medic": {"faction": "ally", "body": (0.82, 0.84, 0.88), "accent": (0.35, 1.0, 0.68), "crest": "hood", "weapon": "cross", "armor": "medic"},
-    "flagbearer": {"faction": "ally", "body": (0.72, 0.14, 0.1), "accent": (1.0, 0.74, 0.16), "crest": "crest", "weapon": "banner", "armor": "cape"},
-    "mage": {"faction": "ally", "body": (0.28, 0.2, 0.62), "accent": (0.72, 0.38, 1.0), "crest": "hat", "weapon": "staff", "armor": "cape"},
-    "assault": {"faction": "ally", "body": (0.16, 0.18, 0.24), "accent": (1.0, 0.25, 0.18), "crest": "visor", "weapon": "dagger", "armor": "lightArmor"},
-    "engineer": {"faction": "ally", "body": (0.72, 0.38, 0.1), "accent": (1.0, 0.72, 0.18), "crest": "hardhat", "weapon": "wrench", "armor": "toolpack"},
-    "musketeer": {"faction": "ally", "body": (0.2, 0.24, 0.34), "accent": (1.0, 0.76, 0.22), "crest": "tricorne", "weapon": "musket", "armor": "bandolier"},
-    "frostmage": {"faction": "ally", "body": (0.3, 0.66, 0.82), "accent": (0.48, 0.95, 1.0), "crest": "iceCrown", "weapon": "iceStaff", "armor": "crystals"},
-    "grunt": {"faction": "enemy", "body": (0.32, 0.18, 0.48), "accent": (0.72, 0.42, 1.0), "crest": "horn", "weapon": "club", "armor": "ragged"},
-    "slinger": {"faction": "enemy", "body": (0.26, 0.28, 0.52), "accent": (0.42, 0.76, 1.0), "crest": "hood", "weapon": "sling", "armor": "pouch"},
-    "bruiser": {"faction": "enemy", "body": (0.24, 0.2, 0.38), "accent": (0.78, 0.42, 1.0), "crest": "horn", "weapon": "shieldClub", "armor": "heavy"},
-    "marksman": {"faction": "enemy", "body": (0.18, 0.34, 0.5), "accent": (0.42, 0.85, 1.0), "crest": "visor", "weapon": "bow", "armor": "cloak"},
-    "juggernaut": {"faction": "enemy", "body": (0.18, 0.2, 0.28), "accent": (0.82, 0.42, 1.0), "crest": "greatHelm", "weapon": "shieldClub", "armor": "heavy"},
-    "bombardier": {"faction": "enemy", "body": (0.44, 0.2, 0.5), "accent": (1.0, 0.36, 0.86), "crest": "hood", "weapon": "staff", "armor": "bombPack"},
-    "boss": {"faction": "enemy", "body": (0.12, 0.26, 0.38), "accent": (0.35, 0.92, 1.0), "crest": "crown", "weapon": "club", "armor": "cape"},
-    "breacher": {"faction": "enemy", "body": (0.3, 0.36, 0.46), "accent": (0.62, 0.88, 1.0), "crest": "greatHelm", "weapon": "ram", "armor": "batteringRam"},
-    "icearmor": {"faction": "enemy", "body": (0.3, 0.62, 0.78), "accent": (0.66, 0.94, 1.0), "crest": "iceCrown", "weapon": "shieldClub", "armor": "iceArmor"},
-    "commander": {"faction": "enemy", "body": (0.28, 0.18, 0.42), "accent": (1.0, 0.7, 0.24), "crest": "crown", "weapon": "banner", "armor": "cape"},
-    "bomber": {"faction": "enemy", "body": (0.2, 0.52, 0.58), "accent": (0.52, 1.0, 1.0), "crest": "core", "weapon": "none", "armor": "bombPack"},
-    "flyingMelee": {"faction": "enemy", "body": (0.28, 0.2, 0.48), "accent": (0.42, 0.9, 1.0), "crest": "horn", "weapon": "club", "armor": "wings"},
-    "flyingEliteArcher": {"faction": "enemy", "body": (0.16, 0.34, 0.52), "accent": (0.4, 1.0, 1.0), "crest": "visor", "weapon": "bow", "armor": "wings"},
-    "flyingBomber": {"faction": "enemy", "body": (0.44, 0.18, 0.52), "accent": (1.0, 0.35, 0.9), "crest": "core", "weapon": "staff", "armor": "wings"},
-    "flyingColossus": {"faction": "enemy", "body": (0.12, 0.28, 0.4), "accent": (0.35, 0.96, 1.0), "crest": "crown", "weapon": "shieldClub", "armor": "wingsHeavy"},
+# --- archetypes -----------------------------------------------------------
+# Each entry states the *form* of a body: how tall, how broad at the
+# shoulders relative to the waist, how deep the torso is, how the legs are
+# treated. These are the numbers that make a silhouette recognisable at
+# distance, long before any equipment resolves.
+ARCHETYPES = {
+    "light": dict(
+        height=0.96, shoulder=0.230, chest_depth=0.150, waist=0.176, hip=0.196,
+        limb=0.070, neck=0.062, head=0.118, stance=0.115, hunch=0.00, skirt=False,
+    ),
+    "medium": dict(
+        height=1.00, shoulder=0.268, chest_depth=0.172, waist=0.198, hip=0.216,
+        limb=0.082, neck=0.070, head=0.126, stance=0.130, hunch=0.03, skirt=False,
+    ),
+    "heavy": dict(
+        height=1.06, shoulder=0.348, chest_depth=0.222, waist=0.272, hip=0.288,
+        limb=0.108, neck=0.092, head=0.138, stance=0.168, hunch=0.13, skirt=False,
+    ),
+    "caster": dict(
+        height=1.02, shoulder=0.236, chest_depth=0.158, waist=0.204, hip=0.330,
+        limb=0.068, neck=0.060, head=0.124, stance=0.000, hunch=0.02, skirt=True,
+    ),
+    "commander": dict(
+        height=1.10, shoulder=0.312, chest_depth=0.196, waist=0.212, hip=0.234,
+        limb=0.090, neck=0.078, head=0.132, stance=0.142, hunch=0.00, skirt=False,
+    ),
+    "flying": dict(
+        height=0.88, shoulder=0.288, chest_depth=0.206, waist=0.196, hip=0.198,
+        limb=0.074, neck=0.058, head=0.116, stance=0.104, hunch=0.16, skirt=False,
+    ),
 }
 
+UNITS = {
+    # --- allies ---
+    "shield":     dict(arch="heavy",     body=(0.150, 0.230, 0.300), accent=(0.62, 0.80, 0.94), weapon="shield", crest="greatHelm"),
+    "archer":     dict(arch="light",     body=(0.156, 0.212, 0.150), accent=(0.66, 0.82, 0.48), weapon="bow",    crest="hood"),
+    "medic":      dict(arch="light",     body=(0.300, 0.310, 0.320), accent=(0.42, 0.86, 0.66), weapon="staff",  crest="hood"),
+    "flagbearer": dict(arch="commander", body=(0.250, 0.120, 0.108), accent=(0.90, 0.66, 0.22), weapon="banner", crest="crest"),
+    "mage":       dict(arch="caster",    body=(0.140, 0.120, 0.240), accent=(0.66, 0.44, 0.92), weapon="staff",  crest="hat"),
+    "assault":    dict(arch="medium",    body=(0.120, 0.130, 0.160), accent=(0.90, 0.34, 0.24), weapon="dagger", crest="visor"),
+    "engineer":   dict(arch="medium",    body=(0.280, 0.170, 0.078), accent=(0.92, 0.68, 0.22), weapon="wrench", crest="hardhat"),
+    "musketeer":  dict(arch="medium",    body=(0.140, 0.160, 0.216), accent=(0.90, 0.72, 0.28), weapon="musket", crest="tricorne"),
+    "frostmage":  dict(arch="caster",    body=(0.160, 0.290, 0.350), accent=(0.56, 0.88, 0.96), weapon="staff",  crest="iceCrown"),
+    # --- enemies ---
+    "grunt":      dict(arch="medium",    body=(0.180, 0.126, 0.240), accent=(0.66, 0.44, 0.90), weapon="club",   crest="horn"),
+    "slinger":    dict(arch="light",     body=(0.150, 0.160, 0.270), accent=(0.46, 0.72, 0.94), weapon="sling",  crest="hood"),
+    "bruiser":    dict(arch="heavy",     body=(0.146, 0.120, 0.208), accent=(0.72, 0.44, 0.92), weapon="club",   crest="horn"),
+    "marksman":   dict(arch="light",     body=(0.116, 0.180, 0.256), accent=(0.46, 0.80, 0.94), weapon="bow",    crest="visor"),
+    "juggernaut": dict(arch="heavy",     body=(0.112, 0.124, 0.164), accent=(0.76, 0.44, 0.92), weapon="shield", crest="greatHelm"),
+    "bombardier": dict(arch="caster",    body=(0.230, 0.120, 0.260), accent=(0.94, 0.40, 0.80), weapon="staff",  crest="hood"),
+    "boss":       dict(arch="commander", body=(0.086, 0.150, 0.216), accent=(0.40, 0.86, 0.96), weapon="club",   crest="crown"),
+    "breacher":   dict(arch="heavy",     body=(0.170, 0.200, 0.250), accent=(0.60, 0.84, 0.96), weapon="ram",    crest="greatHelm"),
+    "icearmor":   dict(arch="heavy",     body=(0.170, 0.320, 0.390), accent=(0.68, 0.90, 0.98), weapon="shield", crest="iceCrown"),
+    "commander":  dict(arch="commander", body=(0.160, 0.110, 0.230), accent=(0.92, 0.68, 0.26), weapon="banner", crest="crown"),
+    "bomber":     dict(arch="medium",    body=(0.120, 0.270, 0.290), accent=(0.50, 0.92, 0.94), weapon="none",   crest="core"),
+    "flyingMelee":       dict(arch="flying", body=(0.156, 0.118, 0.250), accent=(0.46, 0.84, 0.96), weapon="club",   crest="horn"),
+    "flyingEliteArcher": dict(arch="flying", body=(0.104, 0.180, 0.262), accent=(0.44, 0.92, 0.96), weapon="bow",    crest="visor"),
+    "flyingBomber":      dict(arch="flying", body=(0.230, 0.110, 0.268), accent=(0.94, 0.38, 0.86), weapon="staff",  crest="core"),
+    "flyingColossus":    dict(arch="flying", body=(0.086, 0.156, 0.216), accent=(0.40, 0.90, 0.96), weapon="shield", crest="crown"),
+}
 
-def build_weapon(root, kind, mats, prefix):
-    parts = []
-    if kind in ("sword", "dagger"):
-        blade_half = 0.28 if kind == "sword" else 0.18
-        blade_tip = 0.42 if kind == "sword" else 0.28
-        parts += [prism(f"{prefix}.blade", [(-0.07, -blade_half), (0.07, -blade_half), (0.09, blade_tip - 0.12), (0, blade_tip), (-0.09, blade_tip - 0.12)], 0.09, (0.0, 0.0, 0.08), mats["metal"], "LOD0", 0.012)]
-        parts += [box(f"{prefix}.fuller", (0.035, blade_tip + blade_half - 0.1, 0.02), (0, (blade_tip - blade_half) * 0.5 - 0.02, 0.14), mats["accent"], "LOD0", 0.008)]
-        parts += [cylinder(f"{prefix}.guard", 0.06, 0.46, (0, -0.32, 0), mats["accent"], "LOD0", 8)]
-        parts += [box(f"{prefix}.grip", (0.1, 0.2, 0.1), (0, -0.5, 0), mats["leather"]), sphere(f"{prefix}.pommel", 0.075, (0, -0.62, 0), mats["glow"])]
-    elif kind in ("club", "shieldClub"):
-        parts += [cylinder(f"{prefix}.club", 0.72, 0.2, (0, 0, 0), mats["wood"], "LOD0", 7)]
-        parts += [sphere(f"{prefix}.stud", 0.12, (0, 0.3, 0), mats["metal"])]
-    elif kind == "bow":
-        bow = torus(f"{prefix}.bow", 0.34, 0.045, (0, 0, 0), mats["wood"])
-        bow.rotation_euler.x = math.pi * 0.5
-        parts.append(bow)
-        parts.append(box(f"{prefix}.string", (0.02, 0.62, 0.02), (0, 0, 0.02), mats["accent"]))
-    elif kind == "staff":
-        parts += [cylinder(f"{prefix}.shaft", 1.05, 0.055, (0, 0, 0), mats["wood"], "LOD0", 7)]
-        parts += [sphere(f"{prefix}.orb", 0.16, (0, 0.56, 0), mats["glow"])]
-        parts += [torus(f"{prefix}.ring", 0.2, 0.035, (0, 0.56, 0), mats["accent"])]
-    elif kind == "iceStaff":
-        parts += [cylinder(f"{prefix}.shaft", 1.15, 0.05, (0, 0, 0), mats["metal"], "LOD0", 6)]
-        parts += [cylinder(f"{prefix}.crystal", 0.42, 0.22, (0, 0.62, 0), mats["ice"], "LOD0", 6)]
-        parts += [sphere(f"{prefix}.core", 0.12, (0, 0.66, 0), mats["glow"])]
-    elif kind == "musket":
-        parts += [box(f"{prefix}.stock", (0.12, 0.18, 0.8), (0, -0.06, 0.28), mats["wood"])]
-        parts += [cylinder(f"{prefix}.barrel", 1.0, 0.055, (0, 0.02, 0.76), mats["metal"], "LOD0", 7)]
-        parts += [box(f"{prefix}.lock", (0.18, 0.16, 0.18), (0, 0.03, 0.1), mats["metal"])]
-    elif kind == "wrench":
-        parts += [cylinder(f"{prefix}.handle", 0.52, 0.07, (0, 0, 0), mats["metal"], "LOD0", 6)]
-        parts += [torus(f"{prefix}.jaw", 0.13, 0.045, (0, 0.28, 0), mats["metal"])]
-    elif kind == "banner":
-        parts += [cylinder(f"{prefix}.pole", 1.45, 0.04, (0, 0.32, 0), mats["wood"], "LOD0", 6)]
-        parts += [box(f"{prefix}.cloth", (0.5, 0.38, 0.035), (0.2, 0.7, 0), mats["accent"], "LOD0", 0.08)]
-        parts += [sphere(f"{prefix}.finial", 0.1, (0, 1.08, 0), mats["glow"])]
-    elif kind == "cross":
-        parts += [box(f"{prefix}.vertical", (0.11, 0.42, 0.05), (0, 0, 0), mats["accent"]), box(f"{prefix}.horizontal", (0.34, 0.11, 0.05), (0, 0.06, 0), mats["accent"])]
-    elif kind == "sling":
-        parts += [torus(f"{prefix}.loop", 0.22, 0.035, (0, 0, 0), mats["leather"]), box(f"{prefix}.pouch", (0.24, 0.14, 0.2), (0, -0.1, 0), mats["leather"])]
-    elif kind == "ram":
-        parts += [cylinder(f"{prefix}.handle", 0.8, 0.12, (0, 0, 0), mats["wood"], "LOD0", 8), sphere(f"{prefix}.horn", 0.18, (0, 0.36, 0), mats["metal"])]
-    return parts
+SURFACES = {"body": (0, 0), "trim": (0, 1), "accent": (0, 2),
+            "leather": (1, 0), "grip": (1, 1),
+            "metal": (2, 0), "edge": (2, 1)}
+MATERIALS = {}
+BONE_ORDER = ("root", "pelvis", "spine", "chest", "neck", "head",
+              "upper_arm.L", "lower_arm.L", "hand.L", "upper_arm.R", "lower_arm.R", "hand.R",
+              "thigh.L", "shin.L", "foot.L", "thigh.R", "shin.R", "foot.R")
 
 
-def add_crest(root, kind, mats):
-    parts = []
-    if kind == "helm":
-        parts += [sphere("crest.helm", 0.24, (0, 1.72, 0), mats["metal"]), box("crest.visor", (0.34, 0.08, 0.2), (0, 1.68, 0.18), mats["dark"])]
-    elif kind == "greatHelm":
-        parts += [sphere("crest.greatHelm", 0.3, (0, 1.7, 0), mats["metal"]), box("crest.faceplate", (0.42, 0.25, 0.1), (0, 1.66, 0.2), mats["dark"]), torus("crest.rim", 0.28, 0.035, (0, 1.72, 0), mats["accent"])]
+def blend(bone, secondary=None, amount=0.18):
+    return {bone: 1.0} if not secondary else {bone: 1.0 - amount, secondary: amount}
+
+
+def torso_weights(y):
+    if y < 0.72:
+        return blend("pelvis", "spine", 0.30)
+    if y < 1.00:
+        return blend("spine", "chest", 0.40)
+    if y < 1.36:
+        return blend("chest", "spine", 0.18)
+    return blend("chest", "neck", 0.34)
+
+
+def head_weights(y):
+    return blend("neck", "chest", 0.24) if y < 1.52 else blend("head", "neck", 0.12)
+
+
+def arm_weights(side, y):
+    upper, lower, hand = f"upper_arm.{side}", f"lower_arm.{side}", f"hand.{side}"
+    if y > 1.16:
+        return blend(upper, "chest", 0.16)
+    if y > 1.00:
+        return blend(upper, lower, 0.26)
+    if y > 0.86:
+        return blend(lower, upper, 0.18)
+    return blend(hand, lower, 0.22)
+
+
+def leg_weights(side, y):
+    thigh, shin, foot = f"thigh.{side}", f"shin.{side}", f"foot.{side}"
+    if y > 0.50:
+        return blend(thigh, "pelvis", 0.18)
+    if y > 0.32:
+        return blend(thigh, shin, 0.24)
+    if y > 0.14:
+        return blend(shin, thigh, 0.20)
+    return blend(foot, shin, 0.24)
+
+
+def add_body(level, a, cfg):
+    """One merged skinned body mesh for this LOD."""
+    b = MeshBuilder(level)
+    n_t = (22, 12, 8)[level]
+    n_h = (16, 10, 6)[level]
+    n_l = (14, 8, 6)[level]
+    h = a["height"]
+    sh, cd, wa, hp = a["shoulder"], a["chest_depth"], a["waist"], a["hip"]
+    lean = a["hunch"]
+
+    # Torso: hip -> cinched waist -> broad chest -> narrowed trapezius. The
+    # chest/waist ratio and the trapezius narrowing are what separate a heavy
+    # from a light unit, and the narrowing is also what keeps the arms
+    # outboard of the body silhouette instead of buried in it.
+    b.sweep([
+        (0.50 * h, section(n_t, hp, hp * 0.66, hp * 0.70, 2.3)),
+        (0.62 * h, section(n_t, hp * 0.94, hp * 0.62, hp * 0.66, 2.5)),
+        (0.76 * h, section(n_t, wa, wa * 0.70, wa * 0.74, 2.8, lean=lean * 0.3)),
+        (0.92 * h, section(n_t, wa * 1.10, wa * 0.78, wa * 0.76, 2.9, lean=lean * 0.5)),
+        (1.10 * h, section(n_t, sh * 0.92, cd, cd * 0.88, 3.0, lean=lean * 0.8)),
+        (1.24 * h, section(n_t, sh, cd * 1.02, cd * 0.90, 3.0, lean=lean)),
+        (1.34 * h, section(n_t, sh * 0.94, cd * 0.94, cd * 0.86, 2.9, lean=lean)),
+        (1.42 * h, section(n_t, sh * 0.62, cd * 0.74, cd * 0.70, 2.6, lean=lean * 0.8)),
+    ], "body", torso_weights)
+
+    b.sweep([
+        (0.755 * h, section(n_t, wa * 1.04, wa * 0.74, wa * 0.78, 2.8)),
+        (0.815 * h, section(n_t, wa * 1.06, wa * 0.76, wa * 0.80, 2.8)),
+    ], "leather", torso_weights, cap_bottom=False, cap_top=False)
+
+    nk = a["neck"]
+    b.sweep([
+        (1.42 * h, section(n_h, nk, nk, nk, 2.4)),
+        (1.53 * h, section(n_h, nk * 0.94, nk * 0.96, nk * 0.96, 2.4)),
+    ], "body", head_weights, cap_bottom=False, cap_top=False)
+    hd = a["head"]
+    b.sweep([
+        (1.53 * h, section(n_h, hd * 0.80, hd * 0.84, hd * 0.78, 2.3, centre_z=0.008)),
+        (1.60 * h, section(n_h, hd * 0.98, hd * 1.02, hd * 0.92, 2.7, centre_z=0.014)),
+        (1.67 * h, section(n_h, hd, hd * 1.00, hd * 0.94, 3.0, centre_z=0.010)),
+        (1.74 * h, section(n_h, hd * 0.92, hd * 0.90, hd * 0.90, 2.7, centre_z=0.000)),
+        (1.79 * h, section(n_h, hd * 0.62, hd * 0.62, hd * 0.64, 2.3, centre_z=-0.006)),
+    ], "body", head_weights, cap_bottom=False)
+
+    lb = a["limb"]
+    for side, sgn in (("L", -1), ("R", 1)):
+        sx = sgn * (sh * 0.86)
+        b.sweep([
+            (1.34 * h, section(n_l, lb * 0.90, lb * 0.94, lb * 0.90, 2.4, centre_x=sx * 0.96)),
+            (1.26 * h, section(n_l, lb * 1.34, lb * 1.32, lb * 1.24, 2.6, centre_x=sx)),
+            (1.12 * h, section(n_l, lb * 1.08, lb * 1.10, lb * 1.04, 2.5, centre_x=sgn * (sh * 0.96))),
+            (1.00 * h, section(n_l, lb * 0.86, lb * 0.88, lb * 0.86, 2.6, centre_x=sgn * (sh * 1.02))),
+        ], "body", lambda y, s=side: arm_weights(s, y), cap_bottom=False, cap_top=False)
+        b.sweep([
+            (1.00 * h, section(n_l, lb * 0.86, lb * 0.88, lb * 0.86, 2.6, centre_x=sgn * (sh * 1.02))),
+            (0.90 * h, section(n_l, lb * 0.78, lb * 0.80, lb * 0.80, 2.6, centre_x=sgn * (sh * 1.02), centre_z=0.012)),
+        ], "body", lambda y, s=side: arm_weights(s, y), cap_bottom=False, cap_top=False)
+        b.sweep([
+            (0.90 * h, section(n_l, lb * 0.88, lb * 0.84, lb * 0.84, 2.6, centre_x=sgn * (sh * 1.02), centre_z=0.016)),
+            (0.82 * h, section(n_l, lb * 0.96, lb * 0.82, lb * 0.82, 3.0, centre_x=sgn * (sh * 1.00), centre_z=0.036)),
+            (0.75 * h, section(n_l, lb * 0.70, lb * 0.62, lb * 0.62, 2.6, centre_x=sgn * (sh * 0.98), centre_z=0.050)),
+        ], "leather", lambda y, s=side: arm_weights(s, y), cap_bottom=False)
+
+    if a["skirt"]:
+        # Casters get a flared robe instead of legs: an unmistakable
+        # silhouette even as a distant dark shape.
+        b.sweep([
+            (0.62 * h, section(n_t, hp * 0.92, hp * 0.62, hp * 0.66, 2.5)),
+            (0.42 * h, section(n_t, hp * 1.06, hp * 0.74, hp * 0.78, 2.4)),
+            (0.20 * h, section(n_t, hp * 1.22, hp * 0.88, hp * 0.92, 2.2)),
+            (0.03 * h, section(n_t, hp * 1.34, hp * 0.98, hp * 1.02, 2.1)),
+        ], "body", lambda y: blend("pelvis", "root", 0.35), cap_top=False)
+    else:
+        st = a["stance"]
+        for side, sgn in (("L", -1), ("R", 1)):
+            lx = sgn * st
+            b.sweep([
+                (0.56 * h, section(n_l, lb * 1.44, lb * 1.40, lb * 1.48, 2.4, centre_x=lx)),
+                (0.44 * h, section(n_l, lb * 1.32, lb * 1.30, lb * 1.38, 2.5, centre_x=lx)),
+                (0.32 * h, section(n_l, lb * 1.02, lb * 1.10, lb * 1.02, 3.0, centre_x=lx)),
+                (0.24 * h, section(n_l, lb * 1.10, lb * 1.06, lb * 1.22, 2.7, centre_x=lx)),
+                (0.12 * h, section(n_l, lb * 0.84, lb * 0.86, lb * 0.90, 2.5, centre_x=lx)),
+            ], "body", lambda y, s=side: leg_weights(s, y), cap_top=False)
+            fw = blend(f"foot.{side}", f"shin.{side}", 0.16)
+            b.box((lx, 0.055 * h, 0.052), (lb * 2.5, 0.055 * h, lb * 5.0), "leather", fw, taper=0.96)
+            b.box((lx, 0.022 * h, 0.046), (lb * 2.3, 0.038 * h, lb * 4.6), "metal", fw, taper=0.94)
+
+    add_crest(b, level, a, cfg, n_h)
+    add_armor(b, level, a, cfg, n_l)
+    if a["arch_name"] == "flying":
+        add_wings(b, level, a, n_l)
+    return b
+
+
+def add_wings(b, level, a, n):
+    """Flyers read as creatures from below, so the wing is the silhouette."""
+    h, sh, lb = a["height"], a["shoulder"], a["limb"]
+    span = sh * (3.4 if level == 0 else 3.0)
+    for sgn in (-1, 1):
+        b.prism([
+            (sgn * sh * 0.86, 1.30 * h),
+            (sgn * span * 0.62, 1.52 * h),
+            (sgn * span, 1.34 * h),
+            (sgn * span * 0.80, 1.12 * h),
+            (sgn * span * 0.40, 1.06 * h),
+            (sgn * sh * 0.90, 1.14 * h),
+        ], -0.06, lb * 0.5, "trim", blend("chest", "spine", 0.22))
+
+
+def add_crest(b, level, a, cfg, n):
+    """Head silhouette. This is the fastest role read in a crowd."""
+    h, hd = a["height"], a["head"]
+    kind = cfg["crest"]
+    top = 1.79 * h
+    w = blend("head", "neck", 0.10)
+    if kind == "horn":
+        for sgn in (-1, 1):
+            b.prism([(sgn * hd * 0.5, 1.66 * h), (sgn * hd * 1.5, 1.90 * h),
+                     (sgn * hd * 1.7, 1.82 * h), (sgn * hd * 0.8, 1.60 * h)], 0.0, hd * 0.42, "metal", w)
+    elif kind in ("greatHelm", "visor"):
+        b.box((0.0, 1.665 * h, hd * 0.72), (hd * 1.5, hd * 0.34, hd * 0.30), "metal", w, taper=0.82)
+        if kind == "greatHelm":
+            b.sweep([(1.56 * h, section(n, hd * 1.06, hd * 1.06, hd * 1.00, 2.8)),
+                     (1.76 * h, section(n, hd * 1.02, hd * 1.00, hd * 0.98, 2.6))],
+                    "metal", lambda y: w, cap_bottom=False)
     elif kind == "hood":
-        parts += [sphere("crest.hood", 0.31, (0, 1.72, 0), mats["cloth"]), box("crest.shadow", (0.34, 0.12, 0.2), (0, 1.68, 0.18), mats["dark"])]
-    elif kind in ("hat", "tricorne"):
-        parts += [cylinder("crest.hat", 0.18, 0.48, (0, 1.92, 0), mats["cloth"], "LOD0", 7), box("crest.brim", (0.62, 0.08, 0.42), (0, 1.83, 0), mats["cloth"])]
-        if kind == "tricorne": parts.append(box("crest.feather", (0.06, 0.34, 0.08), (0.2, 2.05, 0), mats["accent"], "LOD0", 0.08))
-    elif kind in ("horn", "crown"):
-        parts += [sphere("crest.crown", 0.28, (0, 1.72, 0), mats["metal"]), box("crest.hornL", (0.08, 0.3, 0.08), (-0.18, 1.98, 0), mats["accent"]), box("crest.hornR", (0.08, 0.3, 0.08), (0.18, 1.98, 0), mats["accent"])]
-    elif kind == "visor":
-        parts += [sphere("crest.mask", 0.27, (0, 1.72, 0), mats["dark"]), box("crest.lens", (0.34, 0.08, 0.06), (0, 1.72, 0.25), mats["glow"])]
+        b.sweep([(1.50 * h, section(n, hd * 1.20, hd * 1.24, hd * 1.16, 2.4)),
+                 (1.66 * h, section(n, hd * 1.16, hd * 1.20, hd * 1.10, 2.7)),
+                 (1.80 * h, section(n, hd * 0.72, hd * 0.78, hd * 0.72, 2.3))],
+                "trim", lambda y: w, cap_bottom=False)
+    elif kind == "hat":
+        b.sweep([(1.76 * h, section(n, hd * 0.90, hd * 0.90, hd * 0.90, 2.4)),
+                 (1.80 * h, section(n, hd * 2.10, hd * 2.10, hd * 2.10, 2.2)),
+                 (1.84 * h, section(n, hd * 1.90, hd * 1.90, hd * 1.90, 2.2)),
+                 (2.06 * h, section(n, hd * 0.30, hd * 0.30, hd * 0.30, 2.0))],
+                "trim", lambda y: w)
+    elif kind == "tricorne":
+        # Every ring in a sweep must carry the same point count; the wide,
+        # angular brim comes from the low exponent, not from fewer points.
+        b.sweep([(1.78 * h, section(n, hd * 0.96, hd * 0.96, hd * 0.96, 2.4)),
+                 (1.82 * h, section(n, hd * 1.90, hd * 1.60, hd * 1.90, 1.6)),
+                 (1.92 * h, section(n, hd * 0.86, hd * 0.80, hd * 0.86, 2.2))],
+                "trim", lambda y: w)
     elif kind == "hardhat":
-        parts += [sphere("crest.hardhat", 0.3, (0, 1.75, 0), mats["accent"]), torus("crest.hardhatRim", 0.3, 0.035, (0, 1.7, 0), mats["metal"])]
+        b.sweep([(1.74 * h, section(n, hd * 1.10, hd * 1.16, hd * 1.06, 2.6)),
+                 (1.86 * h, section(n, hd * 0.84, hd * 0.88, hd * 0.82, 2.4))],
+                "accent", lambda y: w, cap_bottom=False)
+    elif kind in ("crown", "crest"):
+        for i in range(5):
+            t = (i - 2) / 2.0
+            b.box((t * hd * 0.80, top + hd * (0.30 if i % 2 == 0 else 0.18), 0.0),
+                  (hd * 0.20, hd * (0.60 if i % 2 == 0 else 0.36), hd * 0.20), "accent", w, taper=0.5)
     elif kind == "iceCrown":
-        parts += [sphere("crest.iceHead", 0.29, (0, 1.72, 0), mats["cloth"])]
-        for i, x in enumerate((-0.18, 0, 0.18)):
-            parts.append(box(f"crest.iceShard{i}", (0.08, 0.34, 0.08), (x, 1.98, 0), mats["ice"], "LOD0", 0.04))
+        for i in range(4):
+            ang = math.tau * i / 4 + 0.4
+            b.prism([(math.sin(ang) * hd * 0.6, 1.74 * h),
+                     (math.sin(ang) * hd * 1.1, 2.02 * h),
+                     (math.sin(ang) * hd * 1.4, 1.76 * h)], math.cos(ang) * hd * 0.6, hd * 0.26, "edge", w)
     elif kind == "core":
-        parts += [sphere("crest.core", 0.3, (0, 1.7, 0), mats["dark"]), sphere("crest.coreGlow", 0.14, (0, 1.7, 0.22), mats["glow"])]
-    elif kind == "crest":
-        parts += [sphere("crest.head", 0.29, (0, 1.72, 0), mats["cloth"]), box("crest.fin", (0.08, 0.3, 0.08), (0, 2.0, 0), mats["accent"])]
-    return parts
+        b.sweep([(1.58 * h, section(n, hd * 0.72, hd * 0.72, hd * 0.72, 2.0)),
+                 (1.70 * h, section(n, hd * 1.16, hd * 1.16, hd * 1.16, 2.0)),
+                 (1.82 * h, section(n, hd * 0.72, hd * 0.72, hd * 0.72, 2.0))],
+                "accent", lambda y: w)
 
 
-def make_skeleton(root):
-    """Create a small production-friendly segmented rig for the authored unit.
+def add_armor(b, level, a, cfg, n):
+    """Shoulder mass and faction strip. Heavies get real pauldrons."""
+    h, sh, lb = a["height"], a["shoulder"], a["limb"]
+    heavy = a["arch_name"] in ("heavy", "commander")
+    for sgn in (-1, 1):
+        if not heavy and sgn > 0:
+            continue
+        side = "L" if sgn < 0 else "R"
+        b.sweep([
+            (1.36 * h, section(n, lb * 1.02, lb * 1.06, lb * 1.02, 2.6, centre_x=sgn * sh * 0.84)),
+            (1.26 * h, section(n, lb * 1.72, lb * 1.66, lb * 1.58, 3.1, centre_x=sgn * sh * 0.90)),
+            (1.15 * h, section(n, lb * 1.54, lb * 1.46, lb * 1.40, 3.0, centre_x=sgn * sh * 0.98)),
+        ], "metal", lambda y, s=side: blend(f"upper_arm.{s}", "chest", 0.34))
+    if level == 0:
+        b.box((0.0, 1.16 * h, a["chest_depth"] * 1.06), (sh * 0.24, sh * 0.42, 0.022), "accent",
+              blend("chest", "spine", 0.32))
 
-    The visible meshes are intentionally separate low-poly pieces. Binding each
-    piece to a named bone keeps the assets inexpensive while still giving the
-    GLB real pose animation instead of a root-only turntable clip.
-    """
-    bpy.ops.object.armature_add(enter_editmode=True, location=(0, 0, 0))
-    skeleton = bpy.context.object
-    skeleton.name = "UnitSkeleton"
-    skeleton.data.name = "UnitSkeleton"
+
+def add_weapon(level, a, cfg):
+    """One merged skinned weapon mesh, rigid to hand.R."""
+    kind = cfg["weapon"]
+    if kind == "none":
+        return None
+    b = MeshBuilder(level)
+    h, sh, lb = a["height"], a["shoulder"], a["limb"]
+    w = {"hand.R": 1.0}
+    hx = sh * 1.02
+    hy = 0.82 * h
+    n = (8, 6, 4)[level]
+
+    def shaft(y0, y1, r0, r1, x=None, z=0.06, surface="grip"):
+        px = hx if x is None else x
+        b.sweep([(y0, section(n, r0, r0, r0, 2.2, centre_x=px, centre_z=z)),
+                 (y1, section(n, r1, r1, r1, 2.2, centre_x=px, centre_z=z))], surface, lambda y: w)
+
+    if kind in ("club", "wrench"):
+        shaft(hy - 0.30 * h, hy + 0.26 * h, lb * 0.30, lb * 0.28)
+        b.box((hx, hy + 0.34 * h, 0.06), (lb * 1.7, 0.20 * h, lb * 1.7), "metal", w, taper=0.80)
+    elif kind == "dagger":
+        shaft(hy - 0.10 * h, hy + 0.06 * h, lb * 0.28, lb * 0.26)
+        b.prism([(hx - lb * 0.5, hy + 0.08 * h), (hx + lb * 0.5, hy + 0.08 * h),
+                 (hx + lb * 0.2, hy + 0.42 * h), (hx - lb * 0.2, hy + 0.42 * h)], 0.06, lb * 0.34, "edge", w)
+    elif kind == "sling":
+        shaft(hy - 0.06 * h, hy + 0.20 * h, lb * 0.22, lb * 0.20)
+        b.box((hx, hy + 0.26 * h, 0.06), (lb * 1.0, lb * 1.0, lb * 1.0), "leather", w, taper=0.7)
+    elif kind == "bow":
+        for y, r in ((-0.42, 0.10), (-0.20, 0.34), (0.10, 0.38), (0.40, 0.10)):
+            b.box((hx + r * lb * 2.0, hy + y * h, 0.06), (lb * 0.5, 0.24 * h, lb * 0.5), "leather", w, taper=0.9)
+        shaft(hy - 0.40 * h, hy + 0.40 * h, lb * 0.10, lb * 0.10, x=hx + lb * 0.2, surface="edge")
+    elif kind == "musket":
+        shaft(hy - 0.16 * h, hy + 0.52 * h, lb * 0.24, lb * 0.20, surface="metal")
+        b.box((hx, hy - 0.24 * h, 0.06), (lb * 0.9, 0.26 * h, lb * 1.5), "leather", w, taper=0.86)
+    elif kind == "staff":
+        shaft(hy - 0.44 * h, hy + 0.60 * h, lb * 0.24, lb * 0.22)
+        b.sweep([(hy + 0.60 * h, section(n, lb * 0.4, lb * 0.4, lb * 0.4, 2.0, centre_x=hx, centre_z=0.06)),
+                 (hy + 0.70 * h, section(n, lb * 1.5, lb * 1.5, lb * 1.5, 2.0, centre_x=hx, centre_z=0.06)),
+                 (hy + 0.80 * h, section(n, lb * 0.4, lb * 0.4, lb * 0.4, 2.0, centre_x=hx, centre_z=0.06))],
+                "accent", lambda y: w)
+    elif kind == "banner":
+        shaft(hy - 0.40 * h, hy + 0.86 * h, lb * 0.22, lb * 0.20)
+        b.prism([(hx, hy + 0.84 * h), (hx + sh * 0.90, hy + 0.76 * h),
+                 (hx + sh * 0.82, hy + 0.34 * h), (hx, hy + 0.40 * h)], 0.06, lb * 0.16, "accent", w)
+    elif kind == "ram":
+        shaft(hy - 0.12 * h, hy + 0.14 * h, lb * 0.30, lb * 0.28)
+        b.sweep([(hy + 0.14 * h, section(n, lb * 0.9, lb * 0.9, lb * 0.9, 2.2, centre_x=hx, centre_z=0.06)),
+                 (hy + 0.30 * h, section(n, lb * 1.9, lb * 1.9, lb * 1.9, 2.4, centre_x=hx, centre_z=0.06)),
+                 (hy + 0.62 * h, section(n, lb * 1.7, lb * 1.7, lb * 1.7, 2.4, centre_x=hx, centre_z=0.06))],
+                "metal", lambda y: w)
+    elif kind == "shield":
+        # Held out from the body: the broad face is the whole silhouette.
+        b.sweep([(hy - 0.34 * h, section(n, sh * 0.30, lb * 0.5, lb * 0.5, 2.6, centre_x=hx * 1.10, centre_z=0.14)),
+                 (hy + 0.02 * h, section(n, sh * 0.86, lb * 0.7, lb * 0.7, 3.2, centre_x=hx * 1.10, centre_z=0.14)),
+                 (hy + 0.40 * h, section(n, sh * 0.72, lb * 0.6, lb * 0.6, 3.0, centre_x=hx * 1.10, centre_z=0.14))],
+                "metal", lambda y: w)
+        b.box((hx * 1.10, hy + 0.02 * h, 0.24), (sh * 0.30, sh * 0.30, 0.05), "accent", w, taper=0.6)
+    return b
+
+
+def make_skeleton(root, h):
+    data = bpy.data.armatures.new("UnitSkeleton")
+    skeleton = bpy.data.objects.new("UnitSkeleton", data)
+    collection("RIG").objects.link(skeleton)
     skeleton.parent = root
-    skeleton.location = (0, 0, 0)
-    armature = skeleton.data
-    armature.edit_bones.remove(armature.edit_bones[0])
+    bpy.context.view_layer.objects.active = skeleton
+    skeleton.select_set(True)
+    bpy.ops.object.mode_set(mode="EDIT")
+    if len(data.edit_bones):
+        data.edit_bones.remove(data.edit_bones[0])
     specs = [
-        ("root", (0, 0.0, 0), (0, 0.22, 0), None),
-        ("pelvis", (0, 0.50, 0), (0, 0.76, 0), "root"),
-        ("spine", (0, 0.76, 0), (0, 1.04, 0), "pelvis"),
-        ("chest", (0, 1.04, 0), (0, 1.34, 0), "spine"),
-        ("neck", (0, 1.42, 0), (0, 1.58, 0), "chest"),
-        ("head", (0, 1.55, 0), (0, 1.82, 0), "neck"),
-        ("upper_arm.L", (-0.28, 1.27, 0), (-0.50, 1.06, 0), "chest"),
-        ("lower_arm.L", (-0.50, 1.06, 0), (-0.51, 0.84, 0), "upper_arm.L"),
-        ("hand.L", (-0.51, 0.84, 0), (-0.51, 0.72, 0), "lower_arm.L"),
-        ("upper_arm.R", (0.28, 1.27, 0), (0.50, 1.06, 0), "chest"),
-        ("lower_arm.R", (0.50, 1.06, 0), (0.51, 0.84, 0), "upper_arm.R"),
-        ("hand.R", (0.51, 0.84, 0), (0.51, 0.72, 0), "lower_arm.R"),
-        ("thigh.L", (-0.13, 0.58, 0), (-0.13, 0.30, 0), "pelvis"),
-        ("shin.L", (-0.13, 0.30, 0), (-0.13, 0.08, 0), "thigh.L"),
-        ("foot.L", (-0.13, 0.08, 0), (-0.13, 0.02, 0.18), "shin.L"),
-        ("thigh.R", (0.13, 0.58, 0), (0.13, 0.30, 0), "pelvis"),
-        ("shin.R", (0.13, 0.30, 0), (0.13, 0.08, 0), "thigh.R"),
-        ("foot.R", (0.13, 0.08, 0), (0.13, 0.02, 0.18), "shin.R"),
+        ("root", (0, 0, 0), (0, 0.16 * h, 0), None),
+        ("pelvis", (0, 0.50 * h, 0), (0, 0.76 * h, 0), "root"),
+        ("spine", (0, 0.76 * h, 0), (0, 1.04 * h, 0), "pelvis"),
+        ("chest", (0, 1.04 * h, 0), (0, 1.42 * h, 0), "spine"),
+        ("neck", (0, 1.42 * h, 0), (0, 1.53 * h, 0), "chest"),
+        ("head", (0, 1.53 * h, 0), (0, 1.82 * h, 0), "neck"),
     ]
-    for name, head, tail, parent_name in specs:
-        bone = armature.edit_bones.new(name)
-        bone.head = head
-        bone.tail = tail
-        if parent_name:
-            bone.parent = armature.edit_bones[parent_name]
+    for side, x in (("L", -1), ("R", 1)):
+        specs += [
+            (f"upper_arm.{side}", (x * 0.26 * h, 1.30 * h, 0), (x * 0.30 * h, 1.06 * h, 0), "chest"),
+            (f"lower_arm.{side}", (x * 0.30 * h, 1.06 * h, 0), (x * 0.30 * h, 0.88 * h, 0.02), f"upper_arm.{side}"),
+            (f"hand.{side}", (x * 0.30 * h, 0.88 * h, 0.02), (x * 0.28 * h, 0.76 * h, 0.06), f"lower_arm.{side}"),
+            (f"thigh.{side}", (x * 0.12 * h, 0.54 * h, 0), (x * 0.13 * h, 0.32 * h, 0), "pelvis"),
+            (f"shin.{side}", (x * 0.13 * h, 0.32 * h, 0), (x * 0.13 * h, 0.13 * h, 0.01), f"thigh.{side}"),
+            (f"foot.{side}", (x * 0.13 * h, 0.13 * h, 0.01), (x * 0.13 * h, 0.03 * h, 0.14), f"shin.{side}"),
+        ]
+    bones = {}
+    for name, head, tail, parent in specs:
+        bone = data.edit_bones.new(name)
+        bone.head, bone.tail = head, tail
+        if parent:
+            bone.parent = bones[parent]
             bone.use_connect = False
+        bones[name] = bone
     bpy.ops.object.mode_set(mode="OBJECT")
-    move_to(skeleton, "RIG")
+    skeleton["boneContract"] = "18 weighted bones"
     return skeleton
 
 
-def bind_piece(obj, skeleton, bone_name):
-    """Bone-parent a rigid low-poly piece without changing its rest pose."""
-    world = obj.matrix_world.copy()
-    obj.parent = skeleton
-    obj.parent_type = "BONE"
-    obj.parent_bone = bone_name
-    obj.matrix_world = world
+def create_mesh(builder, name, parent, skeleton, allowed, lod):
+    data = bpy.data.meshes.new(name)
+    data.from_pydata(builder.vertices, [], builder.faces)
+    data.validate(verbose=False)
+    data.update()
+    for polygon in data.polygons:
+        polygon.use_smooth = True
+    for slot in allowed:
+        data.materials.append(MATERIALS[slot])
+    slot_names = ("body", "leather", "metal")
+    uv = data.uv_layers.new(name="UVMap")
+    colors = data.color_attributes.new(name="ArtTint", type="BYTE_COLOR", domain="CORNER")
+    for polygon in data.polygons:
+        surface = builder.surfaces[polygon.index]
+        material_index, band = SURFACES[surface]
+        wanted = slot_names[material_index]
+        polygon.material_index = allowed.index(wanted) if wanted in allowed else 0
+        u0, v0 = material_index / 3.0, band / 4.0
+        # COLOR_0 is consumed as a multiplier by both the exporter and
+        # Babylon, so it stays near white and only carries directional shade.
+        # Writing the surface tint here would multiply against the atlas and
+        # crush every material toward black.
+        lift = 0.055 if polygon.normal.z > 0.55 else (-0.045 if polygon.normal.z < -0.55 else 0.0)
+        shade = max(0.86, min(1.06, 1.0 + lift))
+        for loop_index in polygon.loop_indices:
+            v = data.vertices[data.loops[loop_index].vertex_index].co
+            uv.data[loop_index].uv = (u0 + (0.06 + 0.88 * ((v.x * 1.4 + 0.5) % 1.0)) / 3.0,
+                                      v0 + (0.06 + 0.88 * ((v.y * 0.6) % 1.0)) / 4.0)
+            colors.data[loop_index].color = (shade, shade, shade, 1.0)
+    mesh = bpy.data.objects.new(name, data)
+    collection(f"LOD{lod}").objects.link(mesh)
+    mesh.parent = parent
+    for bone_name in BONE_ORDER:
+        mesh.vertex_groups.new(name=bone_name)
+    for index, weights in enumerate(builder.weights):
+        for bone_name, weight in weights.items():
+            mesh.vertex_groups[bone_name].add([index], max(0.0, min(1.0, weight)), "REPLACE")
+    modifier = mesh.modifiers.new("weighted skin", "ARMATURE")
+    modifier.object = skeleton
+    mesh["lodLevel"] = lod
+    return mesh
 
 
-def bone_for_piece(name):
-    lower = name.lower()
-    if lower.startswith(("arm.l", "armpanel.l", "wristband.l", "shoulder.l", "pauldron.l", "glove.l", "wing.-1")):
-        return "upper_arm.L"
-    if lower.startswith(("arm.r", "armpanel.r", "wristband.r", "shoulder.r", "pauldron.r", "glove.r", "wing.1")):
-        return "upper_arm.R"
-    if lower.startswith(("leg.l", "knee.l")):
-        return "thigh.L"
-    if lower.startswith(("leg.r", "knee.r")):
-        return "thigh.R"
-    if lower.startswith(("boot.l", "bootsolo.l")):
-        return "foot.L"
-    if lower.startswith(("boot.r", "bootsolo.r")):
-        return "foot.R"
-    if lower.startswith(("weapon.", "pouch", "banner.")):
-        return "hand.R"
-    if lower.startswith(("offhand.", "shield.")):
-        return "hand.L"
-    if lower.startswith(("head", "ear.", "crest.", "helmet", "face", "jaw", "heroeye", "herohood")):
-        return "head"
-    if lower.startswith(("torso", "belt", "cape", "pack", "medic", "chest", "ramframe", "ramtip", "core", "ice", "tool", "heroharness")):
-        return "chest"
-    if lower.startswith("wing."):
-        return "chest"
-    return "spine"
+def make_atlas(name, body, accent):
+    size = 512
+    image = bpy.data.images.get(name)
+    if image:
+        bpy.data.images.remove(image)
+    image = bpy.data.images.new(name, width=size, height=size, alpha=True)
+    pixels = array("f", [0.0]) * (size * size * 4)
+    trim = tuple(min(1.0, c * 1.45 + 0.06) for c in body)
+    leather = (0.230, 0.140, 0.082)
+    grip = (0.170, 0.108, 0.070)
+    metal = (0.190, 0.205, 0.228)
+    edge = (0.330, 0.356, 0.386)
+    bands = {0: (body, trim, accent, body), 1: (leather, grip, leather, leather), 2: (metal, edge, metal, metal)}
+    for y in range(size):
+        v = y / size
+        band = min(3, int(v * 4))
+        local = v * 4.0 - band
+        for x in range(size):
+            u = x / size
+            column = min(2, int(u * 3))
+            base = bands[column][band]
+            value = 1.0
+            if column == 0:
+                value += (math.sin(x * 0.9) * 0.5 + math.sin(x * 0.31) * 0.5) * 0.020
+                value += (math.sin(y * 1.8) * 0.5 + math.sin(y * 0.47) * 0.5) * 0.030
+            elif column == 1:
+                value += math.sin(y * 0.62 + math.sin(x * 0.18) * 1.6) * 0.050
+                value += 0.028 if math.sin(x * 0.27 + y * 0.09) > 0.9 else 0.0
+            else:
+                value += math.sin(x * 0.21 + y * 0.05) * 0.030
+                cl = min((u * 3.0 - column), 1.0 - (u * 3.0 - column))
+                value += 0.080 * (1.0 - min(1.0, cl * 7.0))
+            occlusion = min(local, 1.0 - local)
+            value -= 0.080 * (1.0 - min(1.0, occlusion * 8.0))
+            value = max(0.70, min(1.26, value))
+            i = (y * size + x) * 4
+            pixels[i] = max(0.0, min(1.0, base[0] * value))
+            pixels[i + 1] = max(0.0, min(1.0, base[1] * value))
+            pixels[i + 2] = max(0.0, min(1.0, base[2] * value))
+            pixels[i + 3] = 1.0
+    image.pixels = pixels
+    image.pack()
+    for mat in MATERIALS.values():
+        nodes, links = mat.node_tree.nodes, mat.node_tree.links
+        shader = nodes.get("Principled BSDF")
+        tex = nodes.get("atlas") or nodes.new("ShaderNodeTexImage")
+        tex.name = "atlas"
+        tex.image = image
+        base_input = shader.inputs.get("Base Color")
+        if base_input:
+            for link in list(base_input.links):
+                links.remove(link)
+            links.new(tex.outputs["Color"], base_input)
 
 
-def add_unit_finish(parts, visual, cfg, mats, torso_width, heavy):
-    """Add a shared finish layer without changing the rig contract.
-
-    The base kit stays inexpensive, while this pass adds authored seams,
-    cuffs, facial planes, boot contact and asymmetric hardware so the units
-    read as constructed characters rather than a torso made from boxes.
-    Every piece remains a separate rigid part and is bound by the existing
-    segmented armature below.
-    """
-    shell = mats["metal"] if heavy else mats["accent"]
-    parts += [
-        prism(
-            "torsoFrontShell",
-            [(-torso_width * 0.48, 1.30), (torso_width * 0.48, 1.30), (torso_width * 0.39, 0.92), (0.10, 0.79), (-0.10, 0.79), (-torso_width * 0.39, 0.92)],
-            0.10,
-            (0, 0, 0.24),
-            shell,
-            "LOD0",
-            0.025,
-        ),
-        prism("torsoBackYoke", [(-torso_width * 0.46, 1.28), (torso_width * 0.46, 1.28), (torso_width * 0.32, 1.02), (-torso_width * 0.32, 1.02)], 0.08, (0, 0, -0.20), mats["clothLight"], "LOD0", 0.018),
-        prism(
-            "collarFront",
-            [(-0.22, 1.42), (0.22, 1.42), (0.16, 1.26), (0, 1.20), (-0.16, 1.26)],
-            0.12,
-            (0, 0, 0.20),
-            shell,
-            "LOD0",
-            0.02,
-        ),
-        box("waistSash", (torso_width * 0.86, 0.065, 0.43), (0, 0.87, 0.20), mats["leatherLight"], "LOD0", 0.018),
-        box("chestSeam", (0.045, 0.32, 0.035), (0, 1.02, 0.255), mats["highlight"], "LOD0", 0.012),
-        prism("chinGuard", [(-0.14, 1.69), (0.14, 1.69), (0.10, 1.58), (-0.10, 1.58)], 0.11, (0, 0, 0.215), mats["dark"], "LOD0", 0.016),
-        sphere("ear.L", 0.065, (-0.275, 1.70, 0.0), mats["skin"]),
-        sphere("ear.R", 0.065, (0.275, 1.70, 0.0), mats["skin"]),
-    ]
-    for side in (-1, 1):
-        label = "L" if side < 0 else "R"
-        parts += [
-            box(f"armPanel.{label}", (0.12, 0.34, 0.045), (side * 0.39, 1.12, 0.16), mats["clothLight"], "LOD0", 0.018),
-            torus(f"wristBand.{label}", 0.105, 0.023, (side * 0.39, 0.84, 0.01), mats["metal"], "LOD0"),
-            box(f"bootSole.{label}", (0.25, 0.06, 0.43), (side * 0.13, 0.035, 0.12), mats["dark"], "LOD0", 0.02),
-            sphere(f"bootRivet.{label}", 0.035, (side * 0.13, 0.10, 0.25), mats["highlight"]),
-        ]
-
-    if cfg["faction"] == "ally":
-        parts += [
-            prism("allyShoulderTrim", [(-0.44, 1.40), (0.44, 1.40), (0.32, 1.32), (-0.32, 1.32)], 0.045, (0, 0, 0.17), mats["snow"], "LOD0", 0.012),
-            box("allyBadge", (0.16, 0.16, 0.045), (0, 1.11, 0.30), mats["glow"], "LOD0", 0.018),
-        ]
-    else:
-        parts += [
-            prism("enemyShoulderTrim", [(-0.42, 1.38), (0.42, 1.38), (0.30, 1.26), (-0.30, 1.26)], 0.05, (0, 0, 0.16), mats["dark"], "LOD0", 0.014),
-            sphere("enemyCoreStud", 0.07, (0, 1.11, 0.30), mats["glow"]),
-        ]
-
-    if cfg["weapon"] in ("sword", "dagger", "club", "shieldClub", "ram"):
-        parts += [
-            box("weaponWrapA", (0.11, 0.055, 0.12), (0.38, 0.69, 0.18), mats["leatherLight"], "LOD0", 0.012),
-            box("weaponWrapB", (0.11, 0.055, 0.12), (0.38, 0.78, 0.18), mats["leatherLight"], "LOD0", 0.012),
-        ]
-    if cfg["armor"] in ("heavy", "iceArmor", "wingsHeavy"):
-        for side in (-1, 1):
-            label = "L" if side < 0 else "R"
-            parts.append(cone(f"shoulderSpike.{label}", 0.075, 0.018, 0.23, (side * 0.42, 1.50, 0.04), mats["accent"], "LOD0", 6))
-
-    if cfg["armor"] in ("wings", "wingsHeavy"):
-        # Layered membrane panels replace the flat bar read for every flying
-        # unit, not only the colossus.
-        for side in (-1, 1):
-            for index, scale in enumerate((0.72, 0.54, 0.36)):
-                points = [(0.0, 1.46), (0.34 * scale, 1.35), (0.52 * scale, 1.10), (0.18 * scale, 1.17)]
-                mirrored = [(x * side, y) for x, y in points]
-                parts.append(prism(f"wing.{side}.panel{index}", mirrored, 0.045, (0, 0, -0.15 - index * 0.03), mats["ice" if index else "cloth"], "LOD0", 0.012))
-            parts.append(sphere(f"wing.{side}.joint", 0.09, (side * 0.36, 1.27, -0.12), mats["metal"]))
-
-
-def add_bodycraft_finish(parts, visual, cfg, mats, torso_width, heavy):
-    """Add a second construction pass to the shared body without recolouring it.
-
-    The first authored pass gave every roster entry a common silhouette and a
-    role kit.  This pass makes the body read as assembled clothing and armour
-    at the game's normal camera distance: inset chest panels, side seams,
-    articulated cuffs, face sockets, fasteners and layered hem pieces.  The
-    parts stay rigid and are bound by ``bone_for_piece`` below, so this is a
-    visual upgrade rather than a new gameplay rig.
-    """
-    shell = mats["metal"] if heavy else mats["accent"]
-    front = 0.28
-    back = -0.22
-    # Angular inset panels break the broad torso box into a fitted garment or
-    # breastplate.  The two panels intentionally leave a centre seam visible.
-    parts += [
-        prism(
-            "torsoPanel.L",
-            [(-torso_width * 0.44, 1.28), (-0.05, 1.28), (-0.08, 0.92), (-torso_width * 0.34, 0.86)],
-            0.065,
-            (0, 0, front + 0.035),
-            shell,
-            "LOD0",
-            0.014,
-        ),
-        prism(
-            "torsoPanel.R",
-            [(0.05, 1.28), (torso_width * 0.44, 1.28), (torso_width * 0.34, 0.86), (0.08, 0.92)],
-            0.065,
-            (0, 0, front + 0.035),
-            shell,
-            "LOD0",
-            0.014,
-        ),
-        box("torsoSeam.vertical", (0.028, 0.33, 0.035), (0, 1.10, front + 0.075), mats["highlight"], "LOD0", 0.008),
-        box("torsoSeam.waist", (torso_width * 0.72, 0.028, 0.035), (0, 0.90, front + 0.075), mats["leatherLight"], "LOD0", 0.008),
-        box("backSeam", (torso_width * 0.58, 0.035, 0.03), (0, 1.03, back - 0.035), mats["dark"], "LOD0", 0.008),
-    ]
-
-    # Face planes and eye sockets are deliberately small; they catch the key
-    # light and give the roster personality without requiring texture maps.
-    parts += [
-        torus("faceSocket.L", 0.073, 0.014, (-0.092, 1.765, 0.274), mats["dark"], "LOD0"),
-        torus("faceSocket.R", 0.073, 0.014, (0.092, 1.765, 0.274), mats["dark"], "LOD0"),
-        sphere("faceIris.L", 0.024, (-0.092, 1.765, 0.292), mats["glow"]),
-        sphere("faceIris.R", 0.024, (0.092, 1.765, 0.292), mats["glow"]),
-        prism("faceNoseBridge", [(-0.035, 1.80), (0.035, 1.80), (0.025, 1.64), (-0.025, 1.64)], 0.045, (0, 0, 0.285), mats["skin"], "LOD0", 0.008),
-        box("faceMouthPlate", (0.13, 0.028, 0.025), (0, 1.625, 0.286), mats["dark"], "LOD0", 0.006),
-    ]
-
-    # Separate cuffs, straps and fasteners make the limbs feel constructed and
-    # also provide an intentional material break for the game camera.
-    for side in (-1, 1):
-        label = "L" if side < 0 else "R"
-        parts += [
-            box(f"arm.{label}.cuff", (0.19, 0.10, 0.22), (side * 0.39, 0.82, 0.02), mats["leatherLight"], "LOD0", 0.018),
-            sphere(f"arm.{label}.fastener", 0.035, (side * 0.39, 0.84, 0.145), mats["highlight"]),
-            box(f"leg.{label}.shinPlate", (0.19, 0.30, 0.045), (side * 0.13, 0.36, 0.135), shell, "LOD0", 0.016),
-            box(f"boot.{label}.buckle", (0.18, 0.065, 0.045), (side * 0.13, 0.12, 0.245), mats["metalLight"], "LOD0", 0.01),
-        ]
-
-    # Fitted waist hardware and a small asymmetrical utility pouch avoid the
-    # mirrored mannequin look while remaining inexpensive at LOD0.
-    parts += [
-        box("waistFrontPlate", (0.22, 0.18, 0.055), (0, 0.83, front + 0.04), mats["metalLight"], "LOD0", 0.016),
-        sphere("waistFrontGem", 0.043, (0, 0.83, front + 0.08), mats["glow"]),
-        prism("utilityPouch", [(-0.12, 0.84), (0.12, 0.84), (0.10, 0.67), (-0.10, 0.67)], 0.14, (torso_width * 0.54, 0, 0.01), mats["leather"], "LOD0", 0.016),
-        box("utilityPouchFlap", (0.20, 0.035, 0.15), (torso_width * 0.54, 0.83, 0.09), mats["accent"], "LOD0", 0.01),
-    ]
-
-    if cfg["faction"] == "ally":
-        parts += [
-            prism("allyCollarTab", [(-0.10, 1.42), (0.10, 1.42), (0.08, 1.26), (-0.08, 1.26)], 0.055, (0, 0, front + 0.04), mats["snow"], "LOD0", 0.012),
-            sphere("allyCollarStud", 0.035, (0, 1.34, front + 0.09), mats["glow"]),
-        ]
-    else:
-        parts += [
-            prism("enemyCollarTab", [(-0.12, 1.42), (0.12, 1.42), (0.09, 1.24), (-0.09, 1.24)], 0.06, (0, 0, front + 0.04), mats["dark"], "LOD0", 0.012),
-            sphere("enemyCollarStud", 0.04, (0, 1.33, front + 0.09), mats["glow"]),
-        ]
-
-
-def add_role_finish(parts, visual, cfg, mats, torso_width, heavy):
-    """Give every roster entry a bespoke focal kit beyond the shared body.
-
-    The first authored pass established the common rig and material language.
-    These role kits are intentionally small, but they add the visual anchors
-    that make a unit identifiable at gameplay scale: straps, clasps, lenses,
-    tools, ammunition, wing harnesses and faction-specific armour breaks.
-    They are rigid pieces bound by the existing skeleton, so the gameplay
-    animation and GLB contract remain unchanged.
-    """
-    ally = cfg["faction"] == "ally"
-    edge = mats["metalLight"] if ally else mats["metal"]
-    dark = mats["dark"]
-
-    if visual == "shield":
-        parts += [
-            sphere("shieldBoss", 0.12, (-0.50, 0.90, 0.16), mats["glow"]),
-            box("shieldHandle", (0.08, 0.42, 0.08), (-0.50, 0.90, -0.08), dark, "LOD0", 0.018),
-            prism("shieldChevron", [(-0.18, 1.08), (0.0, 0.72), (0.18, 1.08), (0.12, 1.18), (0, 0.90), (-0.12, 1.18)], 0.035, (-0.50, 0, 0.16), mats["highlight"], "LOD0", 0.012),
-            torus("shieldStrap", 0.23, 0.025, (-0.50, 0.90, -0.12), edge, "LOD0"),
-        ]
-    elif visual == "archer":
-        parts += [
-            torus("arm.L.bracer", 0.13, 0.035, (-0.42, 0.98, 0.16), edge, "LOD0"),
-            torus("arm.R.bracer", 0.13, 0.035, (0.42, 0.98, 0.16), edge, "LOD0"),
-            box("quiverCap", (0.24, 0.08, 0.22), (-0.22, 1.40, -0.23), mats["metalLight"], "LOD0", 0.02),
-            *(cone(f"arrowHead.{i}", 0.035, 0.005, 0.22, (-0.22 + i * 0.06, 1.56, -0.23), mats["metalLight"], "LOD0", 5) for i in range(3)),
-            sphere("bowGripGem", 0.05, (0.0, 0.0, 0.05), mats["glow"]),
-        ]
-    elif visual == "medic":
-        parts += [
-            prism("medicSatchelFlap", [(-0.26, 1.22), (0.26, 1.22), (0.20, 0.90), (-0.20, 0.90)], 0.08, (0, 0, -0.33), mats["clothLight"], "LOD0", 0.02),
-            torus("medicSatchelSeal", 0.10, 0.028, (0, 1.08, -0.38), mats["glow"], "LOD0"),
-            cylinder("medicVial.L", 0.045, 0.20, (-0.34, 0.94, 0.18), mats["ice"], "LOD0", 6),
-            cylinder("medicVial.R", 0.045, 0.20, (0.34, 0.94, 0.18), mats["glow"], "LOD0", 6),
-        ]
-    elif visual == "flagbearer":
-        parts += [
-            torus("bannerHarness", 0.25, 0.03, (0.28, 1.10, 0.06), edge, "LOD0"),
-            box("bannerClasp", (0.16, 0.12, 0.08), (0.28, 1.02, 0.22), mats["metalLight"], "LOD0", 0.018),
-            prism("bannerChevron", [(-0.20, 0.82), (0.18, 0.88), (0.04, 0.50), (-0.22, 0.62)], 0.035, (0.2, 0.7, 0.02), mats["highlight"], "LOD0", 0.01),
-            torus("bannerPoleBand", 0.07, 0.025, (0.0, 0.54, 0.0), mats["metalLight"], "LOD0"),
-        ]
-    elif visual == "mage":
-        parts += [
-            prism("mageRobePanel", [(-0.42, 1.02), (0.42, 1.02), (0.58, 0.42), (0.0, 0.24), (-0.58, 0.42)], 0.06, (0, 0, -0.05), mats["clothLight"], "LOD0", 0.026),
-            torus("mageRuneBelt", 0.32, 0.028, (0, 0.90, 0.19), mats["accent"], "LOD0"),
-            cone("mageHatTip", 0.16, 0.025, 0.46, (0.0, 2.16, 0.0), mats["cloth"], "LOD0", 7),
-            sphere("mageFocusGem", 0.075, (0, 1.38, 0.25), mats["glow"]),
-        ]
-    elif visual == "assault":
-        parts += [
-            prism("assaultChestRig", [(-0.30, 1.34), (0.30, 1.34), (0.24, 1.00), (-0.24, 1.00)], 0.10, (0, 0, 0.28), mats["dark"], "LOD0", 0.02),
-            box("assaultHarness", (0.08, 0.62, 0.05), (-0.24, 1.08, 0.31), mats["accent"], "LOD0", 0.015),
-            box("assaultHarnessR", (0.08, 0.62, 0.05), (0.24, 1.08, 0.31), mats["accent"], "LOD0", 0.015),
-            torus("assaultVisorRing", 0.22, 0.028, (0, 1.72, 0.26), mats["glow"], "LOD0"),
-            box("assaultDaggerSheath", (0.12, 0.46, 0.10), (0.32, 0.84, -0.22), mats["leatherLight"], "LOD0", 0.02),
-        ]
-    elif visual == "engineer":
-        parts += [
-            torus("engineerHelmetBand", 0.30, 0.035, (0, 1.76, 0), mats["metalLight"], "LOD0"),
-            box("engineerGoggle.L", (0.12, 0.07, 0.06), (-0.10, 1.75, 0.25), mats["glass"], "LOD0", 0.012),
-            box("engineerGoggle.R", (0.12, 0.07, 0.06), (0.10, 1.75, 0.25), mats["glass"], "LOD0", 0.012),
-            torus("engineerToolBelt", 0.34, 0.035, (0, 0.86, 0.18), mats["metalLight"], "LOD0"),
-            box("engineerBlueprint", (0.24, 0.30, 0.025), (-0.30, 1.02, 0.20), mats["ice"], "LOD0", 0.008),
-            sphere("engineerBadge", 0.07, (0.30, 1.02, 0.23), mats["glow"]),
-        ]
-    elif visual == "musketeer":
-        parts += [
-            prism("musketeerLapel.L", [(-0.18, 1.40), (-0.04, 1.34), (-0.08, 0.96), (-0.24, 1.08)], 0.07, (-0.12, 0, 0.25), mats["accent"], "LOD0", 0.016),
-            prism("musketeerLapel.R", [(0.18, 1.40), (0.04, 1.34), (0.08, 0.96), (0.24, 1.08)], 0.07, (0.12, 0, 0.25), mats["accent"], "LOD0", 0.016),
-            box("musketeerHatBand", (0.48, 0.07, 0.36), (0, 1.86, 0), mats["metalLight"], "LOD0", 0.014),
-            prism("musketeerFeather", [(-0.04, 2.02), (0.06, 2.32), (0.14, 2.03), (0.06, 1.96)], 0.05, (0.20, 0, 0.02), mats["highlight"], "LOD0", 0.012),
-            box("musketeerBayonet", (0.035, 0.08, 0.68), (0.0, 0.02, 1.10), mats["metalLight"], "LOD0", 0.008),
-            *(sphere(f"musketeerAmmo.{i}", 0.055, (-0.22 + i * 0.12, 1.08 - i * 0.04, 0.22), mats["gold"]) for i in range(4)),
-        ]
-    elif visual == "frostmage":
-        parts += [
-            prism("frostMantle", [(-0.48, 1.42), (0.48, 1.42), (0.66, 0.90), (0.0, 0.70), (-0.66, 0.90)], 0.07, (0, 0, -0.18), mats["ice"], "LOD0", 0.022),
-            torus("frostHalo", 0.34, 0.035, (0, 1.76, -0.05), mats["ice"], "LOD0"),
-            *(cone(f"frostIcicle.{i}", 0.07, 0.01, 0.32, (-0.24 + i * 0.16, 0.72, 0.02), mats["ice"], "LOD0", 6) for i in range(4)),
-            sphere("frostCoreBadge", 0.08, (0, 1.12, 0.30), mats["glow"]),
-        ]
-    elif visual == "grunt":
-        parts += [
-            cone("gruntTusk.L", 0.08, 0.015, 0.24, (-0.18, 1.58, 0.24), mats["metalLight"], "LOD0", 6),
-            cone("gruntTusk.R", 0.08, 0.015, 0.24, (0.18, 1.58, 0.24), mats["metalLight"], "LOD0", 6),
-            torus("gruntNeckRing", 0.24, 0.035, (0, 1.40, 0.02), mats["accent"], "LOD0"),
-            box("gruntBeltPouch", (0.20, 0.28, 0.18), (0.28, 0.84, 0.20), mats["leatherLight"], "LOD0", 0.02),
-        ]
-    elif visual == "slinger":
-        parts += [
-            prism("slingerFaceMask", [(-0.22, 1.78), (0.22, 1.78), (0.16, 1.61), (-0.16, 1.61)], 0.08, (0, 0, 0.25), mats["dark"], "LOD0", 0.018),
-            box("slingerShoulderSash", (0.08, 0.70, 0.06), (-0.28, 1.15, 0.16), mats["accent"], "LOD0", 0.015),
-            torus("slingerPouchRing", 0.13, 0.035, (0.27, 0.87, 0.22), mats["metal"], "LOD0"),
-            *(sphere(f"slingerStone.{i}", 0.055, (0.18 + i * 0.08, 0.90, 0.23), mats["ice"]) for i in range(3)),
-        ]
-    elif visual == "bruiser":
-        parts += [
-            prism("bruiserBellyPlate", [(-0.36, 1.30), (0.36, 1.30), (0.30, 0.78), (-0.30, 0.78)], 0.13, (0, 0, 0.30), mats["metal"], "LOD0", 0.03),
-            torus("bruiserChain", 0.32, 0.035, (0, 0.82, 0.26), mats["metalLight"], "LOD0"),
-            sphere("bruiserFist.L", 0.14, (-0.54, 0.70, 0.18), mats["metal"]),
-            sphere("bruiserFist.R", 0.14, (0.54, 0.70, 0.18), mats["metal"]),
-        ]
-    elif visual == "marksman":
-        parts += [
-            prism("marksmanHoodPeak", [(-0.24, 1.88), (0.24, 1.88), (0.0, 2.16)], 0.08, (0, 0, -0.03), mats["cloth"], "LOD0", 0.018),
-            box("marksmanCloakClasp", (0.18, 0.10, 0.08), (0, 1.37, 0.27), mats["metalLight"], "LOD0", 0.014),
-            box("marksmanQuiverBand", (0.28, 0.07, 0.24), (-0.22, 1.10, -0.24), mats["metal"], "LOD0", 0.015),
-            *(cone(f"marksmanArrow.{i}", 0.025, 0.005, 0.30, (-0.22 + i * 0.06, 1.48, -0.24), mats["ice"], "LOD0", 5) for i in range(3)),
-        ]
-    elif visual == "juggernaut":
-        parts += [
-            prism("juggernautSiegePlate", [(-0.48, 1.46), (0.48, 1.46), (0.40, 0.74), (0, 0.60), (-0.40, 0.74)], 0.18, (0, 0, 0.28), mats["metal"], "LOD0", 0.035),
-            *(sphere(f"juggernautRivet.{i}", 0.045, (-0.28 + i * 0.18, 1.22, 0.39), mats["accent"]) for i in range(4)),
-            cone("juggernautCrest", 0.16, 0.02, 0.38, (0, 2.02, 0.0), mats["accent"], "LOD0", 6),
-            box("juggernautKneeBar", (0.62, 0.08, 0.12), (0, 0.27, 0.20), mats["metalLight"], "LOD0", 0.015),
-        ]
-    elif visual == "bombardier":
-        parts += [
-            *(sphere(f"bombardierShell.{i}", 0.12, (-0.24 + i * 0.24, 1.08, -0.30), mats["accent"]) for i in range(3)),
-            box("bombardierFuseBox", (0.28, 0.18, 0.20), (0.34, 0.90, 0.22), dark, "LOD0", 0.02),
-            torus("bombardierFuse", 0.09, 0.022, (0.34, 1.05, 0.25), mats["glow"], "LOD0"),
-            prism("bombardierApron", [(-0.34, 1.10), (0.34, 1.10), (0.42, 0.58), (-0.42, 0.58)], 0.06, (0, 0, -0.28), mats["clothLight"], "LOD0", 0.022),
-        ]
-    elif visual == "boss":
-        parts += [
-            torus("bossCrownRing", 0.34, 0.045, (0, 1.82, 0.02), mats["metalLight"], "LOD0"),
-            sphere("bossCrownGem", 0.09, (0, 2.02, 0.06), mats["glow"]),
-            prism("bossMantle", [(-0.58, 1.48), (0.58, 1.48), (0.78, 0.72), (0, 0.56), (-0.78, 0.72)], 0.09, (0, 0, -0.20), mats["clothLight"], "LOD0", 0.03),
-            box("bossWarBelt", (0.92, 0.10, 0.10), (0, 0.82, 0.32), mats["gold"], "LOD0", 0.02),
-        ]
-    elif visual == "breacher":
-        parts += [
-            prism("breacherRamHarness", [(-0.42, 1.30), (0.42, 1.30), (0.30, 0.90), (-0.30, 0.90)], 0.10, (0, 0, 0.28), mats["metal"], "LOD0", 0.028),
-            torus("breacherRamCollar", 0.30, 0.04, (0, 1.36, 0.02), mats["metalLight"], "LOD0"),
-            *(sphere(f"breacherBolt.{i}", 0.055, (-0.26 + i * 0.17, 1.14, 0.36), mats["accent"]) for i in range(4)),
-            cone("breacherCrest", 0.14, 0.02, 0.34, (0, 2.02, 0.06), mats["metalLight"], "LOD0", 6),
-        ]
-    elif visual == "icearmor":
-        parts += [
-            prism("icearmorChestPlate", [(-0.42, 1.44), (0.42, 1.44), (0.34, 0.76), (0, 0.64), (-0.34, 0.76)], 0.16, (0, 0, 0.28), mats["ice"], "LOD0", 0.03),
-            *(cone(f"icearmorSpike.{i}", 0.10, 0.015, 0.42, (-0.30 + i * 0.20, 1.48, 0.12), mats["ice"], "LOD0", 6) for i in range(4)),
-            torus("icearmorCoreRing", 0.16, 0.03, (0, 1.10, 0.37), mats["glow"], "LOD0"),
-        ]
-    elif visual == "commander":
-        parts += [
-            prism("commanderSash", [(-0.16, 1.38), (0.10, 1.34), (0.36, 0.58), (0.12, 0.54)], 0.06, (0, 0, 0.28), mats["gold"], "LOD0", 0.016),
-            torus("commanderEpaulet.L", 0.16, 0.035, (-0.38, 1.40, 0), mats["gold"], "LOD0"),
-            torus("commanderEpaulet.R", 0.16, 0.035, (0.38, 1.40, 0), mats["gold"], "LOD0"),
-            box("commanderMedal", (0.15, 0.15, 0.05), (0, 1.12, 0.34), mats["glow"], "LOD0", 0.018),
-        ]
-    elif visual == "bomber":
-        parts += [
-            torus("bomberCoreCage", 0.28, 0.035, (0, 1.0, 0.26), mats["metalLight"], "LOD0"),
-            *(sphere(f"bomberBombPod.{i}", 0.13, (-0.34 + i * 0.34, 0.78, -0.28), mats["accent"]) for i in range(3)),
-            prism("bomberFin", [(-0.10, 1.24), (0.10, 1.24), (0.18, 1.62), (0, 1.48), (-0.18, 1.62)], 0.05, (0, 0, -0.02), mats["ice"], "LOD0", 0.016),
-        ]
-    elif visual in ("flyingMelee", "flyingEliteArcher", "flyingBomber", "flyingColossus"):
-        parts += [
-            torus("flightHarness", 0.34 if not heavy else 0.48, 0.04, (0, 1.02, -0.12), mats["metalLight"], "LOD0"),
-            box("flightSaddle", (0.42 if not heavy else 0.62, 0.12, 0.30), (0, 1.10, -0.18), mats["leatherLight"], "LOD0", 0.02),
-            *(cone(f"flightTalons.{side}", 0.08, 0.01, 0.30, (side * 0.34, 0.26, 0.22), mats["metalLight"], "LOD0", 6) for side in (-1, 1)),
-        ]
-        if visual == "flyingEliteArcher":
-            parts += [
-                torus("flightArcherBracer", 0.13, 0.03, (-0.44, 0.98, 0.16), mats["ice"], "LOD0"),
-                *(cone(f"flightArrow.{i}", 0.025, 0.005, 0.30, (-0.22 + i * 0.06, 1.48, -0.24), mats["ice"], "LOD0", 5) for i in range(3)),
-            ]
-        elif visual == "flyingBomber":
-            parts += [
-                *(sphere(f"flightBombPod.{i}", 0.13, (-0.34 + i * 0.34, 0.78, -0.30), mats["accent"]) for i in range(3)),
-                torus("flightFuse", 0.08, 0.022, (0, 1.10, 0.28), mats["glow"], "LOD0"),
-            ]
-
-
-def add_tertiary_role_finish(parts, visual, cfg, mats, torso_width, heavy):
-    """Add a final role-specific construction layer to the whole roster.
-
-    The previous role kits establish the broad silhouette.  This layer adds
-    small, authored interfaces that make the weapon, clothing and faction
-    language read from the normal game camera: bow fittings, medical
-    containers, banner stitching, armour joints and enemy hardware.  They are
-    intentionally different per role rather than a universal box overlay.
-    """
-    if visual == "archer":
-        parts += [
-            prism("head.archerHoodPeak", [(-0.22, 1.88), (0.22, 1.88), (0.08, 2.12), (-0.06, 2.05)], 0.06, (0, 0, -0.03), mats["cloth"], "LOD0", 0.012),
-            torus("arm.L.archerBracer", 0.13, 0.028, (-0.42, 0.97, 0.02), mats["metalLight"], "LOD0"),
-            torus("arm.R.archerBracer", 0.13, 0.028, (0.42, 0.97, 0.02), mats["metalLight"], "LOD0"),
-            box("weapon.archerGrip", (0.08, 0.18, 0.08), (0, 0.0, 0.10), mats["leatherLight"], "LOD0", 0.012),
-            *(cone(f"weapon.archerArrowFletch.{i}", 0.028, 0.005, 0.18, (-0.24 + i * 0.12, 1.52, -0.23), mats["highlight"], "LOD0", 5) for i in range(3)),
-        ]
-    elif visual == "shield":
-        parts += [
-            torus("offhand.shieldOuterRim", 0.40, 0.035, (-0.50, 0.90, 0.03), mats["metalLight"], "LOD0"),
-            prism("offhand.shieldChevronInset", [(-0.18, 1.10), (0.0, 0.78), (0.18, 1.10), (0.10, 1.16), (0, 0.92), (-0.10, 1.16)], 0.04, (-0.50, 0, 0.14), mats["snow"], "LOD0", 0.012),
-            box("offhand.shieldStrapPin", (0.09, 0.09, 0.06), (-0.50, 0.72, -0.15), mats["highlight"], "LOD0", 0.012),
-        ]
-    elif visual == "medic":
-        parts += [
-            box("chest.medicHarness", (0.06, 0.56, 0.05), (-0.22, 1.10, 0.28), mats["accent"], "LOD0", 0.012),
-            box("chest.medicHarness.R", (0.06, 0.56, 0.05), (0.22, 1.10, 0.28), mats["accent"], "LOD0", 0.012),
-            *(torus(f"medicBottleRing.{i}", 0.055, 0.018, (-0.30 + i * 0.20, 0.92, 0.25), mats["metalLight"], "LOD0") for i in range(4)),
-            box("medicBackFrame", (0.34, 0.42, 0.05), (0, 1.02, -0.38), mats["metalLight"], "LOD0", 0.014),
-        ]
-    elif visual == "flagbearer":
-        parts += [
-            prism("banner.pennantInset", [(-0.22, 0.86), (0.22, 0.86), (0.12, 0.62), (0.0, 0.72), (-0.14, 0.58)], 0.045, (0.2, 0.70, 0.02), mats["highlight"], "LOD0", 0.01),
-            torus("bannerPoleJoint", 0.07, 0.02, (0.0, 0.34, 0.0), mats["metalLight"], "LOD0"),
-            box("banner.poleFoot", (0.12, 0.10, 0.12), (0.0, 0.04, 0.02), mats["metal"], "LOD0", 0.012),
-            *(sphere(f"banner.stitch.{i}", 0.025, (-0.18 + i * 0.12, 0.92, 0.045), mats["gold"]) for i in range(4)),
-        ]
-    elif visual == "mage":
-        parts += [
-            torus("head.mageHatBand", 0.18, 0.022, (0, 1.92, 0.0), mats["accent"], "LOD0"),
-            *(sphere(f"head.mageRune.{i}", 0.028, (-0.12 + i * 0.12, 1.93, 0.15), mats["glow"]) for i in range(3)),
-            torus("weapon.staffFerrule", 0.09, 0.018, (0, 0.12, 0.0), mats["metalLight"], "LOD0"),
-            *(prism(f"chest.mageHem.{side}", [(-0.18, 0.70), (0.0, 0.66), (0.06, 0.42), (-0.12, 0.48)], 0.04, (side * 0.28, 0, -0.04), mats["clothLight"], "LOD0", 0.01) for side in (-1, 1)),
-        ]
-    elif visual == "assault":
-        parts += [
-            box("chest.assaultPlate.L", (0.18, 0.24, 0.06), (-0.16, 1.18, 0.34), mats["metalLight"], "LOD0", 0.014),
-            box("chest.assaultPlate.R", (0.18, 0.24, 0.06), (0.16, 1.18, 0.34), mats["metalLight"], "LOD0", 0.014),
-            box("leg.L.assaultPouch", (0.16, 0.18, 0.14), (-0.26, 0.58, -0.16), mats["leather"], "LOD0", 0.016),
-            box("leg.R.assaultPouch", (0.16, 0.18, 0.14), (0.26, 0.58, -0.16), mats["leather"], "LOD0", 0.016),
-            torus("head.assaultVisorSeal", 0.23, 0.02, (0, 1.72, 0.27), mats["accent"], "LOD0"),
-        ]
-    elif visual == "engineer":
-        parts += [
-            box("pack.engineerFrame", (0.46, 0.64, 0.06), (0, 1.02, -0.40), mats["metal"], "LOD0", 0.014),
-            torus("pack.engineerValve", 0.10, 0.022, (0.22, 1.12, -0.44), mats["accent"], "LOD0"),
-            box("head.engineerVisor", (0.34, 0.055, 0.05), (0, 1.76, 0.27), mats["glass"], "LOD0", 0.01),
-            torus("weapon.wrenchCollar", 0.09, 0.018, (0, 0.22, 0), mats["metalLight"], "LOD0"),
-        ]
-    elif visual == "musketeer":
-        parts += [
-            box("weapon.musketTriggerGuard", (0.16, 0.18, 0.045), (0, 0.02, 0.36), mats["metalLight"], "LOD0", 0.012),
-            torus("weapon.musketMuzzleRing", 0.07, 0.018, (0, 0.02, 1.22), mats["metalLight"], "LOD0"),
-            box("chest.musketeerStrap", (0.07, 0.72, 0.05), (-0.22, 1.10, 0.28), mats["leatherLight"], "LOD0", 0.012),
-            *(sphere(f"chest.musketeerButton.{i}", 0.025, (0.10, 1.30 - i * 0.12, 0.33), mats["gold"]) for i in range(3)),
-        ]
-    elif visual == "frostmage":
-        parts += [
-            torus("head.frostCrownBand", 0.24, 0.024, (0, 1.78, 0), mats["ice"], "LOD0"),
-            *(cone(f"head.frostCrownShard.{i}", 0.055, 0.008, 0.24, (-0.18 + i * 0.18, 1.98, 0.04), mats["ice"], "LOD0", 6) for i in range(3)),
-            torus("weapon.iceStaffCollar", 0.11, 0.018, (0, 0.10, 0), mats["metalLight"], "LOD0"),
-            *(sphere(f"chest.frostClasp.{i}", 0.035, (-0.16 + i * 0.16, 1.28, 0.30), mats["glow"]) for i in range(3)),
-        ]
-    elif visual == "grunt":
-        parts += [
-            torus("head.gruntBrowRing", 0.22, 0.025, (0, 1.76, 0.18), mats["metal"], "LOD0"),
-            box("chest.gruntRagPatch", (0.24, 0.20, 0.04), (0.22, 1.08, 0.29), mats["highlight"], "LOD0", 0.01),
-            *(sphere(f"weapon.gruntClubStud.{i}", 0.045, (-0.08 + i * 0.08, 0.24, 0.04), mats["metalLight"]) for i in range(3)),
-        ]
-    elif visual == "slinger":
-        parts += [
-            box("head.slingerHoodBand", (0.38, 0.05, 0.16), (0, 1.82, 0.04), mats["accent"], "LOD0", 0.012),
-            torus("weapon.slingGrip", 0.12, 0.02, (0, 0.0, 0.02), mats["metalLight"], "LOD0"),
-            *(sphere(f"pack.slingerPouchStone.{i}", 0.045, (0.22 + i * 0.07, 0.82, 0.24), mats["ice"]) for i in range(3)),
-        ]
-    elif visual == "bruiser":
-        parts += [
-            torus("chest.bruiserShoulderRing.L", 0.18, 0.03, (-0.40, 1.34, 0), mats["metalLight"], "LOD0"),
-            torus("chest.bruiserShoulderRing.R", 0.18, 0.03, (0.40, 1.34, 0), mats["metalLight"], "LOD0"),
-            *(sphere(f"weapon.bruiserKnuckle.{i}", 0.055, (-0.58 + i * 0.16, 0.72, 0.22), mats["accent"]) for i in range(3)),
-        ]
-    elif visual == "marksman":
-        parts += [
-            torus("head.marksmanHoodSeal", 0.22, 0.02, (0, 1.78, 0.05), mats["accent"], "LOD0"),
-            box("weapon.marksmanSightRail", (0.08, 0.08, 0.56), (0.20, 1.18, 0.22), mats["metalLight"], "LOD0", 0.01),
-            *(cone(f"weapon.marksmanFletch.{i}", 0.02, 0.004, 0.24, (-0.22 + i * 0.08, 1.55, -0.24), mats["ice"], "LOD0", 5) for i in range(3)),
-        ]
-    elif visual == "juggernaut":
-        parts += [
-            torus("head.juggernautHelmRim", 0.32, 0.035, (0, 1.72, 0), mats["metalLight"], "LOD0"),
-            *(sphere(f"chest.juggernautPlateBolt.{i}", 0.045, (-0.30 + i * 0.20, 1.14, 0.42), mats["accent"]) for i in range(4)),
-            box("leg.L.juggernautGreave", (0.24, 0.30, 0.06), (-0.13, 0.34, 0.16), mats["metalLight"], "LOD0", 0.014),
-            box("leg.R.juggernautGreave", (0.24, 0.30, 0.06), (0.13, 0.34, 0.16), mats["metalLight"], "LOD0", 0.014),
-        ]
-    elif visual == "bombardier":
-        parts += [
-            torus("pack.bombardierShellRing", 0.26, 0.03, (0, 1.05, -0.30), mats["metalLight"], "LOD0"),
-            *(sphere(f"pack.bombardierFuseCap.{i}", 0.05, (-0.20 + i * 0.20, 1.00, -0.30), mats["glow"]) for i in range(3)),
-            box("chest.bombardierHarness", (0.07, 0.58, 0.05), (-0.24, 1.08, 0.28), mats["accent"], "LOD0", 0.012),
-        ]
-    elif visual == "boss":
-        parts += [
-            torus("head.bossCrownBand", 0.28, 0.03, (0, 1.78, 0), mats["gold"], "LOD0"),
-            *(sphere(f"head.bossCrownRivet.{i}", 0.04, (-0.18 + i * 0.12, 1.96, 0.04), mats["glow"]) for i in range(4)),
-            box("chest.bossMantleClasp", (0.18, 0.16, 0.05), (0, 1.30, 0.33), mats["gold"], "LOD0", 0.012),
-        ]
-    elif visual == "breacher":
-        parts += [
-            torus("head.breacherHelmRing", 0.31, 0.03, (0, 1.72, 0), mats["metalLight"], "LOD0"),
-            *(sphere(f"chest.breacherHarnessBolt.{i}", 0.045, (-0.24 + i * 0.16, 1.16, 0.37), mats["accent"]) for i in range(4)),
-            torus("weapon.ramCollar", 0.16, 0.025, (0, 0.25, 0), mats["metalLight"], "LOD0"),
-        ]
-    elif visual == "icearmor":
-        parts += [
-            torus("head.icearmorCrownBand", 0.26, 0.025, (0, 1.76, 0), mats["ice"], "LOD0"),
-            *(cone(f"chest.icearmorFacet.{i}", 0.06, 0.008, 0.28, (-0.24 + i * 0.16, 1.42, 0.34), mats["ice"], "LOD0", 6) for i in range(4)),
-            box("offhand.icearmorShieldLatch", (0.12, 0.12, 0.06), (-0.50, 0.90, 0.18), mats["metalLight"], "LOD0", 0.012),
-        ]
-    elif visual == "commander":
-        parts += [
-            torus("head.commanderCrownBand", 0.28, 0.03, (0, 1.78, 0), mats["gold"], "LOD0"),
-            box("chest.commanderSashClasp", (0.14, 0.14, 0.05), (0, 1.04, 0.34), mats["gold"], "LOD0", 0.012),
-            *(sphere(f"chest.commanderMedalRivet.{i}", 0.03, (-0.10 + i * 0.10, 1.14, 0.38), mats["glow"]) for i in range(3)),
-        ]
-    elif visual == "bomber":
-        parts += [
-            torus("chest.bomberCoreRim", 0.22, 0.025, (0, 1.02, 0.34), mats["metalLight"], "LOD0"),
-            *(sphere(f"pack.bomberPodLatch.{i}", 0.045, (-0.24 + i * 0.24, 0.82, -0.42), mats["gold"]) for i in range(3)),
-            box("chest.bomberFuseGuard", (0.12, 0.16, 0.04), (0, 1.24, 0.20), mats["metal"], "LOD0", 0.01),
-        ]
-    elif visual == "flyingMelee":
-        parts += [
-            torus("head.flyingMeleeBrow", 0.24, 0.025, (0, 1.76, 0.18), mats["metalLight"], "LOD0"),
-            *(cone(f"wing.-1.flyingMeleeFeather.{i}", 0.05, 0.008, 0.30, (-0.46 - i * 0.14, 1.30 - i * 0.08, -0.14), mats["ice"], "LOD0", 6) for i in range(2)),
-            *(cone(f"wing.1.flyingMeleeFeather.{i}", 0.05, 0.008, 0.30, (0.46 + i * 0.14, 1.30 - i * 0.08, -0.14), mats["ice"], "LOD0", 6) for i in range(2)),
-        ]
-    elif visual == "flyingEliteArcher":
-        parts += [
-            torus("head.flyingEliteVisor", 0.23, 0.022, (0, 1.74, 0.25), mats["glow"], "LOD0"),
-            box("weapon.flyingEliteBowGrip", (0.08, 0.18, 0.08), (0, 0.0, 0.10), mats["leatherLight"], "LOD0", 0.01),
-            *(cone(f"weapon.flyingEliteArrowHead.{i}", 0.025, 0.004, 0.24, (-0.24 + i * 0.12, 1.56, -0.22), mats["metalLight"], "LOD0", 5) for i in range(3)),
-        ]
-    elif visual == "flyingBomber":
-        parts += [
-            torus("head.flyingBomberCoreRing", 0.24, 0.028, (0, 1.72, 0.18), mats["metalLight"], "LOD0"),
-            *(sphere(f"pack.flyingBomberBombLatch.{i}", 0.05, (-0.24 + i * 0.24, 0.80, -0.42), mats["gold"]) for i in range(3)),
-            *(box(f"wing.{side}.flyingBomberSpar", (0.06, 0.06, 0.42), (side * 0.76, 1.20, -0.15), mats["metalLight"], "LOD0", 0.01) for side in (-1, 1)),
-        ]
-
-
-def bind_unit_pieces(parts, skeleton):
-    for obj in parts:
-        bind_piece(obj, skeleton, bone_for_piece(obj.name))
-
-
-def add_armature_clip(skeleton, name, end, poses):
-    """Add a named NLA clip to the segmented armature."""
+def add_clip(skeleton, name, end, poses):
     if not skeleton.animation_data:
         skeleton.animation_data_create()
     skeleton.animation_data.action = None
-    for pose_bone in skeleton.pose.bones:
-        pose_bone.rotation_mode = "XYZ"
-        pose_bone.rotation_euler = (0, 0, 0)
-        pose_bone.location = (0, 0, 0)
     for frame, pose in poses:
         bpy.context.scene.frame_set(frame)
-        for bone_name, rotation in pose.items():
-            pose_bone = skeleton.pose.bones.get(bone_name)
-            if not pose_bone:
+        for bone in skeleton.pose.bones:
+            bone.rotation_mode = "QUATERNION"
+            bone.rotation_quaternion = (1.0, 0.0, 0.0, 0.0)
+            bone.location = (0.0, 0.0, 0.0)
+        for bone_name, values in pose.items():
+            bone = skeleton.pose.bones.get(bone_name)
+            if not bone:
                 continue
-            pose_bone.rotation_euler = rotation
-            pose_bone.keyframe_insert(data_path="rotation_euler", frame=frame)
+            bone.rotation_quaternion = Euler(values, "XYZ").to_quaternion()
+            bone.keyframe_insert(data_path="rotation_quaternion", frame=frame)
     action = skeleton.animation_data.action
     if action is None:
-        raise RuntimeError(f"Blender did not create an armature Action for {skeleton.name}:{name}")
+        raise RuntimeError(f"no action created for {name}")
     action.name = name
     track = skeleton.animation_data.nla_tracks.new()
     track.name = name
     strip = track.strips.new(name, 1, action)
     strip.frame_end = end
     skeleton.animation_data.action = None
+    bpy.context.scene.frame_start = 1
+    bpy.context.scene.frame_end = max(bpy.context.scene.frame_end, end)
 
 
-def build_unit(visual, cfg):
+def add_animations(skeleton):
+    """The six clips the manifest requires for a non-Warrior unit."""
+    add_clip(skeleton, "Idle", 30, [
+        (1, {"chest": (0.0, 0, 0)}),
+        (15, {"chest": (-0.035, 0, 0.02), "neck": (0.03, 0, 0)}),
+        (30, {"chest": (0.0, 0, 0)}),
+    ])
+    add_clip(skeleton, "Walk", 24, [
+        (1, {"thigh.L": (0.46, 0, 0), "thigh.R": (-0.46, 0, 0), "shin.L": (-0.22, 0, 0),
+             "upper_arm.L": (-0.30, 0, 0), "upper_arm.R": (0.30, 0, 0), "chest": (0.05, 0.09, 0)}),
+        (7, {"thigh.L": (-0.42, 0, 0), "thigh.R": (0.42, 0, 0), "shin.R": (-0.24, 0, 0),
+             "upper_arm.L": (0.26, 0, 0), "upper_arm.R": (-0.26, 0, 0), "chest": (0.05, -0.09, 0)}),
+        (13, {"thigh.L": (0.46, 0, 0), "thigh.R": (-0.46, 0, 0), "shin.L": (-0.22, 0, 0),
+              "upper_arm.L": (-0.30, 0, 0), "upper_arm.R": (0.30, 0, 0), "chest": (0.05, 0.09, 0)}),
+        (19, {"thigh.L": (-0.42, 0, 0), "thigh.R": (0.42, 0, 0), "shin.R": (-0.24, 0, 0),
+              "upper_arm.L": (0.26, 0, 0), "upper_arm.R": (-0.26, 0, 0), "chest": (0.05, -0.09, 0)}),
+        (24, {"thigh.L": (0.46, 0, 0), "thigh.R": (-0.46, 0, 0), "shin.L": (-0.22, 0, 0),
+              "upper_arm.L": (-0.30, 0, 0), "upper_arm.R": (0.30, 0, 0), "chest": (0.05, 0.09, 0)}),
+    ])
+    # Attack: settle -> load -> drive -> recover, so the beat is readable.
+    add_clip(skeleton, "Attack", 24, [
+        (1, {"chest": (0, 0, 0)}),
+        (6, {"upper_arm.R": (-1.42, 0.10, -0.24), "lower_arm.R": (-0.72, 0, 0),
+             "chest": (-0.16, 0.34, 0), "pelvis": (0, 0.20, 0), "head": (0.10, -0.14, 0)}),
+        (12, {"upper_arm.R": (0.86, -0.14, -0.42), "lower_arm.R": (-0.18, 0, 0),
+              "chest": (0.30, -0.44, 0), "pelvis": (0, -0.26, 0), "thigh.L": (0.22, 0, 0),
+              "thigh.R": (-0.24, 0, 0), "head": (-0.16, 0.12, 0)}),
+        (16, {"upper_arm.R": (0.46, -0.08, -0.36), "chest": (0.18, -0.30, 0), "pelvis": (0, -0.16, 0)}),
+        (24, {"chest": (0, 0, 0)}),
+    ])
+    # Cast: both arms rise and the body opens. Deliberately unlike Attack, so
+    # the runtime's cast state cannot be mistaken for a swing.
+    add_clip(skeleton, "Cast", 26, [
+        (1, {"chest": (0, 0, 0)}),
+        (9, {"upper_arm.L": (-1.10, 0, 0.46), "upper_arm.R": (-1.10, 0, -0.46),
+             "lower_arm.L": (-0.52, 0, 0), "lower_arm.R": (-0.52, 0, 0),
+             "chest": (-0.22, 0, 0), "head": (-0.16, 0, 0)}),
+        (16, {"upper_arm.L": (-1.46, 0, 0.30), "upper_arm.R": (-1.46, 0, -0.30),
+              "chest": (-0.30, 0, 0), "head": (-0.22, 0, 0)}),
+        (26, {"chest": (0, 0, 0)}),
+    ])
+    add_clip(skeleton, "Hit", 14, [
+        (1, {"chest": (0, 0, 0)}),
+        (5, {"chest": (0.20, -0.26, 0), "head": (0.16, 0, 0), "pelvis": (0, -0.18, 0)}),
+        (14, {"chest": (0, 0, 0)}),
+    ])
+    add_clip(skeleton, "Death", 30, [
+        (1, {"pelvis": (0, 0, 0)}),
+        (12, {"pelvis": (0.55, -0.30, 0), "chest": (0.80, 0, 0.18), "head": (0.34, 0, 0),
+              "thigh.L": (0.60, 0, 0), "shin.L": (-0.55, 0, 0)}),
+        (30, {"pelvis": (1.36, 0, 0.24), "chest": (1.42, 0, 0.30), "head": (0.64, 0, 0),
+              "thigh.L": (0.86, 0, 0), "thigh.R": (-0.52, 0, 0),
+              "upper_arm.L": (0.84, 0, 0.46), "upper_arm.R": (0.58, 0, -0.42)}),
+    ])
+
+
+def build_unit(key, cfg):
     reset_scene()
-    body_color = cfg["body"]
-    accent_color = cfg["accent"]
-    mats = {
-        "cloth": material(f"MAT_{visual}_cloth", body_color, 0.86),
-        "leather": material(f"MAT_{visual}_leather", tuple(max(0.02, c * 0.52) for c in body_color), 0.9),
-        "metal": material(f"MAT_{visual}_metal", (0.34, 0.4, 0.5), 0.3, 0.85),
-        "metalLight": material(f"MAT_{visual}_metalLight", (0.56, 0.66, 0.78), 0.2, 0.9),
-        "skin": material(f"MAT_{visual}_skin", (0.62, 0.38, 0.28) if cfg["faction"] == "enemy" else (0.78, 0.58, 0.42), 0.78),
-        "accent": material(f"MAT_{visual}_accent", accent_color, 0.42, 0.35),
-        "highlight": material(f"MAT_{visual}_highlight", tuple(min(1.0, c * 1.18 + 0.08) for c in accent_color), 0.34, 0.4),
-        "clothLight": material(f"MAT_{visual}_clothLight", tuple(min(1.0, c * 1.18 + 0.05) for c in body_color), 0.82),
-        "leatherLight": material(f"MAT_{visual}_leatherLight", tuple(min(1.0, c * 0.78 + 0.08) for c in body_color), 0.76),
-        "snow": material(f"MAT_{visual}_snow", (0.78, 0.90, 0.98), 0.72),
-        "glow": material(f"MAT_{visual}_glow", accent_color, 0.25, 0.0, accent_color),
-        "ice": material(f"MAT_{visual}_ice", (0.55, 0.86, 1.0), 0.24, 0.15, (0.25, 0.7, 1.0)),
-        "glass": material(f"MAT_{visual}_glass", (0.18, 0.58, 0.9), 0.12, 0.12, (0.08, 0.32, 0.75)),
-        "gold": material(f"MAT_{visual}_gold", (1.0, 0.55, 0.08), 0.24, 0.78, (0.8, 0.25, 0.03)),
-        "wood": material(f"MAT_{visual}_wood", (0.38, 0.2, 0.1), 0.86),
-        "dark": material(f"MAT_{visual}_dark", (0.045, 0.05, 0.08), 0.62, 0.35),
-    }
-    # A CUBE empty is exported by Blender's glTF exporter as a visible mesh;
-    # keep the semantic root non-renderable in the GLB.
-    root = orient_for_babylon(empty("UnitRoot", target="EXPORT", display="PLAIN_AXES"))
-    add_lod_markers(root, "character")
-    parts = []
-    heavy = cfg["armor"] in ("heavy", "iceArmor", "batteringRam", "wingsHeavy")
-    torso_width = 0.54 if heavy else 0.46
-    parts += [ellipsoid("torso", (torso_width * 1.06, 0.68, 0.44), (0, 0.98, 0), mats["cloth"])]
-    # Layered cloth, leather and metal keep the silhouette readable at the
-    # game's normal zoom instead of looking like a single coloured primitive.
-    parts += [
-        box("tunicHem", (torso_width * 1.05, 0.14, 0.38), (0, 0.69, 0), mats["leather"], bevel=0.05),
-        box("belt", (torso_width * 1.08, 0.09, 0.4), (0, 0.78, 0.01), mats["accent"], bevel=0.035),
-        box("beltBuckle", (0.12, 0.12, 0.06), (0, 0.78, 0.22), mats["metal"], bevel=0.025),
-        box("chestPanel", (torso_width * 0.72, 0.28, 0.07), (0, 1.05, 0.19), mats["accent"], bevel=0.035),
-        vertical_cylinder("neckGuard", 0.12, 0.16, (0, 1.38, 0), mats["leather"], "LOD0", 8),
-        sphere("head", 0.28, (0, 1.7, 0), mats["skin"]),
-        box("faceStripe", (0.2, 0.06, 0.035), (0, 1.71, 0.25), mats["accent"], bevel=0.02),
-        sphere("head.eye.L", 0.038, (-0.085, 1.75, 0.268), mats["glow"]),
-        sphere("head.eye.R", 0.038, (0.085, 1.75, 0.268), mats["glow"]),
-    ]
-    parts += [
-        ellipsoid("leg.L", (0.23, 0.55, 0.24), (-0.13, 0.38, 0), mats["leather"]),
-        ellipsoid("leg.R", (0.23, 0.55, 0.24), (0.13, 0.38, 0), mats["leather"]),
-        box("knee.L", (0.2, 0.16, 0.22), (-0.13, 0.27, 0.08), mats["accent"], bevel=0.035),
-        box("knee.R", (0.2, 0.16, 0.22), (0.13, 0.27, 0.08), mats["accent"], bevel=0.035),
-        box("boot.L", (0.22, 0.12, 0.38), (-0.13, 0.08, 0.08), mats["dark"], bevel=0.045),
-        box("boot.R", (0.22, 0.12, 0.38), (0.13, 0.08, 0.08), mats["dark"], bevel=0.045),
-        ellipsoid("arm.L", (0.22, 0.58, 0.23), (-0.38, 1.02, 0), mats["cloth"]),
-        ellipsoid("arm.R", (0.22, 0.58, 0.23), (0.38, 1.02, 0), mats["cloth"]),
-        sphere("glove.L", 0.11, (-0.38, 0.72, 0.02), mats["skin"]),
-        sphere("glove.R", 0.11, (0.38, 0.72, 0.02), mats["skin"]),
-        box("shoulder.L", (0.27, 0.17, 0.3), (-0.34, 1.28, 0), mats["accent"], bevel=0.06),
-        box("shoulder.R", (0.27, 0.17, 0.3), (0.34, 1.28, 0), mats["accent"], bevel=0.06),
-    ]
-    # Shared hero-quality silhouette pass.  These are small authored panels
-    # and caps rather than extra colour swaps: they give every role a readable
-    # front plane, a waist break and a believable boot contact in the normal
-    # isometric camera.
-    shell_mat = mats["metal"] if heavy else mats["accent"]
-    parts += [
-        prism(
-            "torsoShell",
-            [(-torso_width * 0.46, 1.28), (torso_width * 0.46, 1.28), (torso_width * 0.38, 0.86), (0, 0.78), (-torso_width * 0.38, 0.86)],
-            0.11,
-            (0, 0, 0.19),
-            shell_mat,
-            "LOD0",
-            0.025,
-        ),
-        prism("helmetBrow", [(-0.2, 1.83), (0.2, 1.83), (0.15, 1.69), (-0.15, 1.69)], 0.22, (0, 0, 0.2), mats["dark"], "LOD0", 0.02),
-        prism("bootToe.L", [(-0.12, 0.16), (0.08, 0.16), (0.1, 0.03), (-0.12, 0.03)], 0.28, (-0.13, 0, 0.15), mats["dark"], "LOD0", 0.018),
-        prism("bootToe.R", [(-0.08, 0.16), (0.12, 0.16), (0.12, 0.03), (-0.1, 0.03)], 0.28, (0.13, 0, 0.15), mats["dark"], "LOD0", 0.018),
-    ]
-    for side in (-1, 1):
-        shoulder_cap = cone(f"shoulderCap.{side}", 0.19 if heavy else 0.16, 0.1, 0.18, (side * 0.37, 1.37, 0), mats["metal"], "LOD0", 6)
-        shoulder_cap.rotation_euler.x = math.pi * 0.5
-        parts.append(shoulder_cap)
-    parts += add_crest(root, cfg["crest"], mats)
-    parts += build_weapon(root, cfg["weapon"], mats, "weapon")
-    # The warrior is the reference melee silhouette: layered breastplate,
-    # raised shoulder guards and a scabbard give it a fitted armour read rather
-    # than the shared tunic reading as a coloured block.
-    if visual == "warrior":
-        parts += [
-            prism("warriorBreastplate", [(-0.24, 1.34), (0.24, 1.34), (0.2, 0.94), (0, 0.84), (-0.2, 0.94)], 0.13, (0, 0, 0.25), mats["metal"], "LOD0", 0.025),
-            prism("warriorCollar", [(-0.26, 1.38), (0.26, 1.38), (0.18, 1.5), (-0.18, 1.5)], 0.1, (0, 0, 0.08), mats["accent"], "LOD0", 0.018),
-            prism("warriorShoulder.L", [(-0.2, 1.42), (0.02, 1.5), (0.12, 1.28), (-0.2, 1.22)], 0.18, (-0.36, 0, 0), mats["metal"], "LOD0", 0.02),
-            prism("warriorShoulder.R", [(-0.02, 1.5), (0.2, 1.42), (0.2, 1.22), (-0.12, 1.28)], 0.18, (0.36, 0, 0), mats["metal"], "LOD0", 0.02),
-            torus("warriorChestSeal", 0.1, 0.025, (0, 1.12, 0.34), mats["glow"], "LOD0"),
-            box("warriorScabbard", (0.1, 0.72, 0.12), (-0.28, 1.02, -0.22), mats["leather"], "LOD0", 0.025),
-            box("warriorScabbardCap", (0.14, 0.08, 0.16), (-0.28, 0.66, -0.22), mats["metal"], "LOD0", 0.018),
-            prism("warriorAbdomen", [(-0.18, 1.03), (0.18, 1.03), (0.14, 0.82), (0, 0.76), (-0.14, 0.82)], 0.12, (0, 0, 0.24), mats["metalLight"], "LOD0", 0.022),
-            prism("warriorHipGuard.L", [(-0.16, 0.88), (0.04, 0.88), (0.12, 0.62), (-0.10, 0.66)], 0.11, (-0.34, 0, 0.12), mats["metal"], "LOD0", 0.02),
-            prism("warriorHipGuard.R", [(-0.04, 0.88), (0.16, 0.88), (0.10, 0.66), (-0.12, 0.62)], 0.11, (0.34, 0, 0.12), mats["metal"], "LOD0", 0.02),
-            sphere("warriorRivet.L", 0.045, (-0.20, 1.18, 0.35), mats["highlight"]),
-            sphere("warriorRivet.R", 0.045, (0.20, 1.18, 0.35), mats["highlight"]),
-            torus("warriorCollarRing", 0.22, 0.028, (0, 1.43, 0.16), mats["metalLight"], "LOD0"),
-            box("warriorShoulderStrap.L", (0.07, 0.34, 0.06), (-0.38, 1.40, 0.18), mats["leatherLight"], "LOD0", 0.012),
-            box("warriorShoulderStrap.R", (0.07, 0.34, 0.06), (0.38, 1.40, 0.18), mats["leatherLight"], "LOD0", 0.012),
-            box("warriorKneeBand.L", (0.22, 0.06, 0.24), (-0.13, 0.38, 0.16), mats["metalLight"], "LOD0", 0.012),
-            box("warriorKneeBand.R", (0.22, 0.06, 0.24), (0.13, 0.38, 0.16), mats["metalLight"], "LOD0", 0.012),
-            sphere("warriorPommelGem", 0.06, (0.38, 0.68, 0.20), mats["glow"]),
-            prism("warriorCloakPanel.L", [(-0.30, 1.20), (-0.04, 1.12), (-0.12, 0.48), (-0.38, 0.60)], 0.07, (-0.03, 0, -0.30), mats["cloth"], "LOD0", 0.016),
-            prism("warriorCloakPanel.R", [(0.04, 1.12), (0.30, 1.20), (0.38, 0.60), (0.12, 0.48)], 0.07, (0.03, 0, -0.30), mats["dark"], "LOD0", 0.016),
-            torus("warriorGorget", 0.24, 0.032, (0, 1.43, 0.28), mats["metalLight"], "LOD0"),
-            box("warriorChestInset", (0.18, 0.26, 0.045), (0, 1.12, 0.43), mats["accent"], "LOD0", 0.012),
-            sphere("warriorChestInsetGem", 0.035, (0, 1.12, 0.47), mats["glow"]),
-            box("weapon.warriorSwordGuard", (0.34, 0.07, 0.07), (0.38, 1.28, 0.18), mats["metalLight"], "LOD0", 0.012),
-            sphere("weapon.warriorSwordGuardGem", 0.04, (0.38, 1.28, 0.23), mats["glow"]),
-            *(sphere(f"warriorShoulderRivet.{side}", 0.035, (side * 0.48, 1.44, 0.18), mats["highlight"]) for side in (-1, 1)),
-        ]
+    MATERIALS.clear()
+    body, accent = cfg["body"], cfg["accent"]
+    MATERIALS["body"] = material(f"MAT_{key}_body", body, 0.92, 0.0)
+    MATERIALS["leather"] = material(f"MAT_{key}_leather", (0.230, 0.140, 0.082), 0.58, 0.06)
+    MATERIALS["metal"] = material(f"MAT_{key}_metal", (0.190, 0.205, 0.228), 0.32, 0.86)
+    make_atlas(f"ATLAS_{key}", body, accent)
 
-    # Distinctive focal pieces make the role readable even when the held prop
-    # is occluded by a squad mate.  The geometry stays low-poly but each piece
-    # has a clear material and a bone-friendly name.
-    if cfg["weapon"] in ("sword", "dagger", "club", "shieldClub", "ram"):
-        parts += [sphere("weaponPommel", 0.075, (0, 0.0, 0.0), mats["glow"])]
-    if cfg["weapon"] in ("staff", "iceStaff"):
-        parts += [
-            torus("spellFocusRing", 0.2, 0.035, (0, 1.4, 0.05), mats["accent"], "LOD0"),
-            prism("spellFocusShard", [(-0.1, 1.42), (0, 1.62), (0.1, 1.42), (0, 1.28)], 0.08, (0, 0, 0.08), mats["glow"], "LOD0", 0.015),
-        ]
-    if cfg["weapon"] in ("bow", "sling", "musket"):
-        parts += [
-            box("rangedSight", (0.08, 0.12, 0.18), (0.23, 1.22, 0.2), mats["metal"], "LOD0", 0.02),
-            torus("rangedBadge", 0.09, 0.025, (0, 0.82, 0.25), mats["accent"], "LOD0"),
-        ]
-    if cfg["armor"] in ("medic", "toolpack", "bandolier", "crystals"):
-        parts.append(prism("roleBadge", [(-0.13, 1.2), (0.13, 1.2), (0.1, 0.98), (-0.1, 0.98)], 0.05, (0, 0, 0.25), mats["glow"], "LOD0", 0.012))
+    a = dict(ARCHETYPES[cfg["arch"]])
+    a["arch_name"] = cfg["arch"]
+    h = a["height"]
 
-    # Role silhouettes use a few authored polygon profiles in addition to the
-    # shared body rig.  These are deliberately distinct garment/armour pieces,
-    # not recoloured copies of the same box model.
-    if cfg["armor"] in ("heavy", "iceArmor", "shield", "lightArmor"):
-        parts.append(prism("frontGuard", [(-0.34, 1.34), (0.34, 1.34), (0.28, 0.92), (-0.28, 0.92)], 0.1, (0, 0, 0.2), mats["metal"], "LOD0", 0.035))
-    if cfg["armor"] in ("cape", "cloak", "wings", "wingsHeavy"):
-        parts.append(prism("capePanel", [(-0.42, 1.46), (0.42, 1.46), (0.54, 0.64), (0.14, 0.52), (-0.54, 0.64)], 0.06, (0, 0, -0.24), mats["cloth"], "LOD0", 0.03))
-    if cfg["weapon"] in ("bow", "sling", "musket"):
-        parts.append(prism("rangedMantle", [(-0.28, 1.38), (0.28, 1.38), (0.38, 0.85), (-0.38, 0.85)], 0.08, (0, 0, -0.08), mats["leather"], "LOD0", 0.025))
-    if cfg["faction"] == "enemy":
-        parts.append(prism("raggedHem", [(-0.38, 0.82), (-0.12, 0.72), (0.1, 0.82), (0.35, 0.68), (0.42, 0.56), (-0.42, 0.56)], 0.07, (0, 0, -0.02), mats["dark"], "LOD0", 0.025))
+    root = orient_for_babylon(empty("UnitRoot", (0, 0, 0), "EXPORT", "PLAIN_AXES"))
+    root["assetRole"] = key
+    root["archetype"] = cfg["arch"]
+    skeleton = make_skeleton(root, h)
 
-    armor = cfg["armor"]
-    if armor in ("shield", "heavy", "iceArmor"):
-        parts += [cylinder("shield.rim", 0.1, 0.56, (-0.5, 0.88, 0.08), mats["metal"], "LOD0", 10), box("shield.face", (0.62, 0.72, 0.1), (-0.5, 0.9, 0.03), mats["accent"]), box("shield.gem", (0.12, 0.12, 0.12), (-0.5, 0.9, 0.1), mats["glow"])]
-    if armor in ("cape", "cloak"):
-        parts += [box("cape", (0.66, 0.88, 0.06), (0, 1.05, -0.23), mats["cloth"], "LOD0", 0.08)]
-    if armor == "shoulders":
-        parts += [box("pauldron.L", (0.32, 0.22, 0.34), (-0.4, 1.32, 0), mats["metal"]), box("pauldron.R", (0.32, 0.22, 0.34), (0.4, 1.32, 0), mats["metal"])]
-    if armor == "quiver":
-        parts += [box("quiver", (0.22, 0.58, 0.2), (-0.22, 1.03, -0.2), mats["leather"]), box("arrowBundle", (0.08, 0.5, 0.08), (-0.22, 1.38, -0.2), mats["accent"])]
-    if armor == "medic":
-        parts += [box("medicPack", (0.42, 0.38, 0.2), (0, 1.0, -0.24), mats["leather"]), box("medicCross", (0.22, 0.08, 0.05), (0, 1.08, 0.2), mats["glow"])]
-    if armor == "toolpack":
-        parts += [box("toolPack", (0.38, 0.5, 0.24), (0, 1.0, -0.23), mats["leather"]), torus("toolRing", 0.14, 0.04, (0.35, 1.06, 0), mats["accent"])]
-    if armor == "bandolier":
-        for i in range(4): parts.append(sphere(f"pouch{i}", 0.07, (-0.2 + i * 0.13, 1.1 - i * 0.08, 0.18), mats["accent"]))
-    if armor == "crystals":
-        for i, x in enumerate((-0.35, 0.35)):
-            parts.append(box(f"iceShard{i}", (0.12, 0.4, 0.12), (x, 1.35, 0), mats["ice"], "LOD0", 0.04))
-    if armor in ("bombPack", "pouch", "ragged"):
-        parts += [box("pack", (0.42, 0.5, 0.24), (0, 1.02, -0.23), mats["leather"]), sphere("core", 0.18, (0, 1.0, 0.2), mats["glow"])]
-    if armor == "lightArmor":
-        parts += [box("chestPlate", (0.48, 0.38, 0.08), (0, 1.08, 0.18), mats["metal"]), box("knee.L", (0.2, 0.18, 0.22), (-0.13, 0.22, 0.08), mats["accent"]), box("knee.R", (0.2, 0.18, 0.22), (0.13, 0.22, 0.08), mats["accent"])]
-    if armor in ("wings", "wingsHeavy"):
-        span = 0.7 if armor == "wings" else 1.05
-        for side in (-1, 1):
-            parts += [box(f"wing.{side}.inner", (span, 0.1, 0.35), (side * 0.48, 1.15, -0.04), mats["accent"]), box(f"wing.{side}.outer", (span * 0.72, 0.08, 0.24), (side * 0.95, 1.12, -0.04), mats["ice"])]
-            parts.append(prism(f"wing.{side}.feather", [(-0.1, 1.45), (0.42, 1.32), (0.64, 1.08), (0.18, 1.16)], 0.07, (side * 0.58, 0, -0.06), mats["ice"], "LOD0", 0.018))
-        # The three regular flying enemies share the same rig, but their
-        # harness and wing hardware now carry a role-specific silhouette:
-        # melee uses swept blades, the elite archer uses layered feather
-        # vanes, and the bomber carries a visible payload cradle.  These are
-        # small authored pieces rather than colour-only variants.
-        if visual == "flyingMelee":
-            parts += [
-                box("flightHarness", (0.58, 0.16, 0.08), (0, 1.14, 0.24), mats["metal"], "LOD0", 0.02),
-                torus("flightHarnessRing", 0.18, 0.028, (0, 1.12, 0.30), mats["highlight"], "LOD0"),
-                *(prism(f"wing.{side}.sweptBlade", [(x * side, y) for x, y in ((-0.10, 1.42), (0.22, 1.52), (0.68, 1.18), (0.42, 1.08))], 0.055, (0, 0, -0.14), mats["accent"], "LOD0", 0.012) for side in (-1, 1)),
-                *(cone(f"wing.{side}.talon", 0.075, 0.012, 0.28, (side * 0.38, 0.48, 0.22), mats["metalLight"], "LOD0", 6) for side in (-1, 1)),
-            ]
-        elif visual == "flyingEliteArcher":
-            parts += [
-                box("flightHarness", (0.54, 0.14, 0.08), (0, 1.14, 0.23), mats["leatherLight"], "LOD0", 0.018),
-                torus("flightHarnessRing", 0.17, 0.024, (0, 1.14, 0.30), mats["glow"], "LOD0"),
-                *(prism(f"wing.{side}.featherVane.{index}", [(x * side, y) for x, y in ((-0.08, 1.42), (0.18, 1.54 - index * 0.08), (0.52, 1.20 - index * 0.08), (0.18, 1.12 - index * 0.06))], 0.04, (0, 0, -0.13 - index * 0.02), mats["clothLight" if index == 0 else "ice"], "LOD0", 0.01) for side in (-1, 1) for index in range(2)),
-                *(cone(f"weapon.flyingEliteArrow.{index}", 0.025, 0.004, 0.26, (-0.18 + index * 0.18, 1.46, -0.26), mats["metalLight"], "LOD0", 5) for index in range(3)),
-            ]
-        elif visual == "flyingBomber":
-            parts += [
-                box("flightHarness", (0.64, 0.18, 0.10), (0, 1.10, 0.24), mats["metal"], "LOD0", 0.022),
-                torus("payloadFrame", 0.28, 0.04, (0, 0.92, -0.28), mats["metalLight"], "LOD0"),
-                *(sphere(f"payloadBomb.{index}", 0.11, (-0.22 + index * 0.22, 0.72, -0.38), mats["gold"]) for index in range(3)),
-                *(box(f"wing.{side}.bombSpar", (0.06, 0.08, 0.56), (side * 0.76, 1.20, -0.14), mats["metalLight"], "LOD0", 0.012) for side in (-1, 1)),
-            ]
-        if visual == "flyingColossus":
-            # The boss uses a three-panel membrane and a rigid spar on each
-            # wing so the flying silhouette reads as a creature, not two flat
-            # bars. Panels remain separate meshes for cheap animation and LOD.
-            membrane = [(-0.08, 1.48), (0.48, 1.34), (0.82, 1.02), (0.46, 1.04), (0.12, 1.18)]
-            for side in (-1, 1):
-                mirrored = [(x * side, y) for x, y in membrane]
-                parts += [
-                    prism(f"wing.{side}.membraneA", mirrored, 0.045, (0, 0, -0.16), mats["cloth"], "LOD0", 0.014),
-                    prism(f"wing.{side}.membraneB", [(x * 0.82, y - 0.12) for x, y in mirrored], 0.04, (0, 0, -0.18), mats["accent"], "LOD0", 0.012),
-                    cylinder(f"wing.{side}.spar", 0.04, 0.82, (side * 0.58, 1.23, -0.2), mats["metal"], "LOD0", 7),
-                ]
-                parts[-1].rotation_euler.y = side * math.pi * 0.38
-            parts += [
-                prism("colossusMantle", [(-0.5, 1.44), (0.5, 1.44), (0.66, 0.9), (0, 0.72), (-0.66, 0.9)], 0.16, (0, 0, -0.28), mats["metal"], "LOD0", 0.025),
-                cone("head.colossusHorn.L", 0.14, 0.02, 0.48, (-0.2, 1.98, 0.04), mats["accent"], "LOD0", 7),
-                cone("head.colossusHorn.R", 0.14, 0.02, 0.48, (0.2, 1.98, 0.04), mats["accent"], "LOD0", 7),
-                sphere("head.colossusEye.L", 0.06, (-0.1, 1.74, 0.3), mats["glow"]),
-                sphere("head.colossusEye.R", 0.06, (0.1, 1.74, 0.3), mats["glow"]),
-                prism("colossusKneeGuard.L", [(-0.12, 0.44), (0.12, 0.44), (0.08, 0.2), (-0.12, 0.2)], 0.12, (-0.16, 0, 0.2), mats["metal"], "LOD0", 0.018),
-                prism("colossusKneeGuard.R", [(-0.12, 0.44), (0.12, 0.44), (0.12, 0.2), (-0.08, 0.2)], 0.12, (0.16, 0, 0.2), mats["metal"], "LOD0", 0.018),
-                prism("colossusChestShell", [(-0.44, 1.50), (0.44, 1.50), (0.34, 0.90), (0, 0.76), (-0.34, 0.90)], 0.18, (0, 0, 0.27), mats["metalLight"], "LOD0", 0.03),
-                prism("colossusBrow", [(-0.30, 1.86), (0.30, 1.86), (0.22, 1.68), (-0.22, 1.68)], 0.20, (0, 0, 0.30), mats["metal"], "LOD0", 0.025),
-                prism("colossusTail", [(-0.26, 0.78), (0.26, 0.78), (0.50, 0.24), (0.0, 0.06), (-0.50, 0.24)], 0.10, (0, 0, -0.32), mats["cloth"], "LOD0", 0.025),
-                cone("colossusClaw.L", 0.11, 0.015, 0.34, (-0.28, 0.12, 0.24), mats["metalLight"], "LOD0", 6),
-                cone("colossusClaw.R", 0.11, 0.015, 0.34, (0.28, 0.12, 0.24), mats["metalLight"], "LOD0", 6),
-            ]
-            for side in (-1, 1):
-                label = "L" if side < 0 else "R"
-                for rib, (x, y, z) in enumerate(((0.44, 1.30, -0.23), (0.62, 1.19, -0.24), (0.78, 1.08, -0.25))):
-                    rib_obj = box(f"wingRib.{label}.{rib}", (0.035, 0.035, 0.62), (side * x, y, z), mats["metalLight"], "LOD0", 0.008)
-                    rib_obj.rotation_euler.y = side * math.pi * (0.26 + rib * 0.06)
-                    parts.append(rib_obj)
-            parts += [
-                prism("colossusMuzzle", [(-0.23, 1.74), (0.23, 1.74), (0.16, 1.52), (0, 1.45), (-0.16, 1.52)], 0.16, (0, 0, 0.37), mats["metalLight"], "LOD0", 0.022),
-                prism("colossusJaw", [(-0.20, 1.55), (0.20, 1.55), (0.14, 1.39), (-0.14, 1.39)], 0.12, (0, 0, 0.34), mats["dark"], "LOD0", 0.018),
-                sphere("colossusNoseGem", 0.055, (0, 1.58, 0.48), mats["glow"]),
-                box("colossusChestCoreFrame", (0.34, 0.34, 0.06), (0, 1.16, 0.48), mats["metal"], "LOD0", 0.016),
-                sphere("colossusChestCore", 0.10, (0, 1.16, 0.53), mats["glow"]),
-                box("wingTip.L", (0.08, 0.08, 0.56), (-1.02, 1.08, -0.20), mats["metalLight"], "LOD0", 0.012),
-                box("wingTip.R", (0.08, 0.08, 0.56), (1.02, 1.08, -0.20), mats["metalLight"], "LOD0", 0.012),
-                torus("tailRing", 0.16, 0.028, (0, 0.42, -0.30), mats["accent"], "LOD0"),
-                torus("colossusCrownRing", 0.30, 0.045, (0, 1.93, 0.02), mats["metalLight"], "LOD0"),
-                torus("colossusCoreRing", 0.16, 0.028, (0, 1.16, 0.56), mats["accent"], "LOD0"),
-                prism("colossusTailFin", [(-0.18, 0.62), (0.18, 0.62), (0.30, 0.18), (0.0, 0.02), (-0.30, 0.18)], 0.06, (0, 0, -0.40), mats["accent"], "LOD0", 0.014),
-                *(box(f"wingEdge.{side}", (0.06, 0.06, 0.86), (side * 0.72, 1.23, -0.24), mats["metalLight"], "LOD0", 0.008) for side in (-1, 1)),
-                cone("head.colossusTusk.L", 0.08, 0.012, 0.26, (-0.18, 1.50, 0.42), mats["metalLight"], "LOD0", 6),
-                cone("head.colossusTusk.R", 0.08, 0.012, 0.26, (0.18, 1.50, 0.42), mats["metalLight"], "LOD0", 6),
-            ]
-    if armor == "batteringRam":
-        parts += [box("ramFrame", (0.8, 0.24, 0.2), (0, 1.0, 0.28), mats["metal"]), sphere("ramTip", 0.2, (0, 1.0, 0.62), mats["accent"])]
+    for level in (0, 1, 2):
+        body_slots = ["body", "leather", "metal"] if level == 0 else (["body", "metal"] if level == 1 else ["body"])
+        pieces = [create_mesh(add_body(level, a, cfg), f"LOD{level}_PROD_body", root, skeleton, body_slots, level)]
+        weapon_builder = add_weapon(level, a, cfg)
+        if weapon_builder and weapon_builder.faces:
+            slots = ["leather", "metal"] if level < 2 else ["metal"]
+            pieces.append(create_mesh(weapon_builder, f"LOD{level}_PROD_weapon", root, skeleton, slots, level))
+        if level > 0:
+            marker = empty(f"LOD{level}", (0, 0, 0), "EXPORT", "PLAIN_AXES")
+            marker.parent = root
+            marker["lodLevel"] = level
+            for piece in pieces:
+                piece.parent = marker
+        else:
+            for piece in pieces:
+                piece.parent = root
 
-    add_bodycraft_finish(parts, visual, cfg, mats, torso_width, heavy)
-    add_role_finish(parts, visual, cfg, mats, torso_width, heavy)
-    add_tertiary_role_finish(parts, visual, cfg, mats, torso_width, heavy)
-    add_unit_finish(parts, visual, cfg, mats, torso_width, heavy)
-    assign_surface_variants(parts, [
-        ("_cloth", mats["clothLight"], mats["cloth"]),
-        ("_leather", mats["leatherLight"], mats["leather"]),
-        ("_metal", mats["metalLight"], mats["metal"]),
-        ("_accent", mats["highlight"], mats["accent"]),
-        ("_wood", mats["leatherLight"], mats["wood"]),
-    ])
-    author_surface_paint(
-        parts,
-        seed=sum(ord(char) for char in visual),
-        textured=True,
-    )
-    parent_all(parts, root)
-    skeleton = make_skeleton(root)
-    bind_unit_pieces(parts, skeleton)
-    for name in ("weapon_socket", "ranged_socket", "attackAnchor", "banner_socket"):
-        socket = empty(name, (0, 1.1, 0.2), "RIG")
-        socket.parent = root
-    collision_box("COL_Unit", (0.8, 1.9, 0.8), (0, 0.95, 0), root)
-    add_armature_clip(skeleton, "Idle", 24, [
-        (1, {}),
-        (12, {"chest": (0.025, 0, 0), "head": (0, 0.025, 0)}),
-        (24, {}),
-    ])
-    add_armature_clip(skeleton, "Walk", 24, [
-        (1, {"upper_arm.L": (0.32, 0, 0), "upper_arm.R": (-0.32, 0, 0), "thigh.L": (-0.45, 0, 0), "thigh.R": (0.45, 0, 0), "chest": (0.04, 0, 0)}),
-        (7, {"upper_arm.L": (-0.32, 0, 0), "upper_arm.R": (0.32, 0, 0), "thigh.L": (0.45, 0, 0), "thigh.R": (-0.45, 0, 0), "chest": (-0.02, 0, 0)}),
-        (13, {"upper_arm.L": (0.32, 0, 0), "upper_arm.R": (-0.32, 0, 0), "thigh.L": (-0.45, 0, 0), "thigh.R": (0.45, 0, 0), "chest": (0.04, 0, 0)}),
-        (24, {}),
-    ])
-    add_armature_clip(skeleton, "Attack", 18, [
-        (1, {"upper_arm.R": (-0.9, 0, 0), "lower_arm.R": (-0.55, 0, 0), "chest": (-0.12, 0, 0)}),
-        (8, {"upper_arm.R": (1.25, 0, 0), "lower_arm.R": (0.5, 0, 0), "chest": (0.22, 0, 0)}),
-        (18, {}),
-    ])
-    add_armature_clip(skeleton, "Cast", 22, [
-        (1, {"upper_arm.R": (-1.15, 0, 0), "upper_arm.L": (-0.6, 0, 0), "head": (-0.1, 0, 0)}),
-        (11, {"upper_arm.R": (-2.2, 0, 0), "upper_arm.L": (-1.1, 0, 0), "head": (-0.18, 0, 0)}),
-        (22, {}),
-    ])
-    add_armature_clip(skeleton, "Hit", 12, [
-        (1, {"chest": (-0.18, 0, 0), "head": (0.12, 0, 0)}),
-        (12, {}),
-    ])
-    add_armature_clip(skeleton, "Death", 20, [
-        (1, {}),
-        (12, {"root": (1.25, 0, 0), "chest": (0.35, 0, 0), "upper_arm.L": (0.7, 0, 0), "upper_arm.R": (0.7, 0, 0)}),
-        (20, {"root": (1.45, 0, 0), "chest": (0.5, 0, 0), "upper_arm.L": (1.1, 0, 0), "upper_arm.R": (1.1, 0, 0)}),
-    ])
-    source = os.path.abspath(os.path.join(HERE, "..", "..", "assets-source", "blender", "characters", f"{visual}.blend"))
-    output = os.path.abspath(os.path.join(HERE, "..", "..", "public", "assets", "models", "characters", f"{visual}.glb"))
+    socket = empty("weapon_socket", (a["shoulder"] * 1.02, 0.82 * h, 0.06), "EXPORT", "PLAIN_AXES")
+    socket.parent = root
+    anchor = empty("attackAnchor", (0.0, 0.95 * h, 0.40), "EXPORT", "PLAIN_AXES")
+    anchor.parent = root
+    collision_box("COL_Unit", (a["shoulder"] * 2.4, 1.86 * h, a["chest_depth"] * 3.0), (0, 0.93 * h, 0), root)
+    add_animations(skeleton)
+    bpy.context.scene.frame_set(1)
+
+    source = os.path.join(ROOT, "assets-source", "blender", "characters", f"{key}.blend")
+    output = os.path.join(ROOT, "public", "assets", "models", "characters", f"{key}.glb")
     save_source(source)
     export_glb(output)
+    print(f"unit written: {key} ({cfg['arch']})")
 
 
 def main():
-    for visual, cfg in UNITS.items():
-        build_unit(visual, cfg)
+    only = None
+    if "--" in sys.argv:
+        rest = sys.argv[sys.argv.index("--") + 1:]
+        if rest:
+            only = set(rest)
+    for key, cfg in UNITS.items():
+        if only and key not in only:
+            continue
+        build_unit(key, cfg)
 
 
 if __name__ == "__main__":

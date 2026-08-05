@@ -61,6 +61,14 @@ class MeshBuilder:
         the same point count.  Unlike a lathe this imposes no rotational
         symmetry, so the caller controls the actual shape of every slice.
         """
+        counts = {len(points) for _, points in rings}
+        if len(counts) != 1:
+            # Mismatched rings used to fail deep inside the face loop with a
+            # bare IndexError, which says nothing about the caller's mistake.
+            raise ValueError(
+                f"sweep() requires every ring to have the same point count, got {sorted(counts)}. "
+                "Vary shape with radii and the superellipse exponent, not with point count."
+            )
         built = []
         for y, section_points in rings:
             built.append([self.vertex((x, y, z), weight_fn(y)) for x, z in section_points])
