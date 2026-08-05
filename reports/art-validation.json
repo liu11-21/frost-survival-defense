@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-08-05T09:19:56.682Z",
+  "generatedAt": "2026-08-05T09:42:38.309Z",
   "blenderRequired": true,
   "assets": [
     {
@@ -80,15 +80,15 @@
       "key": "turret_basic",
       "status": "ok",
       "path": "public/assets/models/buildings/turret_basic.glb",
-      "sizeBytes": 425480,
-      "nodes": 39,
-      "meshes": 33,
-      "materials": 8,
-      "textures": 7,
+      "sizeBytes": 180788,
+      "nodes": 13,
+      "meshes": 7,
+      "materials": 3,
+      "textures": 1,
       "skeletons": 0,
       "rootTransforms": [
         {
-          "index": 38,
+          "index": 12,
           "name": "TurretRoot",
           "translation": [
             0,
@@ -104,35 +104,35 @@
       ],
       "bounds": {
         "min": [
-          -1.3421540260314941,
-          -0.875,
-          -1.559999942779541
+          -1.25,
+          -1.25,
+          -1.659999966621399
         ],
         "max": [
-          1.3444522619247437,
-          0.875,
-          1.4408701658248901
+          1.25,
+          1.25,
+          0
         ]
       },
       "animations": [
         "Idle",
-        "Aim",
         "Fire",
-        "Recoil",
-        "Reload"
+        "Reload",
+        "Aim",
+        "Recoil"
       ],
       "animationChannels": {
         "Idle": 1,
-        "Aim": 1,
         "Fire": 2,
-        "Recoil": 2,
-        "Reload": 1
+        "Reload": 2,
+        "Aim": 2,
+        "Recoil": 1
       },
-      "triangles": 6184,
+      "triangles": 712,
       "lodTriangles": {
-        "LOD0": 5416,
-        "LOD1": 440,
-        "LOD2": 328
+        "LOD0": 404,
+        "LOD1": 194,
+        "LOD2": 114
       },
       "surfaceAttributes": {
         "TEXCOORD_0": true,
@@ -150,15 +150,15 @@
       "key": "wall_gate",
       "status": "ok",
       "path": "public/assets/models/buildings/wall_gate.glb",
-      "sizeBytes": 497360,
-      "nodes": 62,
-      "meshes": 52,
-      "materials": 7,
-      "textures": 6,
+      "sizeBytes": 244016,
+      "nodes": 13,
+      "meshes": 5,
+      "materials": 3,
+      "textures": 1,
       "skeletons": 0,
       "rootTransforms": [
         {
-          "index": 61,
+          "index": 12,
           "name": "WallGateRoot",
           "translation": [
             0,
@@ -174,33 +174,33 @@
       ],
       "bounds": {
         "min": [
-          -2.450000047683716,
-          -0.8600000143051147,
-          -2.619999885559082
+          -6.6479997634887695,
+          -0.7950000166893005,
+          -3.109999895095825
         ],
         "max": [
-          2.450000047683716,
-          0.8600000143051147,
-          1.2999999523162842
+          6.6479997634887695,
+          0.8899999856948853,
+          0
         ]
       },
       "animations": [
-        "Damaged",
-        "Destroyed",
         "GateOpen",
-        "GateClose"
+        "GateClose",
+        "Damaged",
+        "Destroyed"
       ],
       "animationChannels": {
+        "GateOpen": 3,
+        "GateClose": 3,
         "Damaged": 1,
-        "Destroyed": 1,
-        "GateOpen": 2,
-        "GateClose": 2
+        "Destroyed": 1
       },
-      "triangles": 7620,
+      "triangles": 1108,
       "lodTriangles": {
-        "LOD0": 7244,
-        "LOD1": 188,
-        "LOD2": 188
+        "LOD0": 688,
+        "LOD1": 240,
+        "LOD2": 180
       },
       "surfaceAttributes": {
         "TEXCOORD_0": true,
