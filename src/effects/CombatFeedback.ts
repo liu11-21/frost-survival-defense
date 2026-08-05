@@ -17,6 +17,68 @@ const SUPPORT_AURA_RINGS = 8;
 
 type HeroSkillKind = "airSupport" | "infiniteFirepower" | "groundSupport" | "seismicWave";
 
+/**
+ * Per-skill shape language.
+ *
+ * Tinting one shared ring/column/afterglow set four different colours is not
+ * differentiation -- every skill still read as the same event. These profiles
+ * vary what the effect *is*: how far it spreads, how many waves it throws,
+ * whether it rises or stays on the ground, and how long it lingers. Each one
+ * is chosen to match what the skill actually does to the simulation:
+ *
+ * - airSupport      three bombardments over a 12-unit radius, then a 10s fire
+ *                   field. Widest spread, most waves, tallest column, longest
+ *                   afterglow, heaviest shake.
+ * - infiniteFirepower  a 5s attack-speed buff on buildings. It touches no
+ *                   ground, so it gets no expanding wave and no scorch at
+ *                   all -- just tight, fast vertical surges. Anything radial
+ *                   here would imply an area effect that does not exist.
+ * - groundSupport   summons three guards for 10s. A rally, not a blast:
+ *                   the converge beat carries it, the release is soft, and
+ *                   the afterglow outlasts the others because the guards
+ *                   remain on the field.
+ * - seismicWave     a forward cone that knocks back. Ground-borne, so no
+ *                   column; fast tight waves and a hard shake instead.
+ *                   HeroSkills already casts it offset ahead of the Hero,
+ *                   which is what makes it read as directional.
+ */
+const SKILL_SHAPE: Record<HeroSkillKind, {
+  converge: boolean;
+  waves: number;
+  waveGap: number;
+  release: number;
+  spread: number;
+  columns: number;
+  columnHeight: number;
+  columnWidth: number;
+  afterglow: number;
+  burst: string;
+  burstCount: number;
+  burstHeight: number;
+  shake: number;
+}> = {
+  airSupport: {
+    converge: true, waves: 3, waveGap: 0.10, release: 0.16, spread: 1.0,
+    columns: 1, columnHeight: 1.45, columnWidth: 1.0, afterglow: 1.6,
+    burst: "blast", burstCount: 72, burstHeight: 0.9, shake: 0.10,
+  },
+  infiniteFirepower: {
+    converge: false, waves: 0, waveGap: 0, release: 0.10, spread: 0.55,
+    columns: 3, columnHeight: 1.20, columnWidth: 0.42, afterglow: 0,
+    burst: "pierce", burstCount: 46, burstHeight: 1.6, shake: 0.03,
+  },
+  groundSupport: {
+    converge: true, waves: 1, waveGap: 0, release: 0.22, spread: 0.85,
+    columns: 1, columnHeight: 0.85, columnWidth: 1.25, afterglow: 2.4,
+    burst: "auraPulse", burstCount: 54, burstHeight: 0.7, shake: 0.035,
+  },
+  seismicWave: {
+    converge: false, waves: 3, waveGap: 0.055, release: 0.09, spread: 0.72,
+    columns: 0, columnHeight: 0, columnWidth: 0, afterglow: 0.7,
+    burst: "shock", burstCount: 58, burstHeight: 0.45, shake: 0.11,
+  },
+};
+
 interface SkillRing {
   mesh: Mesh;
   life: number;
@@ -37,6 +99,9 @@ interface SkillColumn {
   life: number;
   duration: number;
   radius: number;
+  /** Per-cast multiplier, so a rally surge and a bombardment pillar are not
+   * the same shaft in two colours. */
+  heightScale: number;
 }
 
 interface SkillAfterglow {
@@ -44,6 +109,8 @@ interface SkillAfterglow {
   life: number;
   duration: number;
   radius: number;
+  /** Per-cast multiplier on how long the scorch lingers. */
+  durationScale: number;
 }
 
 interface FallingStrike {
@@ -156,7 +223,7 @@ export class CombatFeedback implements CombatVfx {
       mesh.isPickable = false;
       mesh.renderingGroupId = 1;
       mesh.setEnabled(false);
-      this.skillColumns.push({ mesh, life: 0, duration: 0.42, radius: 1 });
+      this.skillColumns.push({ mesh, life: 0, duration: 0.42, radius: 1, heightScale: 1 });
     }
 
     // Slow scorch/afterglow so the ground does not snap back to clean the
@@ -168,7 +235,7 @@ export class CombatFeedback implements CombatVfx {
       mesh.isPickable = false;
       mesh.renderingGroupId = 1;
       mesh.setEnabled(false);
-      this.skillAfterglows.push({ mesh, life: 0, duration: 1.15, radius: 1 });
+      this.skillAfterglows.push({ mesh, life: 0, duration: 1.15, radius: 1, durationScale: 1 });
     }
 
     const strikeMat = materials.unlit("mat.airStrike.beam", [1.0, 0.78, 0.26], 1);
@@ -258,45 +325,52 @@ export class CombatFeedback implements CombatVfx {
    */
   heroSkill(kind: HeroSkillKind, x: number, z: number, radius: number): void {
     this.skillCasts[kind]++;
-    const heavy = kind === "airSupport" || kind === "seismicWave";
-    const release = 0.16;
+    const shape = SKILL_SHAPE[kind];
 
     // 1. anticipation
-    this.launchSkillRing(kind, x, z, radius, 0, "converge");
-    this.launchSkillColumn(kind, x, z, radius);
+    if (shape.converge) this.launchSkillRing(kind, x, z, radius * shape.spread, 0, "converge");
+    for (let i = 0; i < shape.columns; i++) {
+      this.launchSkillColumn(kind, x, z, radius, shape.columnHeight, shape.columnWidth, i * 0.07);
+    }
 
     // 2. release
-    this.launchSkillRing(kind, x, z, radius, release, "expand");
-    this.launchSkillRing(kind, x, z, radius, release + 0.11, "expand");
+    for (let i = 0; i < shape.waves; i++) {
+      this.launchSkillRing(kind, x, z, radius * shape.spread, shape.release + i * shape.waveGap, "expand");
+    }
 
     // 3. aftermath
-    this.launchSkillAfterglow(kind, x, z, radius);
+    if (shape.afterglow > 0) this.launchSkillAfterglow(kind, x, z, radius * shape.spread, shape.afterglow);
 
-    this.point.set(x, 0.9, z);
-    if (kind === "airSupport") this.vfx.burst("blast", this.point, 72);
-    else if (kind === "infiniteFirepower") this.vfx.burst("pierce", this.point, 42);
-    else if (kind === "groundSupport") this.vfx.burst("auraPulse", this.point, 50);
-    else this.vfx.burst("shock", this.point, 54);
-    this.camera.shake(heavy ? 0.09 : 0.045);
+    this.point.set(x, shape.burstHeight, z);
+    this.vfx.burst(shape.burst, this.point, shape.burstCount);
+    this.camera.shake(shape.shake);
   }
 
-  private launchSkillColumn(kind: HeroSkillKind, x: number, z: number, radius: number): void {
+  private launchSkillColumn(
+    kind: HeroSkillKind, x: number, z: number, radius: number,
+    height: number, width: number, delay: number,
+  ): void {
     const column = this.skillColumns[this.skillColumnCursor];
     this.skillColumnCursor = (this.skillColumnCursor + 1) % this.skillColumns.length;
     column.mesh.material = this.skillMaterials[kind];
-    column.mesh.position.set(x, 0.05, z);
-    column.radius = Math.max(1.1, radius * 0.34);
-    column.life = 0;
+    // Staggered columns fan out slightly, so three surges read as three
+    // rather than as one thick one.
+    const spin = delay * 9.0;
+    column.mesh.position.set(x + Math.sin(spin) * radius * 0.22, 0.05, z + Math.cos(spin) * radius * 0.22);
+    column.radius = Math.max(0.5, radius * 0.34 * width);
+    column.heightScale = height;
+    column.life = -delay;
     column.mesh.visibility = 0;
     column.mesh.setEnabled(true);
   }
 
-  private launchSkillAfterglow(kind: HeroSkillKind, x: number, z: number, radius: number): void {
+  private launchSkillAfterglow(kind: HeroSkillKind, x: number, z: number, radius: number, linger: number): void {
     const glow = this.skillAfterglows[this.skillAfterglowCursor];
     this.skillAfterglowCursor = (this.skillAfterglowCursor + 1) % this.skillAfterglows.length;
     glow.mesh.material = this.skillMaterials[kind];
     glow.mesh.position.set(x, 0.06, z);
     glow.radius = Math.max(1.5, radius) * 0.9;
+    glow.durationScale = Math.max(0.1, linger);
     glow.life = 0;
     glow.mesh.visibility = 0;
     glow.mesh.setEnabled(true);
@@ -460,9 +534,10 @@ export class CombatFeedback implements CombatVfx {
     for (const column of this.skillColumns) {
       if (!column.mesh.isEnabled()) continue;
       column.life += dt;
+      if (column.life < 0) { column.mesh.visibility = 0; continue; }
       const t = Math.min(1, column.life / column.duration);
       // Shoots up fast, then thins out and fades.
-      const height = 1.2 + 9.5 * (1 - Math.pow(1 - t, 2.2));
+      const height = (1.2 + 9.5 * (1 - Math.pow(1 - t, 2.2))) * column.heightScale;
       const width = column.radius * (1 - 0.55 * t);
       column.mesh.scaling.set(width, height, width);
       column.mesh.position.y = height * 0.5;
@@ -473,7 +548,7 @@ export class CombatFeedback implements CombatVfx {
     for (const glow of this.skillAfterglows) {
       if (!glow.mesh.isEnabled()) continue;
       glow.life += dt;
-      const t = Math.min(1, glow.life / glow.duration);
+      const t = Math.min(1, glow.life / (glow.duration * glow.durationScale));
       const scale = glow.radius * (0.45 + 0.55 * Math.min(1, t * 3));
       glow.mesh.scaling.set(scale, scale, scale);
       glow.mesh.visibility = Math.max(0, 0.4 * Math.pow(1 - t, 1.8));
