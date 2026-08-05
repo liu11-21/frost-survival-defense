@@ -43,7 +43,9 @@ export const AUTHORED_ASSET_MANIFEST: readonly AssetSpec[] = [
     key,
     rootUrl: "/assets/models/characters/",
     fileName: `${key}.glb`,
-    requiredNodes: ["UnitRoot", "UnitSkeleton", "weapon_socket", "attackAnchor", "LOD1", "LOD2"],
+    requiredNodes: key === "warrior"
+      ? ["UnitRoot", "UnitSkeleton", "weapon_socket", "attackAnchor", "LOD1", "LOD2", "upper_grip", "lower_grip", "axe_tip"]
+      : ["UnitRoot", "UnitSkeleton", "weapon_socket", "attackAnchor", "LOD1", "LOD2"],
     requiredAnimations: key === "warrior" ? ALLY_MELEE_ANIMATIONS : ["Idle", "Walk", "Attack", "Cast", "Hit", "Death"],
     fallback: "procedural",
   })),

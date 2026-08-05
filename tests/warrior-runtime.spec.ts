@@ -8,6 +8,9 @@ type Lod = 0 | 1 | 2;
 type BoneTransform = { position: [number, number, number]; rotation: [number, number, number, number] };
 interface WeaponTransform {
   socket: BoneTransform | null;
+  upperGrip: [number, number, number] | null;
+  lowerGrip: [number, number, number] | null;
+  axeTip: [number, number, number] | null;
   axeWorldCenter: [number, number, number] | null;
   axeWorldExtents: [number, number, number] | null;
   handContactL: number | null;
@@ -197,23 +200,63 @@ test("verifies Warrior GLB review mode and normalized animation evidence", async
   );
   expect(swingArmDelta, "the swinging arm (upper_arm.R/lower_arm.R) must rotate visibly across the MeleeAttack swing").toBeGreaterThan(0.01);
 
-  // Hand-to-handle contact: both hands must stay within a generous grip
-  // envelope of the axe's (skeleton-applied) bounding-box centre. This is a
-  // coarse proxy -- the axe mesh has no separate upper/lower grip locator yet
-  // (that is Warrior-W2 asset work, tracked separately) -- not a precise
-  // per-grip measurement.
-  const HAND_CONTACT_LIMIT = 1.5;
+  // --- two-hand grip, measured at the real grip points -------------------
+  // Distances are hand bone -> the `lower_grip` / `upper_grip` locator nodes
+  // the GLB exports bone-parented to hand.R. The earlier version measured to
+  // the axe's bounding-box *centre* with a 1.5m envelope, which is why it
+  // passed while the left arm was flung out to the side, a full 1.4m off the
+  // haft and plainly wrong on screen. A bounding-box centre cannot express
+  // "is the hand on the handle", so no threshold on it would have helped.
+  //
+  // hand.R is a rigidity check, not a pose check: the upper grip is authored
+  // to coincide with hand.R's bind position and the whole axe is skinned
+  // 100% to that bone, so any drift means the weapon stopped being rigid.
+  const RIGID_TOLERANCE = 0.005;
+  // hand.L is the real pose assertion. Keys solve to 0; the allowance covers
+  // interpolation between keyframes (worst observed mid-key error 0.032m).
+  const GRIP_TOLERANCE = 0.12;
+  // Death deliberately releases the haft as the body collapses, so only the
+  // part of that clip before the fall is required to hold the grip.
+  const gripHeld = (animation: Animation, normalized: number): boolean =>
+    animation !== "Death" || normalized <= 0.4;
+
   const handContactSamples: Array<{ animation: Animation; normalized: number; handContactL: number | null; handContactR: number | null }> = [];
   for (const animation of requiredPoseAnimations) {
     for (const { normalized, state } of animationSamples[animation]) {
-      const { handContactL, handContactR } = state.weaponTransform;
+      const { handContactL, handContactR, upperGrip, lowerGrip } = state.weaponTransform;
       handContactSamples.push({ animation, normalized, handContactL, handContactR });
-      expect(handContactR, `${animation}@${normalized} hand.R contact distance must be measurable`).not.toBeNull();
-      expect(handContactL, `${animation}@${normalized} hand.L contact distance must be measurable`).not.toBeNull();
-      expect(handContactR ?? Infinity, `${animation}@${normalized} hand.R too far from the axe`).toBeLessThan(HAND_CONTACT_LIMIT);
-      expect(handContactL ?? Infinity, `${animation}@${normalized} hand.L too far from the axe`).toBeLessThan(HAND_CONTACT_LIMIT);
+      expect(upperGrip, `${animation}@${normalized} upper_grip locator must exist`).not.toBeNull();
+      expect(lowerGrip, `${animation}@${normalized} lower_grip locator must exist`).not.toBeNull();
+      expect(handContactR ?? Infinity, `${animation}@${normalized} axe is no longer rigid to hand.R`).toBeLessThan(RIGID_TOLERANCE);
+      if (gripHeld(animation, normalized)) {
+        expect(handContactL ?? Infinity, `${animation}@${normalized} hand.L is not on the lower grip`).toBeLessThan(GRIP_TOLERANCE);
+      }
     }
   }
+  // The two grips must stay a fixed distance apart: that is what proves the
+  // haft is rigid rather than the locators drifting independently.
+  for (const { state } of animationSamples.MeleeAttack) {
+    const { upperGrip, lowerGrip } = state.weaponTransform;
+    if (!upperGrip || !lowerGrip) continue;
+    const spacing = Math.hypot(upperGrip[0] - lowerGrip[0], upperGrip[1] - lowerGrip[1], upperGrip[2] - lowerGrip[2]);
+    expect(spacing, "grip spacing must stay rigid through the swing").toBeGreaterThan(0.37);
+    expect(spacing, "grip spacing must stay rigid through the swing").toBeLessThan(0.42);
+  }
+
+  // --- swing arc, measured at the cutting edge ---------------------------
+  const meleeTips = animationSamples.MeleeAttack
+    .map(({ state }) => state.weaponTransform.axeTip)
+    .filter((tip): tip is [number, number, number] => tip !== null);
+  expect(meleeTips.length, "axe_tip locator must be sampled across MeleeAttack").toBe(6);
+  let bladeTipArc = 0;
+  for (const a of meleeTips) {
+    for (const b of meleeTips) {
+      bladeTipArc = Math.max(bladeTipArc, Math.hypot(a[0] - b[0], a[1] - b[1], a[2] - b[2]));
+    }
+  }
+  // Authored wind-up to impact travel is ~2.4m at the keys; sampling on the
+  // normalized grid sees ~2.0m. A weak or absent swing collapses this.
+  expect(bladeTipArc, "the blade tip must travel a readable arc through the swing").toBeGreaterThan(1.5);
 
   // Death final pose: the silhouette must have visibly collapsed relative to
   // standing Idle while staying anchored near the same ground line. The

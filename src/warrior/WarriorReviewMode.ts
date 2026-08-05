@@ -40,6 +40,9 @@ export interface WarriorReviewCapture {
   boneTransforms: Record<string, { position: [number, number, number]; rotation: [number, number, number, number] }>;
   weaponTransform: {
     socket: { position: [number, number, number]; rotation: [number, number, number, number] } | null;
+    upperGrip: [number, number, number] | null;
+    lowerGrip: [number, number, number] | null;
+    axeTip: [number, number, number] | null;
     axeWorldCenter: [number, number, number] | null;
     axeWorldExtents: [number, number, number] | null;
     handContactL: number | null;

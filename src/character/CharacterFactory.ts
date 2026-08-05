@@ -158,14 +158,36 @@ export class CharacterAvatar {
    * a coarse proxy (the axe currently has no separate upper/lower grip
    * locator), not a precise per-grip measurement.
    */
+  /**
+   * Locator-based weapon evidence.
+   *
+   * The authored GLB exports `upper_grip`, `lower_grip` and `axe_tip` as
+   * nodes bone-parented to `hand.R`, so they travel with the rigid weapon.
+   * Grip contact is therefore measured hand-bone to actual grip point, and
+   * the swing arc is measured at the cutting edge. The previous version
+   * measured to the axe's bounding-box *centre*, which is why its numbers
+   * could look acceptable while the left hand was nowhere near the haft.
+   *
+   * `handContactR` is expected to be ~0 by construction: the upper grip is
+   * authored to coincide with hand.R's bind position and the whole axe is
+   * skinned 100% to that bone, so the right-hand contact is a rigidity
+   * check, not an animation check. `handContactL` is the number that
+   * actually carries information about the pose.
+   */
   get reviewWeaponEvidence(): {
     socket: { position: [number, number, number]; rotation: [number, number, number, number] } | null;
+    upperGrip: [number, number, number] | null;
+    lowerGrip: [number, number, number] | null;
+    axeTip: [number, number, number] | null;
     axeWorldCenter: [number, number, number] | null;
     axeWorldExtents: [number, number, number] | null;
     handContactL: number | null;
     handContactR: number | null;
   } {
-    const empty = { socket: null, axeWorldCenter: null, axeWorldExtents: null, handContactL: null, handContactR: null };
+    const empty = {
+      socket: null, upperGrip: null, lowerGrip: null, axeTip: null,
+      axeWorldCenter: null, axeWorldExtents: null, handContactL: null, handContactR: null,
+    };
     if (!this.authored) return empty;
     const stripped = (name: string) => name.split(":").pop() ?? name;
     const socketNode = this.authored.nodes.find((node) => stripped(node.name) === "weapon_socket") as TransformNode | undefined;
@@ -189,8 +211,6 @@ export class CharacterAvatar {
     }) as AbstractMesh[];
     let axeWorldCenter: [number, number, number] | null = null;
     let axeWorldExtents: [number, number, number] | null = null;
-    let handContactL: number | null = null;
-    let handContactR: number | null = null;
     if (axeMeshes.length > 0) {
       let min: Vector3 | null = null;
       let max: Vector3 | null = null;
@@ -204,17 +224,41 @@ export class CharacterAvatar {
       const extents = max!.subtract(min!).scale(0.5);
       axeWorldCenter = [roundReview(center.x), roundReview(center.y), roundReview(center.z)];
       axeWorldExtents = [roundReview(extents.x), roundReview(extents.y), roundReview(extents.z)];
-      const skeleton = this.authored.skeletons?.[0];
-      const referenceMesh = this.authoredMeshes.find((mesh) => (mesh as AbstractMesh).skeleton === skeleton) as AbstractMesh | undefined;
-      if (skeleton && referenceMesh) {
-        const handL = skeleton.bones.find((bone) => stripped(bone.name) === "hand.L");
-        const handR = skeleton.bones.find((bone) => stripped(bone.name) === "hand.R");
-        const contactPoint = Vector3.FromArray(axeWorldCenter);
-        if (handL) handContactL = roundReview(Vector3.Distance(handL.getAbsolutePosition(referenceMesh), contactPoint));
-        if (handR) handContactR = roundReview(Vector3.Distance(handR.getAbsolutePosition(referenceMesh), contactPoint));
-      }
     }
-    return { socket, axeWorldCenter, axeWorldExtents, handContactL, handContactR };
+
+    const locator = (name: string): Vector3 | null => {
+      const node = this.authored?.nodes.find((candidate) => stripped(candidate.name) === name) as TransformNode | undefined;
+      if (!node) return null;
+      node.computeWorldMatrix(true);
+      return node.getAbsolutePosition();
+    };
+    const upper = locator("upper_grip");
+    const lower = locator("lower_grip");
+    const tip = locator("axe_tip");
+
+    let handContactL: number | null = null;
+    let handContactR: number | null = null;
+    const skeleton = this.authored.skeletons?.[0];
+    const referenceMesh = this.authoredMeshes.find((mesh) => (mesh as AbstractMesh).skeleton === skeleton) as AbstractMesh | undefined;
+    if (skeleton && referenceMesh) {
+      const handL = skeleton.bones.find((bone) => stripped(bone.name) === "hand.L");
+      const handR = skeleton.bones.find((bone) => stripped(bone.name) === "hand.R");
+      if (handL && lower) handContactL = roundReview(Vector3.Distance(handL.getAbsolutePosition(referenceMesh), lower));
+      if (handR && upper) handContactR = roundReview(Vector3.Distance(handR.getAbsolutePosition(referenceMesh), upper));
+    }
+
+    const asArray = (value: Vector3 | null): [number, number, number] | null =>
+      value ? [roundReview(value.x), roundReview(value.y), roundReview(value.z)] : null;
+    return {
+      socket,
+      upperGrip: asArray(upper),
+      lowerGrip: asArray(lower),
+      axeTip: asArray(tip),
+      axeWorldCenter,
+      axeWorldExtents,
+      handContactL,
+      handContactR,
+    };
   }
 
   /** Replaces only the visible body; movement/collision still use the rig root. */

@@ -4,7 +4,10 @@ import { dirname, resolve } from "node:path";
 const root = process.cwd();
 const assetPath = "public/assets/models/characters/warrior.glb";
 const outputPath = resolve(root, "reports/warrior-production-w1/static-validation.json");
-const requiredNodes = ["UnitRoot", "UnitSkeleton", "weapon_socket", "attackAnchor", "LOD1", "LOD2"];
+// upper_grip/lower_grip/axe_tip are bone-parented to hand.R and are what
+// the runtime measures real two-hand contact and the swing arc against.
+const requiredNodes = ["UnitRoot", "UnitSkeleton", "weapon_socket", "attackAnchor", "LOD1", "LOD2", "upper_grip", "lower_grip", "axe_tip"];
+const weaponLocators = ["weapon_socket", "upper_grip", "lower_grip", "axe_tip"];
 const requiredAnimations = ["Idle", "Walk", "Run", "MeleeAttack", "Hit", "Death"];
 
 // Warrior-W2 §12: triangle/primitive/material/texture/bone checks are hard
@@ -269,6 +272,17 @@ function runValidation(json, bin, sizeBytes) {
     };
   }
 
+  // Weapon locators must be parented to the bone the axe is skinned to,
+  // otherwise they describe a weapon that is not the one being rendered and
+  // every grip/arc measurement taken against them is meaningless.
+  const locatorParents = {};
+  for (const name of weaponLocators) {
+    const index = nodes.findIndex((node) => node.name === name);
+    if (index === -1) { locatorParents[name] = "missing"; continue; }
+    const parentIndex = nodes.findIndex((node) => (node.children ?? []).includes(index));
+    locatorParents[name] = parentIndex === -1 ? "unparented" : String(nodes[parentIndex].name ?? "");
+  }
+
   const externalUris = [];
   for (const image of json.images ?? []) if (image.uri) externalUris.push(image.uri);
   for (const buffer of json.buffers ?? []) if (buffer.uri) externalUris.push(buffer.uri);
@@ -322,6 +336,7 @@ function runValidation(json, bin, sizeBytes) {
     ...Object.entries(animationChannelHealth).filter(([, health]) => health.present && health.channelCount === 0).map(([name]) => `animation has zero channels: ${name}`),
     ...Object.entries(animationChannelHealth).filter(([, health]) => health.present && health.channelCount > 0 && !health.anyChannelVaries).map(([name]) => `animation output accessors are all identical (static/fake animation): ${name}`),
     ...Object.entries(weaponRig).filter(([, rig]) => !rig.ok).map(([tier]) => `${tier} weapon rig contract violated: ${weaponRig[tier].reason}`),
+    ...Object.entries(locatorParents).filter(([, parent]) => parent !== "hand.R").map(([name, parent]) => `weapon locator ${name} must be parented to hand.R, found: ${parent}`),
   ].filter(Boolean);
 
   return {
@@ -343,6 +358,7 @@ function runValidation(json, bin, sizeBytes) {
     lodGeometry,
     lodRootConsistency,
     weaponRig,
+    locatorParents,
     surface: { hasSkinAttributes: everyRenderablePrimitiveSkinned, primitivesMissingSkin, externalUris: externalUris.length, rootScaleUnit, collisionMeshes: collisionMeshes.map((node) => node.name) },
     hardCaps,
     identity,
