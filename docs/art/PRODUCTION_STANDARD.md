@@ -18,7 +18,8 @@ measured shape of the library:
 | hero | 27 | 29 | 4 | 1 | 18,080 |
 | **warrior (W2 reference)** | **6** | **11** | **3** | **1** | **3,094** |
 
-Library total: **458,874 LOD0 triangles**, median 12,300 per asset.
+Library total at audit time: **458,874 LOD0 triangles**, median 12,300 per asset.
+After Batches 0/1/3 this is **82,540**.
 
 ### The single most important finding
 
@@ -212,11 +213,11 @@ Ordered by player exposure per unit of work, as requested.
 
 | Batch | Scope | Why first | Leverage |
 |---|---|---|---|
-| **0** | Extract W2 authoring language into `scripts/blender/authoring.py`; shared atlas builder; shared validator profile | Every later batch depends on it | Foundation |
-| **1** | `build_units.py` rewrite — **25 units** | One template drives 25 assets; also the draw-call fix | Highest in project |
+| **0** ✅ | Shared authoring language in `scripts/blender/authoring.py`, this standard, acceptance system | Every later batch depends on it | Foundation |
+| **1** ✅ | `build_units.py` rewrite — **24 units**. 95→5.9 mesh nodes, 118→10.1 primitives, 13→3 materials, 12→1 image per unit | One template drove 24 assets; also the draw-call fix | Highest in project |
 | **2** | Grunt, shield, archer, medic + boss role passes on top of Batch 1 | Most-seen ally/enemy faces | High |
-| **3** | Furnace core + `build_buildings.py` economy facilities | Always on screen, centre of frame | High |
-| **4** | Attack facilities (`turret_basic`, towers, mortar), `wall_gate` | Constantly in view during combat | Medium |
+| **3** ✅ | Furnace (own generator, 94→9 mesh nodes, 124→12 primitives) + all 11 economy and attack facilities (~548→76 nodes, ~740→87 primitives) | Always on screen, centre of frame | High |
+| **4** | `turret_basic` and `wall_gate` (the two facilities still on their own legacy scripts) | Constantly in view during combat | Medium |
 | **5** | Hero R8 pass to the new standard | Already "production validated" at R7; least broken | Medium |
 | **6** | Resources (`resource_tree`, `resource_rock`), environment props | Background mass | Lower |
 | **7** | Skill VFX differentiation — per-skill shape/direction/area language | Independent of the model pipeline; can run in parallel | High, parallel |
