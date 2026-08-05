@@ -413,7 +413,13 @@ test("loads three Warrior squads from the authored GLB path", async ({ page }) =
 });
 
 test("runs a real 9 Warrior + 12 Grunt pressure scenario with genuine engagement", async ({ page }) => {
-  test.setTimeout(180_000);
+  // Longer than the other tests: this one steps ~12s of engagement AND then
+  // waits out a quiet render-loop window whose length is fixed by the
+  // performance monitor's rolling average, not by convenience. Shortening
+  // that window would invalidate the measurement, so the budget moves
+  // instead. CI's software renderer needs the headroom; locally this runs in
+  // roughly a quarter of it.
+  test.setTimeout(360_000);
   const output = resolve(process.cwd(), process.env.WARRIOR_RUNTIME_OUTPUT ?? ".runtime/warrior-runtime");
   mkdirSync(output, { recursive: true });
   const consoleErrors: string[] = [];
