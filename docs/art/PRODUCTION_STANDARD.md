@@ -19,7 +19,7 @@ measured shape of the library:
 | **warrior (W2 reference)** | **6** | **11** | **3** | **1** | **3,094** |
 
 Library total at audit time: **458,874 LOD0 triangles**, median 12,300 per asset.
-After Batches 0/1/3 this is **82,540**.
+After Batches 0/1/3/4 this is **70,972**.
 
 ### The single most important finding
 
@@ -217,9 +217,9 @@ Ordered by player exposure per unit of work, as requested.
 | **1** ✅ | `build_units.py` rewrite — **24 units**. 95→5.9 mesh nodes, 118→10.1 primitives, 13→3 materials, 12→1 image per unit | One template drove 24 assets; also the draw-call fix | Highest in project |
 | **2** | Grunt, shield, archer, medic + boss role passes on top of Batch 1 | Most-seen ally/enemy faces | High |
 | **3** ✅ | Furnace (own generator, 94→9 mesh nodes, 124→12 primitives) + all 11 economy and attack facilities (~548→76 nodes, ~740→87 primitives) | Always on screen, centre of frame | High |
-| **4** | `turret_basic` and `wall_gate` (the two facilities still on their own legacy scripts) | Constantly in view during combat | Medium |
+| **4** ✅ | `turret_basic` (33→7 nodes, 33→10 prims) and `wall_gate` (52→5 nodes, 52→9 prims) | Constantly in view during combat | Medium |
 | **5** | Hero R8 pass to the new standard | Already "production validated" at R7; least broken | Medium |
-| **6** | Resources (`resource_tree`, `resource_rock`), environment props | Background mass | Lower |
+| **6** | Resources (`resource_tree`, `resource_rock`). **Note:** their manifest contract names every harvest stage as its own node (`resource_canopy0/1/2`, `resource_ore0/1/2`, …), so merging cannot cut node count the way it did elsewhere — the win here is materials 8→3 and images 7→1, not draw calls | Background mass | Lower |
 | **7** | Skill VFX differentiation — per-skill shape/direction/area language | Independent of the model pipeline; can run in parallel | High, parallel |
 
 Batches 1–4 are the bulk of the visible upgrade.
