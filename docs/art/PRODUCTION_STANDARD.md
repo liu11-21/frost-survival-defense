@@ -165,8 +165,44 @@ Weapon swings trace their path from the weapon's own tip locator.
 
 Draw calls are dominated by primitive count × instances. The 118-primitive
 unit template is the main offender. Target after Batch 1: **≤ 6 primitives
-per ordinary unit**, which should cut unit draw calls by roughly an order of
-magnitude in the 21-unit pressure scenario.
+per ordinary unit**.
+
+#### Measuring it without lying to yourself
+
+Two traps, both of which this project fell into and both of which are now
+fixed. Any new perf reporting must avoid them.
+
+**1. Manual stepping is not performance.** Driving the sim with
+`frostbound.step()` from a test is paced by test round-trips, not by
+`requestAnimationFrame`. Numbers from it are a smoke signal that rendering
+happens at all — nothing more. Sample real performance by letting the
+engine's own loop run alone, for **longer than the monitor's rolling
+window** (`avgFps5s` needs > 5 s of quiet), then read it.
+
+Be precise about which fields the quiet window actually cleans.
+`avgFps30s` and `lowFps1pct` read longer history and stay contaminated
+after an 8 s window; only `avgFps5s` and the instantaneous fields are
+citable. `pressure-result.json` labels these explicitly.
+
+**2. `drawCalls` was a running total, not a per-frame count.** Babylon's
+draw-call `PerfCounter` accumulates into its `current` field and is only
+rolled over by an explicit `fetchNewFrame()`, which nothing was calling. The
+metric read **21,041 against 205 active meshes** — impossible for one frame —
+and grew the longer a scenario ran. `PerformanceMonitor.beginSimulation()`
+now rolls the counter, and the same scenario reports **207 draw calls against
+201 active meshes**.
+
+Every draw-call figure in reports written before that fix is meaningless.
+
+#### Current measured baseline
+
+Real render loop, 9 Warriors, quality `high`, 1600×900:
+
+| avgFps5s | frame | sim | render | draw calls | active meshes | vertices |
+|---:|---:|---:|---:|---:|---:|---:|
+| 71.2 | 9.80 ms | 0.60 ms | 9.20 ms | 207 | 201 | 490,022 |
+
+This is the number Batch 1 must be measured against.
 
 ---
 
@@ -228,11 +264,12 @@ produced the data.
 
 ## 6. Open gaps carried into this plan
 
-- Evidence images: `warrior-gameplay.png` is still review mode, not formal
-  gameplay; `warrior-squad.png` has no HUD-occlusion assertion; no LOD
-  contact sheet exists.
-- Performance reporting does not yet separate real render-loop samples from
-  manual-step samples. No performance claim is currently supported.
+- ~~Evidence images~~ — **closed.** `warrior-gameplay.png` and
+  `warrior-squad.png` are now captured in the real arena; HUD occlusion is
+  asserted by projecting the squad's bounds against every visible HUD rect
+  (288 corners, 0 overlaps) rather than eyeballed; a LOD0/1/2 contact sheet
+  is produced into the runtime output.
+- ~~Performance separation~~ — **closed.** See §3.7.
 - The four hero skills are not visually differentiated beyond colour.
 - Hero is at R7 and predates this standard.
 - The whole library, Warrior included, remains procedural-primitive art. See
