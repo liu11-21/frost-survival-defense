@@ -278,22 +278,32 @@ def add_body_geometry(level):
     # spends its budget on readable form (the doc's 4,500-7,000 band) instead
     # of on a smooth cylinder, and so LOD1/LOD2 drop resolution without
     # losing the silhouette.
-    n_torso = (20, 12, 8)[level]
-    n_head = (16, 10, 6)[level]
-    n_limb = (14, 8, 6)[level]
+    # LOD0 was using only ~2.3k of a 7,500 triangle budget. The extra
+    # resolution goes into the sections that carry silhouette (torso, head,
+    # limbs), not into subdividing flat panels.
+    n_torso = (28, 14, 8)[level]
+    n_head = (22, 12, 6)[level]
+    n_limb = (18, 10, 6)[level]
 
     # --- torso ------------------------------------------------------------
     # Broad across the shoulders, tucked at the waist, flaring into a coat
     # hem.  The chest is deeper in front than behind; the waist is shallow.
+    # Heroic taper, and -- more importantly -- a torso that *narrows sharply*
+    # above the chest. The previous profile stayed 0.378 wide right up to the
+    # shoulder line, which is wider than the arm sits, so the arms were buried
+    # inside the torso silhouette and the figure read as one slab. Sloping the
+    # trapezius in to 0.248 puts the deltoids outboard of the chest, which is
+    # what actually separates arm from body at gameplay distance.
     torso_rings = [
-        (0.72, section(n_torso, 0.360, 0.222, 0.238, 2.4)),   # hem, flared
-        (0.86, section(n_torso, 0.330, 0.206, 0.222, 2.5)),
-        (1.02, section(n_torso, 0.300, 0.190, 0.202, 2.7)),   # waist, tucked
-        (1.18, section(n_torso, 0.318, 0.208, 0.204, 2.8)),
-        (1.36, section(n_torso, 0.360, 0.238, 0.214, 2.9)),   # lower chest
-        (1.52, section(n_torso, 0.402, 0.256, 0.222, 2.9)),   # chest, deepest front
-        (1.66, section(n_torso, 0.412, 0.240, 0.216, 2.8)),
-        (1.76, section(n_torso, 0.378, 0.208, 0.198, 2.6)),   # shoulder line
+        (0.70, section(n_torso, 0.372, 0.230, 0.248, 2.3)),   # coat hem, flared
+        (0.84, section(n_torso, 0.334, 0.208, 0.226, 2.5)),
+        (1.00, section(n_torso, 0.286, 0.184, 0.196, 2.8)),   # waist, cinched
+        (1.16, section(n_torso, 0.318, 0.210, 0.204, 2.9)),
+        (1.34, section(n_torso, 0.372, 0.244, 0.218, 3.0)),   # ribcage
+        (1.50, section(n_torso, 0.408, 0.262, 0.226, 3.0)),   # chest, broadest
+        (1.62, section(n_torso, 0.396, 0.246, 0.218, 2.9)),
+        (1.72, section(n_torso, 0.322, 0.212, 0.198, 2.6)),   # trapezius slope
+        (1.78, section(n_torso, 0.248, 0.186, 0.176, 2.4)),   # neck base
     ]
     b.sweep(torso_rings, "coat", torso_weights)
 
@@ -352,12 +362,12 @@ def add_body_geometry(level):
     if level <= 1:
         # A shallow plate that caps the deltoid and skirts outward, rather
         # than a rounded blob sitting on top of it.
-        n_sh = (10, 6)[level]
+        n_sh = (12, 6)[level]
         b.sweep([
-            (1.74, section(n_sh, 0.104, 0.104, 0.100, 2.6, centre_x=-0.392)),
-            (1.66, section(n_sh, 0.156, 0.150, 0.144, 3.0, centre_x=-0.400)),
-            (1.56, section(n_sh, 0.168, 0.158, 0.152, 3.2, centre_x=-0.408)),
-            (1.49, section(n_sh, 0.150, 0.140, 0.136, 3.0, centre_x=-0.414)),
+            (1.745, section(n_sh, 0.098, 0.102, 0.098, 2.6, centre_x=-0.398)),
+            (1.670, section(n_sh, 0.166, 0.164, 0.156, 3.1, centre_x=-0.418)),
+            (1.585, section(n_sh, 0.178, 0.172, 0.162, 3.3, centre_x=-0.436)),
+            (1.520, section(n_sh, 0.156, 0.148, 0.142, 3.1, centre_x=-0.452)),
         ], "plate", lambda y: blend("upper_arm.L", "chest", 0.34))
 
     # --- belt and faction strip ------------------------------------------
@@ -382,11 +392,15 @@ def add_body_geometry(level):
         shoulder_x = sign * 0.402
         elbow_x = sign * 0.560
         wrist_x = sign * 0.552
-        # Upper arm: deltoid swell into a narrower elbow.
+        # Upper arm: a real deltoid cap sitting outboard of the narrowed
+        # trapezius, tapering into a defined elbow. The cap is the piece that
+        # makes the arm a separate mass rather than an extrusion of the chest.
         b.sweep([
-            (1.60, section(n_limb, 0.126, 0.128, 0.124, 2.3, centre_x=shoulder_x)),
-            (1.46, section(n_limb, 0.116, 0.118, 0.114, 2.4, centre_x=sign * 0.470)),
-            (1.32, section(n_limb, 0.098, 0.100, 0.098, 2.5, centre_x=elbow_x)),
+            (1.72, section(n_limb, 0.104, 0.108, 0.104, 2.4, centre_x=sign * 0.396)),
+            (1.64, section(n_limb, 0.148, 0.148, 0.142, 2.5, centre_x=sign * 0.418)),  # deltoid
+            (1.52, section(n_limb, 0.136, 0.138, 0.132, 2.5, centre_x=sign * 0.444)),
+            (1.42, section(n_limb, 0.118, 0.120, 0.116, 2.5, centre_x=sign * 0.492)),
+            (1.32, section(n_limb, 0.098, 0.100, 0.098, 2.6, centre_x=elbow_x)),
         ], "coat", lambda y, s=side: arm_weights(s, y), cap_bottom=False, cap_top=False)
         # Forearm: tapers to the wrist.
         b.sweep([
