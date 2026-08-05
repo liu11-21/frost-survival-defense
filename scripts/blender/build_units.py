@@ -592,12 +592,16 @@ def add_animations(skeleton):
     ])
     # Cast: both arms rise and the body opens. Deliberately unlike Attack, so
     # the runtime's cast state cannot be mistaken for a swing.
+    # Arms raise forward-and-up, not backward: a positive upper_arm X pitches
+    # the shoulder toward +Z, which is the direction a caster is facing and
+    # firing. Authored negative originally, which put the whole gesture
+    # behind the body.
     add_clip(skeleton, "Cast", 26, [
         (1, {"chest": (0, 0, 0)}),
-        (9, {"upper_arm.L": (-1.10, 0, 0.46), "upper_arm.R": (-1.10, 0, -0.46),
-             "lower_arm.L": (-0.52, 0, 0), "lower_arm.R": (-0.52, 0, 0),
+        (9, {"upper_arm.L": (1.1, 0, 0.46), "upper_arm.R": (1.1, 0, -0.46),
+             "lower_arm.L": (0.52, 0, 0), "lower_arm.R": (0.52, 0, 0),
              "chest": (-0.22, 0, 0), "head": (-0.16, 0, 0)}),
-        (16, {"upper_arm.L": (-1.46, 0, 0.30), "upper_arm.R": (-1.46, 0, -0.30),
+        (16, {"upper_arm.L": (1.46, 0, 0.30), "upper_arm.R": (1.46, 0, -0.30),
               "chest": (-0.30, 0, 0), "head": (-0.22, 0, 0)}),
         (26, {"chest": (0, 0, 0)}),
     ])

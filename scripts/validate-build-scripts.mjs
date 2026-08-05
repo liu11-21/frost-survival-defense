@@ -70,6 +70,32 @@ for (const [module, source] of sources) {
   }
 }
 
+/**
+ * An attack, cast or throw has to reach toward what it targets. On these rigs
+ * a positive `upper_arm` X pitches the shoulder toward +Z, which is the
+ * gameplay forward direction; negative pitches it behind the back.
+ *
+ * Two clips shipped with every arm key negative -- the Hero's RangedAttack and
+ * the roster units' Cast -- so both raised their weapon away from whatever
+ * they were aiming at. Nothing caught it: the poses are internally consistent,
+ * the GLB is valid, the bounds are the right size, and every suite stayed
+ * green. It took someone looking at the screen. This is the cheap half of that
+ * judgement, and it only claims what it can prove: that a clip whose name says
+ * it strikes has at least one key reaching forward.
+ */
+for (const [module, source] of sources) {
+  const clips = source.matchAll(/add_(?:armature_)?clip\(\s*\w+,\s*"(\w+)",\s*\d+,\s*\[(.*?)\n {4}\]/gs);
+  for (const [, clip, body] of clips) {
+    if (!/attack|cast|throw|fire|chop|swing/i.test(clip)) continue;
+    for (const bone of ["upper_arm.R", "upper_arm.L"]) {
+      const xs = [...body.matchAll(new RegExp(`"${bone.replace(".", "\\.")}": \\((-?[\\d.]+)`, "g"))].map((m) => Number(m[1]));
+      if (xs.length > 0 && Math.max(...xs) <= 0) {
+        problems.push(`${module}.py clip '${clip}' raises ${bone} only backwards (max X ${Math.max(...xs).toFixed(2)}); the gesture never reaches toward the target`);
+      }
+    }
+  }
+}
+
 const checked = [...sources.keys()].length;
 if (problems.length > 0) {
   console.error(`build-script import check FAILED (${checked} scripts):`);

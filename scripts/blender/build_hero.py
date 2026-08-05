@@ -449,7 +449,7 @@ def main():
     for name, position, kind in (
         ("weapon_socket.R", (SHOULDER * 1.02, 0.82 * H, 0.06), "weapon"),
         ("weapon_socket.L", (-SHOULDER * 1.02, 0.82 * H, 0.06), "weapon"),
-        ("ranged_socket", (SHOULDER * 0.62, 1.22 * H, -CHEST_D * 1.10), "ranged"),
+        ("ranged_socket", (SHOULDER * 0.62, 1.22 * H, CHEST_D * 1.55), "ranged"),
     ):
         socket = empty(name, position, "EXPORT", "PLAIN_AXES")
         socket.parent = root
@@ -489,18 +489,23 @@ def main():
         (13, {"upper_arm.R": (0.66, 0.06, 0.12), "lower_arm.R": (0.20, -0.04, -0.05), "hand.R": (0.12, 0.0, 0.0), "upper_arm.L": (-0.08, -0.02, 0.0), "foot.L": (0.03, 0.0, 0.0), "foot.R": (-0.03, 0.0, 0.0), "head": (-0.04, 0.0, 0.02), "chest": (0.10, 0.05, 0.06), "pelvis": (-0.03, -0.02, 0.0)}),
         (16, {})
     ])
+    # Every arm-chain X rotation here is positive: on this rig a positive
+    # upper_arm X swings the shoulder forward, which MeleeAttack relies on to
+    # cross from -1.58 at pull-back to +1.54 at impact. R7 authored this clip
+    # entirely negative, so the whole "aim" was assembled behind the back --
+    # the Hero raised the carbine away from whatever it was shooting at.
     add_clip(skeleton, "RangedAttack", 16, [
         # Low-ready: the carbine starts below the chest with both hands engaged.
-        (1, {"root": (0.0, -0.02, 0.0), "upper_arm.R": (-0.52, -0.06, -0.10), "upper_arm.L": (-0.70, 0.08, 0.10), "lower_arm.L": (-0.34, 0.0, 0.12), "lower_arm.R": (-0.14, 0.0, 0.03), "hand.L": (0.16, 0.0, 0.02), "hand.R": (-0.10, 0.0, 0.0), "head": (-0.04, 0.0, 0.0), "chest": (-0.02, 0.0, -0.02), "pelvis": (0.02, 0.0, 0.0), "foot.L": (-0.02, 0.0, 0.0), "foot.R": (0.02, 0.0, 0.0)}),
+        (1, {"root": (0.0, -0.02, 0.0), "upper_arm.R": (0.52, -0.06, -0.10), "upper_arm.L": (0.7, 0.08, 0.10), "lower_arm.L": (0.34, 0.0, 0.12), "lower_arm.R": (0.14, 0.0, 0.03), "hand.L": (-0.16, 0.0, 0.02), "hand.R": (0.1, 0.0, 0.0), "head": (-0.04, 0.0, 0.0), "chest": (-0.02, 0.0, -0.02), "pelvis": (0.02, 0.0, 0.0), "foot.L": (-0.02, 0.0, 0.0), "foot.R": (0.02, 0.0, 0.0)}),
         # Raise and seat the stock near the shoulder.
-        (4, {"root": (0.0, -0.04, 0.02), "upper_arm.R": (-1.02, -0.10, -0.14), "upper_arm.L": (-1.08, 0.10, 0.12), "lower_arm.L": (-0.50, 0.02, 0.12), "lower_arm.R": (-0.24, 0.02, 0.05), "hand.L": (0.22, 0.0, 0.02), "hand.R": (-0.20, 0.0, 0.0), "head": (-0.10, -0.02, 0.0), "chest": (-0.06, -0.02, -0.04), "pelvis": (0.03, 0.0, 0.0), "foot.L": (-0.04, 0.0, 0.0), "foot.R": (0.04, 0.0, 0.0)}),
+        (4, {"root": (0.0, -0.04, 0.02), "upper_arm.R": (1.02, -0.10, -0.14), "upper_arm.L": (1.08, 0.10, 0.12), "lower_arm.L": (0.5, 0.02, 0.12), "lower_arm.R": (0.24, 0.02, 0.05), "hand.L": (-0.22, 0.0, 0.02), "hand.R": (0.2, 0.0, 0.0), "head": (-0.10, -0.02, 0.0), "chest": (-0.06, -0.02, -0.04), "pelvis": (0.03, 0.0, 0.0), "foot.L": (-0.04, 0.0, 0.0), "foot.R": (0.04, 0.0, 0.0)}),
         # Aim: a compact two-arm triangle and visor line of sight.
-        (7, {"root": (0.0, -0.07, 0.03), "upper_arm.R": (-1.42, -0.14, -0.16), "upper_arm.L": (-1.45, 0.13, 0.13), "lower_arm.L": (-0.68, 0.10, 0.10), "lower_arm.R": (-0.38, 0.06, 0.06), "hand.L": (0.26, 0.0, 0.02), "hand.R": (-0.36, 0.0, 0.0), "head": (-0.18, -0.02, 0.0), "chest": (-0.10, -0.04, -0.07), "pelvis": (0.04, 0.02, 0.0), "foot.L": (-0.06, 0.0, 0.0), "foot.R": (0.06, 0.0, 0.0)}),
+        (7, {"root": (0.0, -0.07, 0.03), "upper_arm.R": (1.42, -0.14, -0.16), "upper_arm.L": (1.45, 0.13, 0.13), "lower_arm.L": (0.68, 0.10, 0.10), "lower_arm.R": (0.38, 0.06, 0.06), "hand.L": (-0.26, 0.0, 0.02), "hand.R": (0.36, 0.0, 0.0), "head": (-0.18, -0.02, 0.0), "chest": (-0.10, -0.04, -0.07), "pelvis": (0.04, 0.02, 0.0), "foot.L": (-0.06, 0.0, 0.0), "foot.R": (0.06, 0.0, 0.0)}),
         # Fire key and a small recoil preparation.
-        (10, {"root": (0.0, -0.05, 0.02), "upper_arm.R": (-1.26, -0.12, -0.13), "upper_arm.L": (-1.30, 0.11, 0.12), "lower_arm.L": (-0.58, 0.09, 0.09), "lower_arm.R": (-0.30, 0.05, 0.05), "hand.L": (0.23, 0.0, 0.02), "hand.R": (-0.28, 0.0, 0.0), "head": (-0.14, -0.02, 0.0), "chest": (-0.07, -0.03, -0.06), "pelvis": (0.03, 0.02, 0.0), "foot.L": (-0.05, 0.0, 0.0), "foot.R": (0.05, 0.0, 0.0)}),
-        (11, {"root": (0.0, -0.03, 0.01), "upper_arm.R": (-1.10, -0.10, -0.10), "upper_arm.L": (-1.18, 0.09, 0.09), "lower_arm.L": (-0.52, 0.08, 0.08), "lower_arm.R": (-0.25, 0.04, 0.04), "hand.L": (0.20, 0.0, 0.02), "hand.R": (-0.18, 0.0, 0.0), "head": (-0.09, -0.02, 0.0), "chest": (-0.04, -0.02, -0.03), "pelvis": (0.02, 0.01, 0.0), "foot.L": (-0.04, 0.0, 0.0), "foot.R": (0.04, 0.0, 0.0)}),
+        (10, {"root": (0.0, -0.05, 0.02), "upper_arm.R": (1.26, -0.12, -0.13), "upper_arm.L": (1.3, 0.11, 0.12), "lower_arm.L": (0.58, 0.09, 0.09), "lower_arm.R": (0.3, 0.05, 0.05), "hand.L": (-0.23, 0.0, 0.02), "hand.R": (0.28, 0.0, 0.0), "head": (-0.14, -0.02, 0.0), "chest": (-0.07, -0.03, -0.06), "pelvis": (0.03, 0.02, 0.0), "foot.L": (-0.05, 0.0, 0.0), "foot.R": (0.05, 0.0, 0.0)}),
+        (11, {"root": (0.0, -0.03, 0.01), "upper_arm.R": (1.1, -0.10, -0.10), "upper_arm.L": (1.18, 0.09, 0.09), "lower_arm.L": (0.52, 0.08, 0.08), "lower_arm.R": (0.25, 0.04, 0.04), "hand.L": (-0.2, 0.0, 0.02), "hand.R": (0.18, 0.0, 0.0), "head": (-0.09, -0.02, 0.0), "chest": (-0.04, -0.02, -0.03), "pelvis": (0.02, 0.01, 0.0), "foot.L": (-0.04, 0.0, 0.0), "foot.R": (0.04, 0.0, 0.0)}),
         # Recover without dropping the left support hand.
-        (14, {"root": (0.0, 0.0, 0.0), "upper_arm.R": (-0.72, -0.04, -0.06), "upper_arm.L": (-0.86, 0.06, 0.07), "lower_arm.L": (-0.30, 0.04, 0.05), "lower_arm.R": (-0.14, 0.02, 0.02), "hand.L": (0.12, 0.0, 0.01), "hand.R": (-0.08, 0.0, 0.0), "head": (-0.04, 0.0, 0.0), "chest": (-0.01, 0.0, 0.0)}),
+        (14, {"root": (0.0, 0.0, 0.0), "upper_arm.R": (0.72, -0.04, -0.06), "upper_arm.L": (0.86, 0.06, 0.07), "lower_arm.L": (0.3, 0.04, 0.05), "lower_arm.R": (0.14, 0.02, 0.02), "hand.L": (-0.12, 0.0, 0.01), "hand.R": (0.08, 0.0, 0.0), "head": (-0.04, 0.0, 0.0), "chest": (-0.01, 0.0, 0.0)}),
         (16, {})
     ])
     add_clip(skeleton, "Hit", 12, [
