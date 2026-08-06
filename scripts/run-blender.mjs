@@ -76,5 +76,24 @@ if (probe.status !== 0) {
   process.exit(2);
 }
 
-const result = invokeBlender(blender, ["--background", "--python", join(process.cwd(), script), "--", ...args], { stdio: "inherit" });
+// Blender exits 0 from `--background --python` even when the script raises:
+// it prints the traceback and then quits normally. That has now bitten twice
+// in one session -- a build script died, the previous .glb stayed on disk, and
+// the Playwright suites went green against the stale artifact. The static
+// import checker cannot see a runtime failure, so the output is the only
+// signal there is. Capture it, echo it, and fail on it.
+const result = invokeBlender(
+  blender,
+  ["--background", "--python", join(process.cwd(), script), "--", ...args],
+  { encoding: "utf8", maxBuffer: 64 * 1024 * 1024 },
+);
+if (result.stdout) process.stdout.write(result.stdout);
+if (result.stderr) process.stderr.write(result.stderr);
+
+const output = `${result.stdout ?? ""}${result.stderr ?? ""}`;
+if (/Traceback \(most recent call last\)/.test(output)) {
+  console.error(`\nrun-blender: ${script} raised a Python exception (Blender still exited ${result.status}).`);
+  console.error("The asset on disk is now stale. Treat any suite that passes against it as meaningless.");
+  process.exit(1);
+}
 process.exit(result.status ?? 1);

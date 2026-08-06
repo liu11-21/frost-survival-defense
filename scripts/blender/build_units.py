@@ -253,9 +253,28 @@ def add_body(level, a, cfg):
                 (0.24 * h, section(n_l, lb * 1.10, lb * 1.06, lb * 1.22, 2.7, centre_x=lx)),
                 (0.12 * h, section(n_l, lb * 0.84, lb * 0.86, lb * 0.90, 2.5, centre_x=lx)),
             ], "body", lambda y, s=side: leg_weights(s, y), cap_top=False)
-            fw = blend(f"foot.{side}", f"shin.{side}", 0.16)
-            b.box((lx, 0.055 * h, 0.052), (lb * 2.5, 0.055 * h, lb * 5.0), "leather", fw, taper=0.96)
-            b.box((lx, 0.022 * h, 0.046), (lb * 2.3, 0.038 * h, lb * 4.6), "metal", fw, taper=0.94)
+            # Boots. These were two flat boxes 0.45 long and 0.055 tall, which
+            # at any distance read as skis strapped under the legs -- and it
+            # was on all twenty-four units at once. A boot needs an ankle
+            # above the joint, an instep that spreads as it drops, and a toe
+            # reaching further forward than the heel reaches back; that
+            # asymmetry is what makes a foot look like a foot.
+            # sweep() takes a weight function; box() takes a weight dict.
+            fw_map = blend(f"foot.{side}", f"shin.{side}", 0.16)
+            fw = lambda y, m=fw_map: m
+            b.sweep([
+                (0.200 * h, section(n_l, lb * 0.92, lb * 0.98, lb * 0.94, 2.6, centre_x=lx, centre_z=0.008)),
+                (0.130 * h, section(n_l, lb * 1.04, lb * 1.34, lb * 1.12, 2.8, centre_x=lx, centre_z=0.032)),
+                (0.072 * h, section(n_l, lb * 1.14, lb * 2.08, lb * 1.30, 3.0, centre_x=lx, centre_z=0.060)),
+                (0.030 * h, section(n_l, lb * 1.18, lb * 2.28, lb * 1.36, 3.2, centre_x=lx, centre_z=0.068)),
+            ], "leather", fw, cap_top=False)
+            # Sole in the darkest leather, barely proud of the upper. It was
+            # `metal`, and once the scene had an environment to reflect that
+            # turned every unit's feet into two bright plates on the snow.
+            b.sweep([
+                (0.030 * h, section(n_l, lb * 1.20, lb * 2.30, lb * 1.38, 3.4, centre_x=lx, centre_z=0.068)),
+                (0.006 * h, section(n_l, lb * 1.12, lb * 2.14, lb * 1.28, 3.4, centre_x=lx, centre_z=0.064)),
+            ], "grip", fw)
 
     add_crest(b, level, a, cfg, n_h)
     add_armor(b, level, a, cfg, n_l)

@@ -229,9 +229,24 @@ def add_body(level):
             (0.24 * H, section(n_l, LIMB * 1.12, LIMB * 1.08, LIMB * 1.26, 2.7, centre_x=lx)),
             (0.14 * H, section(n_l, LIMB * 0.86, LIMB * 0.88, LIMB * 0.92, 2.5, centre_x=lx)),
         ], "coat", lambda y, s=side: leg_weights(s, y), cap_top=False)
-        fw = blend(f"foot.{side}", f"shin.{side}", 0.16)
-        b.box((lx, 0.075 * H, 0.050), (LIMB * 2.5, 0.060 * H, LIMB * 5.0), "leather", fw, taper=0.96)
-        b.box((lx, 0.030 * H, 0.046), (LIMB * 2.4, 0.042 * H, LIMB * 4.8), "metal", fw, taper=0.94)
+        # Boots, matching the treatment the roster got: an ankle above the
+        # joint, an instep that spreads as it drops, and a toe reaching further
+        # forward than the heel reaches back. These were two flat boxes and
+        # read as skis. The sole is the darkest leather rather than metal --
+        # with an environment to reflect, a metal sole turns into a bright
+        # plate on the snow.
+        fw_map = blend(f"foot.{side}", f"shin.{side}", 0.16)
+        fw = lambda y, m=fw_map: m
+        b.sweep([
+            (0.200 * H, section(n_l, LIMB * 0.94, LIMB * 1.00, LIMB * 0.96, 2.6, centre_x=lx, centre_z=0.008)),
+            (0.132 * H, section(n_l, LIMB * 1.06, LIMB * 1.36, LIMB * 1.14, 2.8, centre_x=lx, centre_z=0.032)),
+            (0.074 * H, section(n_l, LIMB * 1.16, LIMB * 2.10, LIMB * 1.32, 3.0, centre_x=lx, centre_z=0.060)),
+            (0.032 * H, section(n_l, LIMB * 1.20, LIMB * 2.30, LIMB * 1.38, 3.2, centre_x=lx, centre_z=0.068)),
+        ], "leather", fw, cap_top=False)
+        b.sweep([
+            (0.032 * H, section(n_l, LIMB * 1.22, LIMB * 2.32, LIMB * 1.40, 3.4, centre_x=lx, centre_z=0.068)),
+            (0.006 * H, section(n_l, LIMB * 1.14, LIMB * 2.16, LIMB * 1.30, 3.4, centre_x=lx, centre_z=0.064)),
+        ], "glove", fw)
 
     if level == 0:
         # Faction strip on the chest, the same amber the HUD uses.

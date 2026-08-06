@@ -1,12 +1,12 @@
 {
-  "generatedAt": "2026-08-06T04:57:48.519Z",
+  "generatedAt": "2026-08-06T05:10:00.954Z",
   "blenderRequired": true,
   "assets": [
     {
       "key": "hero",
       "status": "ok",
       "path": "public/assets/models/characters/hero.glb",
-      "sizeBytes": 1287476,
+      "sizeBytes": 1313864,
       "nodes": 31,
       "meshes": 6,
       "materials": 3,
@@ -31,13 +31,13 @@
       "bounds": {
         "min": [
           -0.52920001745224,
-          0.010709987953305244,
+          0.007139987777918577,
           -0.3763999342918396
         ],
         "max": [
           0.52920001745224,
           2.165800094604492,
-          0.29499998688697815
+          0.2953599989414215
         ]
       },
       "animations": [
@@ -58,11 +58,11 @@
         "Hit": 54,
         "Death": 54
       },
-      "triangles": 3952,
+      "triangles": 4512,
       "lodTriangles": {
-        "LOD0": 2116,
-        "LOD1": 1200,
-        "LOD2": 636
+        "LOD0": 2420,
+        "LOD1": 1372,
+        "LOD2": 720
       },
       "surfaceAttributes": {
         "TEXCOORD_0": true,
@@ -290,7 +290,7 @@
       "key": "shield",
       "status": "ok",
       "path": "public/assets/models/characters/shield.glb",
-      "sizeBytes": 535112,
+      "sizeBytes": 557656,
       "nodes": 30,
       "meshes": 6,
       "materials": 3,
@@ -315,13 +315,13 @@
       "bounds": {
         "min": [
           -0.5073599815368652,
-          0.003179987194016576,
-          -0.21799999475479126
+          0.006359986960887909,
+          -0.21759995818138123
         ],
         "max": [
           0.689736008644104,
           1.8974000215530396,
-          0.32199999690055847
+          0.3163999915122986
         ]
       },
       "animations": [
@@ -340,11 +340,11 @@
         "Hit": 54,
         "Death": 54
       },
-      "triangles": 3252,
+      "triangles": 3724,
       "lodTriangles": {
-        "LOD0": 1608,
-        "LOD1": 984,
-        "LOD2": 660
+        "LOD0": 1868,
+        "LOD1": 1112,
+        "LOD2": 744
       },
       "surfaceAttributes": {
         "TEXCOORD_0": true,
@@ -362,7 +362,7 @@
       "key": "archer",
       "status": "ok",
       "path": "public/assets/models/characters/archer.glb",
-      "sizeBytes": 522352,
+      "sizeBytes": 544892,
       "nodes": 30,
       "meshes": 6,
       "materials": 3,
@@ -387,13 +387,13 @@
       "bounds": {
         "min": [
           -0.33320000767707825,
-          0.0028799909632653,
+          0.0057599907740950584,
           -0.14079996943473816
         ],
         "max": [
           0.3052999973297119,
           1.7280000448226929,
-          0.22699999809265137
+          0.2290000021457672
         ]
       },
       "animations": [
@@ -412,11 +412,11 @@
         "Hit": 54,
         "Death": 54
       },
-      "triangles": 3184,
+      "triangles": 3656,
       "lodTriangles": {
-        "LOD0": 1564,
-        "LOD1": 968,
-        "LOD2": 652
+        "LOD0": 1824,
+        "LOD1": 1096,
+        "LOD2": 736
       },
       "surfaceAttributes": {
         "TEXCOORD_0": true,
@@ -434,7 +434,7 @@
       "key": "medic",
       "status": "ok",
       "path": "public/assets/models/characters/medic.glb",
-      "sizeBytes": 523732,
+      "sizeBytes": 546272,
       "nodes": 30,
       "meshes": 6,
       "materials": 3,
@@ -459,13 +459,13 @@
       "bounds": {
         "min": [
           -0.33320000767707825,
-          0.0028799909632653,
+          0.0057599907740950584,
           -0.14079996943473816
         ],
         "max": [
           0.33959999680519104,
           1.7280000448226929,
-          0.22699999809265137
+          0.2290000021457672
         ]
       },
       "animations": [
@@ -484,11 +484,11 @@
         "Hit": 54,
         "Death": 54
       },
-      "triangles": 3148,
+      "triangles": 3620,
       "lodTriangles": {
-        "LOD0": 1564,
-        "LOD1": 956,
-        "LOD2": 628
+        "LOD0": 1824,
+        "LOD1": 1084,
+        "LOD2": 712
       },
       "surfaceAttributes": {
         "TEXCOORD_0": true,
@@ -506,7 +506,7 @@
       "key": "flagbearer",
       "status": "ok",
       "path": "public/assets/models/characters/flagbearer.glb",
-      "sizeBytes": 524908,
+      "sizeBytes": 547448,
       "nodes": 30,
       "meshes": 6,
       "materials": 3,
@@ -531,13 +531,13 @@
       "bounds": {
         "min": [
           -0.44435998797416687,
-          0.003299989039078355,
+          0.006599988788366318,
           -0.17639994621276855
         ],
         "max": [
           0.5990399718284607,
           2.0481998920440674,
-          0.2770000100135803
+          0.2750000059604645
         ]
       },
       "animations": [
@@ -556,11 +556,11 @@
         "Hit": 54,
         "Death": 54
       },
-      "triangles": 3264,
+      "triangles": 3736,
       "lodTriangles": {
-        "LOD0": 1592,
-        "LOD1": 990,
-        "LOD2": 682
+        "LOD0": 1852,
+        "LOD1": 1118,
+        "LOD2": 766
       },
       "surfaceAttributes": {
         "TEXCOORD_0": true,
@@ -650,7 +650,7 @@
       "key": "assault",
       "status": "ok",
       "path": "public/assets/models/characters/assault.glb",
-      "sizeBytes": 504844,
+      "sizeBytes": 527372,
       "nodes": 30,
       "meshes": 6,
       "materials": 3,
@@ -675,13 +675,13 @@
       "bounds": {
         "min": [
           -0.38892000913619995,
-          0.0029999897815287113,
+          0.005999989807605743,
           -0.15839996933937073
         ],
         "max": [
           0.34672001004219055,
           1.7899999618530273,
-          0.25699999928474426
+          0.2565999925136566
         ]
       },
       "animations": [
@@ -700,11 +700,11 @@
         "Hit": 54,
         "Death": 54
       },
-      "triangles": 2952,
+      "triangles": 3424,
       "lodTriangles": {
-        "LOD0": 1460,
-        "LOD1": 894,
-        "LOD2": 598
+        "LOD0": 1720,
+        "LOD1": 1022,
+        "LOD2": 682
       },
       "surfaceAttributes": {
         "TEXCOORD_0": true,
@@ -722,7 +722,7 @@
       "key": "engineer",
       "status": "ok",
       "path": "public/assets/models/characters/engineer.glb",
-      "sizeBytes": 511800,
+      "sizeBytes": 534324,
       "nodes": 30,
       "meshes": 6,
       "materials": 3,
@@ -747,13 +747,13 @@
       "bounds": {
         "min": [
           -0.38892000913619995,
-          0.0029999897815287113,
+          0.005999989807605743,
           -0.15839996933937073
         ],
         "max": [
           0.34672001004219055,
           1.8600000143051147,
-          0.25699999928474426
+          0.2565999925136566
         ]
       },
       "animations": [
@@ -772,11 +772,11 @@
         "Hit": 54,
         "Death": 54
       },
-      "triangles": 3012,
+      "triangles": 3484,
       "lodTriangles": {
-        "LOD0": 1496,
-        "LOD1": 912,
-        "LOD2": 604
+        "LOD0": 1756,
+        "LOD1": 1040,
+        "LOD2": 688
       },
       "surfaceAttributes": {
         "TEXCOORD_0": true,
@@ -794,7 +794,7 @@
       "key": "musketeer",
       "status": "ok",
       "path": "public/assets/models/characters/musketeer.glb",
-      "sizeBytes": 516256,
+      "sizeBytes": 538780,
       "nodes": 30,
       "meshes": 6,
       "materials": 3,
@@ -819,13 +819,13 @@
       "bounds": {
         "min": [
           -0.38892000913619995,
-          0.0029999897815287113,
+          0.005999989807605743,
           -0.23939992487430573
         ],
         "max": [
           0.34672001004219055,
           1.9199999570846558,
-          0.25699999928474426
+          0.2565999925136566
         ]
       },
       "animations": [
@@ -844,11 +844,11 @@
         "Hit": 54,
         "Death": 54
       },
-      "triangles": 3108,
+      "triangles": 3580,
       "lodTriangles": {
-        "LOD0": 1544,
-        "LOD1": 942,
-        "LOD2": 622
+        "LOD0": 1804,
+        "LOD1": 1070,
+        "LOD2": 706
       },
       "surfaceAttributes": {
         "TEXCOORD_0": true,
@@ -938,7 +938,7 @@
       "key": "grunt",
       "status": "ok",
       "path": "public/assets/models/characters/grunt.glb",
-      "sizeBytes": 513932,
+      "sizeBytes": 536464,
       "nodes": 30,
       "meshes": 6,
       "materials": 3,
@@ -963,13 +963,13 @@
       "bounds": {
         "min": [
           -0.38892000913619995,
-          0.0029999897815287113,
+          0.005999989807605743,
           -0.15839996933937073
         ],
         "max": [
           0.34672001004219055,
           1.899999976158142,
-          0.25699999928474426
+          0.2565999925136566
         ]
       },
       "animations": [
@@ -988,11 +988,11 @@
         "Hit": 54,
         "Death": 54
       },
-      "triangles": 2988,
+      "triangles": 3460,
       "lodTriangles": {
-        "LOD0": 1472,
-        "LOD1": 906,
-        "LOD2": 610
+        "LOD0": 1732,
+        "LOD1": 1034,
+        "LOD2": 694
       },
       "surfaceAttributes": {
         "TEXCOORD_0": true,
@@ -1010,7 +1010,7 @@
       "key": "slinger",
       "status": "ok",
       "path": "public/assets/models/characters/slinger.glb",
-      "sizeBytes": 513252,
+      "sizeBytes": 535792,
       "nodes": 30,
       "meshes": 6,
       "materials": 3,
@@ -1035,13 +1035,13 @@
       "bounds": {
         "min": [
           -0.33320000767707825,
-          0.0028799909632653,
+          0.0057599907740950584,
           -0.14079996943473816
         ],
         "max": [
           0.2971999943256378,
           1.7280000448226929,
-          0.22699999809265137
+          0.2290000021457672
         ]
       },
       "animations": [
@@ -1060,11 +1060,11 @@
         "Hit": 54,
         "Death": 54
       },
-      "triangles": 3076,
+      "triangles": 3548,
       "lodTriangles": {
-        "LOD0": 1528,
-        "LOD1": 932,
-        "LOD2": 616
+        "LOD0": 1788,
+        "LOD1": 1060,
+        "LOD2": 700
       },
       "surfaceAttributes": {
         "TEXCOORD_0": true,
@@ -1082,7 +1082,7 @@
       "key": "bruiser",
       "status": "ok",
       "path": "public/assets/models/characters/bruiser.glb",
-      "sizeBytes": 521804,
+      "sizeBytes": 544344,
       "nodes": 30,
       "meshes": 6,
       "materials": 3,
@@ -1107,13 +1107,13 @@
       "bounds": {
         "min": [
           -0.5073599815368652,
-          0.003179987194016576,
-          -0.21799999475479126
+          0.006359986960887909,
+          -0.21759995818138123
         ],
         "max": [
           0.5073599815368652,
           2.0139999389648438,
-          0.32199999690055847
+          0.3163999915122986
         ]
       },
       "animations": [
@@ -1132,11 +1132,11 @@
         "Hit": 54,
         "Death": 54
       },
-      "triangles": 3156,
+      "triangles": 3628,
       "lodTriangles": {
-        "LOD0": 1556,
-        "LOD1": 954,
-        "LOD2": 646
+        "LOD0": 1816,
+        "LOD1": 1082,
+        "LOD2": 730
       },
       "surfaceAttributes": {
         "TEXCOORD_0": true,
@@ -1154,7 +1154,7 @@
       "key": "marksman",
       "status": "ok",
       "path": "public/assets/models/characters/marksman.glb",
-      "sizeBytes": 519220,
+      "sizeBytes": 541764,
       "nodes": 30,
       "meshes": 6,
       "materials": 3,
@@ -1179,13 +1179,13 @@
       "bounds": {
         "min": [
           -0.33320000767707825,
-          0.0028799909632653,
+          0.0057599907740950584,
           -0.14079996943473816
         ],
         "max": [
           0.3052999973297119,
           1.718400001525879,
-          0.22699999809265137
+          0.2290000021457672
         ]
       },
       "animations": [
@@ -1204,11 +1204,11 @@
         "Hit": 54,
         "Death": 54
       },
-      "triangles": 3060,
+      "triangles": 3532,
       "lodTriangles": {
-        "LOD0": 1496,
-        "LOD1": 930,
-        "LOD2": 634
+        "LOD0": 1756,
+        "LOD1": 1058,
+        "LOD2": 718
       },
       "surfaceAttributes": {
         "TEXCOORD_0": true,
@@ -1226,7 +1226,7 @@
       "key": "juggernaut",
       "status": "ok",
       "path": "public/assets/models/characters/juggernaut.glb",
-      "sizeBytes": 527172,
+      "sizeBytes": 549716,
       "nodes": 30,
       "meshes": 6,
       "materials": 3,
@@ -1251,13 +1251,13 @@
       "bounds": {
         "min": [
           -0.5073599815368652,
-          0.003179987194016576,
-          -0.21799999475479126
+          0.006359986960887909,
+          -0.21759995818138123
         ],
         "max": [
           0.689736008644104,
           1.8974000215530396,
-          0.32199999690055847
+          0.3163999915122986
         ]
       },
       "animations": [
@@ -1276,11 +1276,11 @@
         "Hit": 54,
         "Death": 54
       },
-      "triangles": 3252,
+      "triangles": 3724,
       "lodTriangles": {
-        "LOD0": 1608,
-        "LOD1": 984,
-        "LOD2": 660
+        "LOD0": 1868,
+        "LOD1": 1112,
+        "LOD2": 744
       },
       "surfaceAttributes": {
         "TEXCOORD_0": true,
@@ -1370,7 +1370,7 @@
       "key": "boss",
       "status": "ok",
       "path": "public/assets/models/characters/boss.glb",
-      "sizeBytes": 529924,
+      "sizeBytes": 552464,
       "nodes": 30,
       "meshes": 6,
       "materials": 3,
@@ -1395,13 +1395,13 @@
       "bounds": {
         "min": [
           -0.44435998797416687,
-          0.003299989039078355,
+          0.006599988788366318,
           -0.17639994621276855
         ],
         "max": [
           0.44435998797416687,
           2.0481998920440674,
-          0.2770000100135803
+          0.2750000059604645
         ]
       },
       "animations": [
@@ -1420,11 +1420,11 @@
         "Hit": 54,
         "Death": 54
       },
-      "triangles": 3264,
+      "triangles": 3736,
       "lodTriangles": {
-        "LOD0": 1592,
-        "LOD1": 990,
-        "LOD2": 682
+        "LOD0": 1852,
+        "LOD1": 1118,
+        "LOD2": 766
       },
       "surfaceAttributes": {
         "TEXCOORD_0": true,
@@ -1442,7 +1442,7 @@
       "key": "breacher",
       "status": "ok",
       "path": "public/assets/models/characters/breacher.glb",
-      "sizeBytes": 532812,
+      "sizeBytes": 555356,
       "nodes": 30,
       "meshes": 6,
       "materials": 3,
@@ -1467,13 +1467,13 @@
       "bounds": {
         "min": [
           -0.5073599815368652,
-          0.003179987194016576,
-          -0.21799999475479126
+          0.006359986960887909,
+          -0.21759995818138123
         ],
         "max": [
           0.5601599812507629,
           1.8974000215530396,
-          0.32199999690055847
+          0.3163999915122986
         ]
       },
       "animations": [
@@ -1492,11 +1492,11 @@
         "Hit": 54,
         "Death": 54
       },
-      "triangles": 3288,
+      "triangles": 3760,
       "lodTriangles": {
-        "LOD0": 1628,
-        "LOD1": 996,
-        "LOD2": 664
+        "LOD0": 1888,
+        "LOD1": 1124,
+        "LOD2": 748
       },
       "surfaceAttributes": {
         "TEXCOORD_0": true,
@@ -1514,7 +1514,7 @@
       "key": "icearmor",
       "status": "ok",
       "path": "public/assets/models/characters/icearmor.glb",
-      "sizeBytes": 538516,
+      "sizeBytes": 561056,
       "nodes": 30,
       "meshes": 6,
       "materials": 3,
@@ -1539,13 +1539,13 @@
       "bounds": {
         "min": [
           -0.5073599815368652,
-          0.003179987194016576,
-          -0.21799999475479126
+          0.006359986960887909,
+          -0.21759995818138123
         ],
         "max": [
           0.689736008644104,
           2.141200065612793,
-          0.32199999690055847
+          0.3163999915122986
         ]
       },
       "animations": [
@@ -1564,11 +1564,11 @@
         "Hit": 54,
         "Death": 54
       },
-      "triangles": 3216,
+      "triangles": 3688,
       "lodTriangles": {
-        "LOD0": 1580,
-        "LOD1": 974,
-        "LOD2": 662
+        "LOD0": 1840,
+        "LOD1": 1102,
+        "LOD2": 746
       },
       "surfaceAttributes": {
         "TEXCOORD_0": true,
@@ -1586,7 +1586,7 @@
       "key": "commander",
       "status": "ok",
       "path": "public/assets/models/characters/commander.glb",
-      "sizeBytes": 526504,
+      "sizeBytes": 549048,
       "nodes": 30,
       "meshes": 6,
       "materials": 3,
@@ -1611,13 +1611,13 @@
       "bounds": {
         "min": [
           -0.44435998797416687,
-          0.003299989039078355,
+          0.006599988788366318,
           -0.17639994621276855
         ],
         "max": [
           0.5990399718284607,
           2.0481998920440674,
-          0.2770000100135803
+          0.2750000059604645
         ]
       },
       "animations": [
@@ -1636,11 +1636,11 @@
         "Hit": 54,
         "Death": 54
       },
-      "triangles": 3264,
+      "triangles": 3736,
       "lodTriangles": {
-        "LOD0": 1592,
-        "LOD1": 990,
-        "LOD2": 682
+        "LOD0": 1852,
+        "LOD1": 1118,
+        "LOD2": 766
       },
       "surfaceAttributes": {
         "TEXCOORD_0": true,
@@ -1658,7 +1658,7 @@
       "key": "bomber",
       "status": "ok",
       "path": "public/assets/models/characters/bomber.glb",
-      "sizeBytes": 506548,
+      "sizeBytes": 529072,
       "nodes": 27,
       "meshes": 3,
       "materials": 3,
@@ -1683,13 +1683,13 @@
       "bounds": {
         "min": [
           -0.38892000913619995,
-          0.0029999897815287113,
+          0.005999989807605743,
           -0.15839996933937073
         ],
         "max": [
           0.34672001004219055,
           1.8200000524520874,
-          0.25699999928474426
+          0.2565999925136566
         ]
       },
       "animations": [
@@ -1708,11 +1708,11 @@
         "Hit": 54,
         "Death": 54
       },
-      "triangles": 3000,
+      "triangles": 3472,
       "lodTriangles": {
-        "LOD0": 1500,
-        "LOD1": 906,
-        "LOD2": 594
+        "LOD0": 1760,
+        "LOD1": 1034,
+        "LOD2": 678
       },
       "surfaceAttributes": {
         "TEXCOORD_0": true,
@@ -1730,7 +1730,7 @@
       "key": "flyingMelee",
       "status": "ok",
       "path": "public/assets/models/characters/flyingMelee.glb",
-      "sizeBytes": 523752,
+      "sizeBytes": 546300,
       "nodes": 30,
       "meshes": 6,
       "materials": 3,
@@ -1755,13 +1755,13 @@
       "bounds": {
         "min": [
           -0.979200005531311,
-          0.002639990532770753,
+          0.005279990378767252,
           -0.18539994955062866
         ],
         "max": [
           0.979200005531311,
           1.6720000505447388,
-          0.2370000034570694
+          0.23819999396800995
         ]
       },
       "animations": [
@@ -1780,11 +1780,11 @@
         "Hit": 54,
         "Death": 54
       },
-      "triangles": 3108,
+      "triangles": 3580,
       "lodTriangles": {
-        "LOD0": 1512,
-        "LOD1": 946,
-        "LOD2": 650
+        "LOD0": 1772,
+        "LOD1": 1074,
+        "LOD2": 734
       },
       "surfaceAttributes": {
         "TEXCOORD_0": true,
@@ -1802,7 +1802,7 @@
       "key": "flyingEliteArcher",
       "status": "ok",
       "path": "public/assets/models/characters/flyingEliteArcher.glb",
-      "sizeBytes": 529484,
+      "sizeBytes": 552024,
       "nodes": 30,
       "meshes": 6,
       "materials": 3,
@@ -1827,13 +1827,13 @@
       "bounds": {
         "min": [
           -0.979200005531311,
-          0.002639990532770753,
+          0.005279990378767252,
           -0.18539994955062866
         ],
         "max": [
           0.979200005531311,
           1.5751999616622925,
-          0.2370000034570694
+          0.23819999396800995
         ]
       },
       "animations": [
@@ -1852,11 +1852,11 @@
         "Hit": 54,
         "Death": 54
       },
-      "triangles": 3180,
+      "triangles": 3652,
       "lodTriangles": {
-        "LOD0": 1536,
-        "LOD1": 970,
-        "LOD2": 674
+        "LOD0": 1796,
+        "LOD1": 1098,
+        "LOD2": 758
       },
       "surfaceAttributes": {
         "TEXCOORD_0": true,
@@ -1874,7 +1874,7 @@
       "key": "flyingBomber",
       "status": "ok",
       "path": "public/assets/models/characters/flyingBomber.glb",
-      "sizeBytes": 529572,
+      "sizeBytes": 552112,
       "nodes": 30,
       "meshes": 6,
       "materials": 3,
@@ -1899,13 +1899,13 @@
       "bounds": {
         "min": [
           -0.979200005531311,
-          0.002639990532770753,
+          0.005279990378767252,
           -0.18539994955062866
         ],
         "max": [
           0.979200005531311,
           1.6016000509262085,
-          0.2370000034570694
+          0.23819999396800995
         ]
       },
       "animations": [
@@ -1924,11 +1924,11 @@
         "Hit": 54,
         "Death": 54
       },
-      "triangles": 3300,
+      "triangles": 3772,
       "lodTriangles": {
-        "LOD0": 1620,
-        "LOD1": 1006,
-        "LOD2": 674
+        "LOD0": 1880,
+        "LOD1": 1134,
+        "LOD2": 758
       },
       "surfaceAttributes": {
         "TEXCOORD_0": true,
@@ -1946,7 +1946,7 @@
       "key": "flyingColossus",
       "status": "ok",
       "path": "public/assets/models/characters/flyingColossus.glb",
-      "sizeBytes": 531804,
+      "sizeBytes": 554340,
       "nodes": 30,
       "meshes": 6,
       "materials": 3,
@@ -1971,7 +1971,7 @@
       "bounds": {
         "min": [
           -0.979200005531311,
-          0.002639990532770753,
+          0.005279990378767252,
           -0.18539994955062866
         ],
         "max": [
@@ -1996,11 +1996,11 @@
         "Hit": 54,
         "Death": 54
       },
-      "triangles": 3252,
+      "triangles": 3724,
       "lodTriangles": {
-        "LOD0": 1564,
-        "LOD1": 994,
-        "LOD2": 694
+        "LOD0": 1824,
+        "LOD1": 1122,
+        "LOD2": 778
       },
       "surfaceAttributes": {
         "TEXCOORD_0": true,
