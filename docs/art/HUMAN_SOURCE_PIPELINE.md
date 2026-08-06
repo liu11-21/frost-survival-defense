@@ -261,3 +261,119 @@ the skin's joint array matches the legacy eighteen in order and carries
 inverse bind matrices. That is the check that has to keep passing when the ten
 extra bones are appended — if Blender's exporter ever reorders, every
 `JOINTS_0` index in every previously shipped asset changes meaning.
+
+---
+
+# Stage 3 — MPFB installed and verified
+
+## Correction
+
+The previous stage treated "no GitHub release asset and no zip link on the
+static site" as a blocker. That was wrong. MPFB 2.0.17 is published on the
+**Blender Extension Platform**, and the correct route is Blender's own
+extension CLI — no GitHub release asset, and no guessing a URL.
+
+## Install
+
+| | |
+|---|---|
+| Blender | `C:\Users\User\AppData\Local\Programs\Blender Foundation\Blender 5.2\blender.exe`, 5.2.0 LTS (build 2026-07-14) |
+| Repository | `blender_org` → `https://extensions.blender.org/api/v1/extensions/` (already configured) |
+| **Exact package ID** | **`mpfb`** — resolved from the official catalogue, not guessed |
+| Installed version | **2.0.17** (manifest), build info `20260722` |
+| Module | `bl_ext.blender_org.mpfb` |
+| Install directory | `%APPDATA%\Blender Foundation\Blender\5.2\extensions\blender_org\mpfb` |
+| Code licence | `SPDX:GPL-3.0-or-later` (catalogue + manifest) |
+
+### Commands and outcomes
+
+```
+blender --command extension sync                      exit 1
+  RuntimeError: Online access required ... Enable online access in System preferences
+
+blender --online-mode --command extension sync        exit 0 (process), FATAL_ERROR
+  SSL: CERTIFICATE_VERIFY_FAILED -- Basic Constraints of CA cert not marked critical
+  reading 'https://extensions.blender.org/api/v1/extensions/'
+
+blender --online-mode --command extension install -s -e mpfb    exit 1
+  same SSL failure during the implicit sync
+
+blender --command extension install-file -r blender_org -e <verified zip>   exit 0
+```
+
+This machine sits behind a TLS-intercepting proxy whose CA certificate has a
+non-critical Basic Constraints extension. Blender's bundled Python rejects it;
+Node's TLS stack accepts it. So the archive was fetched from **the URL the
+official catalogue itself publishes** and verified against **the hash the
+catalogue itself publishes**, then installed through Blender's own installer:
+
+```
+url    https://extensions.blender.org/download/sha256:4f0a879d…/add-on-mpfb-v2.0.17.zip
+bytes  45,031,536
+sha256 4f0a879d64a39bf646fbf5f53601ac678855da329d650617dca5737548239a87   (matches catalogue)
+```
+
+That is not a guessed URL — it is the catalogue's own `archive_url` and
+`archive_hash`. The proper fix for the underlying problem is to point Blender's
+Python at the corporate CA bundle (`SSL_CERT_FILE`), which is a machine
+configuration change and is left for you to decide.
+
+## Verification — not from `exit 0`
+
+`extension list` reports `mpfb [installed]: "MPFB"`. A background Blender probe
+(`scripts/blender/mpfb_probe.py`) additionally confirms the module **imports**,
+the manifest is present, and hashes every licence-bearing file:
+
+```
+ok=true  id=mpfb  version=2.0.17  imported=bl_ext.blender_org.mpfb
+licenceFiles=4   hasSystemAssets=true
+```
+
+## MakeHuman system assets — bundled, no separate download
+
+The extension ships the official core assets, which is what the 43 MB is:
+
+```
+targets 1445   rigs 18   uv_layers 13   textures 12   mesh_metadata 6
+poses 5   node_trees 3   settings 2   3dobjs 1   expressions 1
+```
+
+No separate asset-pack download was needed and **no third-party contributed
+pack was installed**. Standard rigs available: `default`, `default_no_toes`,
+`game_engine`, `game_engine_with_breast`, `cmu_mb`, `mixamo`, plus `rigify`.
+
+Licence position to keep in view: the **code** is GPL-3.0-or-later per the
+catalogue and manifest. The MakeHuman project's long-standing position is that
+core assets/output are CC0, but the four licence files found inside the package
+are asset-authoring templates for MakeClothes/MakeSkin/MakeExpression, not a
+top-level asset grant. **The CC0 evidence for the bundled core assets still
+needs to be captured from the MakeHuman Community's own licence statement**
+before anything built on them ships.
+
+## Native smoke test — `scripts/blender/mpfb_smoketest.py`
+
+Headless, scripted, official core assets only, no clothes/hair/equipment.
+
+```
+rig            default   (data/rigs/standard/rig.default.json)
+bones          163
+  fingers       30      toes 28      clavicle 4      spine 5      twist 0
+meshes         1        triangles 36,972
+height         1.8431 m
+shape keys     16
+GLB            6,934,112 bytes, sha256 recorded in mpfb_smoketest.json
+```
+
+Full finger chains and toes are present — the two things the 18-bone
+assessment said were unreachable. **`twist` is 0**: the `default` rig has no
+forearm twist bones, so that gap is real and must be closed either by choosing
+a different rig or by adding them, before bare-forearm rotation is acceptable.
+
+The macro dictionary is taken from `TargetService.get_default_macro_info_dict()`
+and then overridden, rather than written by hand — it carries a nested `race`
+sub-dict, and a hand-written dict without it raises `KeyError` deep inside
+target resolution.
+
+**This is an installation and scriptability test, not a Hero candidate.** It
+lives in `.runtime/`, it is not in the asset tree, and it is not wired into the
+game. `hero.glb` is untouched.
