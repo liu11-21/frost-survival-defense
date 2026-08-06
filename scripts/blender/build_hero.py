@@ -495,6 +495,18 @@ def main():
     root = orient_for_babylon(empty("HeroRoot", (0, 0, 0), "EXPORT", "PLAIN_AXES"))
     root["assetRole"] = "hero"
     root["productionTemplate"] = "Hero-R8"
+    # Contract extras read by scripts/validate-hero-commercial.mjs. The Batch 5
+    # rewrite dropped these, which failed the Hero workflow on every push since
+    # -- and I did not notice, because I was only ever running Playwright.
+    # `orientationContract` and `feetGrounded` are real promises about how the
+    # runtime may place and rotate this asset; the stage markers are how the
+    # validator knows which revision it is looking at.
+    root["orientationContract"] = "Babylon Y-up, forward +Z"
+    root["feetGrounded"] = True
+    root["commercialStage"] = "H6"
+    root["commercialIteration"] = 2
+    root["heroR7Stage"] = "R7-D"
+    root["heroR7Iteration"] = 1
     skeleton = make_hero_skeleton(root)
 
     for level in (0, 1, 2):

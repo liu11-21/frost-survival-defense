@@ -1,22 +1,22 @@
 {
-  "generatedAt": "2026-08-04T06:45:30.770Z",
+  "generatedAt": "2026-08-06T07:52:01.827Z",
   "asset": "hero",
   "sourcePath": "assets-source/blender/characters/hero.blend",
   "glbPath": "public/assets/models/characters/hero.glb",
   "status": "pass",
   "source": {
     "commit": "6da6bd523a0545bdc02c3a6ef1d78ab17cb68140",
-    "bytes": 657630,
-    "sha256": "0804440184fc2cd2646644df79393a3cacae748b4c526a4e4be5fb5fc23075f1",
+    "bytes": 1179022,
+    "sha256": "354127a1496eebc183ab5a5a23a88ed6dab5df57bc04c1a11ea3b16f192c2437",
     "lfsPointer": false
   },
   "glb": {
-    "sha256": "1f895fd3274c9044a1a6414bd75b1b971e8c5fa2850ca7b9b36eb13da6724465",
-    "bytes": 3903020,
+    "sha256": "1856b619e53e18eb25903fd659ca78ff976a4fb704eb46a79ce1898f6350582a",
+    "bytes": 1347236,
     "assetVersion": "2.0",
-    "nodes": 53,
-    "meshes": 27,
-    "materials": 4,
+    "nodes": 31,
+    "meshes": 6,
+    "materials": 3,
     "textures": 1,
     "skeletons": 1,
     "skeletonJoints": 18,
@@ -29,20 +29,20 @@
       "Hit",
       "Death"
     ],
-    "triangles": 28072,
+    "triangles": 5096,
     "lodTriangles": {
-      "LOD0": 18080,
-      "LOD1": 7324,
-      "LOD2": 2668
+      "LOD0": 2756,
+      "LOD1": 1572,
+      "LOD2": 768
     },
     "lodRenderPrimitives": {
-      "LOD0": 15,
-      "LOD1": 8,
-      "LOD2": 6
+      "LOD0": 5,
+      "LOD1": 4,
+      "LOD2": 2
     },
     "images": [
       {
-        "name": "HERO_ATLAS_1024",
+        "name": "HERO_ATLAS",
         "embedded": true,
         "uri": null,
         "mimeType": "image/png",

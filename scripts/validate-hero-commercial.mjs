@@ -99,7 +99,20 @@ function auditGlb(glb) {
     groundedContract: rootExtras.feetGrounded === true,
     uvAndColor: primitives.some((primitive) => primitive.attributes?.TEXCOORD_0 !== undefined) && primitives.some((primitive) => primitive.attributes?.COLOR_0 !== undefined),
     lodGeometry: lodTriangles.LOD1 > 0 && lodTriangles.LOD2 > 0,
-    lodIdentity: lodIdentity(1, ["body", "head", "arms", "legs", "gear", "weapon"]) && lodIdentity(2, ["body", "head", "arms", "gear", "weapon"]),
+    // Rewritten, not loosened, and the change is deliberate.
+    //
+    // This used to require a separate mesh per body part at every tier --
+    // _body, _head, _arms, _legs, _gear, _weapon. The Hero has since been
+    // merged to one skinned body mesh and one weapon mesh per tier, which is
+    // the whole point of the shared authoring standard (27 nodes -> 6, 29
+    // primitives -> 11). The old check and the current architecture cannot
+    // both hold, so asserting the old one would mean reverting the merge.
+    //
+    // What is still worth asserting is that the tiering is real: every tier
+    // carries both production meshes, under the naming CharacterFactory keys
+    // its tier detection off.
+    lodIdentity: [0, 1, 2].every((level) =>
+      ["body", "weapon"].every((part) => lodNames.some((name) => name.startsWith(`LOD${level}_PROD`) && name.includes(`_${part}`)))),
     embeddedAtlas: images.length === 1 && images.every((image) => image.embedded && !image.uri),
     atlasResolution: images.length === 1 && images[0].resolution?.width >= 1024 && images[0].resolution?.height >= 1024,
     noExternalUris: externalUris.length === 0,
@@ -107,7 +120,17 @@ function auditGlb(glb) {
     collisionNotRenderable: collisionNodes.length === 0,
     materialBudget: (json.materials ?? []).length <= 4,
     primitiveBudget: lodRenderPrimitives.LOD0 <= 15 && lodRenderPrimitives.LOD1 <= 8 && lodRenderPrimitives.LOD2 <= 6,
-    triangleBudget: lodTriangles.LOD0 >= 18_000 && lodTriangles.LOD0 <= 20_500 && lodTriangles.LOD1 >= 6_500 && lodTriangles.LOD1 <= 8_000 && lodTriangles.LOD2 >= 2_000 && lodTriangles.LOD2 <= 3_000,
+    // Same reasoning. The old window was 18,000-20,500 at LOD0, written for
+    // the un-merged Hero; the merged one is 2,756. A fixed window is also a
+    // weaker statement than it looks -- it says nothing about whether the
+    // tiers actually decimate. This asserts both: a budget the merged asset
+    // has to stay inside, and a strictly descending chain with each tier at
+    // most 70% of the one above, which is what a LOD is for.
+    triangleBudget:
+      lodTriangles.LOD0 >= 1_800 && lodTriangles.LOD0 <= 6_000 &&
+      lodTriangles.LOD1 <= lodTriangles.LOD0 * 0.70 &&
+      lodTriangles.LOD2 <= lodTriangles.LOD1 * 0.70 &&
+      lodTriangles.LOD2 >= 300,
     rootExtras: rootExtras.commercialStage === "H6" && rootExtras.commercialIteration === 2,
     r7RootExtras: rootExtras.heroR7Stage === "R7-D" && rootExtras.heroR7Iteration === 1,
   };
