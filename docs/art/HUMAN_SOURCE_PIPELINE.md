@@ -184,3 +184,80 @@ fixes were judged against renders of the build before them.
 
 The script hashes both trees and exits non-zero when they disagree. Currently:
 **42/42 model assets match.**
+
+---
+
+# Stage 2 — adapter hardening, and the MakeHuman decision
+
+## Source decision: MakeHuman official core, via MPFB2
+
+Chosen 2026-08-06. **MPFB2** (MakeHuman Plugin For Blender 2, by the MakeHuman
+Community) rather than the MakeHuman desktop application, because the desktop
+app is GUI-only — it has no supported headless path for authoring and
+exporting a character, so it cannot be driven from this project's Blender
+pipeline. MPFB2 carries the same official core base mesh, skins and rig and
+runs *inside* Blender, where the adapter already lives, and it is scriptable.
+
+Licence boundary agreed for this project:
+
+- Official core base mesh, official core skin, official core rig **only**.
+- **No third-party contributed assets** unless the licence, author and source
+  are recorded separately and confirmed first.
+- The application's own licence is **not** the asset licence. Evidence that
+  the official core assets/output are CC0 must be retained.
+- To be recorded in this repo once installed: MPFB2 version, download URL,
+  SHA-256 of the LICENSE file(s), and the exact export settings used.
+
+### Status: not yet installed
+
+`v2.0.17` (published 2026-07-22) is the current release per the GitHub API,
+but that release carries **no attached assets**, and
+`static.makehumancommunity.org/mpfb/releases.html` links release-note pages
+rather than a download. The canonical zip URL was not established from those
+two sources, and guessing a download URL for something that will be installed
+into Blender and shipped against is not acceptable.
+
+**This is the only thing blocking a Hero candidate.** Everything downstream of
+it is built and verified.
+
+## Adapter hardening — done and verified
+
+All seven requested fixes are in `human_source_adapter.py` and the new
+`human_rig.py`:
+
+| | Fix |
+|---|---|
+| 1 | Mixamo no longer maps `root` and `pelvis` both to `Hips`; a missing root is synthesised. Any source bone claimed by two *required* targets is a hard failure. |
+| 2 | All gating happens **before** `save_source`, `export_glb` or the report. Nothing plausible-looking is left on disk to be picked up later. |
+| 3 | Material budget is enforced — merge or hard fail, never a note in a report. Base Color / Normal / Roughness / Metallic / Alpha recorded per material with the image behind each. Eyes, corneas, lashes, brows and hair are never merge candidates. |
+| 4 | Real retargeting: rest-pose analysis, alignment against the shipped Hero's actual rest pose, per-bone basis deltas, keyframe conjugation `q' = d q d⁻¹`, and FK pose tests driving shoulder, wrist, hip, knee and foot. |
+| 5 | Post-normalisation verification: feet on `y=0`, height on target, Y-up, centred, facing +Z, one coordinate system. Orientation is **measured off the skeleton**, not read from a profile flag. |
+| 6 | Post-decimation verification: every vertex still weighted, every LOD0 bone still present, no tier drifting from LOD0's bounds. |
+| 7 | Finger chains preserved whole; exported glTF skin checked directly for joint order and inverse bind matrices. |
+
+### Verified run (`warrior.glb` as a stand-in external input)
+
+```
+placement   feet 0.0, height 1.86, faces +Z, Y-up          PASS
+lodChecks   all three tiers weighted and aligned            PASS
+poseTests   shoulder / wrist / hip / knee                   PASS
+            footRoll — correctly "did not run", no toe bone
+joints      order matches the legacy 18, IBMs present       PASS
+retarget    6 clips, 108 bone channels, max delta 20.3 deg
+materials   3, within budget
+```
+
+Three further bugs were found by *running* it rather than reading it: a stale
+`StructRNA` dereference in `clean()`, reparenting that walked only meshes and
+armatures and so rotated an empty hierarchy while every measurement reported
+the unrotated model, and Blender 5.x dropping both `Action.groups` and
+`Action.fcurves` for slotted actions.
+
+## The 28-bone question, answered rather than assumed
+
+`verify_joint_order` reads the **exported glTF skin**, not the Blender scene,
+because "append-only is safe" is a claim about the file. On the verified run
+the skin's joint array matches the legacy eighteen in order and carries
+inverse bind matrices. That is the check that has to keep passing when the ten
+extra bones are appended — if Blender's exporter ever reorders, every
+`JOINTS_0` index in every previously shipped asset changes meaning.
