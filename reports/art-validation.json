@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-08-05T14:52:58.367Z",
+  "generatedAt": "2026-08-06T00:35:07.344Z",
   "blenderRequired": true,
   "assets": [
     {
@@ -2018,7 +2018,7 @@
       "key": "mine",
       "status": "ok",
       "path": "public/assets/models/buildings/mine.glb",
-      "sizeBytes": 255828,
+      "sizeBytes": 257272,
       "nodes": 11,
       "meshes": 8,
       "materials": 3,
@@ -2064,11 +2064,11 @@
         "Damaged": 1,
         "Destroyed": 1
       },
-      "triangles": 824,
+      "triangles": 888,
       "lodTriangles": {
         "LOD0": 492,
-        "LOD1": 206,
-        "LOD2": 126
+        "LOD1": 240,
+        "LOD2": 156
       },
       "surfaceAttributes": {
         "TEXCOORD_0": true,
@@ -2086,7 +2086,7 @@
       "key": "gold_mine",
       "status": "ok",
       "path": "public/assets/models/buildings/gold_mine.glb",
-      "sizeBytes": 253036,
+      "sizeBytes": 254480,
       "nodes": 11,
       "meshes": 8,
       "materials": 3,
@@ -2132,11 +2132,11 @@
         "Damaged": 1,
         "Destroyed": 1
       },
-      "triangles": 824,
+      "triangles": 888,
       "lodTriangles": {
         "LOD0": 492,
-        "LOD1": 206,
-        "LOD2": 126
+        "LOD1": 240,
+        "LOD2": 156
       },
       "surfaceAttributes": {
         "TEXCOORD_0": true,
@@ -2154,7 +2154,7 @@
       "key": "lumberyard",
       "status": "ok",
       "path": "public/assets/models/buildings/lumberyard.glb",
-      "sizeBytes": 253576,
+      "sizeBytes": 255016,
       "nodes": 11,
       "meshes": 8,
       "materials": 3,
@@ -2200,11 +2200,11 @@
         "Damaged": 1,
         "Destroyed": 1
       },
-      "triangles": 856,
+      "triangles": 920,
       "lodTriangles": {
         "LOD0": 516,
-        "LOD1": 214,
-        "LOD2": 126
+        "LOD1": 248,
+        "LOD2": 156
       },
       "surfaceAttributes": {
         "TEXCOORD_0": true,
@@ -2222,7 +2222,7 @@
       "key": "warehouse",
       "status": "ok",
       "path": "public/assets/models/buildings/warehouse.glb",
-      "sizeBytes": 258184,
+      "sizeBytes": 260520,
       "nodes": 11,
       "meshes": 8,
       "materials": 3,
@@ -2268,11 +2268,11 @@
         "Damaged": 1,
         "Destroyed": 1
       },
-      "triangles": 952,
+      "triangles": 1032,
       "lodTriangles": {
         "LOD0": 556,
-        "LOD1": 246,
-        "LOD2": 150
+        "LOD1": 288,
+        "LOD2": 188
       },
       "surfaceAttributes": {
         "TEXCOORD_0": true,
@@ -2290,7 +2290,7 @@
       "key": "recruit_hall",
       "status": "ok",
       "path": "public/assets/models/buildings/recruit_hall.glb",
-      "sizeBytes": 246252,
+      "sizeBytes": 247868,
       "nodes": 11,
       "meshes": 8,
       "materials": 3,
@@ -2336,11 +2336,11 @@
         "Damaged": 1,
         "Destroyed": 1
       },
-      "triangles": 788,
+      "triangles": 852,
       "lodTriangles": {
         "LOD0": 480,
-        "LOD1": 194,
-        "LOD2": 114
+        "LOD1": 228,
+        "LOD2": 144
       },
       "surfaceAttributes": {
         "TEXCOORD_0": true,
@@ -2358,7 +2358,7 @@
       "key": "auto_collector",
       "status": "ok",
       "path": "public/assets/models/buildings/auto_collector.glb",
-      "sizeBytes": 246896,
+      "sizeBytes": 248380,
       "nodes": 11,
       "meshes": 8,
       "materials": 3,
@@ -2404,11 +2404,11 @@
         "Damaged": 1,
         "Destroyed": 1
       },
-      "triangles": 808,
+      "triangles": 864,
       "lodTriangles": {
         "LOD0": 496,
-        "LOD1": 198,
-        "LOD2": 114
+        "LOD1": 228,
+        "LOD2": 140
       },
       "surfaceAttributes": {
         "TEXCOORD_0": true,
@@ -2426,7 +2426,7 @@
       "key": "auto_rebuilder",
       "status": "ok",
       "path": "public/assets/models/buildings/auto_rebuilder.glb",
-      "sizeBytes": 247656,
+      "sizeBytes": 249140,
       "nodes": 11,
       "meshes": 8,
       "materials": 3,
@@ -2472,11 +2472,11 @@
         "Damaged": 1,
         "Destroyed": 1
       },
-      "triangles": 808,
+      "triangles": 864,
       "lodTriangles": {
         "LOD0": 496,
-        "LOD1": 198,
-        "LOD2": 114
+        "LOD1": 228,
+        "LOD2": 140
       },
       "surfaceAttributes": {
         "TEXCOORD_0": true,
@@ -2494,7 +2494,7 @@
       "key": "crossbow_tower",
       "status": "ok",
       "path": "public/assets/models/buildings/crossbow_tower.glb",
-      "sizeBytes": 243308,
+      "sizeBytes": 244856,
       "nodes": 11,
       "meshes": 5,
       "materials": 3,
@@ -2544,11 +2544,11 @@
         "Aim": 2,
         "Recoil": 1
       },
-      "triangles": 696,
+      "triangles": 748,
       "lodTriangles": {
         "LOD0": 484,
-        "LOD1": 140,
-        "LOD2": 72
+        "LOD1": 168,
+        "LOD2": 96
       },
       "surfaceAttributes": {
         "TEXCOORD_0": true,
@@ -2566,7 +2566,7 @@
       "key": "frost_tower",
       "status": "ok",
       "path": "public/assets/models/buildings/frost_tower.glb",
-      "sizeBytes": 255460,
+      "sizeBytes": 257340,
       "nodes": 11,
       "meshes": 5,
       "materials": 3,
@@ -2616,11 +2616,11 @@
         "Aim": 2,
         "Recoil": 1
       },
-      "triangles": 696,
+      "triangles": 760,
       "lodTriangles": {
         "LOD0": 436,
-        "LOD1": 170,
-        "LOD2": 90
+        "LOD1": 204,
+        "LOD2": 120
       },
       "surfaceAttributes": {
         "TEXCOORD_0": true,
@@ -2638,7 +2638,7 @@
       "key": "sniper_tower",
       "status": "ok",
       "path": "public/assets/models/buildings/sniper_tower.glb",
-      "sizeBytes": 247144,
+      "sizeBytes": 248628,
       "nodes": 11,
       "meshes": 5,
       "materials": 3,
@@ -2688,11 +2688,11 @@
         "Aim": 2,
         "Recoil": 1
       },
-      "triangles": 632,
+      "triangles": 688,
       "lodTriangles": {
         "LOD0": 404,
-        "LOD1": 150,
-        "LOD2": 78
+        "LOD1": 180,
+        "LOD2": 104
       },
       "surfaceAttributes": {
         "TEXCOORD_0": true,
@@ -2710,7 +2710,7 @@
       "key": "mortar",
       "status": "ok",
       "path": "public/assets/models/buildings/mortar.glb",
-      "sizeBytes": 234592,
+      "sizeBytes": 236288,
       "nodes": 11,
       "meshes": 5,
       "materials": 3,
@@ -2760,11 +2760,11 @@
         "Aim": 2,
         "Recoil": 1
       },
-      "triangles": 632,
+      "triangles": 688,
       "lodTriangles": {
         "LOD0": 404,
-        "LOD1": 150,
-        "LOD2": 78
+        "LOD1": 180,
+        "LOD2": 104
       },
       "surfaceAttributes": {
         "TEXCOORD_0": true,

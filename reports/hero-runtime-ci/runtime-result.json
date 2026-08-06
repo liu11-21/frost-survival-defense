@@ -10,7 +10,7 @@
   "captures": [
     {
       "captureId": "hero-review-gameplay",
-      "capturedAt": "2026-08-05T14:53:45.932Z",
+      "capturedAt": "2026-08-06T00:35:41.624Z",
       "screenshot": "D:\\codex\\遊戲開發\\reports\\hero-runtime-ci\\hero-review-gameplay.png",
       "camera": "gameplay",
       "animation": "Idle",
@@ -96,7 +96,7 @@
     },
     {
       "captureId": "hero-review-front",
-      "capturedAt": "2026-08-05T14:53:46.028Z",
+      "capturedAt": "2026-08-06T00:35:41.727Z",
       "screenshot": "D:\\codex\\遊戲開發\\reports\\hero-runtime-ci\\hero-review-front.png",
       "camera": "front",
       "animation": "Idle",
@@ -182,7 +182,7 @@
     },
     {
       "captureId": "hero-review-side",
-      "capturedAt": "2026-08-05T14:53:46.119Z",
+      "capturedAt": "2026-08-06T00:35:41.827Z",
       "screenshot": "D:\\codex\\遊戲開發\\reports\\hero-runtime-ci\\hero-review-side.png",
       "camera": "left-side",
       "animation": "Idle",
@@ -268,7 +268,7 @@
     },
     {
       "captureId": "hero-review-back",
-      "capturedAt": "2026-08-05T14:53:46.212Z",
+      "capturedAt": "2026-08-06T00:35:41.921Z",
       "screenshot": "D:\\codex\\遊戲開發\\reports\\hero-runtime-ci\\hero-review-back.png",
       "camera": "back",
       "animation": "Idle",
@@ -354,7 +354,7 @@
     },
     {
       "captureId": "hero-review-three-quarter",
-      "capturedAt": "2026-08-05T14:53:46.304Z",
+      "capturedAt": "2026-08-06T00:35:42.022Z",
       "screenshot": "D:\\codex\\遊戲開發\\reports\\hero-runtime-ci\\hero-review-three-quarter.png",
       "camera": "three-quarter",
       "animation": "Idle",
@@ -440,7 +440,7 @@
     },
     {
       "captureId": "hero-review-close-up",
-      "capturedAt": "2026-08-05T14:53:46.423Z",
+      "capturedAt": "2026-08-06T00:35:42.153Z",
       "screenshot": "D:\\codex\\遊戲開發\\reports\\hero-runtime-ci\\hero-review-close-up.png",
       "camera": "close-up",
       "animation": "Idle",
@@ -526,7 +526,7 @@
     },
     {
       "captureId": "hero-review-animation-idle",
-      "capturedAt": "2026-08-05T14:53:46.513Z",
+      "capturedAt": "2026-08-06T00:35:42.256Z",
       "screenshot": "D:\\codex\\遊戲開發\\reports\\hero-runtime-ci\\hero-review-animation-idle.png",
       "camera": "three-quarter",
       "animation": "Idle",
@@ -612,7 +612,7 @@
     },
     {
       "captureId": "hero-review-animation-walk",
-      "capturedAt": "2026-08-05T14:53:46.604Z",
+      "capturedAt": "2026-08-06T00:35:42.350Z",
       "screenshot": "D:\\codex\\遊戲開發\\reports\\hero-runtime-ci\\hero-review-animation-walk.png",
       "camera": "three-quarter",
       "animation": "Walk",
@@ -698,7 +698,7 @@
     },
     {
       "captureId": "hero-review-animation-run",
-      "capturedAt": "2026-08-05T14:53:46.697Z",
+      "capturedAt": "2026-08-06T00:35:42.461Z",
       "screenshot": "D:\\codex\\遊戲開發\\reports\\hero-runtime-ci\\hero-review-animation-run.png",
       "camera": "three-quarter",
       "animation": "Run",
@@ -784,7 +784,7 @@
     },
     {
       "captureId": "hero-review-melee",
-      "capturedAt": "2026-08-05T14:53:46.784Z",
+      "capturedAt": "2026-08-06T00:35:42.569Z",
       "screenshot": "D:\\codex\\遊戲開發\\reports\\hero-runtime-ci\\hero-review-melee.png",
       "camera": "three-quarter",
       "animation": "MeleeAttack",
@@ -870,7 +870,7 @@
     },
     {
       "captureId": "hero-review-ranged",
-      "capturedAt": "2026-08-05T14:53:46.872Z",
+      "capturedAt": "2026-08-06T00:35:42.664Z",
       "screenshot": "D:\\codex\\遊戲開發\\reports\\hero-runtime-ci\\hero-review-ranged.png",
       "camera": "three-quarter",
       "animation": "RangedAttack",
@@ -956,7 +956,7 @@
     },
     {
       "captureId": "hero-review-animation-hit",
-      "capturedAt": "2026-08-05T14:53:46.955Z",
+      "capturedAt": "2026-08-06T00:35:42.769Z",
       "screenshot": "D:\\codex\\遊戲開發\\reports\\hero-runtime-ci\\hero-review-animation-hit.png",
       "camera": "three-quarter",
       "animation": "Hit",
@@ -1042,7 +1042,7 @@
     },
     {
       "captureId": "hero-review-death",
-      "capturedAt": "2026-08-05T14:53:47.039Z",
+      "capturedAt": "2026-08-06T00:35:42.870Z",
       "screenshot": "D:\\codex\\遊戲開發\\reports\\hero-runtime-ci\\hero-review-death.png",
       "camera": "three-quarter",
       "animation": "Death",
@@ -1128,7 +1128,7 @@
     },
     {
       "captureId": "hero-review-lod0",
-      "capturedAt": "2026-08-05T14:53:47.135Z",
+      "capturedAt": "2026-08-06T00:35:42.970Z",
       "screenshot": "D:\\codex\\遊戲開發\\reports\\hero-runtime-ci\\hero-review-lod0.png",
       "camera": "front",
       "animation": "Idle",
@@ -1214,7 +1214,7 @@
     },
     {
       "captureId": "hero-review-lod1",
-      "capturedAt": "2026-08-05T14:53:47.225Z",
+      "capturedAt": "2026-08-06T00:35:43.080Z",
       "screenshot": "D:\\codex\\遊戲開發\\reports\\hero-runtime-ci\\hero-review-lod1.png",
       "camera": "front",
       "animation": "Idle",
@@ -1300,7 +1300,7 @@
     },
     {
       "captureId": "hero-review-lod2",
-      "capturedAt": "2026-08-05T14:53:47.313Z",
+      "capturedAt": "2026-08-06T00:35:43.187Z",
       "screenshot": "D:\\codex\\遊戲開發\\reports\\hero-runtime-ci\\hero-review-lod2.png",
       "camera": "front",
       "animation": "Idle",
@@ -1393,5 +1393,5 @@
   "consoleErrors": [],
   "pageErrors": [],
   "requestFailures": [],
-  "finishedAt": "2026-08-05T14:53:47.313Z"
+  "finishedAt": "2026-08-06T00:35:43.187Z"
 }

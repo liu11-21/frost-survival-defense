@@ -80,59 +80,66 @@ BARREL_RADIUS = {"bolt": 0.11, "crystal": 0.17, "long": 0.09, "stub": 0.23}
 def add_shell(level, cfg):
     """Static structure: plinth, walls, roof and fixed detail, merged."""
     b = MeshBuilder(level)
-    n = (16, 10, 6)[level]
+    # Multiples of four only. A superellipse puts its corners at 45 degrees,
+    # so a ring whose segment count is not divisible by four has no vertex
+    # there and cuts the corner off -- which is exactly how these lost their
+    # rectangular read on LOD1 and LOD2, the tiers the gameplay camera uses.
+    n = (16, 12, 8)[level]
     w, d, wall = cfg["w"], cfg["d"], cfg["wall"]
 
-    # A low exponent gives near-rectangular slices with softened corners,
-    # which is what makes these read as built structures rather than the
-    # rounded masses the units use.
-    def plan(scale=1.0, exp=1.4):
+    # section()'s exponent is rectangular ABOVE 2 and diamond-shaped below it;
+    # 2 is a plain ellipse. This file previously passed 1.3-1.6 everywhere with
+    # a comment claiming that was near-rectangular, so every facility was swept
+    # from cross-sections rounder than a circle. At the gameplay camera the
+    # result was indistinguishable from the decoration rocks scattered around
+    # the arena -- the whole reason facilities read as "just a boulder".
+    def plan(scale=1.0, exp=6.0):
         return section(n, w * scale, d * scale, d * scale, exp)
 
     b.sweep([
-        (0.00, plan(1.10, 1.3)),
-        (0.16, plan(1.10, 1.3)),
-        (0.24, plan(1.00, 1.4)),
-        (wall * 0.55, plan(0.985, 1.5)),
-        (wall, plan(0.96, 1.5)),
+        (0.00, plan(1.10, 7.0)),
+        (0.16, plan(1.10, 7.0)),
+        (0.24, plan(1.00, 6.0)),
+        (wall * 0.55, plan(0.985, 5.5)),
+        (wall, plan(0.96, 5.5)),
     ], "wall", lambda y: {}, cap_top=False)
 
     roof, peak = cfg["roof"], cfg["peak"]
     if roof == "pitched":
         b.sweep([
-            (wall, plan(1.12, 1.3)),
-            (wall + 0.10, plan(1.10, 1.3)),
-            (wall + peak, section(n, w * 0.10, d * 1.02, d * 1.02, 1.3)),
+            (wall, plan(1.12, 7.0)),
+            (wall + 0.10, plan(1.10, 7.0)),
+            (wall + peak, section(n, w * 0.10, d * 1.02, d * 1.02, 7.0)),
         ], "roof", lambda y: {})
     elif roof == "barrel":
         rings = []
         for i in range(5):
             t = i / 4.0
             rings.append((wall + peak * math.sin(t * math.pi * 0.5),
-                          section(n, w * (1.10 - 0.30 * t * t), d * 1.06, d * 1.06, 1.6)))
+                          section(n, w * (1.10 - 0.30 * t * t), d * 1.06, d * 1.06, 5.0)))
         b.sweep(rings, "roof", lambda y: {})
     elif roof == "spire":
         b.sweep([
-            (wall, plan(1.14, 1.4)),
-            (wall + 0.12, plan(1.06, 1.4)),
-            (wall + peak, section(n, w * 0.08, d * 0.08, d * 0.08, 1.6)),
+            (wall, plan(1.14, 6.0)),
+            (wall + 0.12, plan(1.06, 6.0)),
+            (wall + peak, section(n, w * 0.08, d * 0.08, d * 0.08, 5.0)),
         ], "roof", lambda y: {})
     elif roof == "battlement":
-        b.sweep([(wall, plan(1.16, 1.3)), (wall + peak, plan(1.16, 1.3))], "roof", lambda y: {}, cap_top=False)
+        b.sweep([(wall, plan(1.16, 7.0)), (wall + peak, plan(1.16, 7.0))], "roof", lambda y: {}, cap_top=False)
         if level == 0:
             for i in range(8):
                 ang = math.tau * i / 8
                 b.box((math.sin(ang) * w * 1.10, wall + peak + 0.14, math.cos(ang) * d * 1.10),
                       (0.22, 0.28, 0.22), "roof", {}, rotate_z=ang, taper=0.9)
     else:  # flat
-        b.sweep([(wall, plan(1.10, 1.4)), (wall + peak, plan(1.02, 1.4))], "roof", lambda y: {})
+        b.sweep([(wall, plan(1.10, 6.0)), (wall + peak, plan(1.02, 6.0))], "roof", lambda y: {})
 
     if level <= 1:
         # A timber sill band: the horizontal break that stops a wall reading
         # as one extruded slab.
         b.sweep([
-            (wall * 0.52, plan(1.03, 1.4)),
-            (wall * 0.60, plan(1.03, 1.4)),
+            (wall * 0.52, plan(1.03, 6.0)),
+            (wall * 0.60, plan(1.03, 6.0)),
         ], "timber", lambda y: {}, cap_bottom=False, cap_top=False)
     if level == 0:
         for sx in (-1, 1):
