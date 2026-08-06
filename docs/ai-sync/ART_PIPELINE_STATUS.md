@@ -79,16 +79,110 @@ being boxes stuck onto a flat face.
   character art needs sculpted source and baked PBR sets, and no further
   parameter work in `build_*.py` gets there.
 
+## Close-range modelling pass (2026-08-06)
+
+Seven items, each found by looking at a real gameplay frame and each
+verified the same way before moving on. Not one of them would have been
+caught by a test.
+
+| | What was wrong | Commit |
+|---|---|---|
+| 1 | Faces were a blank plane with two painted slits | `3242ded` |
+| 2 | Pauldron was one smooth dome; belt had no buckle | `236fece` |
+| 3 | Boots were two flat boxes -- skis, on all 25 figures | `fbf82ee` |
+| 4 | Shield had no rim; the Hero's cape was a flat signboard | `9464c83` |
+| 5 | Bow was four stacked boxes; dagger had no guard | `1aba5d8` |
+| 6 | Arms ended in a mitten | `5f51067` |
+| 7 | Enemies were the same colour as allies | `45829e9` |
+
+Cost: 97,690 -> 110,720 triangles across all LODs, against 458,874 at the
+original audit.
+
+## The stale-artifact trap, all four shapes
+
+This cost more time than any modelling work, so do not re-learn it.
+
+Blender exits **0** from `--background --python` even when the script
+fails. The `.glb` on disk keeps its previous contents, `art:validate`
+passes, the Playwright suites pass, and the commit goes out claiming work
+the artifact does not contain. It happened three times in one session.
+
+1. **Rename breaks an import.** `build_hero.py` imported names that
+   `build_units.py` no longer had. Caught by
+   `scripts/validate-build-scripts.mjs`, which resolves every
+   cross-module import statically.
+2. **Runtime exception.** A weight dict passed where a weight function
+   was wanted. Caught by `scripts/run-blender.mjs`, which now captures
+   Blender's output and fails on it.
+3. **Compile-time error.** An `IndentationError` produces *no*
+   `Traceback` header, because the module never starts executing -- so
+   the first version of the run-blender guard sailed straight past it and
+   `5f51067` shipped a commit message that was wrong about the roster.
+   The guard now matches the exception line itself.
+4. **Builds fine, wrong shape.** Nothing catches this. It is the entire
+   reason for the close-range pass above.
+
+Both guards were verified in both directions: clean build exits 0, the
+same build with the defect re-injected exits 1.
+
+## Assertions that encode a defect rather than a number
+
+- `CharacterFactory.reviewGestureReach` reports each hand's offset in the
+  rig root's own frame, forward positive along the local +Z that is the
+  gameplay heading. The Hero suite asserts every clip whose name says it
+  attacks drives the right hand past +0.12. Two clips had shipped
+  authored entirely behind the back -- the Hero's RangedAttack and the
+  roster's Cast -- with a valid GLB, a correct silhouette and a green
+  suite. Bone-local transforms cannot show this: they are relative to the
+  parent bone and say nothing about which way the body points.
+- `validate-build-scripts.mjs` additionally fails any clip whose name
+  says it strikes if no `upper_arm` key reaches forward, catching the
+  same defect in the source before a build.
+- Hero screen-bounds readability is asserted on the box **diagonal**, not
+  height. The old height floor had never once been evaluated against a
+  real animated pose, because the bounding box was never refreshed for
+  the skeleton.
+
+## Lighting, and why the palette work alone could not fix "too dark"
+
+Measured against a red-tint pixel mask of the real meshes in a live
+match. Characters sat at 99 median luminance and facilities at 72,
+against snow at 174.
+
+- `sky.groundColor` was a dirt-bounce value on a settlement built on
+  snow. That term is the light arriving from below and fills every
+  surface facing away from the sun.
+- The frame was **under-exposed, not under-lit**: tripling the sky light
+  moved facilities 111 -> 123, a 2.5x sun landed on the same 123, and
+  exposure alone took it to 155. The scene sat in the shoulder of the
+  ACES curve where more light cannot escape the compression.
+- `scene.environmentTexture` was unset while every metal is authored at
+  0.86-0.88 metallic. A metal has no diffuse response at all, so those
+  surfaces reflected nothing and rendered black.
+
+Near-miss worth keeping: dropping all nine facility materials to 0.2
+metallic at runtime moved facility luminance by **nothing**, and the idea
+was nearly filed as disproved. That test ran on a wide frame where metal
+is a sliver of the pixels. On a character, where the axe *is* the
+silhouette, the cost is obvious -- and the environment turned out to be
+worth 20 points to the facilities too, because it feeds ambient specular
+to every PBR material, not only to metals.
+
+Final: characters 133, facilities 118, facility p10 37 -> 80, snow 190
+with zero clipped pixels.
+
 ## Measurement traps already paid for
 
 Do not re-learn these (details in standard §3.7):
 
-1. Manual stepping is not performance. Sample the engine's own loop, quiet,
-   for longer than the monitor's rolling window — and note that `avgFps30s`
-   and `lowFps1pct` stay contaminated even after an 8s quiet period.
+1. Manual stepping is not performance. Sample the engine's own loop,
+   quiet, for longer than the monitor's rolling window.
 2. Babylon's draw-call counter accumulates unless `fetchNewFrame()` is
-   called. It read 21,041 against 205 active meshes before that was fixed.
-   Every draw-call figure written before then is meaningless.
+   called. It read 21,041 against 205 active meshes before that was
+   fixed.
 3. Verifying a Blender export inside Blender can pass while the GLB is
    wrong. The two-hand grip bug was only caught by an independent
    forward-kinematics evaluator over the exported glTF.
+4. Screen-luminance figures are **framing-dependent**. Two probes with
+   different camera offsets read the same facilities at 86 and 114. Only
+   before/after pairs from one probe are comparable.
