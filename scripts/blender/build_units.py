@@ -72,6 +72,50 @@ ARCHETYPES = {
     ),
 }
 
+
+# --- monster forms --------------------------------------------------------
+# The enemy side is not the human side in different paint. These are separate
+# body plans, and the differences are the ones a player reads before any
+# colour resolves: where the mass sits, how far the head juts past the chest,
+# how long the arms are relative to the legs, and whether the leg folds
+# forward like a person's or back like an animal's.
+#
+# The rig is deliberately unchanged -- same bone names, same order, same
+# clips -- because every runtime contract and every animation hangs off it.
+# What changes is the geometry hung on those bones and how it is weighted.
+MONSTER_FORMS = {
+    # Low tier: small, low to the ground, all jaw and speed.
+    "swarm": dict(
+        height=0.84, shoulder=0.212, chest_depth=0.176, waist=0.150, hip=0.164,
+        limb=0.062, head=0.132, stance=0.128, hunch=0.62, arm_reach=1.34,
+        jaw=1.30, horns="none", spines=3, plates=0,
+    ),
+    # Mid tier: shoulders carry everything, head sunk between them.
+    "brute": dict(
+        height=1.02, shoulder=0.402, chest_depth=0.286, waist=0.226, hip=0.246,
+        limb=0.122, head=0.146, stance=0.196, hunch=0.52, arm_reach=1.52,
+        jaw=1.42, horns="pair", spines=5, plates=2,
+    ),
+    # Ranged: lean, elongated, head thrust furthest forward of any form.
+    "stalker": dict(
+        height=0.98, shoulder=0.238, chest_depth=0.196, waist=0.150, hip=0.166,
+        limb=0.068, head=0.128, stance=0.138, hunch=0.74, arm_reach=1.46,
+        jaw=1.52, horns="swept", spines=4, plates=0,
+    ),
+    # Elite: taller than any human, crowned with ice, armoured across the back.
+    "elite": dict(
+        height=1.28, shoulder=0.418, chest_depth=0.300, waist=0.252, hip=0.276,
+        limb=0.128, head=0.168, stance=0.222, hunch=0.34, arm_reach=1.44,
+        jaw=1.36, horns="crown", spines=7, plates=3,
+    ),
+    # Boss: unique, and big enough that nothing else on the field reads like it.
+    "boss": dict(
+        height=1.72, shoulder=0.560, chest_depth=0.398, waist=0.336, hip=0.372,
+        limb=0.176, head=0.212, stance=0.290, hunch=0.30, arm_reach=1.50,
+        jaw=1.44, horns="crown", spines=9, plates=4,
+    ),
+}
+
 UNITS = {
     # --- allies ---
     "shield":     dict(arch="heavy",     body=(0.346, 0.439, 0.510), accent=(0.62, 0.80, 0.94), weapon="shield", crest="greatHelm"),
@@ -94,21 +138,21 @@ UNITS = {
     # were coming for the furnace. Hue is rotated at constant luminance and
     # saturation is capped, so light enemies stay light, dark ones stay dark,
     # nothing turns neon, and each enemy still reads against the others.
-    "grunt":      dict(arch="medium",    body=(0.465, 0.297, 0.376), accent=(0.86, 0.43, 0.42), weapon="club",   crest="horn"),
-    "slinger":    dict(arch="light",     body=(0.499, 0.319, 0.412), accent=(0.98, 0.55, 0.62), weapon="sling",  crest="hood"),
-    "bruiser":    dict(arch="heavy",     body=(0.440, 0.281, 0.358), accent=(0.89, 0.44, 0.43), weapon="club",   crest="horn"),
-    "marksman":   dict(arch="light",     body=(0.530, 0.317, 0.434), accent=(0.98, 0.60, 0.69), weapon="bow",    crest="visor"),
-    "juggernaut": dict(arch="heavy",     body=(0.426, 0.272, 0.354), accent=(0.90, 0.45, 0.43), weapon="shield", crest="greatHelm"),
-    "bombardier": dict(arch="caster",    body=(0.491, 0.298, 0.385), accent=(0.91, 0.45, 0.39), weapon="staff",  crest="hood"),
-    "boss":       dict(arch="commander", body=(0.499, 0.276, 0.399), accent=(0.98, 0.59, 0.71), weapon="club",   crest="crown"),
-    "breacher":   dict(arch="heavy",     body=(0.551, 0.352, 0.460), accent=(0.98, 0.70, 0.76), weapon="ram",    crest="greatHelm"),
-    "icearmor":   dict(arch="heavy",     body=(0.725, 0.422, 0.593), accent=(0.98, 0.78, 0.83), weapon="shield", crest="iceCrown"),
-    "commander":  dict(arch="commander", body=(0.442, 0.274, 0.354), accent=(0.98, 0.43, 0.96), weapon="banner", crest="crown"),
-    "bomber":     dict(arch="medium",    body=(0.658, 0.371, 0.537), accent=(0.98, 0.69, 0.80), weapon="none",   crest="core"),
-    "flyingMelee":       dict(arch="flying", body=(0.457, 0.281, 0.366), accent=(0.98, 0.62, 0.72), weapon="club",   crest="horn"),
-    "flyingEliteArcher": dict(arch="flying", body=(0.556, 0.304, 0.443), accent=(0.98, 0.65, 0.78), weapon="bow",    crest="visor"),
-    "flyingBomber":      dict(arch="flying", body=(0.502, 0.281, 0.381), accent=(0.93, 0.43, 0.38), weapon="staff",  crest="core"),
-    "flyingColossus":    dict(arch="flying", body=(0.507, 0.280, 0.405), accent=(0.98, 0.61, 0.75), weapon="shield", crest="crown"),
+    "grunt":      dict(arch="medium",    body=(0.465, 0.297, 0.376), accent=(0.86, 0.43, 0.42), mon="swarm", weapon="none",   crest="horn"),
+    "slinger":    dict(arch="light",     body=(0.499, 0.319, 0.412), accent=(0.98, 0.55, 0.62), mon="stalker", weapon="sling",  crest="hood"),
+    "bruiser":    dict(arch="heavy",     body=(0.440, 0.281, 0.358), accent=(0.89, 0.44, 0.43), mon="brute", weapon="none",   crest="horn"),
+    "marksman":   dict(arch="light",     body=(0.530, 0.317, 0.434), accent=(0.98, 0.60, 0.69), mon="stalker", weapon="bow",    crest="visor"),
+    "juggernaut": dict(arch="heavy",     body=(0.426, 0.272, 0.354), accent=(0.90, 0.45, 0.43), mon="brute", weapon="none", crest="greatHelm"),
+    "bombardier": dict(arch="caster",    body=(0.491, 0.298, 0.385), accent=(0.91, 0.45, 0.39), mon="stalker", weapon="staff",  crest="hood"),
+    "boss":       dict(arch="commander", body=(0.499, 0.276, 0.399), accent=(0.98, 0.59, 0.71), mon="boss", weapon="club",   crest="crown"),
+    "breacher":   dict(arch="heavy",     body=(0.551, 0.352, 0.460), accent=(0.98, 0.70, 0.76), mon="brute", weapon="none",    crest="greatHelm"),
+    "icearmor":   dict(arch="heavy",     body=(0.725, 0.422, 0.593), accent=(0.98, 0.78, 0.83), mon="elite", weapon="none", crest="iceCrown"),
+    "commander":  dict(arch="commander", body=(0.442, 0.274, 0.354), accent=(0.98, 0.43, 0.96), mon="elite", weapon="none", crest="crown"),
+    "bomber":     dict(arch="medium",    body=(0.658, 0.371, 0.537), accent=(0.98, 0.69, 0.80), mon="swarm", weapon="none",   crest="core"),
+    "flyingMelee":       dict(arch="flying", body=(0.457, 0.281, 0.366), accent=(0.98, 0.62, 0.72), mon="swarm", weapon="none",   crest="horn"),
+    "flyingEliteArcher": dict(arch="flying", body=(0.556, 0.304, 0.443), accent=(0.98, 0.65, 0.78), mon="stalker", weapon="bow",    crest="visor"),
+    "flyingBomber":      dict(arch="flying", body=(0.502, 0.281, 0.381), accent=(0.93, 0.43, 0.38), mon="stalker", weapon="staff",  crest="core"),
+    "flyingColossus":    dict(arch="flying", body=(0.507, 0.280, 0.405), accent=(0.98, 0.61, 0.75), mon="elite", weapon="shield", crest="crown"),
 }
 
 SURFACES = {"body": (0, 0), "trim": (0, 1), "accent": (0, 2),
@@ -301,10 +345,177 @@ def add_body(level, a, cfg):
                 (0.006 * h, section(n_l, lb * 1.12, lb * 2.14, lb * 1.28, 3.4, centre_x=lx, centre_z=0.064)),
             ], "grip", fw)
 
-    add_crest(b, level, a, cfg, n_h)
-    add_armor(b, level, a, cfg, n_l)
+    if not cfg.get("mon"):
+        add_crest(b, level, a, cfg, n_h)
+        add_armor(b, level, a, cfg, n_l)
     if a["arch_name"] == "flying":
         add_wings(b, level, a, n_l)
+    return b
+
+
+
+def add_monster_body(level, a, cfg):
+    """One merged skinned mesh for a monster: a different body plan entirely.
+
+    Four things separate this from the human builder, and all four are
+    silhouette rather than paint:
+
+    * the spine pitches forward so the chest leads and the pelvis trails;
+    * there is no neck -- the skull sits between the shoulders and is thrust
+      out in front of them, ending in a jaw rather than a face;
+    * the arms reach past the knee and finish in three splayed claws;
+    * the legs fold like an animal's, thigh forward and shin swept back over
+      a long metatarsal, so the joint reads backwards to a human eye.
+
+    The rig underneath is the same eighteen bones the humans use, so every
+    clip and every runtime contract still applies. Only the geometry hung on
+    those bones, and how it is weighted, changes.
+    """
+    b = MeshBuilder(level)
+    n_t = (20, 12, 8)[level]
+    n_h = (14, 10, 6)[level]
+    n_l = (12, 8, 6)[level]
+    h = a["height"]
+    sh, cd, wa, hp = a["shoulder"], a["chest_depth"], a["waist"], a["hip"]
+    lb, hd = a["limb"], a["head"]
+    lean = a["hunch"]
+    reach = a["arm_reach"]
+
+    # Torso, pitched forward. `lean` runs 0.30-0.74 here against 0.00-0.16 on
+    # the human archetypes, and that is the single biggest reason these read
+    # as animals: the mass is ahead of the feet rather than stacked over them.
+    b.sweep([
+        (0.44 * h, section(n_t, hp * 0.86, hp * 0.62, hp * 0.74, 2.2, lean=-lean * 0.30)),
+        (0.58 * h, section(n_t, hp * 0.92, hp * 0.66, hp * 0.78, 2.3, lean=-lean * 0.16)),
+        (0.72 * h, section(n_t, wa, wa * 0.82, wa * 0.92, 2.4, lean=lean * 0.16)),
+        (0.88 * h, section(n_t, wa * 1.22, cd * 0.86, cd * 0.78, 2.5, lean=lean * 0.46)),
+        (1.02 * h, section(n_t, sh * 0.96, cd, cd * 0.84, 2.6, lean=lean * 0.78)),
+        (1.14 * h, section(n_t, sh, cd * 1.04, cd * 0.86, 2.6, lean=lean)),
+        (1.22 * h, section(n_t, sh * 0.80, cd * 0.90, cd * 0.72, 2.4, lean=lean * 1.06)),
+    ], "body", torso_weights)
+
+    # Skull: no neck and no face plane. A low cranium running straight into a
+    # jaw that juts past the chest, which is where a person has empty air.
+    jaw = a["jaw"]
+    fz = lean * 0.20
+    b.sweep([
+        (1.16 * h, section(n_h, hd * 0.68, hd * 0.78, hd * 0.72, 2.2, centre_z=fz * 0.55)),
+        (1.24 * h, section(n_h, hd * 0.94, hd * 1.02, hd * 0.88, 2.4, centre_z=fz * 0.80)),
+        (1.30 * h, section(n_h, hd * 0.98, hd * 1.10, hd * 0.86, 2.5, centre_z=fz * 0.92)),
+        (1.35 * h, section(n_h, hd * 0.82, hd * 0.94, hd * 0.74, 2.3, centre_z=fz * 0.86)),
+        (1.38 * h, section(n_h, hd * 0.52, hd * 0.60, hd * 0.48, 2.1, centre_z=fz * 0.74)),
+    ], "body", head_weights, cap_bottom=False)
+
+    hw = blend("head", "neck", 0.10)
+    if level <= 1:
+        # Lower jaw, thrust forward and down. This is the read.
+        b.prism([
+            (-hd * 0.46, 1.255 * h), (hd * 0.46, 1.255 * h),
+            (hd * 0.40, 1.190 * h), (0.0, 1.168 * h), (-hd * 0.40, 1.190 * h),
+        ], fz * 0.86 + hd * jaw * 0.42, hd * 0.62, "leather", hw)
+        # A brow ridge over one lit band. Not eyes -- a slot.
+        b.box((0.0, 1.302 * h, fz * 0.92 + hd * 0.52), (hd * 1.26, hd * 0.22, hd * 0.34), "metal", hw, taper=0.82)
+        b.box((0.0, 1.276 * h, fz * 0.92 + hd * 0.46), (hd * 1.04, hd * 0.16, hd * 0.20), "accent", hw, taper=0.94)
+
+    # Horns, and the crown that marks the top tiers.
+    horns = a["horns"]
+    if horns != "none" and level <= 1:
+        if horns == "pair":
+            spikes = ((0.62, 1.34, 0.9), (-0.62, 1.34, 0.9))
+        elif horns == "swept":
+            spikes = ((0.50, 1.30, 1.5), (-0.50, 1.30, 1.5), (0.0, 1.36, 0.5))
+        else:
+            spikes = ((0.70, 1.32, 0.7), (-0.70, 1.32, 0.7), (0.40, 1.38, 0.2),
+                      (-0.40, 1.38, 0.2), (0.0, 1.40, 0.0))
+        for sx, sy, tilt in spikes:
+            b.prism([
+                (sx * hd, sy * h), (sx * hd + hd * 0.20, sy * h),
+                (sx * hd * (1.0 + tilt * 0.30) + hd * 0.10, (sy + 0.16) * h),
+                (sx * hd * (1.0 + tilt * 0.30), (sy + 0.15) * h),
+            ], fz * 0.5, hd * 0.24, "accent", hw)
+
+    # Dorsal spines: ice growing out through the back, tallest over the
+    # shoulders. The count is the tier, and it reads from behind and above --
+    # which is the angle the gameplay camera actually uses.
+    if level <= 1:
+        count = a["spines"]
+        for i in range(count):
+            t = (i + 0.5) / count
+            y = (0.60 + 0.56 * t) * h
+            size = hd * (0.30 + 0.42 * math.sin(t * math.pi))
+            b.prism([
+                (-size * 0.44, y), (size * 0.44, y),
+                (size * 0.16, y + size * 1.5), (-size * 0.16, y + size * 1.5),
+            ], -cd * (0.86 - lean * 0.22 * t), size * 0.52, "accent",
+                blend("chest", "spine", 0.34) if t > 0.45 else blend("spine", "pelvis", 0.34))
+
+    # Back plates: an exoskeleton shell, mid tier and up.
+    if level == 0 and a["plates"]:
+        for i in range(a["plates"]):
+            t = i / max(1, a["plates"] - 1) if a["plates"] > 1 else 0.5
+            y = (0.74 + 0.34 * t) * h
+            b.sweep([
+                (y, section(n_t, sh * (0.72 + 0.22 * t), cd * 0.30, cd * 1.02, 2.8, lean=lean * (0.3 + t * 0.5))),
+                (y + 0.07 * h, section(n_t, sh * (0.66 + 0.22 * t), cd * 0.28, cd * 0.96, 2.8, lean=lean * (0.35 + t * 0.5))),
+            ], "metal", torso_weights, cap_bottom=False, cap_top=False)
+
+    # Arms: long, thin at the elbow, ending in claws rather than hands.
+    for side, sgn in (("L", -1), ("R", 1)):
+        aw = lambda y, s=side: arm_weights(s, y)
+        sx = sgn * sh * 0.94
+        b.sweep([
+            (1.10 * h, section(n_l, lb * 1.16, lb * 1.16, lb * 1.12, 2.4, centre_x=sx, centre_z=lean * 0.16)),
+            (0.94 * h, section(n_l, lb * 1.02, lb * 1.00, lb * 0.98, 2.4, centre_x=sgn * sh * 1.02, centre_z=lean * 0.12)),
+            (0.80 * h, section(n_l, lb * 0.70, lb * 0.70, lb * 0.68, 2.4, centre_x=sgn * sh * 1.06, centre_z=lean * 0.05)),
+        ], "body", aw, cap_bottom=False, cap_top=False)
+        low = (0.80 - 0.30 * (reach - 1.0)) * h
+        b.sweep([
+            (0.80 * h, section(n_l, lb * 0.74, lb * 0.74, lb * 0.72, 2.4, centre_x=sgn * sh * 1.06, centre_z=lean * 0.05)),
+            (low + 0.06 * h, section(n_l, lb * 0.82, lb * 0.80, lb * 0.78, 2.5, centre_x=sgn * sh * 1.02, centre_z=-lean * 0.04)),
+            (low, section(n_l, lb * 0.60, lb * 0.60, lb * 0.58, 2.3, centre_x=sgn * sh * 0.98, centre_z=-lean * 0.06)),
+        ], "leather", aw, cap_bottom=False)
+        if level <= 1:
+            # Three claws, splayed. A hand ends; a claw carries on.
+            for k, spread in ((-1, 0.34), (0, 0.0), (1, -0.34)):
+                cx = sgn * sh * 0.98 + k * lb * 0.52
+                b.prism([
+                    (cx - lb * 0.20, low), (cx + lb * 0.20, low),
+                    (cx + lb * 0.06 + spread * lb, low - 0.13 * h),
+                    (cx - lb * 0.06 + spread * lb, low - 0.13 * h),
+                ], -lean * 0.06 + lb * 0.30, lb * 0.30, "metal",
+                    blend("hand." + side, "lower_arm." + side, 0.12))
+
+    # Legs, folded like an animal's: thigh forward, shin swept back over a
+    # long metatarsal. The reversed knee is the clearest non-human cue there
+    # is in a walk cycle, and it costs nothing at LOD2.
+    st = a["stance"]
+    for side, sgn in (("L", -1), ("R", 1)):
+        lw = lambda y, s=side: leg_weights(s, y)
+        lx = sgn * st
+        b.sweep([
+            (0.56 * h, section(n_l, lb * 1.60, lb * 1.66, lb * 1.72, 2.3, centre_x=lx, centre_z=lean * 0.10)),
+            (0.44 * h, section(n_l, lb * 1.44, lb * 1.50, lb * 1.62, 2.4, centre_x=lx, centre_z=lean * 0.20)),
+            (0.34 * h, section(n_l, lb * 1.02, lb * 1.04, lb * 1.16, 2.6, centre_x=lx, centre_z=lean * 0.24)),
+        ], "body", lw, cap_top=False)
+        b.sweep([
+            (0.34 * h, section(n_l, lb * 1.00, lb * 1.02, lb * 1.14, 2.6, centre_x=lx, centre_z=lean * 0.24)),
+            (0.22 * h, section(n_l, lb * 0.86, lb * 0.84, lb * 1.00, 2.6, centre_x=lx, centre_z=lean * 0.06)),
+            (0.13 * h, section(n_l, lb * 0.66, lb * 0.66, lb * 0.74, 2.5, centre_x=lx, centre_z=-lean * 0.10)),
+        ], "body", lw, cap_bottom=False, cap_top=False)
+        b.sweep([
+            (0.13 * h, section(n_l, lb * 0.68, lb * 0.70, lb * 0.76, 2.5, centre_x=lx, centre_z=-lean * 0.10)),
+            (0.05 * h, section(n_l, lb * 0.78, lb * 1.30, lb * 0.60, 2.8, centre_x=lx, centre_z=lean * 0.10)),
+            (0.012 * h, section(n_l, lb * 0.82, lb * 1.62, lb * 0.52, 3.0, centre_x=lx, centre_z=lean * 0.18)),
+        ], "leather", lw, cap_bottom=False)
+        if level == 0:
+            fw = blend("foot." + side, "shin." + side, 0.14)
+            for k in (-1, 0, 1):
+                b.prism([
+                    (lx + k * lb * 0.52 - lb * 0.16, 0.040 * h),
+                    (lx + k * lb * 0.52 + lb * 0.16, 0.040 * h),
+                    (lx + k * lb * 0.52 + lb * 0.08, 0.006 * h),
+                    (lx + k * lb * 0.52 - lb * 0.08, 0.006 * h),
+                ], lean * 0.18 + lb * 1.70, lb * 0.26, "metal", fw)
     return b
 
 
@@ -735,8 +946,13 @@ def build_unit(key, cfg):
     MATERIALS["metal"] = material(f"MAT_{key}_metal", (0.190, 0.205, 0.228), 0.32, 0.86)
     make_atlas(f"ATLAS_{key}", body, accent)
 
-    a = dict(ARCHETYPES[cfg["arch"]])
+    # A monster form fully replaces the human archetype numbers. `arch_name`
+    # is kept so the wing code and the animation selector, which key off it,
+    # still behave -- a flying monster is still a flyer.
+    a = dict(MONSTER_FORMS[cfg["mon"]]) if cfg.get("mon") else dict(ARCHETYPES[cfg["arch"]])
     a["arch_name"] = cfg["arch"]
+    a.setdefault("neck", a["head"] * 0.5)
+    a.setdefault("skirt", False)
     h = a["height"]
 
     root = orient_for_babylon(empty("UnitRoot", (0, 0, 0), "EXPORT", "PLAIN_AXES"))
@@ -746,7 +962,8 @@ def build_unit(key, cfg):
 
     for level in (0, 1, 2):
         body_slots = ["body", "leather", "metal"] if level == 0 else (["body", "metal"] if level == 1 else ["body"])
-        pieces = [create_mesh(add_body(level, a, cfg), f"LOD{level}_PROD_body", root, skeleton, body_slots, level)]
+        builder = add_monster_body(level, a, cfg) if cfg.get("mon") else add_body(level, a, cfg)
+        pieces = [create_mesh(builder, f"LOD{level}_PROD_body", root, skeleton, body_slots, level)]
         weapon_builder = add_weapon(level, a, cfg)
         if weapon_builder and weapon_builder.faces:
             slots = ["leather", "metal"] if level < 2 else ["metal"]

@@ -4,6 +4,7 @@ import type { DamageSource, Faction, UnitDefinition } from "../data/CombatTypes"
 import type { FormationSlotManager } from "../ai/FormationSlotManager";
 import type { FriendlyBrain } from "../ai/FriendlyStateMachine";
 import { validateTarget } from "../ai/TargetValidator";
+import { AURA_TIER, MonsterAura, auraColour } from "../effects/MonsterAura";
 import { CombatAnimator } from "./CombatAnimator";
 import type { CombatContext } from "./CombatContext";
 import { allocateDamageId, type Damageable, type TargetKind } from "./Damageable";
@@ -90,6 +91,8 @@ export class CombatUnit implements Damageable {
   bomberCountdown = 0;
   bomberWarnTimer = 0;
 
+  private readonly aura: MonsterAura | null;
+
   /** Enemy navigation writes these. */
   navPoint: Vector3 | null = null;
   breachTarget: Damageable | null = null;
@@ -117,6 +120,15 @@ export class CombatUnit implements Damageable {
     this.animator = new CombatAnimator(rig);
     this.animator.onHitFrame = () => this.resolveAttack();
     this.abilities = new CombatUnitAbilities(this, ctx);
+    // Elites and the boss carry their own effect. The mandate is that a high
+    // threat is identifiable in a melee before its silhouette resolves, and a
+    // larger model does not do that -- motion and light are what survive the
+    // visual noise. Parented to the rig root, so it inherits position, facing
+    // and teardown without a per-frame lookup.
+    const tier = AURA_TIER[def.id];
+    this.aura = tier && faction === "enemy"
+      ? new MonsterAura(rig.root.getScene(), rig.root, tier, auraColour(def.id), def.scale)
+      : null;
   }
 
   attachBrain(brain: FriendlyBrain): void {
@@ -384,6 +396,7 @@ export class CombatUnit implements Damageable {
   }
 
   update(dt: number): void {
+    this.aura?.update(dt);
     if (!this._alive) {
       // Once `dispose()` has handed `this.rig` back to the template pool, it
       // may already belong to a brand-new unit. Touching it after that races
@@ -615,6 +628,7 @@ export class CombatUnit implements Damageable {
    */
   dispose(): void {
     if (this.corpse.recycled) return;
+    this.aura?.dispose();
     this.corpse.recycled = true;
     this.generation += 1;
     this.target = null;

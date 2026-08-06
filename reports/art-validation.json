@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-08-06T06:40:01.050Z",
+  "generatedAt": "2026-08-06T07:11:07.469Z",
   "blenderRequired": true,
   "assets": [
     {
@@ -938,727 +938,7 @@
       "key": "grunt",
       "status": "ok",
       "path": "public/assets/models/characters/grunt.glb",
-      "sizeBytes": 550808,
-      "nodes": 30,
-      "meshes": 6,
-      "materials": 3,
-      "textures": 1,
-      "skeletons": 1,
-      "rootTransforms": [
-        {
-          "index": 29,
-          "name": "UnitRoot",
-          "translation": [
-            0,
-            0,
-            0
-          ],
-          "scale": [
-            1,
-            1,
-            1
-          ]
-        }
-      ],
-      "bounds": {
-        "min": [
-          -0.38892000913619995,
-          0.005999989807605743,
-          -0.15839996933937073
-        ],
-        "max": [
-          0.3582000136375427,
-          1.899999976158142,
-          0.2565999925136566
-        ]
-      },
-      "animations": [
-        "Idle",
-        "Walk",
-        "Attack",
-        "Cast",
-        "Hit",
-        "Death"
-      ],
-      "animationChannels": {
-        "Idle": 54,
-        "Walk": 54,
-        "Attack": 54,
-        "Cast": 54,
-        "Hit": 54,
-        "Death": 54
-      },
-      "triangles": 3708,
-      "lodTriangles": {
-        "LOD0": 1868,
-        "LOD1": 1098,
-        "LOD2": 742
-      },
-      "surfaceAttributes": {
-        "TEXCOORD_0": true,
-        "COLOR_0": true
-      },
-      "lodProxies": {
-        "LOD1": 2,
-        "LOD2": 2
-      },
-      "missingNodes": [],
-      "missingAnimations": [],
-      "warnings": []
-    },
-    {
-      "key": "slinger",
-      "status": "ok",
-      "path": "public/assets/models/characters/slinger.glb",
-      "sizeBytes": 554484,
-      "nodes": 30,
-      "meshes": 6,
-      "materials": 3,
-      "textures": 1,
-      "skeletons": 1,
-      "rootTransforms": [
-        {
-          "index": 29,
-          "name": "UnitRoot",
-          "translation": [
-            0,
-            0,
-            0
-          ],
-          "scale": [
-            1,
-            1,
-            1
-          ]
-        }
-      ],
-      "bounds": {
-        "min": [
-          -0.33320000767707825,
-          0.0057599907740950584,
-          -0.14079996943473816
-        ],
-        "max": [
-          0.3070000112056732,
-          1.7280000448226929,
-          0.2290000021457672
-        ]
-      },
-      "animations": [
-        "Idle",
-        "Walk",
-        "Attack",
-        "Cast",
-        "Hit",
-        "Death"
-      ],
-      "animationChannels": {
-        "Idle": 54,
-        "Walk": 54,
-        "Attack": 54,
-        "Cast": 54,
-        "Hit": 54,
-        "Death": 54
-      },
-      "triangles": 3796,
-      "lodTriangles": {
-        "LOD0": 1924,
-        "LOD1": 1124,
-        "LOD2": 748
-      },
-      "surfaceAttributes": {
-        "TEXCOORD_0": true,
-        "COLOR_0": true
-      },
-      "lodProxies": {
-        "LOD1": 2,
-        "LOD2": 2
-      },
-      "missingNodes": [],
-      "missingAnimations": [],
-      "warnings": []
-    },
-    {
-      "key": "bruiser",
-      "status": "ok",
-      "path": "public/assets/models/characters/bruiser.glb",
-      "sizeBytes": 557864,
-      "nodes": 30,
-      "meshes": 6,
-      "materials": 3,
-      "textures": 1,
-      "skeletons": 1,
-      "rootTransforms": [
-        {
-          "index": 29,
-          "name": "UnitRoot",
-          "translation": [
-            0,
-            0,
-            0
-          ],
-          "scale": [
-            1,
-            1,
-            1
-          ]
-        }
-      ],
-      "bounds": {
-        "min": [
-          -0.5073599815368652,
-          0.006359986960887909,
-          -0.21759995818138123
-        ],
-        "max": [
-          0.5073599815368652,
-          2.0139999389648438,
-          0.3163999915122986
-        ]
-      },
-      "animations": [
-        "Idle",
-        "Walk",
-        "Attack",
-        "Cast",
-        "Hit",
-        "Death"
-      ],
-      "animationChannels": {
-        "Idle": 54,
-        "Walk": 54,
-        "Attack": 54,
-        "Cast": 54,
-        "Hit": 54,
-        "Death": 54
-      },
-      "triangles": 3876,
-      "lodTriangles": {
-        "LOD0": 1952,
-        "LOD1": 1146,
-        "LOD2": 778
-      },
-      "surfaceAttributes": {
-        "TEXCOORD_0": true,
-        "COLOR_0": true
-      },
-      "lodProxies": {
-        "LOD1": 2,
-        "LOD2": 2
-      },
-      "missingNodes": [],
-      "missingAnimations": [],
-      "warnings": []
-    },
-    {
-      "key": "marksman",
-      "status": "ok",
-      "path": "public/assets/models/characters/marksman.glb",
-      "sizeBytes": 564504,
-      "nodes": 30,
-      "meshes": 6,
-      "materials": 3,
-      "textures": 1,
-      "skeletons": 1,
-      "rootTransforms": [
-        {
-          "index": 29,
-          "name": "UnitRoot",
-          "translation": [
-            0,
-            0,
-            0
-          ],
-          "scale": [
-            1,
-            1,
-            1
-          ]
-        }
-      ],
-      "bounds": {
-        "min": [
-          -0.33320000767707825,
-          0.0057599907740950584,
-          -0.14079996943473816
-        ],
-        "max": [
-          0.32350000739097595,
-          1.718400001525879,
-          0.2290000021457672
-        ]
-      },
-      "animations": [
-        "Idle",
-        "Walk",
-        "Attack",
-        "Cast",
-        "Hit",
-        "Death"
-      ],
-      "animationChannels": {
-        "Idle": 54,
-        "Walk": 54,
-        "Attack": 54,
-        "Cast": 54,
-        "Hit": 54,
-        "Death": 54
-      },
-      "triangles": 3924,
-      "lodTriangles": {
-        "LOD0": 1968,
-        "LOD1": 1170,
-        "LOD2": 786
-      },
-      "surfaceAttributes": {
-        "TEXCOORD_0": true,
-        "COLOR_0": true
-      },
-      "lodProxies": {
-        "LOD1": 2,
-        "LOD2": 2
-      },
-      "missingNodes": [],
-      "missingAnimations": [],
-      "warnings": []
-    },
-    {
-      "key": "juggernaut",
-      "status": "ok",
-      "path": "public/assets/models/characters/juggernaut.glb",
-      "sizeBytes": 577200,
-      "nodes": 30,
-      "meshes": 6,
-      "materials": 3,
-      "textures": 1,
-      "skeletons": 1,
-      "rootTransforms": [
-        {
-          "index": 29,
-          "name": "UnitRoot",
-          "translation": [
-            0,
-            0,
-            0
-          ],
-          "scale": [
-            1,
-            1,
-            1
-          ]
-        }
-      ],
-      "bounds": {
-        "min": [
-          -0.5073599815368652,
-          0.006359986960887909,
-          -0.21759995818138123
-        ],
-        "max": [
-          0.689736008644104,
-          1.8974000215530396,
-          0.3163999915122986
-        ]
-      },
-      "animations": [
-        "Idle",
-        "Walk",
-        "Attack",
-        "Cast",
-        "Hit",
-        "Death"
-      ],
-      "animationChannels": {
-        "Idle": 54,
-        "Walk": 54,
-        "Attack": 54,
-        "Cast": 54,
-        "Hit": 54,
-        "Death": 54
-      },
-      "triangles": 4188,
-      "lodTriangles": {
-        "LOD0": 2096,
-        "LOD1": 1248,
-        "LOD2": 844
-      },
-      "surfaceAttributes": {
-        "TEXCOORD_0": true,
-        "COLOR_0": true
-      },
-      "lodProxies": {
-        "LOD1": 2,
-        "LOD2": 2
-      },
-      "missingNodes": [],
-      "missingAnimations": [],
-      "warnings": []
-    },
-    {
-      "key": "bombardier",
-      "status": "ok",
-      "path": "public/assets/models/characters/bombardier.glb",
-      "sizeBytes": 519292,
-      "nodes": 30,
-      "meshes": 6,
-      "materials": 3,
-      "textures": 1,
-      "skeletons": 1,
-      "rootTransforms": [
-        {
-          "index": 29,
-          "name": "UnitRoot",
-          "translation": [
-            0,
-            0,
-            0
-          ],
-          "scale": [
-            1,
-            1,
-            1
-          ]
-        }
-      ],
-      "bounds": {
-        "min": [
-          -0.4422000050544739,
-          0.030599985271692276,
-          -0.33660000562667847
-        ],
-        "max": [
-          0.4422000050544739,
-          1.8359999656677246,
-          0.32339999079704285
-        ]
-      },
-      "animations": [
-        "Idle",
-        "Walk",
-        "Attack",
-        "Cast",
-        "Hit",
-        "Death"
-      ],
-      "animationChannels": {
-        "Idle": 54,
-        "Walk": 54,
-        "Attack": 54,
-        "Cast": 54,
-        "Hit": 54,
-        "Death": 54
-      },
-      "triangles": 3114,
-      "lodTriangles": {
-        "LOD0": 1566,
-        "LOD1": 936,
-        "LOD2": 612
-      },
-      "surfaceAttributes": {
-        "TEXCOORD_0": true,
-        "COLOR_0": true
-      },
-      "lodProxies": {
-        "LOD1": 2,
-        "LOD2": 2
-      },
-      "missingNodes": [],
-      "missingAnimations": [],
-      "warnings": []
-    },
-    {
-      "key": "boss",
-      "status": "ok",
-      "path": "public/assets/models/characters/boss.glb",
-      "sizeBytes": 570796,
-      "nodes": 30,
-      "meshes": 6,
-      "materials": 3,
-      "textures": 1,
-      "skeletons": 1,
-      "rootTransforms": [
-        {
-          "index": 29,
-          "name": "UnitRoot",
-          "translation": [
-            0,
-            0,
-            0
-          ],
-          "scale": [
-            1,
-            1,
-            1
-          ]
-        }
-      ],
-      "bounds": {
-        "min": [
-          -0.44435998797416687,
-          0.006599988788366318,
-          -0.17639994621276855
-        ],
-        "max": [
-          0.44435998797416687,
-          2.0481998920440674,
-          0.2750000059604645
-        ]
-      },
-      "animations": [
-        "Idle",
-        "Walk",
-        "Attack",
-        "Cast",
-        "Hit",
-        "Death"
-      ],
-      "animationChannels": {
-        "Idle": 54,
-        "Walk": 54,
-        "Attack": 54,
-        "Cast": 54,
-        "Hit": 54,
-        "Death": 54
-      },
-      "triangles": 3984,
-      "lodTriangles": {
-        "LOD0": 1988,
-        "LOD1": 1182,
-        "LOD2": 814
-      },
-      "surfaceAttributes": {
-        "TEXCOORD_0": true,
-        "COLOR_0": true
-      },
-      "lodProxies": {
-        "LOD1": 2,
-        "LOD2": 2
-      },
-      "missingNodes": [],
-      "missingAnimations": [],
-      "warnings": []
-    },
-    {
-      "key": "breacher",
-      "status": "ok",
-      "path": "public/assets/models/characters/breacher.glb",
-      "sizeBytes": 574616,
-      "nodes": 30,
-      "meshes": 6,
-      "materials": 3,
-      "textures": 1,
-      "skeletons": 1,
-      "rootTransforms": [
-        {
-          "index": 29,
-          "name": "UnitRoot",
-          "translation": [
-            0,
-            0,
-            0
-          ],
-          "scale": [
-            1,
-            1,
-            1
-          ]
-        }
-      ],
-      "bounds": {
-        "min": [
-          -0.5073599815368652,
-          0.006359986960887909,
-          -0.21759995818138123
-        ],
-        "max": [
-          0.5601599812507629,
-          1.8974000215530396,
-          0.3163999915122986
-        ]
-      },
-      "animations": [
-        "Idle",
-        "Walk",
-        "Attack",
-        "Cast",
-        "Hit",
-        "Death"
-      ],
-      "animationChannels": {
-        "Idle": 54,
-        "Walk": 54,
-        "Attack": 54,
-        "Cast": 54,
-        "Hit": 54,
-        "Death": 54
-      },
-      "triangles": 4008,
-      "lodTriangles": {
-        "LOD0": 2024,
-        "LOD1": 1188,
-        "LOD2": 796
-      },
-      "surfaceAttributes": {
-        "TEXCOORD_0": true,
-        "COLOR_0": true
-      },
-      "lodProxies": {
-        "LOD1": 2,
-        "LOD2": 2
-      },
-      "missingNodes": [],
-      "missingAnimations": [],
-      "warnings": []
-    },
-    {
-      "key": "icearmor",
-      "status": "ok",
-      "path": "public/assets/models/characters/icearmor.glb",
-      "sizeBytes": 590080,
-      "nodes": 30,
-      "meshes": 6,
-      "materials": 3,
-      "textures": 1,
-      "skeletons": 1,
-      "rootTransforms": [
-        {
-          "index": 29,
-          "name": "UnitRoot",
-          "translation": [
-            0,
-            0,
-            0
-          ],
-          "scale": [
-            1,
-            1,
-            1
-          ]
-        }
-      ],
-      "bounds": {
-        "min": [
-          -0.5073599815368652,
-          0.006359986960887909,
-          -0.21759995818138123
-        ],
-        "max": [
-          0.689736008644104,
-          2.141200065612793,
-          0.3163999915122986
-        ]
-      },
-      "animations": [
-        "Idle",
-        "Walk",
-        "Attack",
-        "Cast",
-        "Hit",
-        "Death"
-      ],
-      "animationChannels": {
-        "Idle": 54,
-        "Walk": 54,
-        "Attack": 54,
-        "Cast": 54,
-        "Hit": 54,
-        "Death": 54
-      },
-      "triangles": 4152,
-      "lodTriangles": {
-        "LOD0": 2068,
-        "LOD1": 1238,
-        "LOD2": 846
-      },
-      "surfaceAttributes": {
-        "TEXCOORD_0": true,
-        "COLOR_0": true
-      },
-      "lodProxies": {
-        "LOD1": 2,
-        "LOD2": 2
-      },
-      "missingNodes": [],
-      "missingAnimations": [],
-      "warnings": []
-    },
-    {
-      "key": "commander",
-      "status": "ok",
-      "path": "public/assets/models/characters/commander.glb",
-      "sizeBytes": 564580,
-      "nodes": 30,
-      "meshes": 6,
-      "materials": 3,
-      "textures": 1,
-      "skeletons": 1,
-      "rootTransforms": [
-        {
-          "index": 29,
-          "name": "UnitRoot",
-          "translation": [
-            0,
-            0,
-            0
-          ],
-          "scale": [
-            1,
-            1,
-            1
-          ]
-        }
-      ],
-      "bounds": {
-        "min": [
-          -0.44435998797416687,
-          0.006599988788366318,
-          -0.17639994621276855
-        ],
-        "max": [
-          0.5990399718284607,
-          2.0481998920440674,
-          0.2750000059604645
-        ]
-      },
-      "animations": [
-        "Idle",
-        "Walk",
-        "Attack",
-        "Cast",
-        "Hit",
-        "Death"
-      ],
-      "animationChannels": {
-        "Idle": 54,
-        "Walk": 54,
-        "Attack": 54,
-        "Cast": 54,
-        "Hit": 54,
-        "Death": 54
-      },
-      "triangles": 3984,
-      "lodTriangles": {
-        "LOD0": 1988,
-        "LOD1": 1182,
-        "LOD2": 814
-      },
-      "surfaceAttributes": {
-        "TEXCOORD_0": true,
-        "COLOR_0": true
-      },
-      "lodProxies": {
-        "LOD1": 2,
-        "LOD2": 2
-      },
-      "missingNodes": [],
-      "missingAnimations": [],
-      "warnings": []
-    },
-    {
-      "key": "bomber",
-      "status": "ok",
-      "path": "public/assets/models/characters/bomber.glb",
-      "sizeBytes": 550876,
+      "sizeBytes": 471372,
       "nodes": 27,
       "meshes": 3,
       "materials": 3,
@@ -1682,14 +962,14 @@
       ],
       "bounds": {
         "min": [
-          -0.38892000913619995,
-          0.005999989807605743,
-          -0.15839996933937073
+          -0.6940236687660217,
+          0.005039990413933992,
+          -0.16486209630966187
         ],
         "max": [
-          0.3582000136375427,
-          1.8200000524520874,
-          0.2565999925136566
+          0.6940236687660217,
+          1.1591999530792236,
+          0.25636032223701477
         ]
       },
       "animations": [
@@ -1708,11 +988,731 @@
         "Hit": 54,
         "Death": 54
       },
-      "triangles": 3720,
+      "triangles": 2394,
       "lodTriangles": {
-        "LOD0": 1896,
-        "LOD1": 1098,
-        "LOD2": 726
+        "LOD0": 1178,
+        "LOD1": 774,
+        "LOD2": 442
+      },
+      "surfaceAttributes": {
+        "TEXCOORD_0": true,
+        "COLOR_0": true
+      },
+      "lodProxies": {
+        "LOD1": 1,
+        "LOD2": 1
+      },
+      "missingNodes": [],
+      "missingAnimations": [],
+      "warnings": []
+    },
+    {
+      "key": "slinger",
+      "status": "ok",
+      "path": "public/assets/models/characters/slinger.glb",
+      "sizeBytes": 493996,
+      "nodes": 30,
+      "meshes": 6,
+      "materials": 3,
+      "textures": 1,
+      "skeletons": 1,
+      "rootTransforms": [
+        {
+          "index": 29,
+          "name": "UnitRoot",
+          "translation": [
+            0,
+            0,
+            0
+          ],
+          "scale": [
+            1,
+            1,
+            1
+          ]
+        }
+      ],
+      "bounds": {
+        "min": [
+          -0.8238312602043152,
+          0.005879988893866539,
+          -0.17990437150001526
+        ],
+        "max": [
+          0.8238312602043152,
+          1.4895999431610107,
+          0.274128794670105
+        ]
+      },
+      "animations": [
+        "Idle",
+        "Walk",
+        "Attack",
+        "Cast",
+        "Hit",
+        "Death"
+      ],
+      "animationChannels": {
+        "Idle": 54,
+        "Walk": 54,
+        "Attack": 54,
+        "Cast": 54,
+        "Hit": 54,
+        "Death": 54
+      },
+      "triangles": 2598,
+      "lodTriangles": {
+        "LOD0": 1270,
+        "LOD1": 858,
+        "LOD2": 470
+      },
+      "surfaceAttributes": {
+        "TEXCOORD_0": true,
+        "COLOR_0": true
+      },
+      "lodProxies": {
+        "LOD1": 2,
+        "LOD2": 2
+      },
+      "missingNodes": [],
+      "missingAnimations": [],
+      "warnings": []
+    },
+    {
+      "key": "bruiser",
+      "status": "ok",
+      "path": "public/assets/models/characters/bruiser.glb",
+      "sizeBytes": 484196,
+      "nodes": 27,
+      "meshes": 3,
+      "materials": 3,
+      "textures": 1,
+      "skeletons": 1,
+      "rootTransforms": [
+        {
+          "index": 26,
+          "name": "UnitRoot",
+          "translation": [
+            0,
+            0,
+            0
+          ],
+          "scale": [
+            1,
+            1,
+            1
+          ]
+        }
+      ],
+      "bounds": {
+        "min": [
+          -0.7088926434516907,
+          0.006119986064732075,
+          -0.2917199730873108
+        ],
+        "max": [
+          0.7088926434516907,
+          1.5299999713897705,
+          0.31685999035835266
+        ]
+      },
+      "animations": [
+        "Idle",
+        "Walk",
+        "Attack",
+        "Cast",
+        "Hit",
+        "Death"
+      ],
+      "animationChannels": {
+        "Idle": 54,
+        "Walk": 54,
+        "Attack": 54,
+        "Cast": 54,
+        "Hit": 54,
+        "Death": 54
+      },
+      "triangles": 2570,
+      "lodTriangles": {
+        "LOD0": 1306,
+        "LOD1": 822,
+        "LOD2": 442
+      },
+      "surfaceAttributes": {
+        "TEXCOORD_0": true,
+        "COLOR_0": true
+      },
+      "lodProxies": {
+        "LOD1": 1,
+        "LOD2": 1
+      },
+      "missingNodes": [],
+      "missingAnimations": [],
+      "warnings": []
+    },
+    {
+      "key": "marksman",
+      "status": "ok",
+      "path": "public/assets/models/characters/marksman.glb",
+      "sizeBytes": 510256,
+      "nodes": 30,
+      "meshes": 6,
+      "materials": 3,
+      "textures": 1,
+      "skeletons": 1,
+      "rootTransforms": [
+        {
+          "index": 29,
+          "name": "UnitRoot",
+          "translation": [
+            0,
+            0,
+            0
+          ],
+          "scale": [
+            1,
+            1,
+            1
+          ]
+        }
+      ],
+      "bounds": {
+        "min": [
+          -0.8238312602043152,
+          0.005879988893866539,
+          -0.17990437150001526
+        ],
+        "max": [
+          0.8238312602043152,
+          1.4895999431610107,
+          0.274128794670105
+        ]
+      },
+      "animations": [
+        "Idle",
+        "Walk",
+        "Attack",
+        "Cast",
+        "Hit",
+        "Death"
+      ],
+      "animationChannels": {
+        "Idle": 54,
+        "Walk": 54,
+        "Attack": 54,
+        "Cast": 54,
+        "Hit": 54,
+        "Death": 54
+      },
+      "triangles": 2850,
+      "lodTriangles": {
+        "LOD0": 1382,
+        "LOD1": 942,
+        "LOD2": 526
+      },
+      "surfaceAttributes": {
+        "TEXCOORD_0": true,
+        "COLOR_0": true
+      },
+      "lodProxies": {
+        "LOD1": 2,
+        "LOD2": 2
+      },
+      "missingNodes": [],
+      "missingAnimations": [],
+      "warnings": []
+    },
+    {
+      "key": "juggernaut",
+      "status": "ok",
+      "path": "public/assets/models/characters/juggernaut.glb",
+      "sizeBytes": 485396,
+      "nodes": 27,
+      "meshes": 3,
+      "materials": 3,
+      "textures": 1,
+      "skeletons": 1,
+      "rootTransforms": [
+        {
+          "index": 26,
+          "name": "UnitRoot",
+          "translation": [
+            0,
+            0,
+            0
+          ],
+          "scale": [
+            1,
+            1,
+            1
+          ]
+        }
+      ],
+      "bounds": {
+        "min": [
+          -0.7088926434516907,
+          0.006119986064732075,
+          -0.2917199730873108
+        ],
+        "max": [
+          0.7088926434516907,
+          1.5299999713897705,
+          0.31685999035835266
+        ]
+      },
+      "animations": [
+        "Idle",
+        "Walk",
+        "Attack",
+        "Cast",
+        "Hit",
+        "Death"
+      ],
+      "animationChannels": {
+        "Idle": 54,
+        "Walk": 54,
+        "Attack": 54,
+        "Cast": 54,
+        "Hit": 54,
+        "Death": 54
+      },
+      "triangles": 2570,
+      "lodTriangles": {
+        "LOD0": 1306,
+        "LOD1": 822,
+        "LOD2": 442
+      },
+      "surfaceAttributes": {
+        "TEXCOORD_0": true,
+        "COLOR_0": true
+      },
+      "lodProxies": {
+        "LOD1": 1,
+        "LOD2": 1
+      },
+      "missingNodes": [],
+      "missingAnimations": [],
+      "warnings": []
+    },
+    {
+      "key": "bombardier",
+      "status": "ok",
+      "path": "public/assets/models/characters/bombardier.glb",
+      "sizeBytes": 500716,
+      "nodes": 30,
+      "meshes": 6,
+      "materials": 3,
+      "textures": 1,
+      "skeletons": 1,
+      "rootTransforms": [
+        {
+          "index": 29,
+          "name": "UnitRoot",
+          "translation": [
+            0,
+            0,
+            0
+          ],
+          "scale": [
+            1,
+            1,
+            1
+          ]
+        }
+      ],
+      "bounds": {
+        "min": [
+          -0.8238312602043152,
+          0.005879988893866539,
+          -0.17990437150001526
+        ],
+        "max": [
+          0.8238312602043152,
+          1.7640000581741333,
+          0.274128794670105
+        ]
+      },
+      "animations": [
+        "Idle",
+        "Walk",
+        "Attack",
+        "Cast",
+        "Hit",
+        "Death"
+      ],
+      "animationChannels": {
+        "Idle": 54,
+        "Walk": 54,
+        "Attack": 54,
+        "Cast": 54,
+        "Hit": 54,
+        "Death": 54
+      },
+      "triangles": 2742,
+      "lodTriangles": {
+        "LOD0": 1318,
+        "LOD1": 906,
+        "LOD2": 518
+      },
+      "surfaceAttributes": {
+        "TEXCOORD_0": true,
+        "COLOR_0": true
+      },
+      "lodProxies": {
+        "LOD1": 2,
+        "LOD2": 2
+      },
+      "missingNodes": [],
+      "missingAnimations": [],
+      "warnings": []
+    },
+    {
+      "key": "boss",
+      "status": "ok",
+      "path": "public/assets/models/characters/boss.glb",
+      "sizeBytes": 520756,
+      "nodes": 30,
+      "meshes": 6,
+      "materials": 3,
+      "textures": 1,
+      "skeletons": 1,
+      "rootTransforms": [
+        {
+          "index": 29,
+          "name": "UnitRoot",
+          "translation": [
+            0,
+            0,
+            0
+          ],
+          "scale": [
+            1,
+            1,
+            1
+          ]
+        }
+      ],
+      "bounds": {
+        "min": [
+          -0.7507200241088867,
+          0.010319983586668968,
+          -0.40595993399620056
+        ],
+        "max": [
+          0.7507200241088867,
+          2.683199882507324,
+          0.4139200747013092
+        ]
+      },
+      "animations": [
+        "Idle",
+        "Walk",
+        "Attack",
+        "Cast",
+        "Hit",
+        "Death"
+      ],
+      "animationChannels": {
+        "Idle": 54,
+        "Walk": 54,
+        "Attack": 54,
+        "Cast": 54,
+        "Hit": 54,
+        "Death": 54
+      },
+      "triangles": 2926,
+      "lodTriangles": {
+        "LOD0": 1514,
+        "LOD1": 942,
+        "LOD2": 470
+      },
+      "surfaceAttributes": {
+        "TEXCOORD_0": true,
+        "COLOR_0": true
+      },
+      "lodProxies": {
+        "LOD1": 2,
+        "LOD2": 2
+      },
+      "missingNodes": [],
+      "missingAnimations": [],
+      "warnings": []
+    },
+    {
+      "key": "breacher",
+      "status": "ok",
+      "path": "public/assets/models/characters/breacher.glb",
+      "sizeBytes": 493920,
+      "nodes": 27,
+      "meshes": 3,
+      "materials": 3,
+      "textures": 1,
+      "skeletons": 1,
+      "rootTransforms": [
+        {
+          "index": 26,
+          "name": "UnitRoot",
+          "translation": [
+            0,
+            0,
+            0
+          ],
+          "scale": [
+            1,
+            1,
+            1
+          ]
+        }
+      ],
+      "bounds": {
+        "min": [
+          -0.7088926434516907,
+          0.006119986064732075,
+          -0.2917199730873108
+        ],
+        "max": [
+          0.7088926434516907,
+          1.5299999713897705,
+          0.31685999035835266
+        ]
+      },
+      "animations": [
+        "Idle",
+        "Walk",
+        "Attack",
+        "Cast",
+        "Hit",
+        "Death"
+      ],
+      "animationChannels": {
+        "Idle": 54,
+        "Walk": 54,
+        "Attack": 54,
+        "Cast": 54,
+        "Hit": 54,
+        "Death": 54
+      },
+      "triangles": 2570,
+      "lodTriangles": {
+        "LOD0": 1306,
+        "LOD1": 822,
+        "LOD2": 442
+      },
+      "surfaceAttributes": {
+        "TEXCOORD_0": true,
+        "COLOR_0": true
+      },
+      "lodProxies": {
+        "LOD1": 1,
+        "LOD2": 1
+      },
+      "missingNodes": [],
+      "missingAnimations": [],
+      "warnings": []
+    },
+    {
+      "key": "icearmor",
+      "status": "ok",
+      "path": "public/assets/models/characters/icearmor.glb",
+      "sizeBytes": 510376,
+      "nodes": 27,
+      "meshes": 3,
+      "materials": 3,
+      "textures": 1,
+      "skeletons": 1,
+      "rootTransforms": [
+        {
+          "index": 26,
+          "name": "UnitRoot",
+          "translation": [
+            0,
+            0,
+            0
+          ],
+          "scale": [
+            1,
+            1,
+            1
+          ]
+        }
+      ],
+      "bounds": {
+        "min": [
+          -0.581039547920227,
+          0.007679986767470837,
+          -0.3059999644756317
+        ],
+        "max": [
+          0.581039547920227,
+          1.9967999458312988,
+          0.3120000660419464
+        ]
+      },
+      "animations": [
+        "Idle",
+        "Walk",
+        "Attack",
+        "Cast",
+        "Hit",
+        "Death"
+      ],
+      "animationChannels": {
+        "Idle": 54,
+        "Walk": 54,
+        "Attack": 54,
+        "Cast": 54,
+        "Hit": 54,
+        "Death": 54
+      },
+      "triangles": 2730,
+      "lodTriangles": {
+        "LOD0": 1406,
+        "LOD1": 882,
+        "LOD2": 442
+      },
+      "surfaceAttributes": {
+        "TEXCOORD_0": true,
+        "COLOR_0": true
+      },
+      "lodProxies": {
+        "LOD1": 1,
+        "LOD2": 1
+      },
+      "missingNodes": [],
+      "missingAnimations": [],
+      "warnings": []
+    },
+    {
+      "key": "commander",
+      "status": "ok",
+      "path": "public/assets/models/characters/commander.glb",
+      "sizeBytes": 498348,
+      "nodes": 27,
+      "meshes": 3,
+      "materials": 3,
+      "textures": 1,
+      "skeletons": 1,
+      "rootTransforms": [
+        {
+          "index": 26,
+          "name": "UnitRoot",
+          "translation": [
+            0,
+            0,
+            0
+          ],
+          "scale": [
+            1,
+            1,
+            1
+          ]
+        }
+      ],
+      "bounds": {
+        "min": [
+          -0.581039547920227,
+          0.007679986767470837,
+          -0.3059999644756317
+        ],
+        "max": [
+          0.581039547920227,
+          1.9967999458312988,
+          0.3120000660419464
+        ]
+      },
+      "animations": [
+        "Idle",
+        "Walk",
+        "Attack",
+        "Cast",
+        "Hit",
+        "Death"
+      ],
+      "animationChannels": {
+        "Idle": 54,
+        "Walk": 54,
+        "Attack": 54,
+        "Cast": 54,
+        "Hit": 54,
+        "Death": 54
+      },
+      "triangles": 2730,
+      "lodTriangles": {
+        "LOD0": 1406,
+        "LOD1": 882,
+        "LOD2": 442
+      },
+      "surfaceAttributes": {
+        "TEXCOORD_0": true,
+        "COLOR_0": true
+      },
+      "lodProxies": {
+        "LOD1": 1,
+        "LOD2": 1
+      },
+      "missingNodes": [],
+      "missingAnimations": [],
+      "warnings": []
+    },
+    {
+      "key": "bomber",
+      "status": "ok",
+      "path": "public/assets/models/characters/bomber.glb",
+      "sizeBytes": 480764,
+      "nodes": 27,
+      "meshes": 3,
+      "materials": 3,
+      "textures": 1,
+      "skeletons": 1,
+      "rootTransforms": [
+        {
+          "index": 26,
+          "name": "UnitRoot",
+          "translation": [
+            0,
+            0,
+            0
+          ],
+          "scale": [
+            1,
+            1,
+            1
+          ]
+        }
+      ],
+      "bounds": {
+        "min": [
+          -0.6940236687660217,
+          0.005039990413933992,
+          -0.16486209630966187
+        ],
+        "max": [
+          0.6940236687660217,
+          1.1591999530792236,
+          0.25636032223701477
+        ]
+      },
+      "animations": [
+        "Idle",
+        "Walk",
+        "Attack",
+        "Cast",
+        "Hit",
+        "Death"
+      ],
+      "animationChannels": {
+        "Idle": 54,
+        "Walk": 54,
+        "Attack": 54,
+        "Cast": 54,
+        "Hit": 54,
+        "Death": 54
+      },
+      "triangles": 2394,
+      "lodTriangles": {
+        "LOD0": 1178,
+        "LOD1": 774,
+        "LOD2": 442
       },
       "surfaceAttributes": {
         "TEXCOORD_0": true,
@@ -1730,15 +1730,15 @@
       "key": "flyingMelee",
       "status": "ok",
       "path": "public/assets/models/characters/flyingMelee.glb",
-      "sizeBytes": 561328,
-      "nodes": 30,
-      "meshes": 6,
+      "sizeBytes": 472792,
+      "nodes": 27,
+      "meshes": 3,
       "materials": 3,
       "textures": 1,
       "skeletons": 1,
       "rootTransforms": [
         {
-          "index": 29,
+          "index": 26,
           "name": "UnitRoot",
           "translation": [
             0,
@@ -1754,14 +1754,14 @@
       ],
       "bounds": {
         "min": [
-          -0.979200005531311,
-          0.005279990378767252,
-          -0.18539994955062866
+          -0.6940236687660217,
+          0.005039990413933992,
+          -0.16486209630966187
         ],
         "max": [
-          0.979200005531311,
-          1.6720000505447388,
-          0.23819999396800995
+          0.6940236687660217,
+          1.1591999530792236,
+          0.25636032223701477
         ]
       },
       "animations": [
@@ -1780,19 +1780,19 @@
         "Hit": 54,
         "Death": 54
       },
-      "triangles": 3828,
+      "triangles": 2394,
       "lodTriangles": {
-        "LOD0": 1908,
-        "LOD1": 1138,
-        "LOD2": 782
+        "LOD0": 1178,
+        "LOD1": 774,
+        "LOD2": 442
       },
       "surfaceAttributes": {
         "TEXCOORD_0": true,
         "COLOR_0": true
       },
       "lodProxies": {
-        "LOD1": 2,
-        "LOD2": 2
+        "LOD1": 1,
+        "LOD2": 1
       },
       "missingNodes": [],
       "missingAnimations": [],
@@ -1802,7 +1802,7 @@
       "key": "flyingEliteArcher",
       "status": "ok",
       "path": "public/assets/models/characters/flyingEliteArcher.glb",
-      "sizeBytes": 574784,
+      "sizeBytes": 510608,
       "nodes": 30,
       "meshes": 6,
       "materials": 3,
@@ -1826,14 +1826,14 @@
       ],
       "bounds": {
         "min": [
-          -0.979200005531311,
-          0.005279990378767252,
-          -0.18539994955062866
+          -0.8238312602043152,
+          0.005879988893866539,
+          -0.17990437150001526
         ],
         "max": [
-          0.979200005531311,
-          1.5751999616622925,
-          0.23819999396800995
+          0.8238312602043152,
+          1.4895999431610107,
+          0.274128794670105
         ]
       },
       "animations": [
@@ -1852,11 +1852,11 @@
         "Hit": 54,
         "Death": 54
       },
-      "triangles": 4044,
+      "triangles": 2850,
       "lodTriangles": {
-        "LOD0": 2008,
-        "LOD1": 1210,
-        "LOD2": 826
+        "LOD0": 1382,
+        "LOD1": 942,
+        "LOD2": 526
       },
       "surfaceAttributes": {
         "TEXCOORD_0": true,
@@ -1874,7 +1874,7 @@
       "key": "flyingBomber",
       "status": "ok",
       "path": "public/assets/models/characters/flyingBomber.glb",
-      "sizeBytes": 572652,
+      "sizeBytes": 501512,
       "nodes": 30,
       "meshes": 6,
       "materials": 3,
@@ -1898,14 +1898,14 @@
       ],
       "bounds": {
         "min": [
-          -0.979200005531311,
-          0.005279990378767252,
-          -0.18539994955062866
+          -0.8238312602043152,
+          0.005879988893866539,
+          -0.17990437150001526
         ],
         "max": [
-          0.979200005531311,
-          1.6016000509262085,
-          0.23819999396800995
+          0.8238312602043152,
+          1.7640000581741333,
+          0.274128794670105
         ]
       },
       "animations": [
@@ -1924,11 +1924,11 @@
         "Hit": 54,
         "Death": 54
       },
-      "triangles": 4092,
+      "triangles": 2742,
       "lodTriangles": {
-        "LOD0": 2028,
-        "LOD1": 1222,
-        "LOD2": 842
+        "LOD0": 1318,
+        "LOD1": 906,
+        "LOD2": 518
       },
       "surfaceAttributes": {
         "TEXCOORD_0": true,
@@ -1946,7 +1946,7 @@
       "key": "flyingColossus",
       "status": "ok",
       "path": "public/assets/models/characters/flyingColossus.glb",
-      "sizeBytes": 585692,
+      "sizeBytes": 531304,
       "nodes": 30,
       "meshes": 6,
       "materials": 3,
@@ -1970,14 +1970,14 @@
       ],
       "bounds": {
         "min": [
-          -0.979200005531311,
-          0.005279990378767252,
-          -0.18539994955062866
+          -0.581039547920227,
+          0.007679986767470837,
+          -0.3059999644756317
         ],
         "max": [
-          0.979200005531311,
-          1.6447999477386475,
-          0.2608000338077545
+          0.8284760117530823,
+          1.9967999458312988,
+          0.3120000660419464
         ]
       },
       "animations": [
@@ -1996,11 +1996,11 @@
         "Hit": 54,
         "Death": 54
       },
-      "triangles": 4188,
+      "triangles": 3090,
       "lodTriangles": {
-        "LOD0": 2052,
-        "LOD1": 1258,
-        "LOD2": 878
+        "LOD0": 1558,
+        "LOD1": 1002,
+        "LOD2": 530
       },
       "surfaceAttributes": {
         "TEXCOORD_0": true,
