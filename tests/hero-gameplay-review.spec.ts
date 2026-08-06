@@ -325,6 +325,26 @@ test("verifies Hero in the formal snow, furnace, ally and enemy gameplay context
     expect(deathFinal.heroScreenBounds.y).toBeGreaterThanOrEqual(0);
     expect(deathFinal.heroScreenBounds.right).toBeLessThanOrEqual(1600);
     expect(deathFinal.heroScreenBounds.bottom).toBeLessThanOrEqual(900);
+    // A strike has to reach toward what it is aimed at.
+    //
+    // `forward` is measured along the rig root's own +Z, the gameplay heading,
+    // so this is orientation-independent: it asks whether the hand crosses in
+    // front of the body, not where the hand is in the world. Two clips shipped
+    // authored entirely behind the back -- this one and the roster's Cast --
+    // and nothing caught them, because a backwards gesture produces a valid
+    // GLB, a correctly sized silhouette and a green suite. Death and Hit are
+    // excluded: neither is a gesture toward anything.
+    for (const [animation, samples] of Object.entries(animationSamples)) {
+      if (!/attack/i.test(animation)) continue;
+      const reach = samples
+        .map((sample) => (sample.metadata as { gestureReach?: Record<string, { forward: number }> } | null)?.gestureReach?.["hand.R"]?.forward)
+        .filter((value): value is number => typeof value === "number");
+      expect(reach.length, `${animation} must publish hand reach`).toBeGreaterThan(0);
+      expect(
+        Math.max(...reach),
+        `${animation} must swing the right hand in front of the Hero at some point; it peaked at ${Math.max(...reach).toFixed(3)} along local +Z`,
+      ).toBeGreaterThan(0.12);
+    }
     writeFileSync(resolve(outputRoot, "animation-samples.json"), `${JSON.stringify({ sampleMode: "normalized-timeline", normalizedTimeline, midDeltas, animations: animationSamples }, null, 2)}\n`, "utf8");
 
     if (consoleErrors.length > 0 || pageErrors.length > 0 || requestFailures.length > 0) {

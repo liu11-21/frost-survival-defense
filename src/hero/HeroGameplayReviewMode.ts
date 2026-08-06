@@ -28,6 +28,7 @@ export interface HeroGameplayReviewCaptureMetadata {
   uiOccluded: boolean;
   animationNormalized: number;
   boneTransforms: Record<string, { position: [number, number, number]; rotation: [number, number, number, number] }>;
+  gestureReach: Record<string, { right: number; up: number; forward: number }>;
   fps: number;
   drawCalls: number;
   activeMeshes: number;
@@ -268,6 +269,7 @@ export class HeroGameplayReviewMode {
       uiOccluded,
       animationNormalized: this.s.hero.reviewAnimationNormalized,
       boneTransforms: this.s.hero.reviewBoneSnapshot,
+      gestureReach: this.s.hero.reviewGestureReach,
       fps: round(this.s.engine.getFps()),
       drawCalls,
       activeMeshes: this.s.scene.getActiveMeshes().length,

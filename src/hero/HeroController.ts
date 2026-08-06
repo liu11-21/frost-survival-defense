@@ -161,6 +161,10 @@ export class HeroController implements Damageable {
     return this.avatar.reviewBoneSnapshot;
   }
 
+  get reviewGestureReach(): Record<string, { right: number; up: number; forward: number }> {
+    return this.avatar.reviewGestureReach;
+  }
+
   setReviewAnimation(name: string): void {
     this.avatar.setReviewAnimation(name);
   }

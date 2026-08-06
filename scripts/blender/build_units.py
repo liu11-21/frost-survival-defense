@@ -393,24 +393,48 @@ def add_weapon(level, a, cfg):
         shaft(hy - 0.30 * h, hy + 0.26 * h, lb * 0.30, lb * 0.28)
         b.box((hx, hy + 0.34 * h, 0.06), (lb * 1.7, 0.20 * h, lb * 1.7), "metal", w, taper=0.80)
     elif kind == "dagger":
-        shaft(hy - 0.10 * h, hy + 0.06 * h, lb * 0.28, lb * 0.26)
-        b.prism([(hx - lb * 0.5, hy + 0.08 * h), (hx + lb * 0.5, hy + 0.08 * h),
-                 (hx + lb * 0.2, hy + 0.42 * h), (hx - lb * 0.2, hy + 0.42 * h)], 0.06, lb * 0.34, "edge", w)
+        # Grip, a crossguard, and a blade that tapers to a point rather than
+        # stopping flat. The guard is what says "weapon" at a glance -- without
+        # it a short blade is just a stick with a wedge on the end.
+        shaft(hy - 0.12 * h, hy + 0.05 * h, lb * 0.30, lb * 0.26)
+        b.box((hx, hy - 0.14 * h, 0.06), (lb * 0.52, 0.04 * h, lb * 0.52), "metal", w, taper=0.8)
+        b.box((hx, hy + 0.07 * h, 0.06), (lb * 1.70, 0.035 * h, lb * 0.60), "metal", w, taper=0.86)
+        b.prism([
+            (hx - lb * 0.46, hy + 0.09 * h), (hx + lb * 0.46, hy + 0.09 * h),
+            (hx + lb * 0.34, hy + 0.36 * h), (hx, hy + 0.50 * h), (hx - lb * 0.34, hy + 0.36 * h),
+        ], 0.06, lb * 0.30, "edge", w)
     elif kind == "sling":
         shaft(hy - 0.06 * h, hy + 0.20 * h, lb * 0.22, lb * 0.20)
         b.box((hx, hy + 0.26 * h, 0.06), (lb * 1.0, lb * 1.0, lb * 1.0), "leather", w, taper=0.7)
     elif kind == "bow":
-        for y, r in ((-0.42, 0.10), (-0.20, 0.34), (0.10, 0.38), (0.40, 0.10)):
-            b.box((hx + r * lb * 2.0, hy + y * h, 0.06), (lb * 0.5, 0.24 * h, lb * 0.5), "leather", w, taper=0.9)
-        shaft(hy - 0.40 * h, hy + 0.40 * h, lb * 0.10, lb * 0.10, x=hx + lb * 0.2, surface="edge")
+        # A bow is a continuous limb bellying away from a straight string, and
+        # that pairing is the whole read. This was four stacked boxes
+        # approximating the curve, which at any distance is a ladder.
+        limb = ((-0.46, 0.02), (-0.32, 0.26), (-0.16, 0.38), (0.02, 0.40),
+                (0.18, 0.32), (0.32, 0.18), (0.44, 0.02))
+        b.sweep([
+            (hy + t * h, section(n, lb * (0.16 + 0.10 * off), lb * 0.44, lb * 0.44, 2.4,
+                                 centre_x=hx + off * lb * 2.4, centre_z=0.06))
+            for t, off in limb
+        ], "leather", lambda y: w)
+        # String, tip to tip and dead straight, which is what sells the tension.
+        shaft(hy - 0.46 * h, hy + 0.44 * h, lb * 0.06, lb * 0.06, x=hx + lb * 0.05, surface="edge")
+        b.box((hx + 0.40 * lb * 2.4, hy - 0.02 * h, 0.06), (lb * 0.62, 0.13 * h, lb * 0.62), "grip", w, taper=0.94)
     elif kind == "musket":
         shaft(hy - 0.16 * h, hy + 0.52 * h, lb * 0.24, lb * 0.20, surface="metal")
         b.box((hx, hy - 0.24 * h, 0.06), (lb * 0.9, 0.26 * h, lb * 1.5), "leather", w, taper=0.86)
     elif kind == "staff":
         shaft(hy - 0.44 * h, hy + 0.60 * h, lb * 0.24, lb * 0.22)
-        b.sweep([(hy + 0.60 * h, section(n, lb * 0.4, lb * 0.4, lb * 0.4, 2.0, centre_x=hx, centre_z=0.06)),
-                 (hy + 0.70 * h, section(n, lb * 1.5, lb * 1.5, lb * 1.5, 2.0, centre_x=hx, centre_z=0.06)),
-                 (hy + 0.80 * h, section(n, lb * 0.4, lb * 0.4, lb * 0.4, 2.0, centre_x=hx, centre_z=0.06))],
+        # Head: a metal claw holding a faceted crystal, rather than a ball.
+        # The low ring count is deliberate -- facets catch the light in
+        # separate flat steps, which is what makes a small prop read as a gem.
+        b.sweep([(hy + 0.56 * h, section(4, lb * 0.34, lb * 0.34, lb * 0.34, 2.6, centre_x=hx, centre_z=0.06)),
+                 (hy + 0.64 * h, section(4, lb * 0.86, lb * 0.86, lb * 0.86, 2.6, centre_x=hx, centre_z=0.06)),
+                 (hy + 0.70 * h, section(4, lb * 0.62, lb * 0.62, lb * 0.62, 2.6, centre_x=hx, centre_z=0.06))],
+                "metal", lambda y: w)
+        b.sweep([(hy + 0.66 * h, section(6, lb * 0.22, lb * 0.22, lb * 0.22, 2.4, centre_x=hx, centre_z=0.06)),
+                 (hy + 0.76 * h, section(6, lb * 0.92, lb * 0.92, lb * 0.92, 2.4, centre_x=hx, centre_z=0.06)),
+                 (hy + 0.98 * h, section(6, lb * 0.18, lb * 0.18, lb * 0.18, 2.4, centre_x=hx, centre_z=0.06))],
                 "accent", lambda y: w)
     elif kind == "banner":
         shaft(hy - 0.40 * h, hy + 0.86 * h, lb * 0.22, lb * 0.20)

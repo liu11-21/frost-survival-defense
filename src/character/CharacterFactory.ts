@@ -122,6 +122,45 @@ export class CharacterAvatar {
    * The snapshot intentionally exposes only the existing production bones;
    * it is test evidence, not a second animation or IK system.
    */
+  /**
+   * How far each hand reaches in the character's OWN frame, forward positive.
+   *
+   * This exists because a gesture can be perfectly authored and still point
+   * the wrong way. Two clips shipped that way -- the Hero's RangedAttack and
+   * the roster's Cast -- with every arm key negative, so the whole aim was
+   * assembled behind the back while the shot went forward. The GLB was valid,
+   * the bounds were the right size, the animation played, and every suite
+   * stayed green; it took someone looking at the screen.
+   *
+   * `forward` is along the rig root's local +Z, which is the gameplay heading,
+   * so a strike or an aim must drive this positive at some point in its
+   * timeline. Bone-local positions cannot show this -- they are relative to
+   * the parent bone and say nothing about which way the body is pointing.
+   */
+  get reviewGestureReach(): Record<string, { right: number; up: number; forward: number }> {
+    const out: Record<string, { right: number; up: number; forward: number }> = {};
+    const skeleton = this.authored?.skeletons?.[0];
+    const reference = this.authoredMeshes.find((mesh) => (mesh as AbstractMesh).skeleton === skeleton) as AbstractMesh | undefined;
+    if (!skeleton || !reference) return out;
+    const root = this.rig.root;
+    root.computeWorldMatrix(true);
+    const origin = root.getAbsolutePosition();
+    const yaw = this._yaw;
+    const cos = Math.cos(yaw), sin = Math.sin(yaw);
+    for (const bone of skeleton.bones) {
+      const name = bone.name.split(":").pop() ?? bone.name;
+      if (name !== "hand.L" && name !== "hand.R") continue;
+      const world = bone.getAbsolutePosition(reference);
+      const dx = world.x - origin.x, dz = world.z - origin.z;
+      out[name] = {
+        right: roundReview(cos * dx - sin * dz),
+        up: roundReview(world.y - origin.y),
+        forward: roundReview(sin * dx + cos * dz),
+      };
+    }
+    return out;
+  }
+
   get reviewBoneSnapshot(): Record<string, { position: [number, number, number]; rotation: [number, number, number, number] }> {
     const snapshot: Record<string, { position: [number, number, number]; rotation: [number, number, number, number] }> = {};
     const bones = this.authored?.skeletons?.[0]?.bones ?? [];

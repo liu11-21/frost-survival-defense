@@ -10,7 +10,7 @@
   "captures": [
     {
       "captureId": "hero-alone-snow",
-      "capturedAt": "2026-08-06T05:47:05.538Z",
+      "capturedAt": "2026-08-06T06:09:07.801Z",
       "screenshot": "D:\\codex\\遊戲開發\\reports\\art-previews\\hero-commercial-r7\\R7-E\\hero-alone-snow.png",
       "state": {
         "captureMode": "heroGameplayReview=1",
@@ -255,9 +255,21 @@
             ]
           }
         },
-        "fps": 2.21,
-        "drawCalls": 719,
-        "activeMeshes": 128,
+        "gestureReach": {
+          "hand.L": {
+            "right": 0.2785,
+            "up": 0.8165,
+            "forward": 0.0166
+          },
+          "hand.R": {
+            "right": -0.2785,
+            "up": 0.8165,
+            "forward": 0.0166
+          }
+        },
+        "fps": 2.27,
+        "drawCalls": 738,
+        "activeMeshes": 134,
         "animationGroups": [
           "hero.player:Idle",
           "hero.player:Walk",
@@ -527,9 +539,21 @@
             ]
           }
         },
-        "fps": 2.21,
-        "drawCalls": 719,
-        "activeMeshes": 128,
+        "gestureReach": {
+          "hand.L": {
+            "right": 0.2785,
+            "up": 0.8165,
+            "forward": 0.0166
+          },
+          "hand.R": {
+            "right": -0.2785,
+            "up": 0.8165,
+            "forward": 0.0166
+          }
+        },
+        "fps": 2.27,
+        "drawCalls": 738,
+        "activeMeshes": 134,
         "animationGroups": [
           "hero.player:Idle",
           "hero.player:Walk",
@@ -543,7 +567,7 @@
     },
     {
       "captureId": "hero-alone-furnace",
-      "capturedAt": "2026-08-06T05:47:06.246Z",
+      "capturedAt": "2026-08-06T06:09:08.391Z",
       "screenshot": "D:\\codex\\遊戲開發\\reports\\art-previews\\hero-commercial-r7\\R7-E\\hero-alone-furnace.png",
       "state": {
         "captureMode": "heroGameplayReview=1",
@@ -788,9 +812,21 @@
             ]
           }
         },
-        "fps": 2.21,
-        "drawCalls": 989,
-        "activeMeshes": 129,
+        "gestureReach": {
+          "hand.L": {
+            "right": 0.2785,
+            "up": 0.8165,
+            "forward": 0.0166
+          },
+          "hand.R": {
+            "right": -0.2785,
+            "up": 0.8165,
+            "forward": 0.0166
+          }
+        },
+        "fps": 2.27,
+        "drawCalls": 1018,
+        "activeMeshes": 134,
         "animationGroups": [
           "hero.player:Idle",
           "hero.player:Walk",
@@ -1060,9 +1096,21 @@
             ]
           }
         },
-        "fps": 2.21,
-        "drawCalls": 989,
-        "activeMeshes": 129,
+        "gestureReach": {
+          "hand.L": {
+            "right": 0.2785,
+            "up": 0.8165,
+            "forward": 0.0166
+          },
+          "hand.R": {
+            "right": -0.2785,
+            "up": 0.8165,
+            "forward": 0.0166
+          }
+        },
+        "fps": 2.27,
+        "drawCalls": 1018,
+        "activeMeshes": 134,
         "animationGroups": [
           "hero.player:Idle",
           "hero.player:Walk",
@@ -1076,7 +1124,7 @@
     },
     {
       "captureId": "hero-with-allies",
-      "capturedAt": "2026-08-06T05:47:06.900Z",
+      "capturedAt": "2026-08-06T06:09:09.036Z",
       "screenshot": "D:\\codex\\遊戲開發\\reports\\art-previews\\hero-commercial-r7\\R7-E\\hero-with-allies.png",
       "state": {
         "captureMode": "heroGameplayReview=1",
@@ -1321,9 +1369,21 @@
             ]
           }
         },
-        "fps": 2.21,
-        "drawCalls": 1327,
-        "activeMeshes": 163,
+        "gestureReach": {
+          "hand.L": {
+            "right": 0.2785,
+            "up": 0.8165,
+            "forward": 0.0166
+          },
+          "hand.R": {
+            "right": -0.2785,
+            "up": 0.8165,
+            "forward": 0.0166
+          }
+        },
+        "fps": 2.27,
+        "drawCalls": 1366,
+        "activeMeshes": 168,
         "animationGroups": [
           "hero.player:Idle",
           "hero.player:Walk",
@@ -1593,9 +1653,21 @@
             ]
           }
         },
-        "fps": 2.21,
-        "drawCalls": 1327,
-        "activeMeshes": 163,
+        "gestureReach": {
+          "hand.L": {
+            "right": 0.2785,
+            "up": 0.8165,
+            "forward": 0.0166
+          },
+          "hand.R": {
+            "right": -0.2785,
+            "up": 0.8165,
+            "forward": 0.0166
+          }
+        },
+        "fps": 2.27,
+        "drawCalls": 1366,
+        "activeMeshes": 168,
         "animationGroups": [
           "hero.player:Idle",
           "hero.player:Walk",
@@ -1609,7 +1681,7 @@
     },
     {
       "captureId": "hero-battle",
-      "capturedAt": "2026-08-06T05:47:07.486Z",
+      "capturedAt": "2026-08-06T06:09:09.568Z",
       "screenshot": "D:\\codex\\遊戲開發\\reports\\art-previews\\hero-commercial-r7\\R7-E\\hero-battle.png",
       "state": {
         "captureMode": "heroGameplayReview=1",
@@ -1854,9 +1926,21 @@
             ]
           }
         },
-        "fps": 2.21,
-        "drawCalls": 1685,
-        "activeMeshes": 173,
+        "gestureReach": {
+          "hand.L": {
+            "right": 0.2785,
+            "up": 0.8165,
+            "forward": 0.0166
+          },
+          "hand.R": {
+            "right": -0.2785,
+            "up": 0.8165,
+            "forward": 0.0166
+          }
+        },
+        "fps": 2.27,
+        "drawCalls": 1734,
+        "activeMeshes": 178,
         "animationGroups": [
           "hero.player:Idle",
           "hero.player:Walk",
@@ -2126,9 +2210,21 @@
             ]
           }
         },
-        "fps": 2.21,
-        "drawCalls": 1685,
-        "activeMeshes": 173,
+        "gestureReach": {
+          "hand.L": {
+            "right": 0.2785,
+            "up": 0.8165,
+            "forward": 0.0166
+          },
+          "hand.R": {
+            "right": -0.2785,
+            "up": 0.8165,
+            "forward": 0.0166
+          }
+        },
+        "fps": 2.27,
+        "drawCalls": 1734,
+        "activeMeshes": 178,
         "animationGroups": [
           "hero.player:Idle",
           "hero.player:Walk",
@@ -2142,7 +2238,7 @@
     },
     {
       "captureId": "gameplay-front",
-      "capturedAt": "2026-08-06T05:47:08.100Z",
+      "capturedAt": "2026-08-06T06:09:10.153Z",
       "screenshot": "D:\\codex\\遊戲開發\\reports\\art-previews\\hero-commercial-r7\\R7-E\\gameplay-front.png",
       "state": {
         "captureMode": "heroGameplayReview=1",
@@ -2387,9 +2483,21 @@
             ]
           }
         },
-        "fps": 2.21,
-        "drawCalls": 2042,
-        "activeMeshes": 173,
+        "gestureReach": {
+          "hand.L": {
+            "right": 0.2785,
+            "up": 0.8165,
+            "forward": 0.0166
+          },
+          "hand.R": {
+            "right": -0.2785,
+            "up": 0.8165,
+            "forward": 0.0166
+          }
+        },
+        "fps": 2.27,
+        "drawCalls": 2102,
+        "activeMeshes": 178,
         "animationGroups": [
           "hero.player:Idle",
           "hero.player:Walk",
@@ -2659,9 +2767,21 @@
             ]
           }
         },
-        "fps": 2.21,
-        "drawCalls": 2042,
-        "activeMeshes": 173,
+        "gestureReach": {
+          "hand.L": {
+            "right": 0.2785,
+            "up": 0.8165,
+            "forward": 0.0166
+          },
+          "hand.R": {
+            "right": -0.2785,
+            "up": 0.8165,
+            "forward": 0.0166
+          }
+        },
+        "fps": 2.27,
+        "drawCalls": 2102,
+        "activeMeshes": 178,
         "animationGroups": [
           "hero.player:Idle",
           "hero.player:Walk",
@@ -2675,7 +2795,7 @@
     },
     {
       "captureId": "gameplay-back",
-      "capturedAt": "2026-08-06T05:47:08.707Z",
+      "capturedAt": "2026-08-06T06:09:10.683Z",
       "screenshot": "D:\\codex\\遊戲開發\\reports\\art-previews\\hero-commercial-r7\\R7-E\\gameplay-back.png",
       "state": {
         "captureMode": "heroGameplayReview=1",
@@ -2920,9 +3040,21 @@
             ]
           }
         },
-        "fps": 2.21,
-        "drawCalls": 2304,
-        "activeMeshes": 125,
+        "gestureReach": {
+          "hand.L": {
+            "right": 0.2785,
+            "up": 0.8165,
+            "forward": 0.0166
+          },
+          "hand.R": {
+            "right": -0.2785,
+            "up": 0.8165,
+            "forward": 0.0166
+          }
+        },
+        "fps": 2.27,
+        "drawCalls": 2374,
+        "activeMeshes": 130,
         "animationGroups": [
           "hero.player:Idle",
           "hero.player:Walk",
@@ -3192,9 +3324,21 @@
             ]
           }
         },
-        "fps": 2.21,
-        "drawCalls": 2304,
-        "activeMeshes": 125,
+        "gestureReach": {
+          "hand.L": {
+            "right": 0.2785,
+            "up": 0.8165,
+            "forward": 0.0166
+          },
+          "hand.R": {
+            "right": -0.2785,
+            "up": 0.8165,
+            "forward": 0.0166
+          }
+        },
+        "fps": 2.27,
+        "drawCalls": 2374,
+        "activeMeshes": 130,
         "animationGroups": [
           "hero.player:Idle",
           "hero.player:Walk",
@@ -3208,7 +3352,7 @@
     },
     {
       "captureId": "gameplay-tactical",
-      "capturedAt": "2026-08-06T05:47:09.317Z",
+      "capturedAt": "2026-08-06T06:09:11.237Z",
       "screenshot": "D:\\codex\\遊戲開發\\reports\\art-previews\\hero-commercial-r7\\R7-E\\gameplay-tactical.png",
       "state": {
         "captureMode": "heroGameplayReview=1",
@@ -3453,9 +3597,21 @@
             ]
           }
         },
-        "fps": 2.21,
-        "drawCalls": 2590,
-        "activeMeshes": 137,
+        "gestureReach": {
+          "hand.L": {
+            "right": 0.2785,
+            "up": 0.8165,
+            "forward": 0.0166
+          },
+          "hand.R": {
+            "right": -0.2785,
+            "up": 0.8165,
+            "forward": 0.0166
+          }
+        },
+        "fps": 2.27,
+        "drawCalls": 2666,
+        "activeMeshes": 140,
         "animationGroups": [
           "hero.player:Idle",
           "hero.player:Walk",
@@ -3725,9 +3881,21 @@
             ]
           }
         },
-        "fps": 2.21,
-        "drawCalls": 2590,
-        "activeMeshes": 137,
+        "gestureReach": {
+          "hand.L": {
+            "right": 0.2785,
+            "up": 0.8165,
+            "forward": 0.0166
+          },
+          "hand.R": {
+            "right": -0.2785,
+            "up": 0.8165,
+            "forward": 0.0166
+          }
+        },
+        "fps": 2.27,
+        "drawCalls": 2666,
+        "activeMeshes": 140,
         "animationGroups": [
           "hero.player:Idle",
           "hero.player:Walk",
@@ -3741,7 +3909,7 @@
     },
     {
       "captureId": "gameplay-walk",
-      "capturedAt": "2026-08-06T05:47:09.896Z",
+      "capturedAt": "2026-08-06T06:09:11.796Z",
       "screenshot": "D:\\codex\\遊戲開發\\reports\\art-previews\\hero-commercial-r7\\R7-E\\gameplay-walk.png",
       "state": {
         "captureMode": "heroGameplayReview=1",
@@ -3986,9 +4154,21 @@
             ]
           }
         },
-        "fps": 2.21,
-        "drawCalls": 2948,
-        "activeMeshes": 173,
+        "gestureReach": {
+          "hand.L": {
+            "right": 0.2749,
+            "up": 0.8352,
+            "forward": -0.1265
+          },
+          "hand.R": {
+            "right": -0.2734,
+            "up": 0.8556,
+            "forward": 0.1596
+          }
+        },
+        "fps": 2.27,
+        "drawCalls": 3034,
+        "activeMeshes": 178,
         "animationGroups": [
           "hero.player:Idle",
           "hero.player:Walk",
@@ -4258,9 +4438,21 @@
             ]
           }
         },
-        "fps": 2.21,
-        "drawCalls": 2948,
-        "activeMeshes": 173,
+        "gestureReach": {
+          "hand.L": {
+            "right": 0.2749,
+            "up": 0.8352,
+            "forward": -0.1265
+          },
+          "hand.R": {
+            "right": -0.2734,
+            "up": 0.8556,
+            "forward": 0.1596
+          }
+        },
+        "fps": 2.27,
+        "drawCalls": 3034,
+        "activeMeshes": 178,
         "animationGroups": [
           "hero.player:Idle",
           "hero.player:Walk",
@@ -4274,7 +4466,7 @@
     },
     {
       "captureId": "gameplay-run",
-      "capturedAt": "2026-08-06T05:47:10.493Z",
+      "capturedAt": "2026-08-06T06:09:12.354Z",
       "screenshot": "D:\\codex\\遊戲開發\\reports\\art-previews\\hero-commercial-r7\\R7-E\\gameplay-run.png",
       "state": {
         "captureMode": "heroGameplayReview=1",
@@ -4519,9 +4711,21 @@
             ]
           }
         },
-        "fps": 2.21,
-        "drawCalls": 3306,
-        "activeMeshes": 173,
+        "gestureReach": {
+          "hand.L": {
+            "right": 0.2662,
+            "up": 0.9153,
+            "forward": -0.2369
+          },
+          "hand.R": {
+            "right": -0.2637,
+            "up": 0.889,
+            "forward": 0.2457
+          }
+        },
+        "fps": 2.27,
+        "drawCalls": 3402,
+        "activeMeshes": 178,
         "animationGroups": [
           "hero.player:Idle",
           "hero.player:Walk",
@@ -4791,9 +4995,21 @@
             ]
           }
         },
-        "fps": 2.21,
-        "drawCalls": 3306,
-        "activeMeshes": 173,
+        "gestureReach": {
+          "hand.L": {
+            "right": 0.2662,
+            "up": 0.9153,
+            "forward": -0.2369
+          },
+          "hand.R": {
+            "right": -0.2637,
+            "up": 0.889,
+            "forward": 0.2457
+          }
+        },
+        "fps": 2.27,
+        "drawCalls": 3402,
+        "activeMeshes": 178,
         "animationGroups": [
           "hero.player:Idle",
           "hero.player:Walk",
@@ -4807,7 +5023,7 @@
     },
     {
       "captureId": "gameplay-melee-windup",
-      "capturedAt": "2026-08-06T05:47:11.072Z",
+      "capturedAt": "2026-08-06T06:09:12.905Z",
       "screenshot": "D:\\codex\\遊戲開發\\reports\\art-previews\\hero-commercial-r7\\R7-E\\gameplay-melee-windup.png",
       "state": {
         "captureMode": "heroGameplayReview=1",
@@ -5052,9 +5268,21 @@
             ]
           }
         },
-        "fps": 2.21,
-        "drawCalls": 3664,
-        "activeMeshes": 173,
+        "gestureReach": {
+          "hand.L": {
+            "right": 0.3412,
+            "up": 0.852,
+            "forward": 0.1603
+          },
+          "hand.R": {
+            "right": -0.0842,
+            "up": 1.0081,
+            "forward": -0.1983
+          }
+        },
+        "fps": 2.27,
+        "drawCalls": 3770,
+        "activeMeshes": 178,
         "animationGroups": [
           "hero.player:Idle",
           "hero.player:Walk",
@@ -5324,9 +5552,21 @@
             ]
           }
         },
-        "fps": 2.21,
-        "drawCalls": 3664,
-        "activeMeshes": 173,
+        "gestureReach": {
+          "hand.L": {
+            "right": 0.3412,
+            "up": 0.852,
+            "forward": 0.1603
+          },
+          "hand.R": {
+            "right": -0.0842,
+            "up": 1.0081,
+            "forward": -0.1983
+          }
+        },
+        "fps": 2.27,
+        "drawCalls": 3770,
+        "activeMeshes": 178,
         "animationGroups": [
           "hero.player:Idle",
           "hero.player:Walk",
@@ -5340,7 +5580,7 @@
     },
     {
       "captureId": "gameplay-melee-impact",
-      "capturedAt": "2026-08-06T05:47:11.666Z",
+      "capturedAt": "2026-08-06T06:09:13.477Z",
       "screenshot": "D:\\codex\\遊戲開發\\reports\\art-previews\\hero-commercial-r7\\R7-E\\gameplay-melee-impact.png",
       "state": {
         "captureMode": "heroGameplayReview=1",
@@ -5585,9 +5825,21 @@
             ]
           }
         },
-        "fps": 2.21,
-        "drawCalls": 4022,
-        "activeMeshes": 173,
+        "gestureReach": {
+          "hand.L": {
+            "right": 0.2571,
+            "up": 0.8322,
+            "forward": -0.1343
+          },
+          "hand.R": {
+            "right": -0.3591,
+            "up": 1.0107,
+            "forward": 0.2288
+          }
+        },
+        "fps": 2.27,
+        "drawCalls": 4137,
+        "activeMeshes": 178,
         "animationGroups": [
           "hero.player:Idle",
           "hero.player:Walk",
@@ -5857,9 +6109,21 @@
             ]
           }
         },
-        "fps": 2.21,
-        "drawCalls": 4022,
-        "activeMeshes": 173,
+        "gestureReach": {
+          "hand.L": {
+            "right": 0.2571,
+            "up": 0.8322,
+            "forward": -0.1343
+          },
+          "hand.R": {
+            "right": -0.3591,
+            "up": 1.0107,
+            "forward": 0.2288
+          }
+        },
+        "fps": 2.27,
+        "drawCalls": 4137,
+        "activeMeshes": 178,
         "animationGroups": [
           "hero.player:Idle",
           "hero.player:Walk",
@@ -5873,7 +6137,7 @@
     },
     {
       "captureId": "gameplay-ranged-aim",
-      "capturedAt": "2026-08-06T05:47:12.278Z",
+      "capturedAt": "2026-08-06T06:09:14.026Z",
       "screenshot": "D:\\codex\\遊戲開發\\reports\\art-previews\\hero-commercial-r7\\R7-E\\gameplay-ranged-aim.png",
       "state": {
         "captureMode": "heroGameplayReview=1",
@@ -6118,9 +6382,21 @@
             ]
           }
         },
-        "fps": 2.21,
-        "drawCalls": 4380,
-        "activeMeshes": 173,
+        "gestureReach": {
+          "hand.L": {
+            "right": 0.3245,
+            "up": 1.092,
+            "forward": 0.3369
+          },
+          "hand.R": {
+            "right": -0.2042,
+            "up": 1.1021,
+            "forward": 0.4035
+          }
+        },
+        "fps": 2.27,
+        "drawCalls": 4505,
+        "activeMeshes": 178,
         "animationGroups": [
           "hero.player:Idle",
           "hero.player:Walk",
@@ -6390,9 +6666,21 @@
             ]
           }
         },
-        "fps": 2.21,
-        "drawCalls": 4380,
-        "activeMeshes": 173,
+        "gestureReach": {
+          "hand.L": {
+            "right": 0.3245,
+            "up": 1.092,
+            "forward": 0.3369
+          },
+          "hand.R": {
+            "right": -0.2042,
+            "up": 1.1021,
+            "forward": 0.4035
+          }
+        },
+        "fps": 2.27,
+        "drawCalls": 4505,
+        "activeMeshes": 178,
         "animationGroups": [
           "hero.player:Idle",
           "hero.player:Walk",
@@ -6406,7 +6694,7 @@
     },
     {
       "captureId": "gameplay-ranged-fire",
-      "capturedAt": "2026-08-06T05:47:12.881Z",
+      "capturedAt": "2026-08-06T06:09:14.579Z",
       "screenshot": "D:\\codex\\遊戲開發\\reports\\art-previews\\hero-commercial-r7\\R7-E\\gameplay-ranged-fire.png",
       "state": {
         "captureMode": "heroGameplayReview=1",
@@ -6651,9 +6939,21 @@
             ]
           }
         },
-        "fps": 2.21,
-        "drawCalls": 4738,
-        "activeMeshes": 173,
+        "gestureReach": {
+          "hand.L": {
+            "right": 0.3071,
+            "up": 1.0676,
+            "forward": 0.3367
+          },
+          "hand.R": {
+            "right": -0.2163,
+            "up": 1.0733,
+            "forward": 0.3913
+          }
+        },
+        "fps": 2.27,
+        "drawCalls": 4873,
+        "activeMeshes": 178,
         "animationGroups": [
           "hero.player:Idle",
           "hero.player:Walk",
@@ -6923,9 +7223,21 @@
             ]
           }
         },
-        "fps": 2.21,
-        "drawCalls": 4738,
-        "activeMeshes": 173,
+        "gestureReach": {
+          "hand.L": {
+            "right": 0.3071,
+            "up": 1.0676,
+            "forward": 0.3367
+          },
+          "hand.R": {
+            "right": -0.2163,
+            "up": 1.0733,
+            "forward": 0.3913
+          }
+        },
+        "fps": 2.27,
+        "drawCalls": 4873,
+        "activeMeshes": 178,
         "animationGroups": [
           "hero.player:Idle",
           "hero.player:Walk",
@@ -6939,7 +7251,7 @@
     },
     {
       "captureId": "gameplay-death",
-      "capturedAt": "2026-08-06T05:47:13.456Z",
+      "capturedAt": "2026-08-06T06:09:15.127Z",
       "screenshot": "D:\\codex\\遊戲開發\\reports\\art-previews\\hero-commercial-r7\\R7-E\\gameplay-death.png",
       "state": {
         "captureMode": "heroGameplayReview=1",
@@ -7184,9 +7496,21 @@
             ]
           }
         },
-        "fps": 2.21,
-        "drawCalls": 5096,
-        "activeMeshes": 173,
+        "gestureReach": {
+          "hand.L": {
+            "right": 0.2387,
+            "up": -0.3959,
+            "forward": 0.7246
+          },
+          "hand.R": {
+            "right": -0.2387,
+            "up": -0.3959,
+            "forward": 0.7246
+          }
+        },
+        "fps": 2.27,
+        "drawCalls": 5241,
+        "activeMeshes": 178,
         "animationGroups": [
           "hero.player:Idle",
           "hero.player:Walk",
@@ -7456,9 +7780,21 @@
             ]
           }
         },
-        "fps": 2.21,
-        "drawCalls": 5096,
-        "activeMeshes": 173,
+        "gestureReach": {
+          "hand.L": {
+            "right": 0.2387,
+            "up": -0.3959,
+            "forward": 0.7246
+          },
+          "hand.R": {
+            "right": -0.2387,
+            "up": -0.3959,
+            "forward": 0.7246
+          }
+        },
+        "fps": 2.27,
+        "drawCalls": 5241,
+        "activeMeshes": 178,
         "animationGroups": [
           "hero.player:Idle",
           "hero.player:Walk",
@@ -7716,9 +8052,21 @@
             ]
           }
         },
-        "fps": 2.21,
-        "drawCalls": 5239,
-        "activeMeshes": 137,
+        "gestureReach": {
+          "hand.L": {
+            "right": 0.2387,
+            "up": -0.3959,
+            "forward": 0.7246
+          },
+          "hand.R": {
+            "right": -0.2387,
+            "up": -0.3959,
+            "forward": 0.7246
+          }
+        },
+        "fps": 2.27,
+        "drawCalls": 5387,
+        "activeMeshes": 140,
         "animationGroups": [
           "hero.player:Idle",
           "hero.player:Walk",
@@ -7988,9 +8336,21 @@
             ]
           }
         },
-        "fps": 2.21,
-        "drawCalls": 5239,
-        "activeMeshes": 137,
+        "gestureReach": {
+          "hand.L": {
+            "right": 0.2387,
+            "up": -0.3959,
+            "forward": 0.7246
+          },
+          "hand.R": {
+            "right": -0.2387,
+            "up": -0.3959,
+            "forward": 0.7246
+          }
+        },
+        "fps": 2.27,
+        "drawCalls": 5387,
+        "activeMeshes": 140,
         "animationGroups": [
           "hero.player:Idle",
           "hero.player:Walk",
@@ -8248,9 +8608,21 @@
             ]
           }
         },
-        "fps": 2.21,
-        "drawCalls": 5381,
-        "activeMeshes": 136,
+        "gestureReach": {
+          "hand.L": {
+            "right": 0.2387,
+            "up": -0.3959,
+            "forward": 0.7246
+          },
+          "hand.R": {
+            "right": -0.2387,
+            "up": -0.3959,
+            "forward": 0.7246
+          }
+        },
+        "fps": 2.27,
+        "drawCalls": 5532,
+        "activeMeshes": 139,
         "animationGroups": [
           "hero.player:Idle",
           "hero.player:Walk",
@@ -8520,9 +8892,21 @@
             ]
           }
         },
-        "fps": 2.21,
-        "drawCalls": 5381,
-        "activeMeshes": 136,
+        "gestureReach": {
+          "hand.L": {
+            "right": 0.2387,
+            "up": -0.3959,
+            "forward": 0.7246
+          },
+          "hand.R": {
+            "right": -0.2387,
+            "up": -0.3959,
+            "forward": 0.7246
+          }
+        },
+        "fps": 2.27,
+        "drawCalls": 5532,
+        "activeMeshes": 139,
         "animationGroups": [
           "hero.player:Idle",
           "hero.player:Walk",
@@ -8780,9 +9164,21 @@
             ]
           }
         },
-        "fps": 2.21,
-        "drawCalls": 5521,
-        "activeMeshes": 134,
+        "gestureReach": {
+          "hand.L": {
+            "right": 0.2387,
+            "up": -0.3959,
+            "forward": 0.7246
+          },
+          "hand.R": {
+            "right": -0.2387,
+            "up": -0.3959,
+            "forward": 0.7246
+          }
+        },
+        "fps": 2.27,
+        "drawCalls": 5675,
+        "activeMeshes": 137,
         "animationGroups": [
           "hero.player:Idle",
           "hero.player:Walk",
@@ -9052,9 +9448,21 @@
             ]
           }
         },
-        "fps": 2.21,
-        "drawCalls": 5521,
-        "activeMeshes": 134,
+        "gestureReach": {
+          "hand.L": {
+            "right": 0.2387,
+            "up": -0.3959,
+            "forward": 0.7246
+          },
+          "hand.R": {
+            "right": -0.2387,
+            "up": -0.3959,
+            "forward": 0.7246
+          }
+        },
+        "fps": 2.27,
+        "drawCalls": 5675,
+        "activeMeshes": 137,
         "animationGroups": [
           "hero.player:Idle",
           "hero.player:Walk",
@@ -9316,9 +9724,21 @@
             ]
           }
         },
-        "fps": 2.21,
-        "drawCalls": 6338,
-        "activeMeshes": 159,
+        "gestureReach": {
+          "hand.L": {
+            "right": 0.2785,
+            "up": 0.8165,
+            "forward": 0.0166
+          },
+          "hand.R": {
+            "right": -0.2785,
+            "up": 0.8165,
+            "forward": 0.0166
+          }
+        },
+        "fps": 2.27,
+        "drawCalls": 6521,
+        "activeMeshes": 166,
         "animationGroups": [
           "hero.player:Idle",
           "hero.player:Walk",
@@ -9588,9 +10008,21 @@
             ]
           }
         },
-        "fps": 2.21,
-        "drawCalls": 6338,
-        "activeMeshes": 159,
+        "gestureReach": {
+          "hand.L": {
+            "right": 0.2785,
+            "up": 0.8165,
+            "forward": 0.0166
+          },
+          "hand.R": {
+            "right": -0.2785,
+            "up": 0.8165,
+            "forward": 0.0166
+          }
+        },
+        "fps": 2.27,
+        "drawCalls": 6521,
+        "activeMeshes": 166,
         "animationGroups": [
           "hero.player:Idle",
           "hero.player:Walk",
@@ -9850,9 +10282,21 @@
             ]
           }
         },
-        "fps": 2.21,
-        "drawCalls": 6503,
-        "activeMeshes": 159,
+        "gestureReach": {
+          "hand.L": {
+            "right": 0.2785,
+            "up": 0.8165,
+            "forward": 0.011
+          },
+          "hand.R": {
+            "right": -0.2785,
+            "up": 0.8165,
+            "forward": 0.011
+          }
+        },
+        "fps": 2.27,
+        "drawCalls": 6693,
+        "activeMeshes": 166,
         "animationGroups": [
           "hero.player:Idle",
           "hero.player:Walk",
@@ -10122,9 +10566,21 @@
             ]
           }
         },
-        "fps": 2.21,
-        "drawCalls": 6503,
-        "activeMeshes": 159,
+        "gestureReach": {
+          "hand.L": {
+            "right": 0.2785,
+            "up": 0.8165,
+            "forward": 0.011
+          },
+          "hand.R": {
+            "right": -0.2785,
+            "up": 0.8165,
+            "forward": 0.011
+          }
+        },
+        "fps": 2.27,
+        "drawCalls": 6693,
+        "activeMeshes": 166,
         "animationGroups": [
           "hero.player:Idle",
           "hero.player:Walk",
@@ -10384,9 +10840,21 @@
             ]
           }
         },
-        "fps": 2.21,
-        "drawCalls": 6668,
-        "activeMeshes": 159,
+        "gestureReach": {
+          "hand.L": {
+            "right": 0.2785,
+            "up": 0.8166,
+            "forward": 0.0092
+          },
+          "hand.R": {
+            "right": -0.2785,
+            "up": 0.8166,
+            "forward": 0.0092
+          }
+        },
+        "fps": 2.27,
+        "drawCalls": 6865,
+        "activeMeshes": 166,
         "animationGroups": [
           "hero.player:Idle",
           "hero.player:Walk",
@@ -10656,9 +11124,21 @@
             ]
           }
         },
-        "fps": 2.21,
-        "drawCalls": 6668,
-        "activeMeshes": 159,
+        "gestureReach": {
+          "hand.L": {
+            "right": 0.2785,
+            "up": 0.8166,
+            "forward": 0.0092
+          },
+          "hand.R": {
+            "right": -0.2785,
+            "up": 0.8166,
+            "forward": 0.0092
+          }
+        },
+        "fps": 2.27,
+        "drawCalls": 6865,
+        "activeMeshes": 166,
         "animationGroups": [
           "hero.player:Idle",
           "hero.player:Walk",
@@ -10918,9 +11398,21 @@
             ]
           }
         },
-        "fps": 2.21,
-        "drawCalls": 6833,
-        "activeMeshes": 159,
+        "gestureReach": {
+          "hand.L": {
+            "right": 0.2785,
+            "up": 0.817,
+            "forward": 0.0205
+          },
+          "hand.R": {
+            "right": -0.2785,
+            "up": 0.817,
+            "forward": 0.0205
+          }
+        },
+        "fps": 2.27,
+        "drawCalls": 7037,
+        "activeMeshes": 166,
         "animationGroups": [
           "hero.player:Idle",
           "hero.player:Walk",
@@ -11190,9 +11682,21 @@
             ]
           }
         },
-        "fps": 2.21,
-        "drawCalls": 6833,
-        "activeMeshes": 159,
+        "gestureReach": {
+          "hand.L": {
+            "right": 0.2785,
+            "up": 0.817,
+            "forward": 0.0205
+          },
+          "hand.R": {
+            "right": -0.2785,
+            "up": 0.817,
+            "forward": 0.0205
+          }
+        },
+        "fps": 2.27,
+        "drawCalls": 7037,
+        "activeMeshes": 166,
         "animationGroups": [
           "hero.player:Idle",
           "hero.player:Walk",
@@ -11452,9 +11956,21 @@
             ]
           }
         },
-        "fps": 2.21,
-        "drawCalls": 6998,
-        "activeMeshes": 159,
+        "gestureReach": {
+          "hand.L": {
+            "right": 0.2785,
+            "up": 0.8169,
+            "forward": 0.015
+          },
+          "hand.R": {
+            "right": -0.2785,
+            "up": 0.8169,
+            "forward": 0.015
+          }
+        },
+        "fps": 2.27,
+        "drawCalls": 7209,
+        "activeMeshes": 166,
         "animationGroups": [
           "hero.player:Idle",
           "hero.player:Walk",
@@ -11724,9 +12240,21 @@
             ]
           }
         },
-        "fps": 2.21,
-        "drawCalls": 6998,
-        "activeMeshes": 159,
+        "gestureReach": {
+          "hand.L": {
+            "right": 0.2785,
+            "up": 0.8169,
+            "forward": 0.015
+          },
+          "hand.R": {
+            "right": -0.2785,
+            "up": 0.8169,
+            "forward": 0.015
+          }
+        },
+        "fps": 2.27,
+        "drawCalls": 7209,
+        "activeMeshes": 166,
         "animationGroups": [
           "hero.player:Idle",
           "hero.player:Walk",
@@ -11986,9 +12514,21 @@
             ]
           }
         },
-        "fps": 2.21,
-        "drawCalls": 7163,
-        "activeMeshes": 159,
+        "gestureReach": {
+          "hand.L": {
+            "right": 0.2785,
+            "up": 0.817,
+            "forward": 0.0141
+          },
+          "hand.R": {
+            "right": -0.2785,
+            "up": 0.817,
+            "forward": 0.0141
+          }
+        },
+        "fps": 2.27,
+        "drawCalls": 7381,
+        "activeMeshes": 166,
         "animationGroups": [
           "hero.player:Idle",
           "hero.player:Walk",
@@ -12258,9 +12798,21 @@
             ]
           }
         },
-        "fps": 2.21,
-        "drawCalls": 7163,
-        "activeMeshes": 159,
+        "gestureReach": {
+          "hand.L": {
+            "right": 0.2785,
+            "up": 0.817,
+            "forward": 0.0141
+          },
+          "hand.R": {
+            "right": -0.2785,
+            "up": 0.817,
+            "forward": 0.0141
+          }
+        },
+        "fps": 2.27,
+        "drawCalls": 7381,
+        "activeMeshes": 166,
         "animationGroups": [
           "hero.player:Idle",
           "hero.player:Walk",
@@ -12520,9 +13072,21 @@
             ]
           }
         },
-        "fps": 2.21,
-        "drawCalls": 7493,
-        "activeMeshes": 159,
+        "gestureReach": {
+          "hand.L": {
+            "right": 0.271,
+            "up": 0.8597,
+            "forward": 0.183
+          },
+          "hand.R": {
+            "right": -0.2728,
+            "up": 0.8584,
+            "forward": -0.1664
+          }
+        },
+        "fps": 2.27,
+        "drawCalls": 7725,
+        "activeMeshes": 166,
         "animationGroups": [
           "hero.player:Idle",
           "hero.player:Walk",
@@ -12792,9 +13356,21 @@
             ]
           }
         },
-        "fps": 2.21,
-        "drawCalls": 7493,
-        "activeMeshes": 159,
+        "gestureReach": {
+          "hand.L": {
+            "right": 0.271,
+            "up": 0.8597,
+            "forward": 0.183
+          },
+          "hand.R": {
+            "right": -0.2728,
+            "up": 0.8584,
+            "forward": -0.1664
+          }
+        },
+        "fps": 2.27,
+        "drawCalls": 7725,
+        "activeMeshes": 166,
         "animationGroups": [
           "hero.player:Idle",
           "hero.player:Walk",
@@ -13054,9 +13630,21 @@
             ]
           }
         },
-        "fps": 2.21,
-        "drawCalls": 7658,
-        "activeMeshes": 159,
+        "gestureReach": {
+          "hand.L": {
+            "right": 0.2785,
+            "up": 0.8164,
+            "forward": -0.0085
+          },
+          "hand.R": {
+            "right": -0.2782,
+            "up": 0.8185,
+            "forward": 0.0384
+          }
+        },
+        "fps": 2.27,
+        "drawCalls": 7897,
+        "activeMeshes": 166,
         "animationGroups": [
           "hero.player:Idle",
           "hero.player:Walk",
@@ -13326,9 +13914,21 @@
             ]
           }
         },
-        "fps": 2.21,
-        "drawCalls": 7658,
-        "activeMeshes": 159,
+        "gestureReach": {
+          "hand.L": {
+            "right": 0.2785,
+            "up": 0.8164,
+            "forward": -0.0085
+          },
+          "hand.R": {
+            "right": -0.2782,
+            "up": 0.8185,
+            "forward": 0.0384
+          }
+        },
+        "fps": 2.27,
+        "drawCalls": 7897,
+        "activeMeshes": 166,
         "animationGroups": [
           "hero.player:Idle",
           "hero.player:Walk",
@@ -13588,9 +14188,21 @@
             ]
           }
         },
-        "fps": 2.21,
-        "drawCalls": 7823,
-        "activeMeshes": 159,
+        "gestureReach": {
+          "hand.L": {
+            "right": 0.2749,
+            "up": 0.8352,
+            "forward": -0.1265
+          },
+          "hand.R": {
+            "right": -0.2734,
+            "up": 0.8556,
+            "forward": 0.1596
+          }
+        },
+        "fps": 2.27,
+        "drawCalls": 8069,
+        "activeMeshes": 166,
         "animationGroups": [
           "hero.player:Idle",
           "hero.player:Walk",
@@ -13860,9 +14472,21 @@
             ]
           }
         },
-        "fps": 2.21,
-        "drawCalls": 7823,
-        "activeMeshes": 159,
+        "gestureReach": {
+          "hand.L": {
+            "right": 0.2749,
+            "up": 0.8352,
+            "forward": -0.1265
+          },
+          "hand.R": {
+            "right": -0.2734,
+            "up": 0.8556,
+            "forward": 0.1596
+          }
+        },
+        "fps": 2.27,
+        "drawCalls": 8069,
+        "activeMeshes": 166,
         "animationGroups": [
           "hero.player:Idle",
           "hero.player:Walk",
@@ -14122,9 +14746,21 @@
             ]
           }
         },
-        "fps": 2.21,
-        "drawCalls": 7988,
-        "activeMeshes": 159,
+        "gestureReach": {
+          "hand.L": {
+            "right": 0.2759,
+            "up": 0.8317,
+            "forward": 0.1105
+          },
+          "hand.R": {
+            "right": -0.277,
+            "up": 0.8266,
+            "forward": -0.0859
+          }
+        },
+        "fps": 2.27,
+        "drawCalls": 8241,
+        "activeMeshes": 166,
         "animationGroups": [
           "hero.player:Idle",
           "hero.player:Walk",
@@ -14394,9 +15030,21 @@
             ]
           }
         },
-        "fps": 2.21,
-        "drawCalls": 7988,
-        "activeMeshes": 159,
+        "gestureReach": {
+          "hand.L": {
+            "right": 0.2759,
+            "up": 0.8317,
+            "forward": 0.1105
+          },
+          "hand.R": {
+            "right": -0.277,
+            "up": 0.8266,
+            "forward": -0.0859
+          }
+        },
+        "fps": 2.27,
+        "drawCalls": 8241,
+        "activeMeshes": 166,
         "animationGroups": [
           "hero.player:Idle",
           "hero.player:Walk",
@@ -14656,9 +15304,21 @@
             ]
           }
         },
-        "fps": 2.21,
-        "drawCalls": 8153,
-        "activeMeshes": 159,
+        "gestureReach": {
+          "hand.L": {
+            "right": 0.2782,
+            "up": 0.8182,
+            "forward": 0.0371
+          },
+          "hand.R": {
+            "right": -0.2785,
+            "up": 0.8165,
+            "forward": -0.0098
+          }
+        },
+        "fps": 2.27,
+        "drawCalls": 8413,
+        "activeMeshes": 166,
         "animationGroups": [
           "hero.player:Idle",
           "hero.player:Walk",
@@ -14928,9 +15588,21 @@
             ]
           }
         },
-        "fps": 2.21,
-        "drawCalls": 8153,
-        "activeMeshes": 159,
+        "gestureReach": {
+          "hand.L": {
+            "right": 0.2782,
+            "up": 0.8182,
+            "forward": 0.0371
+          },
+          "hand.R": {
+            "right": -0.2785,
+            "up": 0.8165,
+            "forward": -0.0098
+          }
+        },
+        "fps": 2.27,
+        "drawCalls": 8413,
+        "activeMeshes": 166,
         "animationGroups": [
           "hero.player:Idle",
           "hero.player:Walk",
@@ -15190,9 +15862,21 @@
             ]
           }
         },
-        "fps": 2.21,
-        "drawCalls": 8318,
-        "activeMeshes": 159,
+        "gestureReach": {
+          "hand.L": {
+            "right": 0.274,
+            "up": 0.8421,
+            "forward": 0.1425
+          },
+          "hand.R": {
+            "right": -0.2755,
+            "up": 0.8366,
+            "forward": -0.12
+          }
+        },
+        "fps": 2.27,
+        "drawCalls": 8585,
+        "activeMeshes": 166,
         "animationGroups": [
           "hero.player:Idle",
           "hero.player:Walk",
@@ -15462,9 +16146,21 @@
             ]
           }
         },
-        "fps": 2.21,
-        "drawCalls": 8318,
-        "activeMeshes": 159,
+        "gestureReach": {
+          "hand.L": {
+            "right": 0.274,
+            "up": 0.8421,
+            "forward": 0.1425
+          },
+          "hand.R": {
+            "right": -0.2755,
+            "up": 0.8366,
+            "forward": -0.12
+          }
+        },
+        "fps": 2.27,
+        "drawCalls": 8585,
+        "activeMeshes": 166,
         "animationGroups": [
           "hero.player:Idle",
           "hero.player:Walk",
@@ -15724,9 +16420,21 @@
             ]
           }
         },
-        "fps": 2.21,
-        "drawCalls": 8648,
-        "activeMeshes": 159,
+        "gestureReach": {
+          "hand.L": {
+            "right": 0.257,
+            "up": 0.9168,
+            "forward": 0.2892
+          },
+          "hand.R": {
+            "right": -0.2598,
+            "up": 0.9704,
+            "forward": -0.2782
+          }
+        },
+        "fps": 2.27,
+        "drawCalls": 8929,
+        "activeMeshes": 166,
         "animationGroups": [
           "hero.player:Idle",
           "hero.player:Walk",
@@ -15996,9 +16704,21 @@
             ]
           }
         },
-        "fps": 2.21,
-        "drawCalls": 8648,
-        "activeMeshes": 159,
+        "gestureReach": {
+          "hand.L": {
+            "right": 0.257,
+            "up": 0.9168,
+            "forward": 0.2892
+          },
+          "hand.R": {
+            "right": -0.2598,
+            "up": 0.9704,
+            "forward": -0.2782
+          }
+        },
+        "fps": 2.27,
+        "drawCalls": 8929,
+        "activeMeshes": 166,
         "animationGroups": [
           "hero.player:Idle",
           "hero.player:Walk",
@@ -16258,9 +16978,21 @@
             ]
           }
         },
-        "fps": 2.21,
-        "drawCalls": 8813,
-        "activeMeshes": 159,
+        "gestureReach": {
+          "hand.L": {
+            "right": 0.2785,
+            "up": 0.8179,
+            "forward": -0.0219
+          },
+          "hand.R": {
+            "right": -0.2783,
+            "up": 0.8151,
+            "forward": 0.0177
+          }
+        },
+        "fps": 2.27,
+        "drawCalls": 9101,
+        "activeMeshes": 166,
         "animationGroups": [
           "hero.player:Idle",
           "hero.player:Walk",
@@ -16530,9 +17262,21 @@
             ]
           }
         },
-        "fps": 2.21,
-        "drawCalls": 8813,
-        "activeMeshes": 159,
+        "gestureReach": {
+          "hand.L": {
+            "right": 0.2785,
+            "up": 0.8179,
+            "forward": -0.0219
+          },
+          "hand.R": {
+            "right": -0.2783,
+            "up": 0.8151,
+            "forward": 0.0177
+          }
+        },
+        "fps": 2.27,
+        "drawCalls": 9101,
+        "activeMeshes": 166,
         "animationGroups": [
           "hero.player:Idle",
           "hero.player:Walk",
@@ -16792,9 +17536,21 @@
             ]
           }
         },
-        "fps": 2.21,
-        "drawCalls": 8978,
-        "activeMeshes": 159,
+        "gestureReach": {
+          "hand.L": {
+            "right": 0.2662,
+            "up": 0.9153,
+            "forward": -0.2369
+          },
+          "hand.R": {
+            "right": -0.2637,
+            "up": 0.889,
+            "forward": 0.2457
+          }
+        },
+        "fps": 2.27,
+        "drawCalls": 9273,
+        "activeMeshes": 166,
         "animationGroups": [
           "hero.player:Idle",
           "hero.player:Walk",
@@ -17064,9 +17820,21 @@
             ]
           }
         },
-        "fps": 2.21,
-        "drawCalls": 8978,
-        "activeMeshes": 159,
+        "gestureReach": {
+          "hand.L": {
+            "right": 0.2662,
+            "up": 0.9153,
+            "forward": -0.2369
+          },
+          "hand.R": {
+            "right": -0.2637,
+            "up": 0.889,
+            "forward": 0.2457
+          }
+        },
+        "fps": 2.27,
+        "drawCalls": 9273,
+        "activeMeshes": 166,
         "animationGroups": [
           "hero.player:Idle",
           "hero.player:Walk",
@@ -17326,9 +18094,21 @@
             ]
           }
         },
-        "fps": 2.21,
-        "drawCalls": 9143,
-        "activeMeshes": 159,
+        "gestureReach": {
+          "hand.L": {
+            "right": 0.2705,
+            "up": 0.8472,
+            "forward": 0.1791
+          },
+          "hand.R": {
+            "right": -0.2725,
+            "up": 0.8701,
+            "forward": -0.1754
+          }
+        },
+        "fps": 2.27,
+        "drawCalls": 9445,
+        "activeMeshes": 166,
         "animationGroups": [
           "hero.player:Idle",
           "hero.player:Walk",
@@ -17598,9 +18378,21 @@
             ]
           }
         },
-        "fps": 2.21,
-        "drawCalls": 9143,
-        "activeMeshes": 159,
+        "gestureReach": {
+          "hand.L": {
+            "right": 0.2705,
+            "up": 0.8472,
+            "forward": 0.1791
+          },
+          "hand.R": {
+            "right": -0.2725,
+            "up": 0.8701,
+            "forward": -0.1754
+          }
+        },
+        "fps": 2.27,
+        "drawCalls": 9445,
+        "activeMeshes": 166,
         "animationGroups": [
           "hero.player:Idle",
           "hero.player:Walk",
@@ -17860,9 +18652,21 @@
             ]
           }
         },
-        "fps": 2.21,
-        "drawCalls": 9308,
-        "activeMeshes": 159,
+        "gestureReach": {
+          "hand.L": {
+            "right": 0.2783,
+            "up": 0.8151,
+            "forward": 0.0173
+          },
+          "hand.R": {
+            "right": -0.2785,
+            "up": 0.818,
+            "forward": -0.0222
+          }
+        },
+        "fps": 2.27,
+        "drawCalls": 9617,
+        "activeMeshes": 166,
         "animationGroups": [
           "hero.player:Idle",
           "hero.player:Walk",
@@ -18132,9 +18936,21 @@
             ]
           }
         },
-        "fps": 2.21,
-        "drawCalls": 9308,
-        "activeMeshes": 159,
+        "gestureReach": {
+          "hand.L": {
+            "right": 0.2783,
+            "up": 0.8151,
+            "forward": 0.0173
+          },
+          "hand.R": {
+            "right": -0.2785,
+            "up": 0.818,
+            "forward": -0.0222
+          }
+        },
+        "fps": 2.27,
+        "drawCalls": 9617,
+        "activeMeshes": 166,
         "animationGroups": [
           "hero.player:Idle",
           "hero.player:Walk",
@@ -18394,9 +19210,21 @@
             ]
           }
         },
-        "fps": 2.21,
-        "drawCalls": 9473,
-        "activeMeshes": 159,
+        "gestureReach": {
+          "hand.L": {
+            "right": 0.2651,
+            "up": 0.8756,
+            "forward": 0.2322
+          },
+          "hand.R": {
+            "right": -0.2677,
+            "up": 0.9056,
+            "forward": -0.2251
+          }
+        },
+        "fps": 2.27,
+        "drawCalls": 9789,
+        "activeMeshes": 166,
         "animationGroups": [
           "hero.player:Idle",
           "hero.player:Walk",
@@ -18666,9 +19494,21 @@
             ]
           }
         },
-        "fps": 2.21,
-        "drawCalls": 9473,
-        "activeMeshes": 159,
+        "gestureReach": {
+          "hand.L": {
+            "right": 0.2651,
+            "up": 0.8756,
+            "forward": 0.2322
+          },
+          "hand.R": {
+            "right": -0.2677,
+            "up": 0.9056,
+            "forward": -0.2251
+          }
+        },
+        "fps": 2.27,
+        "drawCalls": 9789,
+        "activeMeshes": 166,
         "animationGroups": [
           "hero.player:Idle",
           "hero.player:Walk",
@@ -18928,9 +19768,21 @@
             ]
           }
         },
-        "fps": 2.21,
-        "drawCalls": 9803,
-        "activeMeshes": 159,
+        "gestureReach": {
+          "hand.L": {
+            "right": 0.2955,
+            "up": 0.8271,
+            "forward": -0.0499
+          },
+          "hand.R": {
+            "right": -0.1291,
+            "up": 0.8975,
+            "forward": -0.1586
+          }
+        },
+        "fps": 2.27,
+        "drawCalls": 10133,
+        "activeMeshes": 166,
         "animationGroups": [
           "hero.player:Idle",
           "hero.player:Walk",
@@ -19200,9 +20052,21 @@
             ]
           }
         },
-        "fps": 2.21,
-        "drawCalls": 9803,
-        "activeMeshes": 159,
+        "gestureReach": {
+          "hand.L": {
+            "right": 0.2955,
+            "up": 0.8271,
+            "forward": -0.0499
+          },
+          "hand.R": {
+            "right": -0.1291,
+            "up": 0.8975,
+            "forward": -0.1586
+          }
+        },
+        "fps": 2.27,
+        "drawCalls": 10133,
+        "activeMeshes": 166,
         "animationGroups": [
           "hero.player:Idle",
           "hero.player:Walk",
@@ -19462,9 +20326,21 @@
             ]
           }
         },
-        "fps": 2.21,
-        "drawCalls": 9968,
-        "activeMeshes": 159,
+        "gestureReach": {
+          "hand.L": {
+            "right": 0.3412,
+            "up": 0.852,
+            "forward": 0.1603
+          },
+          "hand.R": {
+            "right": -0.0842,
+            "up": 1.0081,
+            "forward": -0.1983
+          }
+        },
+        "fps": 2.27,
+        "drawCalls": 10305,
+        "activeMeshes": 166,
         "animationGroups": [
           "hero.player:Idle",
           "hero.player:Walk",
@@ -19734,9 +20610,21 @@
             ]
           }
         },
-        "fps": 2.21,
-        "drawCalls": 9968,
-        "activeMeshes": 159,
+        "gestureReach": {
+          "hand.L": {
+            "right": 0.3412,
+            "up": 0.852,
+            "forward": 0.1603
+          },
+          "hand.R": {
+            "right": -0.0842,
+            "up": 1.0081,
+            "forward": -0.1983
+          }
+        },
+        "fps": 2.27,
+        "drawCalls": 10305,
+        "activeMeshes": 166,
         "animationGroups": [
           "hero.player:Idle",
           "hero.player:Walk",
@@ -19996,9 +20884,21 @@
             ]
           }
         },
-        "fps": 2.21,
-        "drawCalls": 10133,
-        "activeMeshes": 159,
+        "gestureReach": {
+          "hand.L": {
+            "right": 0.2567,
+            "up": 0.8227,
+            "forward": -0.0885
+          },
+          "hand.R": {
+            "right": -0.3154,
+            "up": 0.9256,
+            "forward": 0.2019
+          }
+        },
+        "fps": 2.27,
+        "drawCalls": 10477,
+        "activeMeshes": 166,
         "animationGroups": [
           "hero.player:Idle",
           "hero.player:Walk",
@@ -20268,9 +21168,21 @@
             ]
           }
         },
-        "fps": 2.21,
-        "drawCalls": 10133,
-        "activeMeshes": 159,
+        "gestureReach": {
+          "hand.L": {
+            "right": 0.2567,
+            "up": 0.8227,
+            "forward": -0.0885
+          },
+          "hand.R": {
+            "right": -0.3154,
+            "up": 0.9256,
+            "forward": 0.2019
+          }
+        },
+        "fps": 2.27,
+        "drawCalls": 10477,
+        "activeMeshes": 166,
         "animationGroups": [
           "hero.player:Idle",
           "hero.player:Walk",
@@ -20530,9 +21442,21 @@
             ]
           }
         },
-        "fps": 2.21,
-        "drawCalls": 10298,
-        "activeMeshes": 159,
+        "gestureReach": {
+          "hand.L": {
+            "right": 0.2632,
+            "up": 0.8265,
+            "forward": -0.1254
+          },
+          "hand.R": {
+            "right": -0.3458,
+            "up": 1.0117,
+            "forward": 0.2364
+          }
+        },
+        "fps": 2.27,
+        "drawCalls": 10649,
+        "activeMeshes": 166,
         "animationGroups": [
           "hero.player:Idle",
           "hero.player:Walk",
@@ -20802,9 +21726,21 @@
             ]
           }
         },
-        "fps": 2.21,
-        "drawCalls": 10298,
-        "activeMeshes": 159,
+        "gestureReach": {
+          "hand.L": {
+            "right": 0.2632,
+            "up": 0.8265,
+            "forward": -0.1254
+          },
+          "hand.R": {
+            "right": -0.3458,
+            "up": 1.0117,
+            "forward": 0.2364
+          }
+        },
+        "fps": 2.27,
+        "drawCalls": 10649,
+        "activeMeshes": 166,
         "animationGroups": [
           "hero.player:Idle",
           "hero.player:Walk",
@@ -21064,9 +22000,21 @@
             ]
           }
         },
-        "fps": 2.21,
-        "drawCalls": 10463,
-        "activeMeshes": 159,
+        "gestureReach": {
+          "hand.L": {
+            "right": 0.285,
+            "up": 0.825,
+            "forward": -0.0467
+          },
+          "hand.R": {
+            "right": -0.1742,
+            "up": 0.8464,
+            "forward": -0.0989
+          }
+        },
+        "fps": 2.27,
+        "drawCalls": 10821,
+        "activeMeshes": 166,
         "animationGroups": [
           "hero.player:Idle",
           "hero.player:Walk",
@@ -21336,9 +22284,21 @@
             ]
           }
         },
-        "fps": 2.21,
-        "drawCalls": 10463,
-        "activeMeshes": 159,
+        "gestureReach": {
+          "hand.L": {
+            "right": 0.285,
+            "up": 0.825,
+            "forward": -0.0467
+          },
+          "hand.R": {
+            "right": -0.1742,
+            "up": 0.8464,
+            "forward": -0.0989
+          }
+        },
+        "fps": 2.27,
+        "drawCalls": 10821,
+        "activeMeshes": 166,
         "animationGroups": [
           "hero.player:Idle",
           "hero.player:Walk",
@@ -21598,9 +22558,21 @@
             ]
           }
         },
-        "fps": 2.21,
-        "drawCalls": 10628,
-        "activeMeshes": 159,
+        "gestureReach": {
+          "hand.L": {
+            "right": 0.2396,
+            "up": 0.8123,
+            "forward": -0.0108
+          },
+          "hand.R": {
+            "right": -0.3605,
+            "up": 0.8786,
+            "forward": 0.1684
+          }
+        },
+        "fps": 2.27,
+        "drawCalls": 10993,
+        "activeMeshes": 166,
         "animationGroups": [
           "hero.player:Idle",
           "hero.player:Walk",
@@ -21870,9 +22842,21 @@
             ]
           }
         },
-        "fps": 2.21,
-        "drawCalls": 10628,
-        "activeMeshes": 159,
+        "gestureReach": {
+          "hand.L": {
+            "right": 0.2396,
+            "up": 0.8123,
+            "forward": -0.0108
+          },
+          "hand.R": {
+            "right": -0.3605,
+            "up": 0.8786,
+            "forward": 0.1684
+          }
+        },
+        "fps": 2.27,
+        "drawCalls": 10993,
+        "activeMeshes": 166,
         "animationGroups": [
           "hero.player:Idle",
           "hero.player:Walk",
@@ -22132,9 +23116,21 @@
             ]
           }
         },
-        "fps": 2.21,
-        "drawCalls": 10958,
-        "activeMeshes": 159,
+        "gestureReach": {
+          "hand.L": {
+            "right": 0.278,
+            "up": 0.8898,
+            "forward": 0.2233
+          },
+          "hand.R": {
+            "right": -0.2365,
+            "up": 0.8585,
+            "forward": 0.2034
+          }
+        },
+        "fps": 2.27,
+        "drawCalls": 11337,
+        "activeMeshes": 166,
         "animationGroups": [
           "hero.player:Idle",
           "hero.player:Walk",
@@ -22404,9 +23400,21 @@
             ]
           }
         },
-        "fps": 2.21,
-        "drawCalls": 10958,
-        "activeMeshes": 159,
+        "gestureReach": {
+          "hand.L": {
+            "right": 0.278,
+            "up": 0.8898,
+            "forward": 0.2233
+          },
+          "hand.R": {
+            "right": -0.2365,
+            "up": 0.8585,
+            "forward": 0.2034
+          }
+        },
+        "fps": 2.27,
+        "drawCalls": 11337,
+        "activeMeshes": 166,
         "animationGroups": [
           "hero.player:Idle",
           "hero.player:Walk",
@@ -22666,9 +23674,21 @@
             ]
           }
         },
-        "fps": 2.21,
-        "drawCalls": 11123,
-        "activeMeshes": 159,
+        "gestureReach": {
+          "hand.L": {
+            "right": 0.2975,
+            "up": 0.9444,
+            "forward": 0.2763
+          },
+          "hand.R": {
+            "right": -0.2165,
+            "up": 0.9332,
+            "forward": 0.3029
+          }
+        },
+        "fps": 2.27,
+        "drawCalls": 11509,
+        "activeMeshes": 166,
         "animationGroups": [
           "hero.player:Idle",
           "hero.player:Walk",
@@ -22938,9 +23958,21 @@
             ]
           }
         },
-        "fps": 2.21,
-        "drawCalls": 11123,
-        "activeMeshes": 159,
+        "gestureReach": {
+          "hand.L": {
+            "right": 0.2975,
+            "up": 0.9444,
+            "forward": 0.2763
+          },
+          "hand.R": {
+            "right": -0.2165,
+            "up": 0.9332,
+            "forward": 0.3029
+          }
+        },
+        "fps": 2.27,
+        "drawCalls": 11509,
+        "activeMeshes": 166,
         "animationGroups": [
           "hero.player:Idle",
           "hero.player:Walk",
@@ -23200,9 +24232,21 @@
             ]
           }
         },
-        "fps": 2.21,
-        "drawCalls": 11288,
-        "activeMeshes": 159,
+        "gestureReach": {
+          "hand.L": {
+            "right": 0.3245,
+            "up": 1.092,
+            "forward": 0.3369
+          },
+          "hand.R": {
+            "right": -0.2042,
+            "up": 1.1021,
+            "forward": 0.4035
+          }
+        },
+        "fps": 2.27,
+        "drawCalls": 11681,
+        "activeMeshes": 166,
         "animationGroups": [
           "hero.player:Idle",
           "hero.player:Walk",
@@ -23472,9 +24516,21 @@
             ]
           }
         },
-        "fps": 2.21,
-        "drawCalls": 11288,
-        "activeMeshes": 159,
+        "gestureReach": {
+          "hand.L": {
+            "right": 0.3245,
+            "up": 1.092,
+            "forward": 0.3369
+          },
+          "hand.R": {
+            "right": -0.2042,
+            "up": 1.1021,
+            "forward": 0.4035
+          }
+        },
+        "fps": 2.27,
+        "drawCalls": 11681,
+        "activeMeshes": 166,
         "animationGroups": [
           "hero.player:Idle",
           "hero.player:Walk",
@@ -23734,9 +24790,21 @@
             ]
           }
         },
-        "fps": 2.21,
-        "drawCalls": 11453,
-        "activeMeshes": 159,
+        "gestureReach": {
+          "hand.L": {
+            "right": 0.3071,
+            "up": 1.0676,
+            "forward": 0.3367
+          },
+          "hand.R": {
+            "right": -0.2163,
+            "up": 1.0733,
+            "forward": 0.3913
+          }
+        },
+        "fps": 2.27,
+        "drawCalls": 11853,
+        "activeMeshes": 166,
         "animationGroups": [
           "hero.player:Idle",
           "hero.player:Walk",
@@ -24006,9 +25074,21 @@
             ]
           }
         },
-        "fps": 2.21,
-        "drawCalls": 11453,
-        "activeMeshes": 159,
+        "gestureReach": {
+          "hand.L": {
+            "right": 0.3071,
+            "up": 1.0676,
+            "forward": 0.3367
+          },
+          "hand.R": {
+            "right": -0.2163,
+            "up": 1.0733,
+            "forward": 0.3913
+          }
+        },
+        "fps": 2.27,
+        "drawCalls": 11853,
+        "activeMeshes": 166,
         "animationGroups": [
           "hero.player:Idle",
           "hero.player:Walk",
@@ -24268,9 +25348,21 @@
             ]
           }
         },
-        "fps": 2.21,
-        "drawCalls": 11618,
-        "activeMeshes": 159,
+        "gestureReach": {
+          "hand.L": {
+            "right": 0.2649,
+            "up": 0.942,
+            "forward": 0.2963
+          },
+          "hand.R": {
+            "right": -0.2523,
+            "up": 0.9257,
+            "forward": 0.2849
+          }
+        },
+        "fps": 2.27,
+        "drawCalls": 12025,
+        "activeMeshes": 166,
         "animationGroups": [
           "hero.player:Idle",
           "hero.player:Walk",
@@ -24540,9 +25632,21 @@
             ]
           }
         },
-        "fps": 2.21,
-        "drawCalls": 11618,
-        "activeMeshes": 159,
+        "gestureReach": {
+          "hand.L": {
+            "right": 0.2649,
+            "up": 0.942,
+            "forward": 0.2963
+          },
+          "hand.R": {
+            "right": -0.2523,
+            "up": 0.9257,
+            "forward": 0.2849
+          }
+        },
+        "fps": 2.27,
+        "drawCalls": 12025,
+        "activeMeshes": 166,
         "animationGroups": [
           "hero.player:Idle",
           "hero.player:Walk",
@@ -24802,9 +25906,21 @@
             ]
           }
         },
-        "fps": 2.21,
-        "drawCalls": 11783,
-        "activeMeshes": 159,
+        "gestureReach": {
+          "hand.L": {
+            "right": 0.2604,
+            "up": 0.9249,
+            "forward": 0.2851
+          },
+          "hand.R": {
+            "right": -0.2551,
+            "up": 0.9047,
+            "forward": 0.2596
+          }
+        },
+        "fps": 2.27,
+        "drawCalls": 12197,
+        "activeMeshes": 166,
         "animationGroups": [
           "hero.player:Idle",
           "hero.player:Walk",
@@ -25074,9 +26190,21 @@
             ]
           }
         },
-        "fps": 2.21,
-        "drawCalls": 11783,
-        "activeMeshes": 159,
+        "gestureReach": {
+          "hand.L": {
+            "right": 0.2604,
+            "up": 0.9249,
+            "forward": 0.2851
+          },
+          "hand.R": {
+            "right": -0.2551,
+            "up": 0.9047,
+            "forward": 0.2596
+          }
+        },
+        "fps": 2.27,
+        "drawCalls": 12197,
+        "activeMeshes": 166,
         "animationGroups": [
           "hero.player:Idle",
           "hero.player:Walk",
@@ -25336,9 +26464,21 @@
             ]
           }
         },
-        "fps": 2.21,
-        "drawCalls": 12113,
-        "activeMeshes": 159,
+        "gestureReach": {
+          "hand.L": {
+            "right": 0.2444,
+            "up": 0.8132,
+            "forward": 0.0555
+          },
+          "hand.R": {
+            "right": -0.2688,
+            "up": 0.8323,
+            "forward": -0.0148
+          }
+        },
+        "fps": 2.27,
+        "drawCalls": 12541,
+        "activeMeshes": 166,
         "animationGroups": [
           "hero.player:Idle",
           "hero.player:Walk",
@@ -25608,9 +26748,21 @@
             ]
           }
         },
-        "fps": 2.21,
-        "drawCalls": 12113,
-        "activeMeshes": 159,
+        "gestureReach": {
+          "hand.L": {
+            "right": 0.2444,
+            "up": 0.8132,
+            "forward": 0.0555
+          },
+          "hand.R": {
+            "right": -0.2688,
+            "up": 0.8323,
+            "forward": -0.0148
+          }
+        },
+        "fps": 2.27,
+        "drawCalls": 12541,
+        "activeMeshes": 166,
         "animationGroups": [
           "hero.player:Idle",
           "hero.player:Walk",
@@ -25870,9 +27022,21 @@
             ]
           }
         },
-        "fps": 2.21,
-        "drawCalls": 12278,
-        "activeMeshes": 159,
+        "gestureReach": {
+          "hand.L": {
+            "right": 0.2373,
+            "up": 0.8191,
+            "forward": 0.0689
+          },
+          "hand.R": {
+            "right": -0.2676,
+            "up": 0.8345,
+            "forward": -0.02
+          }
+        },
+        "fps": 2.27,
+        "drawCalls": 12713,
+        "activeMeshes": 166,
         "animationGroups": [
           "hero.player:Idle",
           "hero.player:Walk",
@@ -26142,9 +27306,21 @@
             ]
           }
         },
-        "fps": 2.21,
-        "drawCalls": 12278,
-        "activeMeshes": 159,
+        "gestureReach": {
+          "hand.L": {
+            "right": 0.2373,
+            "up": 0.8191,
+            "forward": 0.0689
+          },
+          "hand.R": {
+            "right": -0.2676,
+            "up": 0.8345,
+            "forward": -0.02
+          }
+        },
+        "fps": 2.27,
+        "drawCalls": 12713,
+        "activeMeshes": 166,
         "animationGroups": [
           "hero.player:Idle",
           "hero.player:Walk",
@@ -26404,9 +27580,21 @@
             ]
           }
         },
-        "fps": 2.21,
-        "drawCalls": 12443,
-        "activeMeshes": 159,
+        "gestureReach": {
+          "hand.L": {
+            "right": 0.2172,
+            "up": 0.8511,
+            "forward": 0.1053
+          },
+          "hand.R": {
+            "right": -0.2636,
+            "up": 0.8395,
+            "forward": -0.0374
+          }
+        },
+        "fps": 2.27,
+        "drawCalls": 12885,
+        "activeMeshes": 166,
         "animationGroups": [
           "hero.player:Idle",
           "hero.player:Walk",
@@ -26676,9 +27864,21 @@
             ]
           }
         },
-        "fps": 2.21,
-        "drawCalls": 12443,
-        "activeMeshes": 159,
+        "gestureReach": {
+          "hand.L": {
+            "right": 0.2172,
+            "up": 0.8511,
+            "forward": 0.1053
+          },
+          "hand.R": {
+            "right": -0.2636,
+            "up": 0.8395,
+            "forward": -0.0374
+          }
+        },
+        "fps": 2.27,
+        "drawCalls": 12885,
+        "activeMeshes": 166,
         "animationGroups": [
           "hero.player:Idle",
           "hero.player:Walk",
@@ -26938,9 +28138,21 @@
             ]
           }
         },
-        "fps": 2.21,
-        "drawCalls": 12608,
-        "activeMeshes": 159,
+        "gestureReach": {
+          "hand.L": {
+            "right": 0.2228,
+            "up": 0.8439,
+            "forward": 0.101
+          },
+          "hand.R": {
+            "right": -0.2654,
+            "up": 0.8396,
+            "forward": -0.0318
+          }
+        },
+        "fps": 2.27,
+        "drawCalls": 13057,
+        "activeMeshes": 166,
         "animationGroups": [
           "hero.player:Idle",
           "hero.player:Walk",
@@ -27210,9 +28422,21 @@
             ]
           }
         },
-        "fps": 2.21,
-        "drawCalls": 12608,
-        "activeMeshes": 159,
+        "gestureReach": {
+          "hand.L": {
+            "right": 0.2228,
+            "up": 0.8439,
+            "forward": 0.101
+          },
+          "hand.R": {
+            "right": -0.2654,
+            "up": 0.8396,
+            "forward": -0.0318
+          }
+        },
+        "fps": 2.27,
+        "drawCalls": 13057,
+        "activeMeshes": 166,
         "animationGroups": [
           "hero.player:Idle",
           "hero.player:Walk",
@@ -27472,9 +28696,21 @@
             ]
           }
         },
-        "fps": 2.21,
-        "drawCalls": 12773,
-        "activeMeshes": 159,
+        "gestureReach": {
+          "hand.L": {
+            "right": 0.2479,
+            "up": 0.813,
+            "forward": 0.0573
+          },
+          "hand.R": {
+            "right": -0.2706,
+            "up": 0.8331,
+            "forward": -0.011
+          }
+        },
+        "fps": 2.27,
+        "drawCalls": 13229,
+        "activeMeshes": 166,
         "animationGroups": [
           "hero.player:Idle",
           "hero.player:Walk",
@@ -27744,9 +28980,21 @@
             ]
           }
         },
-        "fps": 2.21,
-        "drawCalls": 12773,
-        "activeMeshes": 159,
+        "gestureReach": {
+          "hand.L": {
+            "right": 0.2479,
+            "up": 0.813,
+            "forward": 0.0573
+          },
+          "hand.R": {
+            "right": -0.2706,
+            "up": 0.8331,
+            "forward": -0.011
+          }
+        },
+        "fps": 2.27,
+        "drawCalls": 13229,
+        "activeMeshes": 166,
         "animationGroups": [
           "hero.player:Idle",
           "hero.player:Walk",
@@ -28006,9 +29254,21 @@
             ]
           }
         },
-        "fps": 2.21,
-        "drawCalls": 12938,
-        "activeMeshes": 159,
+        "gestureReach": {
+          "hand.L": {
+            "right": 0.2614,
+            "up": 0.8094,
+            "forward": 0.0482
+          },
+          "hand.R": {
+            "right": -0.2753,
+            "up": 0.8322,
+            "forward": 0.0012
+          }
+        },
+        "fps": 2.27,
+        "drawCalls": 13401,
+        "activeMeshes": 166,
         "animationGroups": [
           "hero.player:Idle",
           "hero.player:Walk",
@@ -28278,9 +29538,21 @@
             ]
           }
         },
-        "fps": 2.21,
-        "drawCalls": 12938,
-        "activeMeshes": 159,
+        "gestureReach": {
+          "hand.L": {
+            "right": 0.2614,
+            "up": 0.8094,
+            "forward": 0.0482
+          },
+          "hand.R": {
+            "right": -0.2753,
+            "up": 0.8322,
+            "forward": 0.0012
+          }
+        },
+        "fps": 2.27,
+        "drawCalls": 13401,
+        "activeMeshes": 166,
         "animationGroups": [
           "hero.player:Idle",
           "hero.player:Walk",
@@ -28540,9 +29812,21 @@
             ]
           }
         },
-        "fps": 2.21,
-        "drawCalls": 13268,
-        "activeMeshes": 159,
+        "gestureReach": {
+          "hand.L": {
+            "right": 0.2552,
+            "up": 0.7484,
+            "forward": 0.599
+          },
+          "hand.R": {
+            "right": -0.2552,
+            "up": 0.7484,
+            "forward": 0.599
+          }
+        },
+        "fps": 2.27,
+        "drawCalls": 13745,
+        "activeMeshes": 166,
         "animationGroups": [
           "hero.player:Idle",
           "hero.player:Walk",
@@ -28812,9 +30096,21 @@
             ]
           }
         },
-        "fps": 2.21,
-        "drawCalls": 13268,
-        "activeMeshes": 159,
+        "gestureReach": {
+          "hand.L": {
+            "right": 0.2552,
+            "up": 0.7484,
+            "forward": 0.599
+          },
+          "hand.R": {
+            "right": -0.2552,
+            "up": 0.7484,
+            "forward": 0.599
+          }
+        },
+        "fps": 2.27,
+        "drawCalls": 13745,
+        "activeMeshes": 166,
         "animationGroups": [
           "hero.player:Idle",
           "hero.player:Walk",
@@ -29074,9 +30370,21 @@
             ]
           }
         },
-        "fps": 2.21,
-        "drawCalls": 13433,
-        "activeMeshes": 159,
+        "gestureReach": {
+          "hand.L": {
+            "right": 0.2552,
+            "up": 0.7339,
+            "forward": 0.6089
+          },
+          "hand.R": {
+            "right": -0.2552,
+            "up": 0.7339,
+            "forward": 0.6089
+          }
+        },
+        "fps": 2.27,
+        "drawCalls": 13917,
+        "activeMeshes": 166,
         "animationGroups": [
           "hero.player:Idle",
           "hero.player:Walk",
@@ -29346,9 +30654,21 @@
             ]
           }
         },
-        "fps": 2.21,
-        "drawCalls": 13433,
-        "activeMeshes": 159,
+        "gestureReach": {
+          "hand.L": {
+            "right": 0.2552,
+            "up": 0.7339,
+            "forward": 0.6089
+          },
+          "hand.R": {
+            "right": -0.2552,
+            "up": 0.7339,
+            "forward": 0.6089
+          }
+        },
+        "fps": 2.27,
+        "drawCalls": 13917,
+        "activeMeshes": 166,
         "animationGroups": [
           "hero.player:Idle",
           "hero.player:Walk",
@@ -29608,9 +30928,21 @@
             ]
           }
         },
-        "fps": 2.21,
-        "drawCalls": 13598,
-        "activeMeshes": 159,
+        "gestureReach": {
+          "hand.L": {
+            "right": 0.2552,
+            "up": 0.5409,
+            "forward": 0.7424
+          },
+          "hand.R": {
+            "right": -0.2552,
+            "up": 0.5409,
+            "forward": 0.7424
+          }
+        },
+        "fps": 2.27,
+        "drawCalls": 14089,
+        "activeMeshes": 166,
         "animationGroups": [
           "hero.player:Idle",
           "hero.player:Walk",
@@ -29880,9 +31212,21 @@
             ]
           }
         },
-        "fps": 2.21,
-        "drawCalls": 13598,
-        "activeMeshes": 159,
+        "gestureReach": {
+          "hand.L": {
+            "right": 0.2552,
+            "up": 0.5409,
+            "forward": 0.7424
+          },
+          "hand.R": {
+            "right": -0.2552,
+            "up": 0.5409,
+            "forward": 0.7424
+          }
+        },
+        "fps": 2.27,
+        "drawCalls": 14089,
+        "activeMeshes": 166,
         "animationGroups": [
           "hero.player:Idle",
           "hero.player:Walk",
@@ -30142,9 +31486,21 @@
             ]
           }
         },
-        "fps": 2.21,
-        "drawCalls": 13763,
-        "activeMeshes": 159,
+        "gestureReach": {
+          "hand.L": {
+            "right": 0.2552,
+            "up": -0.1074,
+            "forward": 0.8159
+          },
+          "hand.R": {
+            "right": -0.2552,
+            "up": -0.1074,
+            "forward": 0.8159
+          }
+        },
+        "fps": 2.27,
+        "drawCalls": 14261,
+        "activeMeshes": 166,
         "animationGroups": [
           "hero.player:Idle",
           "hero.player:Walk",
@@ -30414,9 +31770,21 @@
             ]
           }
         },
-        "fps": 2.21,
-        "drawCalls": 13763,
-        "activeMeshes": 159,
+        "gestureReach": {
+          "hand.L": {
+            "right": 0.2552,
+            "up": -0.1074,
+            "forward": 0.8159
+          },
+          "hand.R": {
+            "right": -0.2552,
+            "up": -0.1074,
+            "forward": 0.8159
+          }
+        },
+        "fps": 2.27,
+        "drawCalls": 14261,
+        "activeMeshes": 166,
         "animationGroups": [
           "hero.player:Idle",
           "hero.player:Walk",
@@ -30676,9 +32044,21 @@
             ]
           }
         },
-        "fps": 2.21,
-        "drawCalls": 13928,
-        "activeMeshes": 159,
+        "gestureReach": {
+          "hand.L": {
+            "right": 0.2457,
+            "up": -0.2965,
+            "forward": 0.7625
+          },
+          "hand.R": {
+            "right": -0.2457,
+            "up": -0.2965,
+            "forward": 0.7625
+          }
+        },
+        "fps": 2.27,
+        "drawCalls": 14433,
+        "activeMeshes": 166,
         "animationGroups": [
           "hero.player:Idle",
           "hero.player:Walk",
@@ -30948,9 +32328,21 @@
             ]
           }
         },
-        "fps": 2.21,
-        "drawCalls": 13928,
-        "activeMeshes": 159,
+        "gestureReach": {
+          "hand.L": {
+            "right": 0.2457,
+            "up": -0.2965,
+            "forward": 0.7625
+          },
+          "hand.R": {
+            "right": -0.2457,
+            "up": -0.2965,
+            "forward": 0.7625
+          }
+        },
+        "fps": 2.27,
+        "drawCalls": 14433,
+        "activeMeshes": 166,
         "animationGroups": [
           "hero.player:Idle",
           "hero.player:Walk",
@@ -31210,9 +32602,21 @@
             ]
           }
         },
-        "fps": 2.21,
-        "drawCalls": 14093,
-        "activeMeshes": 159,
+        "gestureReach": {
+          "hand.L": {
+            "right": 0.2387,
+            "up": -0.3959,
+            "forward": 0.7246
+          },
+          "hand.R": {
+            "right": -0.2387,
+            "up": -0.3959,
+            "forward": 0.7246
+          }
+        },
+        "fps": 2.27,
+        "drawCalls": 14605,
+        "activeMeshes": 166,
         "animationGroups": [
           "hero.player:Idle",
           "hero.player:Walk",
@@ -31482,9 +32886,21 @@
             ]
           }
         },
-        "fps": 2.21,
-        "drawCalls": 14093,
-        "activeMeshes": 159,
+        "gestureReach": {
+          "hand.L": {
+            "right": 0.2387,
+            "up": -0.3959,
+            "forward": 0.7246
+          },
+          "hand.R": {
+            "right": -0.2387,
+            "up": -0.3959,
+            "forward": 0.7246
+          }
+        },
+        "fps": 2.27,
+        "drawCalls": 14605,
+        "activeMeshes": 166,
         "animationGroups": [
           "hero.player:Idle",
           "hero.player:Walk",
@@ -31500,5 +32916,5 @@
   "consoleErrors": [],
   "pageErrors": [],
   "requestFailures": [],
-  "finishedAt": "2026-08-06T05:47:16.448Z"
+  "finishedAt": "2026-08-06T06:09:17.985Z"
 }
