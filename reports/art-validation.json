@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-08-06T07:11:07.469Z",
+  "generatedAt": "2026-08-06T07:28:03.373Z",
   "blenderRequired": true,
   "assets": [
     {
@@ -290,7 +290,7 @@
       "key": "shield",
       "status": "ok",
       "path": "public/assets/models/characters/shield.glb",
-      "sizeBytes": 586180,
+      "sizeBytes": 593148,
       "nodes": 30,
       "meshes": 6,
       "materials": 3,
@@ -316,7 +316,7 @@
         "min": [
           -0.5073599815368652,
           0.006359986960887909,
-          -0.21759995818138123
+          -0.36086615920066833
         ],
         "max": [
           0.689736008644104,
@@ -340,10 +340,10 @@
         "Hit": 54,
         "Death": 54
       },
-      "triangles": 4188,
+      "triangles": 4304,
       "lodTriangles": {
-        "LOD0": 2096,
-        "LOD1": 1248,
+        "LOD0": 2188,
+        "LOD1": 1272,
         "LOD2": 844
       },
       "surfaceAttributes": {
@@ -362,7 +362,7 @@
       "key": "archer",
       "status": "ok",
       "path": "public/assets/models/characters/archer.glb",
-      "sizeBytes": 565724,
+      "sizeBytes": 575900,
       "nodes": 30,
       "meshes": 6,
       "materials": 3,
@@ -388,7 +388,7 @@
         "min": [
           -0.33320000767707825,
           0.0057599907740950584,
-          -0.14079996943473816
+          -0.23552803695201874
         ],
         "max": [
           0.32350000739097595,
@@ -412,10 +412,10 @@
         "Hit": 54,
         "Death": 54
       },
-      "triangles": 4048,
+      "triangles": 4208,
       "lodTriangles": {
-        "LOD0": 2036,
-        "LOD1": 1208,
+        "LOD0": 2160,
+        "LOD1": 1244,
         "LOD2": 804
       },
       "surfaceAttributes": {
@@ -434,7 +434,7 @@
       "key": "medic",
       "status": "ok",
       "path": "public/assets/models/characters/medic.glb",
-      "sizeBytes": 569208,
+      "sizeBytes": 576864,
       "nodes": 30,
       "meshes": 6,
       "materials": 3,
@@ -484,10 +484,10 @@
         "Hit": 54,
         "Death": 54
       },
-      "triangles": 3940,
+      "triangles": 4064,
       "lodTriangles": {
-        "LOD0": 1972,
-        "LOD1": 1172,
+        "LOD0": 2060,
+        "LOD1": 1208,
         "LOD2": 796
       },
       "surfaceAttributes": {
@@ -506,7 +506,7 @@
       "key": "flagbearer",
       "status": "ok",
       "path": "public/assets/models/characters/flagbearer.glb",
-      "sizeBytes": 563532,
+      "sizeBytes": 570500,
       "nodes": 30,
       "meshes": 6,
       "materials": 3,
@@ -532,7 +532,7 @@
         "min": [
           -0.44435998797416687,
           0.006599988788366318,
-          -0.17639994621276855
+          -0.3186025619506836
         ],
         "max": [
           0.5990399718284607,
@@ -556,10 +556,10 @@
         "Hit": 54,
         "Death": 54
       },
-      "triangles": 3984,
+      "triangles": 4100,
       "lodTriangles": {
-        "LOD0": 1988,
-        "LOD1": 1182,
+        "LOD0": 2080,
+        "LOD1": 1206,
         "LOD2": 814
       },
       "surfaceAttributes": {
@@ -650,7 +650,7 @@
       "key": "assault",
       "status": "ok",
       "path": "public/assets/models/characters/assault.glb",
-      "sizeBytes": 548968,
+      "sizeBytes": 554848,
       "nodes": 30,
       "meshes": 6,
       "materials": 3,
@@ -700,10 +700,10 @@
         "Hit": 54,
         "Death": 54
       },
-      "triangles": 3756,
+      "triangles": 3840,
       "lodTriangles": {
-        "LOD0": 1884,
-        "LOD1": 1114,
+        "LOD0": 1956,
+        "LOD1": 1126,
         "LOD2": 758
       },
       "surfaceAttributes": {
@@ -722,7 +722,7 @@
       "key": "engineer",
       "status": "ok",
       "path": "public/assets/models/characters/engineer.glb",
-      "sizeBytes": 550400,
+      "sizeBytes": 559632,
       "nodes": 30,
       "meshes": 6,
       "materials": 3,
@@ -748,7 +748,7 @@
         "min": [
           -0.38892000913619995,
           0.005999989807605743,
-          -0.15839996933937073
+          -0.2631804645061493
         ],
         "max": [
           0.3582000136375427,
@@ -772,10 +772,10 @@
         "Hit": 54,
         "Death": 54
       },
-      "triangles": 3732,
+      "triangles": 3884,
       "lodTriangles": {
-        "LOD0": 1892,
-        "LOD1": 1104,
+        "LOD0": 2020,
+        "LOD1": 1128,
         "LOD2": 736
       },
       "surfaceAttributes": {
@@ -794,7 +794,7 @@
       "key": "musketeer",
       "status": "ok",
       "path": "public/assets/models/characters/musketeer.glb",
-      "sizeBytes": 554856,
+      "sizeBytes": 560736,
       "nodes": 30,
       "meshes": 6,
       "materials": 3,
@@ -844,10 +844,10 @@
         "Hit": 54,
         "Death": 54
       },
-      "triangles": 3828,
+      "triangles": 3912,
       "lodTriangles": {
-        "LOD0": 1940,
-        "LOD1": 1134,
+        "LOD0": 2012,
+        "LOD1": 1146,
         "LOD2": 754
       },
       "surfaceAttributes": {

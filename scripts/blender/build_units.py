@@ -118,14 +118,14 @@ MONSTER_FORMS = {
 
 UNITS = {
     # --- allies ---
-    "shield":     dict(arch="heavy",     body=(0.346, 0.439, 0.510), accent=(0.62, 0.80, 0.94), weapon="shield", crest="greatHelm"),
-    "archer":     dict(arch="light",     body=(0.353, 0.420, 0.346), accent=(0.66, 0.82, 0.48), weapon="bow",    crest="hood"),
-    "medic":      dict(arch="light",     body=(0.510, 0.519, 0.528), accent=(0.42, 0.86, 0.66), weapon="staff",  crest="hood"),
-    "flagbearer": dict(arch="commander", body=(0.460, 0.305, 0.288), accent=(0.90, 0.66, 0.22), weapon="banner", crest="crest"),
+    "shield":     dict(arch="heavy",     body=(0.346, 0.439, 0.510), accent=(0.62, 0.80, 0.94), kit="pack", weapon="shield", crest="greatHelm"),
+    "archer":     dict(arch="light",     body=(0.353, 0.420, 0.346), accent=(0.66, 0.82, 0.48), kit="quiver", weapon="bow",    crest="hood"),
+    "medic":      dict(arch="light",     body=(0.510, 0.519, 0.528), accent=(0.42, 0.86, 0.66), kit="satchel", weapon="staff",  crest="hood"),
+    "flagbearer": dict(arch="commander", body=(0.460, 0.305, 0.288), accent=(0.90, 0.66, 0.22), kit="pack", weapon="banner", crest="crest"),
     "mage":       dict(arch="caster",    body=(0.333, 0.305, 0.449), accent=(0.66, 0.44, 0.92), weapon="staff",  crest="hat"),
-    "assault":    dict(arch="medium",    body=(0.305, 0.319, 0.358), accent=(0.90, 0.34, 0.24), weapon="dagger", crest="visor"),
-    "engineer":   dict(arch="medium",    body=(0.490, 0.370, 0.240), accent=(0.92, 0.68, 0.22), weapon="wrench", crest="hardhat"),
-    "musketeer":  dict(arch="medium",    body=(0.333, 0.358, 0.424), accent=(0.90, 0.72, 0.28), weapon="musket", crest="tricorne"),
+    "assault":    dict(arch="medium",    body=(0.305, 0.319, 0.358), accent=(0.90, 0.34, 0.24), kit="bandolier", weapon="dagger", crest="visor"),
+    "engineer":   dict(arch="medium",    body=(0.490, 0.370, 0.240), accent=(0.92, 0.68, 0.22), kit="toolrig", weapon="wrench", crest="hardhat"),
+    "musketeer":  dict(arch="medium",    body=(0.333, 0.358, 0.424), accent=(0.90, 0.72, 0.28), kit="bandolier", weapon="musket", crest="tricorne"),
     "frostmage":  dict(arch="caster",    body=(0.358, 0.500, 0.556), accent=(0.56, 0.88, 0.96), weapon="staff",  crest="iceCrown"),
     # --- enemies ---
     #
@@ -348,6 +348,7 @@ def add_body(level, a, cfg):
     if not cfg.get("mon"):
         add_crest(b, level, a, cfg, n_h)
         add_armor(b, level, a, cfg, n_l)
+        add_kit(b, level, a, cfg)
     if a["arch_name"] == "flying":
         add_wings(b, level, a, n_l)
     return b
@@ -606,6 +607,114 @@ def add_armor(b, level, a, cfg, n):
     if level == 0:
         b.box((0.0, 1.16 * h, a["chest_depth"] * 1.06), (sh * 0.24, sh * 0.42, 0.022), "accent",
               blend("chest", "spine", 0.32))
+
+
+
+def add_kit(b, level, a, cfg):
+    """Profession kit for a human: the gear that says what this soldier does.
+
+    Colour and a crest were carrying the whole role read, which meant an
+    archer and a medic were the same figure in different paint. What a player
+    actually recognises across a battlefield is what a unit is *carrying* --
+    a quiver over the shoulder, a satchel on the hip, tools racked on a frame
+    -- because that reads as a hard edge against the body silhouette from
+    every angle, including the top-down one the gameplay camera uses.
+
+    Everything here is weighted to `chest`/`spine` or `pelvis`, so kit stays
+    put through a swing instead of swimming with the limbs.
+    """
+    kind = cfg.get("kit")
+    if not kind or level > 1:
+        return
+    h, sh, cd = a["height"], a["shoulder"], a["chest_depth"]
+    lb = a["limb"]
+    n = (10, 6)[level]
+    back = blend("chest", "spine", 0.30)
+    hip = blend("pelvis", "spine", 0.36)
+
+    if kind == "quiver":
+        # Slung across the back, mouth up over the right shoulder, with
+        # shafts standing proud of it. The arrows are the read, not the tube.
+        b.sweep([
+            (0.86 * h, section(n, lb * 0.86, lb * 0.86, lb * 0.86, 2.2,
+                               centre_x=sh * 0.34, centre_z=-cd * 1.08)),
+            (1.28 * h, section(n, lb * 0.92, lb * 0.92, lb * 0.92, 2.2,
+                               centre_x=sh * 0.52, centre_z=-cd * 1.16)),
+        ], "leather", lambda y: back)
+        if level == 0:
+            for k in (-1, 0, 1):
+                b.box((sh * 0.52 + k * lb * 0.34, 1.40 * h, -cd * 1.16),
+                      (lb * 0.16, 0.16 * h, lb * 0.16), "grip", back, taper=0.9)
+                b.box((sh * 0.52 + k * lb * 0.34, 1.50 * h, -cd * 1.16),
+                      (lb * 0.30, 0.07 * h, lb * 0.14), "accent", back, taper=0.7)
+        # Strap across the chest, which is what ties it to the body.
+        b.prism([
+            (-sh * 0.62, 1.18 * h), (-sh * 0.44, 1.22 * h),
+            (sh * 0.52, 0.80 * h), (sh * 0.36, 0.76 * h),
+        ], cd * 0.96, lb * 0.22, "leather", back)
+
+    elif kind == "satchel":
+        # Hip bag with a lid and a cross, plus a shoulder strap. A medic is
+        # recognised by the bag long before the staff resolves.
+        b.sweep([
+            (0.62 * h, section(n, sh * 0.40, cd * 0.44, cd * 0.44, 3.0,
+                               centre_x=-sh * 0.86, centre_z=cd * 0.12)),
+            (0.86 * h, section(n, sh * 0.44, cd * 0.48, cd * 0.48, 3.2,
+                               centre_x=-sh * 0.84, centre_z=cd * 0.14)),
+        ], "leather", lambda y: hip)
+        if level == 0:
+            b.box((-sh * 0.84, 0.88 * h, cd * 0.14), (sh * 0.92, 0.05 * h, cd * 1.02), "grip", hip, taper=0.94)
+            b.box((-sh * 0.84, 0.74 * h, cd * 0.66), (sh * 0.46, 0.05 * h, cd * 0.10), "accent", hip)
+            b.box((-sh * 0.84, 0.74 * h, cd * 0.66), (sh * 0.14, 0.16 * h, cd * 0.10), "accent", hip)
+        b.prism([
+            (sh * 0.60, 1.20 * h), (sh * 0.42, 1.24 * h),
+            (-sh * 0.72, 0.86 * h), (-sh * 0.56, 0.82 * h),
+        ], cd * 0.96, lb * 0.20, "leather", back)
+
+    elif kind == "toolrig":
+        # A frame on the back with tool handles racked in it, and a pouch on
+        # the hip. Vertical handles above the shoulder line are the read.
+        b.sweep([
+            (0.90 * h, section(n, sh * 0.62, cd * 0.30, cd * 0.30, 3.2, centre_z=-cd * 1.18)),
+            (1.26 * h, section(n, sh * 0.66, cd * 0.32, cd * 0.32, 3.2, centre_z=-cd * 1.22)),
+        ], "leather", lambda y: back)
+        if level == 0:
+            for k, hgt in ((-1, 0.26), (0, 0.34), (1, 0.22)):
+                b.box((k * sh * 0.42, (1.30 + hgt * 0.5) * h, -cd * 1.22),
+                      (lb * 0.26, hgt * h, lb * 0.26), "metal", back, taper=0.86)
+            b.box((0.0, 1.30 * h, -cd * 1.22), (sh * 1.30, 0.05 * h, cd * 0.40), "metal", back, taper=0.96)
+            b.sweep([
+                (0.60 * h, section(n, sh * 0.34, cd * 0.36, cd * 0.36, 3.0,
+                                   centre_x=sh * 0.88, centre_z=cd * 0.10)),
+                (0.80 * h, section(n, sh * 0.36, cd * 0.38, cd * 0.38, 3.0,
+                                   centre_x=sh * 0.86, centre_z=cd * 0.12)),
+            ], "leather", lambda y: hip)
+
+    elif kind == "bandolier":
+        # Cartridge loops across the chest. Small, but a row of hard blocks
+        # on a diagonal is unmistakable and costs almost nothing.
+        b.prism([
+            (-sh * 0.66, 1.20 * h), (-sh * 0.46, 1.24 * h),
+            (sh * 0.56, 0.78 * h), (sh * 0.40, 0.74 * h),
+        ], cd * 0.98, lb * 0.24, "leather", back)
+        if level == 0:
+            for k in range(5):
+                t = k / 4.0
+                b.box((-sh * 0.56 + t * sh * 1.06, (1.22 - t * 0.45) * h, cd * 1.02),
+                      (lb * 0.22, lb * 0.44, lb * 0.20), "accent", back, taper=0.85)
+
+    elif kind == "pack":
+        # Bedroll and a strapped block: the line infantryman's load.
+        b.sweep([
+            (0.92 * h, section(n, sh * 0.66, cd * 0.40, cd * 0.40, 3.0, centre_z=-cd * 1.16)),
+            (1.24 * h, section(n, sh * 0.70, cd * 0.44, cd * 0.44, 3.0, centre_z=-cd * 1.20)),
+        ], "leather", lambda y: back)
+        if level == 0:
+            b.sweep([
+                (1.26 * h, section(n, sh * 0.74, cd * 0.30, cd * 0.30, 2.2, centre_z=-cd * 1.20)),
+                (1.36 * h, section(n, sh * 0.74, cd * 0.30, cd * 0.30, 2.2, centre_z=-cd * 1.20)),
+            ], "grip", lambda y: back)
+            b.box((0.0, 1.08 * h, -cd * 1.42), (sh * 1.44, 0.06 * h, cd * 0.16), "grip", back, taper=0.96)
 
 
 def add_weapon(level, a, cfg):
