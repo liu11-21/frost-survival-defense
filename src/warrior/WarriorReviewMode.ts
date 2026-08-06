@@ -19,7 +19,7 @@ interface SavedReviewRenderState {
   furnaceIntensity: number;
 }
 
-export type WarriorReviewCamera = "gameplay" | "front" | "side" | "back" | "three-quarter" | "close-up";
+export type WarriorReviewCamera = "gameplay" | "front" | "side" | "back" | "three-quarter" | "close-up" | "head";
 export type WarriorReviewAnimation = "Idle" | "Walk" | "Run" | "MeleeAttack" | "Hit" | "Death";
 
 export interface WarriorReviewCapture {
@@ -236,6 +236,12 @@ export class WarriorReviewMode {
       "three-quarter": { position: new Vector3(3.62, 2.32, 4.64), target: new Vector3(0, 1.05, 0), fov: 0.72 },
       // The tightest framing that still keeps the whole silhouette on screen.
       "close-up": { position: new Vector3(2.55, 1.95, 2.95), target: new Vector3(0, 1.24, 0), fov: 0.72 },
+      // Head only. This exists because "the head reads as a featureless mask"
+      // was a review finding, and every camera above frames the whole figure
+      // -- at which point the head is sixty pixels and any claim about a face
+      // is unfalsifiable. Targeted slightly below the brow so the helm rim,
+      // the eye sockets and the jaw are all in frame at once.
+      head: { position: new Vector3(0.62, 2.32, 1.30), target: new Vector3(0, 2.17, 0.02), fov: 0.62 },
     };
     const preset = presets[mode];
     this.s.camera.camera.position.copyFrom(preset.position);

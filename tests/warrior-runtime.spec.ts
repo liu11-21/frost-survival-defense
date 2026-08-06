@@ -2,7 +2,7 @@ import { expect, test } from "@playwright/test";
 import { mkdirSync, writeFileSync } from "node:fs";
 import { resolve } from "node:path";
 
-type Camera = "gameplay" | "front" | "side" | "back" | "three-quarter" | "close-up";
+type Camera = "gameplay" | "front" | "side" | "back" | "three-quarter" | "close-up" | "head";
 type Animation = "Idle" | "Walk" | "Run" | "MeleeAttack" | "Hit" | "Death";
 type Lod = 0 | 1 | 2;
 type BoneTransform = { position: [number, number, number]; rotation: [number, number, number, number] };
@@ -74,7 +74,7 @@ test("verifies Warrior GLB review mode and normalized animation evidence", async
     const w = window as ReviewWindow;
     return { state: w.__warriorReviewState ?? null, capture: w.frostbound?.api().warriorReview?.capture() ?? null };
   });
-  const select = async (camera: Camera, animation: Animation, lod: Lod, normalized = 0.5) => {
+  const select = async (camera: Camera, animation: Animation, lod: Lod, normalized = 0.5, wholeFigure = true) => {
     await page.evaluate(({ camera, animation, lod, normalized }) => {
       const api = (window as ReviewWindow).frostbound?.api().warriorReview;
       if (!api) throw new Error("Warrior review API unavailable");
@@ -85,17 +85,25 @@ test("verifies Warrior GLB review mode and normalized animation evidence", async
       (window as ReviewWindow).frostbound?.step(0, 1, true);
     }, { camera, animation, lod, normalized });
     const frame = await read();
-    expect(frame.state?.ready).toBe(true);
     expect(frame.state?.modelSource).toBe("GLB");
     expect(frame.state?.authoredVisibleMeshes).toBeGreaterThan(0);
     expect(frame.state?.proceduralVisibleMeshes).toBe(0);
     expect(frame.state?.currentCamera).toBe(camera);
     expect(frame.state?.currentAnimation).toBe(animation);
     expect(frame.state?.currentLod).toBe(`LOD${lod}`);
-    expect(frame.state?.visible).toBe(true);
-    expect(frame.state?.uiOccluded).toBe(false);
-    expect(frame.state?.heroScreenBounds.width).toBeGreaterThan(36);
-    expect(frame.state?.heroScreenBounds.height).toBeGreaterThan(90);
+    // `ready`, `visible` and `uiOccluded` are all computed against the
+    // *entire* body bounding box. That is the right contract for a turntable
+    // frame and the wrong one for a deliberate head crop, where the body is
+    // supposed to run off the edge -- and where a box that spans past the
+    // viewport trivially "overlaps" a HUD panel it does not visually touch.
+    // The head frame gets its own occlusion check at the call site instead.
+    if (wholeFigure) {
+      expect(frame.state?.ready).toBe(true);
+      expect(frame.state?.visible).toBe(true);
+      expect(frame.state?.uiOccluded).toBe(false);
+      expect(frame.state?.heroScreenBounds.width).toBeGreaterThan(36);
+      expect(frame.state?.heroScreenBounds.height).toBeGreaterThan(90);
+    }
     samples.push({ camera, animation, lod: `LOD${lod}`, normalized, state: frame.state, metadata: frame.capture });
     return frame;
   };
@@ -290,7 +298,57 @@ test("verifies Warrior GLB review mode and normalized animation evidence", async
   expect(pageErrors).toEqual([]);
   expect(requestFailures).toEqual([]);
   writeFileSync(resolve(outputRoot, "runtime-result.json"), `${JSON.stringify({ passed: true, sampleCount: samples.length, samples, consoleErrors, pageErrors, requestFailures }, null, 2)}\n`, "utf8");
-  await page.screenshot({ path: resolve(outputRoot, "warrior-front.png"), fullPage: false });
+
+  // Close-range art evidence, forced to LOD0 and labelled inside the frame.
+  //
+  // This used to be one bare screenshot that inherited whatever the last
+  // `select()` had left behind -- which was `select("front", "Idle", 2, 0.5)`
+  // a hundred and fifty lines earlier. It landed in the CI artifact under the
+  // same name as the LOD0 file in `reports/`, so `warrior-front.png` shipped
+  // as front art evidence while actually being LOD2, and an audit caught it.
+  //
+  // Two things stop that recurring. The filename now states the tier, so a
+  // frame at the wrong tier cannot quietly occupy the right name. And the
+  // caption burned into the image is read back out of the live review state
+  // rather than typed here, so it cannot describe a frame that was not taken.
+  const closeSheet: ReadonlyArray<Camera> = ["front", "side", "three-quarter", "close-up", "head"];
+  const labelled: Array<Record<string, unknown>> = [];
+  for (const camera of closeSheet) {
+    const frame = await select(camera, "Idle", 0, 0, camera !== "head");
+    expect(frame.state?.currentLod, `close-range ${camera} evidence must be captured at LOD0`).toBe("LOD0");
+    const caption = `warrior.glb — ${frame.state?.currentLod} — ${camera} — ${frame.state?.currentAnimation}`;
+    await page.evaluate((text) => {
+      const el = document.getElementById("art-evidence-label") ?? document.createElement("div");
+      el.id = "art-evidence-label";
+      el.style.cssText = "position:fixed;left:18px;bottom:18px;z-index:99999;font:600 15px/1.4 ui-monospace,SFMono-Regular,monospace;color:#eef3ff;background:rgba(8,12,20,.82);padding:8px 13px;border-radius:6px;letter-spacing:.02em;pointer-events:none";
+      el.textContent = text;
+      if (!el.isConnected) document.body.appendChild(el);
+    }, caption);
+    if (camera === "head") {
+      // The head crop cannot use the whole-body occlusion result, so check
+      // the thing that actually matters for it: nothing the review draws may
+      // sit over the middle of the canvas, which is where the head is framed.
+      const overlap = await page.evaluate(() => {
+        const canvas = document.querySelector("canvas");
+        const panel = document.getElementById("warriorReviewPanel");
+        if (!canvas || !panel) return null;
+        const c = canvas.getBoundingClientRect();
+        const p = panel.getBoundingClientRect();
+        const zone = { left: c.left + c.width * 0.2, right: c.right - c.width * 0.2, top: c.top + c.height * 0.05, bottom: c.bottom - c.height * 0.2 };
+        return p.right > zone.left && p.left < zone.right && p.bottom > zone.top && p.top < zone.bottom;
+      });
+      expect(overlap, "review HUD must not sit over the head crop").toBe(false);
+    }
+    const file = `warrior-LOD0-${camera}.png`;
+    await page.screenshot({ path: resolve(outputRoot, file), fullPage: false });
+    labelled.push({ file, camera, caption, lod: frame.state?.currentLod, animation: frame.state?.currentAnimation });
+  }
+  await page.evaluate(() => document.getElementById("art-evidence-label")?.remove());
+  writeFileSync(
+    resolve(outputRoot, "close-range-evidence.json"),
+    `${JSON.stringify({ capturedAt: new Date().toISOString(), asset: "warrior.glb", frames: labelled }, null, 2)}\n`,
+    "utf8",
+  );
 });
 
 test("loads three Warrior squads from the authored GLB path", async ({ page }) => {

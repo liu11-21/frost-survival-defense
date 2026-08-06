@@ -97,6 +97,49 @@ class MeshBuilder:
                 j = (i + 1) % count
                 self.face((centre, built[-1][i], built[-1][j]), surface)
 
+    def sweep_z(self, rings, surface, weight_fn, cap_back=True, cap_front=True):
+        """Loft cross-sections along +Z instead of stacking them up +Y.
+
+        Everything else here stacks rings up the body, which is right for a
+        torso and wrong for a foot.  A boot's shape lives along the direction
+        it points -- heel, arch, ball, toe -- so authoring one out of rings
+        stacked in Y forces the author into tapered boxes, and a boot made of
+        boxes is exactly what an art audit calls a block.
+
+        ``rings`` is ``(z, [(x, y), ...])``, so a ``section()`` result can be
+        reused directly with its second coordinate read as height.  The ring
+        order that gives outward normals when stacking up +Y gives inward ones
+        when stacking along +Z, because the rotation sense of the section is
+        then the same as the stacking axis rather than opposite to it; the
+        winding below is reversed to compensate.
+        """
+        counts = {len(points) for _, points in rings}
+        if len(counts) != 1:
+            raise ValueError(
+                f"sweep_z() requires every ring to have the same point count, got {sorted(counts)}. "
+                "Vary shape with radii and the superellipse exponent, not with point count."
+            )
+        built = []
+        for z, section_points in rings:
+            built.append([self.vertex((x, y, z), weight_fn(z)) for x, y in section_points])
+        count = len(built[0])
+        for lower, upper in zip(built, built[1:]):
+            for i in range(count):
+                j = (i + 1) % count
+                self.face((lower[i], upper[i], upper[j], lower[j]), surface)
+        for end, ring, forward in ((0, rings[0], False), (-1, rings[-1], True)):
+            if not (cap_front if forward else cap_back):
+                continue
+            z = ring[0]
+            centre = self.vertex((0.0, 0.0, z), weight_fn(z))
+            cx = sum(p[0] for p in ring[1]) / count
+            cy = sum(p[1] for p in ring[1]) / count
+            self.vertices[centre] = (cx, cy, z)
+            for i in range(count):
+                j = (i + 1) % count
+                quad = (centre, built[end][i], built[end][j])
+                self.face(quad if not forward else (centre, built[end][j], built[end][i]), surface)
+
     def band(self, rings, surface, weight_fn):
         """An open shell swept over an arc, used for the shawl collar.
 
@@ -179,6 +222,53 @@ def section(n, half_width, depth_front, depth_back, exponent=2.6, centre_x=0.0, 
         x = centre_x + half_width * sx
         z = centre_z + depth * sz
         points.append((x + lean * sz, z))
+    return points
+
+
+def thin(rings, level, keep=(1, 1, 2)):
+    """Drop cross-sections at coarse tiers, always keeping both ends.
+
+    There are two ways to decimate a lofted body and only one of them is
+    good.  Lowering the point count rounds every section back toward the
+    circle the superellipse exponent was raised to escape, so the silhouette
+    goes soft everywhere at once.  Dropping *rings* costs only the places
+    where the profile changes along the axis -- and on a torso, a limb or a
+    boot the profile changes slowly, so half the rings can go while the
+    outline stays.  Prefer this over reaching for a smaller ``n``.
+    """
+    step = keep[level]
+    if step <= 1 or len(rings) <= 3:
+        return list(rings)
+    kept = [rings[i] for i in range(0, len(rings) - 1, step)]
+    kept.append(rings[-1])
+    return kept
+
+
+def super_arc(n, half_width, depth_front, depth_back, exponent, start, end,
+              centre_x=0.0, centre_z=0.0, scale=1.0):
+    """A *partial* superellipse, sampled over an angle range.
+
+    ``section()`` returns a closed ring, which is what a limb or a torso
+    wants.  A garment panel wants the same curve over part of it: a coat
+    facing, a shoulder yoke or a skirt vent has to lie *on* the body, and the
+    body is a superellipse.  Sampling ``arc()`` instead puts a circle against
+    a superellipse, and at 45 degrees an exponent-3 section sits about 11%
+    further out than the circle does -- so the panel sinks into the chest at
+    exactly the corners where it should be catching the light.
+
+    Angles follow ``section``: 0 is +X, tau/4 is +Z (front).  ``scale``
+    offsets the curve radially, which is how ``band()`` gets its outer and
+    inner shells from one call each.
+    """
+    points = []
+    for i in range(n):
+        angle = start + (end - start) * (i / (n - 1))
+        c, s = math.cos(angle), math.sin(angle)
+        sx = math.copysign(abs(c) ** (2.0 / exponent), c)
+        sz = math.copysign(abs(s) ** (2.0 / exponent), s)
+        depth = depth_front if sz >= 0 else depth_back
+        points.append((centre_x + half_width * scale * sx,
+                       centre_z + depth * scale * sz))
     return points
 
 

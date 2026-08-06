@@ -1,6 +1,6 @@
 # Faction art — current state and the work queue
 
-Written 2026-08-06 against `art/warrior-production-w1` @ `d58ef31`.
+Written 2026-08-06 against `art/warrior-production-w1` @ `be9e4ee`+.
 This file is the handoff. It exists so the next session does not have to
 re-derive any of it, and so nothing here is claimed that the frames and
 validators do not support.
@@ -86,15 +86,51 @@ hangs off it, but the geometry and weighting are free.
 ### 3. Boss body plan
 Its own builder, not `MONSTER_FORMS["boss"]` scaling.
 
-### 4. Warrior LOD0 — `scripts/blender/build_warrior.py`
-Still reads procedural: masked head, shell torso, tube limbs, no garment
-cut lines. Needs real cloth breaks, layered coat panels, a head that is
-not a smooth mask.
+### 4. Warrior LOD0 — DONE
+The head is now a human skull in a new `skin` surface -- cheekbone widest,
+jaw narrowing to a chin -- under a separate open helm (bowl, rolled
+`blade` rim, crest, nape guard, cheek guards), with a `beard` mass at the
+jaw. Both new surfaces sit in atlas bands that previously duplicated
+their column's first surface, so this cost no material and no texture
+against caps of 3 and 1.
 
-### 5. Close-range evidence discipline
-Every close frame must force **LOD0** and be labelled with asset name and
-tier. `warrior-front.png` was shipped as front art evidence while
-actually being LOD2. Front, side and three-quarter all LOD0.
+Garment cut lines are real geometry: an off-centre front closure (leather
+under-facing, wool storm flap lapping over it, toggles down the edge), a
+shoulder yoke, a three-panel coat skirt with front and side vents and a
+longer back panel, hip pocket flaps, sleeve-head seams, elbow patches,
+vambraces, knee patches and bloused breeches. Boots are lofted along +Z
+via the new `MeshBuilder.sweep_z` -- heel, seat, arch, ball, toe with a
+sole slab and a lofted steel toe cap -- replacing three tapered boxes.
+
+LOD0 2,756 -> 6,544 tris (cap 7,500). LOD1 2,926 (cap 3,200), LOD2 968
+(cap 1,100), a 45%/33% decimation chain. That was reached with the new
+`authoring.thin()`, which drops **rings** rather than points: lowering
+point counts rounds every section back toward the circle the superellipse
+exponent exists to escape, so the silhouette goes soft everywhere at
+once, while a torso or a boot can lose half its rings and keep its
+outline.
+
+### 5. Close-range evidence discipline — DONE
+`tests/warrior-runtime.spec.ts` ended with a bare screenshot that
+inherited whatever the last `select()` had left, which was
+`select("front", "Idle", 2, 0.5)` a hundred and fifty lines earlier. It
+landed in the CI artifact under the same name as the LOD0 file in
+`reports/`, so `warrior-front.png` shipped as front art evidence while
+actually being LOD2.
+
+Now: filenames state the tier (`warrior-LOD0-<camera>.png`), the LOD is
+asserted per frame, and the caption burned into the image is read back
+out of live review state rather than typed, so it cannot describe a frame
+that was not taken. `close-range-evidence.json` records the set.
+
+A **`head` camera** was added to `WarriorReviewMode`. Every other preset
+frames the whole figure, at which point the head is sixty pixels and any
+claim about a face is unfalsifiable. It earned itself immediately: it
+showed the first attempt's eyes and brow sitting 17mm *inside* the skull,
+rendering as a blank plane -- the masked look the pass existed to remove,
+reintroduced by arithmetic. `ready`/`visible`/`uiOccluded` are computed
+against the whole-body box, so the head frame skips those and gets its
+own check that the review HUD is clear of the centre of the canvas.
 
 ### 6. Known open
 - The reframed melee capture still has HUD over the fight;
@@ -131,6 +167,15 @@ before/after pairs from one probe are comparable.
 rig root's own frame; the Hero suite asserts every attack clip drives the
 right hand past +0.12 forward. Two clips had shipped built entirely
 behind the back with a valid GLB and a green suite.
+
+**The preview serves `dist/`, not `public/`.** Rebuilding a `.glb` and
+then running Playwright verifies the *previous* asset, silently and with
+every test green. This cost a full review iteration: two rounds of
+geometry fixes were judged against renders of the build before them, and
+"the fixes landed" was said about frames that did not contain them. After
+any `run-blender.mjs`, run `npm run build` before capturing. It is the
+same failure family as the four below -- a green pipeline describing an
+artifact that is not the one on disk.
 
 **Verifying a Blender export inside Blender can pass while the GLB is
 wrong.** The two-hand grip bug was only caught by an independent forward

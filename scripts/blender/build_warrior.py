@@ -34,7 +34,7 @@ from common import collision_box, empty, export_glb, material, orient_for_babylo
 # Shared authoring language -- see docs/art/PRODUCTION_STANDARD.md. The
 # Warrior consumes the same module the rest of the roster will, so the
 # reference implementation cannot silently drift from the standard.
-from authoring import MeshBuilder, arc, section  # noqa: E402
+from authoring import MeshBuilder, arc, section, super_arc, thin  # noqa: E402
 
 
 # Base colours.  Cloth is a mid-dark blue-grey rather than near-black, fur is
@@ -53,13 +53,19 @@ MATS = {
 # Sub-surfaces share a material slot but occupy their own atlas band, which is
 # how fur/amber read as distinct surfaces while the GLB keeps 3 materials.
 # (material_index, atlas_band) -- band 0..3 within that material's column.
+# `beard` and `skin` occupy the two atlas bands that were previously filled
+# with a duplicate of their column's first surface and never sampled. They cost
+# no material slot and no texture, which matters because the validator caps
+# both at 3 and 1 -- a face had to be paid for out of geometry and UV space.
 SURFACES = {
     "coat": (0, 0),
     "fur": (0, 1),
     "amber": (0, 2),
+    "beard": (0, 3),
     "belt": (1, 0),
     "glove": (1, 1),
     "grip": (1, 2),
+    "skin": (1, 3),
     "plate": (2, 0),
     "blade": (2, 1),
 }
@@ -77,6 +83,13 @@ SURFACE_TINT = {
     "grip": (0.447, 0.344, 0.254),    # darkest leather, reads against the pale haft
     "plate": (0.411, 0.431, 0.456),   # neutral iron
     "blade": (0.537, 0.561, 0.587),   # polished steel, distinctly brighter than plate
+    # A face and a beard. Skin is the warmest surface in the palette by a wide
+    # margin -- everything else is cool blue-grey or desaturated tan -- because
+    # the single thing that has to survive at forty pixels is "this one is
+    # human". The beard is darker than the fur collar so the jaw still breaks
+    # against the shawl instead of merging into it.
+    "skin": (0.735, 0.552, 0.442),    # weathered warm skin
+    "beard": (0.352, 0.318, 0.286),   # dark cold-weather beard
 }
 MATERIALS = {}
 
@@ -138,9 +151,19 @@ def add_body_geometry(level):
     # LOD0 was using only ~2.3k of a 7,500 triangle budget. The extra
     # resolution goes into the sections that carry silhouette (torso, head,
     # limbs), not into subdividing flat panels.
-    n_torso = (28, 14, 8)[level]
-    n_head = (22, 12, 6)[level]
-    n_limb = (18, 10, 6)[level]
+    # Counts are multiples of four wherever a corner is actually visible. A
+    # superellipse puts its corners at 45 degrees, so a count that is not
+    # divisible by four samples *past* every corner and quietly rounds the
+    # shape back toward the circle the exponent was raised to escape -- 22 and
+    # 18 were doing exactly that at LOD0. LOD2 is exempt: a six-point section
+    # is a hexagon, there is no corner left to preserve, and every triangle
+    # there is being spent on a unit twenty pixels tall.
+    n_torso = (28, 12, 8)[level]
+    n_head = (24, 8, 6)[level]
+    n_limb = (16, 8, 6)[level]
+    # Garment panels are open shells laid on the body. They need their own,
+    # much lower count: a lapel is a strip, not a ring.
+    n_panel = (9, 6, 4)[level]
 
     # --- torso ------------------------------------------------------------
     # Broad across the shoulders, tucked at the waist, flaring into a coat
@@ -151,18 +174,90 @@ def add_body_geometry(level):
     # inside the torso silhouette and the figure read as one slab. Sloping the
     # trapezius in to 0.248 puts the deltoids outboard of the chest, which is
     # what actually separates arm from body at gameplay distance.
-    torso_rings = [
-        (0.70, section(n_torso, 0.372, 0.230, 0.248, 2.3)),   # coat hem, flared
-        (0.84, section(n_torso, 0.334, 0.208, 0.226, 2.5)),
-        (1.00, section(n_torso, 0.286, 0.184, 0.196, 2.8)),   # waist, cinched
-        (1.16, section(n_torso, 0.318, 0.210, 0.204, 2.9)),
-        (1.34, section(n_torso, 0.372, 0.244, 0.218, 3.0)),   # ribcage
-        (1.50, section(n_torso, 0.408, 0.262, 0.226, 3.0)),   # chest, broadest
-        (1.62, section(n_torso, 0.396, 0.246, 0.218, 2.9)),
-        (1.72, section(n_torso, 0.322, 0.212, 0.198, 2.6)),   # trapezius slope
-        (1.78, section(n_torso, 0.248, 0.186, 0.176, 2.4)),   # neck base
-    ]
-    b.sweep(torso_rings, "coat", torso_weights)
+    # Kept as parameters rather than as built rings, because the garment
+    # panels below have to lie on exactly this surface. Rebuilding a lapel
+    # against a guessed radius is how a coat ends up floating off a chest.
+    TORSO = (
+        (0.70, 0.372, 0.230, 0.248, 2.3),   # coat hem, flared
+        (0.84, 0.334, 0.208, 0.226, 2.5),
+        (1.00, 0.286, 0.184, 0.196, 2.8),   # waist, cinched
+        (1.16, 0.318, 0.210, 0.204, 2.9),
+        (1.34, 0.372, 0.244, 0.218, 3.0),   # ribcage
+        (1.50, 0.408, 0.262, 0.226, 3.0),   # chest, broadest
+        (1.62, 0.396, 0.246, 0.218, 2.9),
+        (1.72, 0.322, 0.212, 0.198, 2.6),   # trapezius slope
+        (1.78, 0.248, 0.186, 0.176, 2.4),   # neck base
+    )
+    b.sweep([(y, section(n_torso, w, df, db, e)) for y, w, df, db, e in thin(TORSO, level)],
+            "coat", torso_weights)
+
+    # --- garment cut lines -------------------------------------------------
+    # The torso above is one closed shell, which is why the audit read it as a
+    # hard shell rather than as clothing. Real clothing is *panels*: an
+    # overlapping front closure, a reinforced shoulder yoke, a skirt with
+    # vents. Each one is an open band laid on the torso surface, so the edge
+    # where one layer laps over the next is geometry and catches a real
+    # highlight, instead of being a colour change on a smooth wall.
+    FRONT = math.tau / 4.0
+
+    def torso_at(y):
+        """Interpolated (half_width, depth_front, depth_back, exponent)."""
+        if y <= TORSO[0][0]:
+            return TORSO[0][1:]
+        for lo, hi in zip(TORSO, TORSO[1:]):
+            if y <= hi[0]:
+                t = (y - lo[0]) / (hi[0] - lo[0])
+                return tuple(a + (c - a) * t for a, c in zip(lo[1:], hi[1:]))
+        return TORSO[-1][1:]
+
+    def torso_point(y, angle, scale=1.0):
+        w, df, db, e = torso_at(y)
+        return super_arc(2, w, df, db, e, angle, angle, scale=scale)[0]
+
+    def panel(rows, a0, a1, surface, outer, inner, n=None, weight_fn=torso_weights):
+        count = n or n_panel
+        b.band([(y,
+                 super_arc(count, w, df, db, e, a0, a1, scale=outer),
+                 super_arc(count, w, df, db, e, a0, a1, scale=inner))
+                for y, w, df, db, e in rows], surface, weight_fn)
+
+    # Front closure: a leather under-facing with a wool storm flap lapping
+    # over it and stopping short, so the leather shows as a hard edge running
+    # from the collar to the hem. The closure is deliberately off-centre --
+    # a symmetric seam down the middle reads as a zip on a wetsuit.
+    if level <= 1:
+        closure = thin(TORSO[0:7], level, (1, 2, 2))
+        panel(closure, FRONT - 0.22, FRONT + 1.06, "belt", 1.030, 1.000)
+        panel(closure, FRONT - 0.20, FRONT + 0.88, "coat", 1.062, 1.028)
+
+        # Shoulder yoke: a second layer across the shoulders and upper back,
+        # under the fur collar. It puts a horizontal cut line across the one
+        # part of the torso that had none.
+        panel([r for r in TORSO if 1.44 <= r[0] <= 1.66], FRONT - 1.62, FRONT + 1.62,
+              "belt", 1.038, 1.004, n=(15, 9)[level])
+
+    # Coat skirt below the hem, split into three panels. The two side vents
+    # and the front vent are what let the legs read through the coat; a closed
+    # bell would swallow them and turn the whole lower body into one mass.
+    SKIRT = (
+        (0.72, 0.366, 0.228, 0.246, 2.3),
+        (0.64, 0.378, 0.238, 0.256, 2.4),
+        (0.57, 0.390, 0.248, 0.268, 2.5),
+    )
+    SKIRT_BACK = SKIRT[:-1] + ((0.51, 0.400, 0.256, 0.278, 2.5),)
+    panel(SKIRT, FRONT - 1.36, FRONT - 0.16, "coat", 1.000, 0.958)
+    panel(SKIRT, FRONT + 0.16, FRONT + 1.36, "coat", 1.000, 0.958)
+    panel(SKIRT_BACK, FRONT + 1.54, FRONT + 4.74, "coat", 1.000, 0.958, n=n_panel * 2)
+
+    if level == 0:
+        # Toggles down the storm flap edge, and two hip pocket flaps. Small,
+        # but they are the things that read as "this was sewn" at close range.
+        for y in (1.44, 1.24, 1.04, 0.86):
+            x, z = torso_point(y, FRONT + 0.80, 1.072)
+            b.box((x, y, z), (0.052, 0.052, 0.032), "blade", torso_weights(y), taper=0.70)
+        for centre in (FRONT - 1.02, FRONT + 1.02):
+            panel([(0.94,) + torso_at(0.94), (0.85,) + torso_at(0.85)],
+                  centre - 0.26, centre + 0.26, "coat", 1.076, 1.022, n=6)
 
     # --- neck -------------------------------------------------------------
     b.sweep([
@@ -178,9 +273,9 @@ def add_body_geometry(level):
         n_collar = (11, 7)[level]
         collar = []
         for y, outer_w, outer_d, inner_w, inner_d in (
-            (1.70, 0.300, 0.268, 0.196, 0.176),
-            (1.82, 0.338, 0.300, 0.180, 0.162),
-            (1.92, 0.300, 0.268, 0.166, 0.150),
+            (1.71, 0.272, 0.242, 0.194, 0.174),
+            (1.83, 0.304, 0.270, 0.180, 0.162),
+            (1.93, 0.264, 0.234, 0.164, 0.148),
         ):
             collar.append((
                 y,
@@ -190,60 +285,101 @@ def add_body_geometry(level):
         b.band(collar, "fur", lambda y: blend("chest", "neck", 0.42))
 
     # --- head -------------------------------------------------------------
-    # Explicit skull rings.  The brow is the widest and sits furthest forward,
-    # the jaw tucks under and back, and the cranium closes over a rounded
-    # crown rather than tapering to a point -- W2's first pass ended in a
-    # narrow spike, which read as a faceless cone rather than a hooded head.
+    # A human head under an open helm, not a helm with a face drawn on it.
+    #
+    # The previous head was one smooth swept mass in coat cloth, with a brow
+    # band, a nasal bar and two dark slits stuck to the front of it. At LOD0
+    # that is a mask: no chin, no cheekbone, and no skin anywhere on a unit
+    # the player is meant to read as a human winter survivor. The audit called
+    # it a masked head and was right.
+    #
+    # These rings are a skull. The widest point is the cheekbone rather than
+    # the brow, the jaw narrows into a chin that projects forward, and the
+    # whole thing is `skin` -- the only warm surface in the palette. The helm
+    # is separate geometry sitting on top of it, so it can cover the cranium
+    # and leave the face open.
+    head_w = blend("head", "neck", 0.10)
     head_rings = [
-        (1.96, section(n_head, 0.108, 0.112, 0.104, 2.2, centre_z=0.006)),   # neck junction
-        (2.03, section(n_head, 0.132, 0.140, 0.122, 2.4, centre_z=0.022)),   # jaw base
-        (2.09, section(n_head, 0.152, 0.158, 0.138, 2.6, centre_z=0.026)),   # jaw / chin
-        (2.16, section(n_head, 0.168, 0.170, 0.150, 2.8, centre_z=0.022)),   # cheek
-        (2.23, section(n_head, 0.176, 0.178, 0.158, 3.1, centre_z=0.016)),   # brow, widest
-        (2.30, section(n_head, 0.174, 0.170, 0.160, 2.9, centre_z=0.006)),   # upper brow
-        (2.37, section(n_head, 0.162, 0.156, 0.156, 2.7, centre_z=-0.002)),  # cranium
-        (2.43, section(n_head, 0.138, 0.132, 0.136, 2.5, centre_z=-0.008)),  # upper cranium
-        (2.47, section(n_head, 0.100, 0.098, 0.102, 2.3, centre_z=-0.012)),  # crown, rounded
+        (1.955, section(n_head, 0.098, 0.106, 0.100, 2.2, centre_z=0.004)),   # neck junction
+        (2.010, section(n_head, 0.118, 0.134, 0.118, 2.2, centre_z=0.020)),   # under the jaw
+        (2.062, section(n_head, 0.142, 0.158, 0.136, 2.4, centre_z=0.026)),   # jaw, chin forward
+        (2.118, section(n_head, 0.164, 0.166, 0.148, 2.7, centre_z=0.022)),   # cheekbone, widest
+        (2.178, section(n_head, 0.170, 0.168, 0.154, 2.9, centre_z=0.014)),   # eye line
+        (2.232, section(n_head, 0.166, 0.170, 0.158, 3.0, centre_z=0.010)),   # brow ridge
+        (2.286, section(n_head, 0.160, 0.158, 0.158, 2.8, centre_z=0.000)),   # forehead
+        (2.348, section(n_head, 0.150, 0.146, 0.152, 2.6, centre_z=-0.006)),  # cranium
+        (2.412, section(n_head, 0.122, 0.118, 0.128, 2.4, centre_z=-0.012)),  # upper cranium
+        (2.452, section(n_head, 0.078, 0.076, 0.084, 2.2, centre_z=-0.016)),  # crown
     ]
-    b.sweep(head_rings, "coat", head_weights, cap_bottom=False)
+    b.sweep(thin(head_rings, level), "skin", head_weights, cap_bottom=False)
+
+    # Beard. It does three jobs at once: it is the strongest silhouette break
+    # on the head, it is the only thing on the unit that says "wintering out
+    # here" rather than "soldier", and it hides the jaw seam a swept skull
+    # cannot avoid. Kept at every LOD, because a jaw mass survives to a dozen
+    # pixels and the face detail below it does not.
+    b.sweep([
+        (1.928, section(n_head, 0.082, 0.128, 0.060, 2.0, centre_z=0.034)),
+        (1.984, section(n_head, 0.134, 0.178, 0.104, 2.2, centre_z=0.034)),
+        (2.042, section(n_head, 0.166, 0.190, 0.140, 2.4, centre_z=0.024)),
+        # The top ring pulls *behind* the face front so the cheeks stay bare
+        # while the sides still run up past them as sideburns.
+        (2.096, section(n_head, 0.172, 0.162, 0.156, 2.6, centre_z=0.030)),
+    ][:: 2 if level == 2 else 1], "beard", head_weights)
+
+    # Open helm: a bowl over the cranium with a rolled brow rim. It has to sit
+    # *on* the skull rings above -- a helm that clears the head by a visible
+    # gap reads as a hat balanced on it.
+    b.sweep([
+        (2.222, section(n_head, 0.180, 0.184, 0.174, 3.0, centre_z=0.008)),
+        (2.286, section(n_head, 0.174, 0.172, 0.172, 2.9, centre_z=0.000)),
+        (2.352, section(n_head, 0.162, 0.158, 0.164, 2.7, centre_z=-0.006)),
+        (2.418, section(n_head, 0.132, 0.128, 0.138, 2.5, centre_z=-0.012)),
+        (2.472, section(n_head, 0.076, 0.074, 0.082, 2.3, centre_z=-0.016)),
+    ][:: 2 if level == 2 else 1], "plate", head_weights, cap_bottom=False)
     if level <= 1:
-        # The face. Up close this was a blank plane with two painted slits, so
-        # the head had a direction but no features. It is a helm rather than
-        # skin, which means the features to build are hard-surface ones -- and
-        # they have to be structure, not micro-detail, because most of the time
-        # this head is forty pixels tall.
-        head_w = blend("head", "neck", 0.10)
-        brow_y, eye_y = 2.232, 2.190
-
-        # Brow band, deepened and pushed forward so it overhangs the eyes and
-        # drops them into shadow. This is what makes a face read at distance:
-        # the shadow under the brow, not the eyes themselves.
-        b.box((0.0, brow_y, 0.170), (0.268, 0.046, 0.070), "plate", head_w, taper=0.78)
-
-        # Nasal bar, brow to below the cheekbone. A helm's centre line is the
-        # single strongest cue that a head is facing you.
-        b.box((0.0, 2.150, 0.176), (0.040, 0.150, 0.052), "plate", head_w, taper=1.18)
-
-        # Eye slits, inset behind the brow and the nasal bar so they read as
-        # recesses rather than as decals. The darkest surface in the palette.
-        for sign in (-1, 1):
-            b.box((sign * 0.078, eye_y, 0.152), (0.078, 0.030, 0.028), "grip", head_w, taper=0.92)
-
-        # Cheek plates, angled in toward the chin so the lower face tapers
-        # instead of ending in a flat wall.
-        for sign in (-1, 1):
-            b.prism([
-                (sign * 0.088, 2.166), (sign * 0.176, 2.150),
-                (sign * 0.166, 2.036), (sign * 0.074, 2.022),
-            ], 0.128, 0.052, "plate", head_w)
+        # Rolled rim: flares out, then tucks back inside the skull so the
+        # shell has no open edge. `blade` is the brightest surface, and this
+        # line is what separates helm from face when the head is small.
+        b.sweep([
+            (2.222, section(n_head, 0.180, 0.184, 0.174, 3.0, centre_z=0.008)),
+            (2.206, section(n_head, 0.192, 0.200, 0.186, 3.0, centre_z=0.010)),
+            (2.190, section(n_head, 0.164, 0.160, 0.158, 3.0, centre_z=0.008)),
+        ], "blade", head_weights, cap_bottom=False, cap_top=False)
 
     if level == 0:
-        # Jaw guard closing the chin, and a small crest at the crown: the two
-        # ends of the head silhouette, which are what a top-down camera sees.
-        b.box((0.0, 2.038, 0.140), (0.132, 0.052, 0.078), "plate", head_w, taper=0.74)
-        b.box((0.0, 2.472, -0.010), (0.056, 0.070, 0.170), "plate", head_w, taper=0.62)
+        # Brow, nose, eye sockets and moustache. All structure, no detail:
+        # what reads at close range is the shadow the brow throws into the
+        # sockets and the break the nose puts across the face. They are
+        # dropped entirely below LOD0 rather than shrunk, because at LOD1 they
+        # would be sub-pixel noise that only costs triangles.
+        # Every one of these is placed against the measured superellipse, not
+        # by eye. The first attempt put the eyes at z=0.159 where the face
+        # surface is at z=0.176, so they were seventeen millimetres inside the
+        # skull and the head rendered as a blank plane -- the exact masked
+        # look this pass exists to remove, reintroduced by arithmetic.
+        #
+        # Geometry cannot cut a socket, so the eye is a dark slab straddling
+        # the surface with a brow overhanging it. What reads as an eye at any
+        # distance is the shadow the brow throws, not the eye itself.
+        b.box((0.0, 2.208, 0.166), (0.176, 0.042, 0.048), "skin", head_w, taper=0.82)
+        b.box((0.0, 2.174, 0.180), (0.038, 0.068, 0.056), "skin", head_w, taper=0.70)
+        b.box((0.0, 2.122, 0.186), (0.074, 0.048, 0.064), "skin", head_w, taper=0.86)
         for sign in (-1, 1):
-            b.box((sign * 0.158, 2.108, 0.062), (0.034, 0.140, 0.104), "plate", head_w, taper=0.86)
+            b.box((sign * 0.078, 2.176, 0.172), (0.054, 0.026, 0.032), "grip", head_w, taper=0.88)
+        # Cheek guards hinged off the helm rim, hanging down the sides of the
+        # face past the jaw. They frame the face rather than closing over it.
+        for sign in (-1, 1):
+            b.prism([
+                (sign * 0.150, 2.216), (sign * 0.204, 2.192),
+                (sign * 0.192, 2.048), (sign * 0.136, 2.066),
+            ], 0.030, 0.104, "plate", head_w)
+        # Crown crest and a nape guard: the two ends of the head silhouette,
+        # which are what the top-down gameplay camera actually sees.
+        b.box((0.0, 2.482, -0.006), (0.052, 0.064, 0.176), "plate", head_w, taper=0.60)
+        b.prism([
+            (-0.120, 2.206), (0.120, 2.206), (0.104, 2.088), (-0.104, 2.088),
+        ], -0.172, 0.034, "plate", head_w)
 
     # --- shoulders --------------------------------------------------------
     # One fitted pauldron that follows the shoulder curve, much smaller than
@@ -281,12 +417,12 @@ def add_body_geometry(level):
         # Each lame flares wider than the one above it, so the pauldron skirts
         # away from the deltoid instead of closing back in like a cylinder.
         b.sweep([
-            (1.748, ring(0.092, -0.396, 2.6)),
-            (1.706, ring(0.138, -0.404, 2.9)),
-            (1.672, ring(0.158, -0.412, 3.1)),
+            (1.748, ring(0.084, -0.394, 2.6)),
+            (1.706, ring(0.126, -0.402, 2.9)),
+            (1.672, ring(0.144, -0.408, 3.1)),
         ], "plate", sh_w, cap_bottom=False)
-        lame(1.676, 1.610, 0.166, 0.188, -0.414, -0.428)
-        lame(1.614, 1.544, 0.192, 0.208, -0.430, -0.446)
+        lame(1.676, 1.612, 0.150, 0.168, -0.410, -0.421)
+        lame(1.616, 1.550, 0.172, 0.186, -0.423, -0.436)
 
         if level == 0:
             # Rivets along the cap, which is where a pauldron is actually
@@ -335,13 +471,54 @@ def add_body_geometry(level):
             (1.52, section(n_limb, 0.136, 0.138, 0.132, 2.5, centre_x=sign * 0.444)),
             (1.42, section(n_limb, 0.118, 0.120, 0.116, 2.5, centre_x=sign * 0.492)),
             (1.32, section(n_limb, 0.098, 0.100, 0.098, 2.6, centre_x=elbow_x)),
-        ], "coat", lambda y, s=side: arm_weights(s, y), cap_bottom=False, cap_top=False)
+        ][:: 2 if level == 2 else 1], "coat", lambda y, s=side: arm_weights(s, y),
+            cap_bottom=False, cap_top=False)
         # Forearm: tapers to the wrist.
         b.sweep([
             (1.32, section(n_limb, 0.098, 0.100, 0.098, 2.5, centre_x=elbow_x)),
             (1.12, section(n_limb, 0.092, 0.094, 0.092, 2.6, centre_x=sign * 0.556)),
             (0.94, section(n_limb, 0.078, 0.080, 0.080, 2.6, centre_x=wrist_x, centre_z=0.028)),
         ], "coat", lambda y, s=side: arm_weights(s, y), cap_bottom=False, cap_top=False)
+        if level <= 1:
+            # Sleeve head seam: the leather welt where a sleeve is set into a
+            # coat. The left shoulder has a pauldron covering this join; the
+            # right had nothing, so the right arm grew straight out of the
+            # torso with no join at all and both arms read as extrusions.
+            b.sweep([
+                (1.700, section(n_limb, 0.114, 0.116, 0.112, 2.5, centre_x=sign * 0.394)),
+                (1.648, section(n_limb, 0.154, 0.154, 0.148, 2.5, centre_x=sign * 0.416)),
+            ], "belt", lambda y, s=side: arm_weights(s, y), cap_bottom=False, cap_top=False)
+
+            # Elbow patch: the hard-wearing panel on a working coat, and the
+            # cut line that breaks the sleeve into upper arm and forearm
+            # instead of one continuous tube from shoulder to wrist.
+            b.sweep([
+                (1.400, section(n_limb, 0.120, 0.122, 0.120, 2.6, centre_x=sign * 0.510)),
+                (1.320, section(n_limb, 0.108, 0.110, 0.108, 2.7, centre_x=elbow_x)),
+                (1.254, section(n_limb, 0.102, 0.104, 0.102, 2.7, centre_x=sign * 0.558)),
+            ], "belt", lambda y, s=side: arm_weights(s, y), cap_bottom=False, cap_top=False)
+
+            # Vambrace over the forearm. Leather rather than plate: this is a
+            # militia coat, and a second slab of steel down the arm would
+            # fight the pauldron for the eye.
+            b.sweep([
+                (1.190, section(n_limb, 0.106, 0.108, 0.106, 3.0, centre_x=sign * 0.556, centre_z=0.008)),
+                (1.040, section(n_limb, 0.100, 0.102, 0.100, 3.1, centre_x=sign * 0.554, centre_z=0.018)),
+                (0.972, section(n_limb, 0.092, 0.094, 0.094, 3.1, centre_x=wrist_x, centre_z=0.026)),
+            ], "belt", lambda y, s=side: arm_weights(s, y), cap_bottom=False, cap_top=False)
+
+        if level == 0:
+            # Bright rim at the wrist, and two buckles down the outside. Both
+            # are sub-pixel one tier down, so neither is worth carrying there.
+            b.sweep([
+                (0.972, section(n_limb, 0.092, 0.094, 0.094, 3.1, centre_x=wrist_x, centre_z=0.026)),
+                (0.958, section(n_limb, 0.100, 0.102, 0.102, 3.1, centre_x=wrist_x, centre_z=0.027)),
+                (0.944, section(n_limb, 0.086, 0.088, 0.088, 3.0, centre_x=wrist_x, centre_z=0.028)),
+            ], "blade", lambda y, s=side: arm_weights(s, y), cap_bottom=False, cap_top=False)
+            for y in (1.150, 1.030):
+                b.box((sign * 0.660, y, 0.014), (0.030, 0.046, 0.078), "plate",
+                      blend(f"lower_arm.{side}", f"hand.{side}", 0.10), taper=0.80)
+
         # Hand: a cuff, then a palm mass that is markedly wider than it is
         # thick, then a tapered finger block angled forward -- so it reads as
         # a closed fist gripping a haft rather than the rounded mitten the
@@ -355,10 +532,11 @@ def add_body_geometry(level):
             (0.836, section(n_limb, 0.112, 0.086, 0.084, 3.2, centre_x=sign * 0.540, centre_z=0.070)),
             (0.780, section(n_limb, 0.104, 0.080, 0.078, 3.0, centre_x=sign * 0.528, centre_z=0.092)),
             (0.742, section(n_limb, 0.074, 0.062, 0.060, 2.6, centre_x=sign * 0.516, centre_z=0.104)),
-        ], "glove", lambda y, s=side: arm_weights(s, y), cap_bottom=False)
+        ][:: 2 if level == 2 else 1], "glove", lambda y, s=side: arm_weights(s, y), cap_bottom=False)
         # Thumb: small, but it is what makes the hand read as gripping.
-        b.box((sign * 0.494, 0.868, 0.098), (0.040, 0.086, 0.052), "glove",
-              blend(f"hand.{side}", f"lower_arm.{side}", 0.10), rotate_z=sign * 0.30, taper=0.78)
+        if level <= 1:
+            b.box((sign * 0.494, 0.868, 0.098), (0.040, 0.086, 0.052), "glove",
+                  blend(f"hand.{side}", f"lower_arm.{side}", 0.10), rotate_z=sign * 0.30, taper=0.78)
 
     # --- legs -------------------------------------------------------------
     for side, sign in (("L", -1), ("R", 1)):
@@ -377,26 +555,77 @@ def add_body_geometry(level):
             (0.43, section(n_limb, 0.126, 0.126, 0.144, 2.7, centre_x=sign * 0.198)),    # calf swell (rear)
             (0.32, section(n_limb, 0.112, 0.112, 0.122, 2.6, centre_x=sign * 0.200)),
             (0.22, section(n_limb, 0.092, 0.094, 0.098, 2.5, centre_x=ankle_x)),         # ankle, thinnest
-        ], "coat", lambda y, s=side: leg_weights(s, y), cap_top=False)
+        ][:: 2 if level == 2 else 1], "coat", lambda y, s=side: leg_weights(s, y), cap_top=False)
 
-        # --- boots: three distinct layers -------------------------------
+        if level <= 1:
+            # Knee patch. Same job as the elbow: it breaks the leg into thigh
+            # and shin instead of one continuous taper from hip to ankle.
+            b.sweep([
+                (0.542, section(n_limb, 0.128, 0.138, 0.128, 2.8, centre_x=sign * 0.199, centre_z=0.008)),
+                (0.502, section(n_limb, 0.124, 0.136, 0.124, 3.0, centre_x=knee_x, centre_z=0.012)),
+                (0.470, section(n_limb, 0.117, 0.124, 0.119, 2.9, centre_x=sign * 0.200, centre_z=0.010)),
+            ], "belt", lambda y, s=side: leg_weights(s, y), cap_bottom=False, cap_top=False)
+
+            # Breeches bloused over the boot top. This is the cut line that
+            # was missing at the ankle: without it, trouser and boot are one
+            # tube that merely changes colour halfway down.
+            b.sweep([
+                (0.360, section(n_limb, 0.108, 0.110, 0.116, 2.5, centre_x=sign * 0.200)),
+                (0.300, section(n_limb, 0.130, 0.134, 0.142, 2.4, centre_x=sign * 0.199)),
+                (0.256, section(n_limb, 0.122, 0.126, 0.132, 2.5, centre_x=ankle_x)),
+            ], "coat", lambda y, s=side: leg_weights(s, y), cap_bottom=False, cap_top=False)
+
+        # --- boot -------------------------------------------------------
+        # The sole was three tapered boxes, which is exactly why the audit
+        # read the boots as blocks. A foot's shape runs along the direction it
+        # points, so it is lofted along +Z -- heel, seat, arch, ball, toe --
+        # with the sole lifting off the ground at the arch and again at the
+        # toe. `section()` is reused with its second coordinate read as
+        # height, so the same superellipse rules apply: a flat sole with
+        # rounded edges, not a cylinder and not a brick.
         boot_weights = blend(f"foot.{side}", f"shin.{side}", 0.16)
-        # 1. ankle cuff
+        boot_w = lambda _key, w=boot_weights: w
+        n_foot = (12, 8, 6)[level]
+
+        # Ankle cuff, coming down onto the foot.
         b.sweep([
-            (0.22, section(n_limb, 0.106, 0.108, 0.112, 2.4, centre_x=ankle_x)),
-            (0.14, section(n_limb, 0.116, 0.124, 0.120, 2.4, centre_x=ankle_x, centre_z=0.014)),
-        ], "belt", lambda y, w=boot_weights: w, cap_bottom=False, cap_top=False)
-        # 2. foot upper, extending forward over the toes
-        b.sweep([
-            (0.14, section(n_limb, 0.116, 0.124, 0.120, 2.4, centre_x=ankle_x, centre_z=0.014)),
-            (0.07, section(n_limb, 0.112, 0.178, 0.116, 2.9, centre_x=ankle_x, centre_z=0.062)),
-        ], "belt", lambda y, w=boot_weights: w, cap_bottom=False, cap_top=False)
-        # 3. sole: a thin welt plus a thicker tread block beneath it, so the
-        # boot has a visible sole edge instead of the body just ending in a
-        # slab. The tread is inset and squared off at the heel.
-        b.box((ankle_x, 0.058, 0.082), (0.252, 0.034, 0.428), "belt", boot_weights, taper=0.97)
-        b.box((ankle_x, 0.026, 0.074), (0.238, 0.038, 0.404), "plate", boot_weights, taper=0.94)
-        b.box((ankle_x, 0.030, -0.096), (0.216, 0.052, 0.132), "plate", boot_weights, taper=0.92)
+            (0.240, section(n_limb, 0.108, 0.110, 0.114, 2.4, centre_x=ankle_x)),
+            (0.160, section(n_limb, 0.120, 0.126, 0.122, 2.5, centre_x=ankle_x, centre_z=0.012)),
+            (0.108, section(n_limb, 0.114, 0.128, 0.114, 2.7, centre_x=ankle_x, centre_z=0.022)),
+        ] if level <= 1 else [
+            (0.240, section(n_limb, 0.108, 0.110, 0.114, 2.4, centre_x=ankle_x)),
+            (0.120, section(n_limb, 0.118, 0.128, 0.118, 2.6, centre_x=ankle_x, centre_z=0.018)),
+        ], "belt", boot_w, cap_bottom=False, cap_top=False)
+
+        # (z, half_width, rise, drop, exponent, centre_x, centre_y)
+        FOOT = (
+            (-0.152, 0.066, 0.058, 0.038, 2.2, ankle_x, 0.072),   # heel, rounded off
+            (-0.098, 0.098, 0.086, 0.062, 2.6, ankle_x, 0.070),   # heel seat, on the ground
+            (-0.020, 0.092, 0.094, 0.052, 2.8, ankle_x, 0.062),   # arch, sole lifts
+            (0.070, 0.108, 0.088, 0.050, 3.0, ankle_x, 0.058),    # ball, widest
+            (0.160, 0.102, 0.074, 0.044, 3.0, ankle_x, 0.056),
+            (0.226, 0.076, 0.058, 0.034, 2.6, ankle_x, 0.064),    # toe, springing up
+            (0.258, 0.038, 0.036, 0.020, 2.2, ankle_x, 0.074),    # toe cap
+        )
+        b.sweep_z([(z, section(n_foot, w, up, dn, e, centre_x=cx, centre_z=cy))
+                   for z, w, up, dn, e, cx, cy in thin(FOOT, level)], "belt", boot_w)
+        # Sole: the same outline, wider and flattened into a slab that follows
+        # the boot's underside, in the darkest leather -- so the boot has a
+        # visible sole edge instead of the upper just ending at the ground.
+        if level <= 1:
+            b.sweep_z([(z, section(n_foot, w + 0.009, 0.026, 0.024, max(3.0, e),
+                                   centre_x=cx, centre_z=(cy - dn) + 0.020))
+                       for z, w, up, dn, e, cx, cy in FOOT], "grip", boot_w)
+        if level == 0:
+            # Heel block -- a heel genuinely is a block, so this one stays --
+            # a steel cap lofted over the toe rather than boxed onto it, and
+            # one buckle on the outside of the ankle.
+            b.box((ankle_x, 0.026, -0.098), (0.196, 0.052, 0.126), "grip", boot_weights, taper=0.90)
+            b.sweep_z([(z, section(n_foot, w + 0.007, up + 0.005, dn + 0.005, e,
+                                   centre_x=cx, centre_z=cy))
+                       for z, w, up, dn, e, cx, cy in FOOT[3:]], "plate", boot_w, cap_back=False)
+            b.box((ankle_x + sign * 0.104, 0.170, 0.026), (0.034, 0.044, 0.086),
+                  "plate", boot_weights, taper=0.82)
 
     return b
 
@@ -630,9 +859,11 @@ def make_atlas():
     image = bpy.data.images.new("WARRIOR_ATLAS_1024", width=size, height=size, alpha=True)
     pixels = array("f", [0.0]) * (size * size * 4)
     columns = ("cloth", "leather", "iron")
+    # Band 3 of the cloth and leather columns used to repeat band 0 and was
+    # never sampled by any face. It now carries the beard and the skin.
     bands = {
-        0: (("coat", "fur", "amber", "coat"), 0),
-        1: (("belt", "glove", "grip", "belt"), 1),
+        0: (("coat", "fur", "amber", "beard"), 0),
+        1: (("belt", "glove", "grip", "skin"), 1),
         2: (("plate", "blade", "plate", "plate"), 2),
     }
     for y in range(size):
@@ -659,6 +890,12 @@ def make_atlas():
                     value += 0.040 if ((x * 5 + y * 3) % 37) < 4 else 0.0
                 elif surface == "amber":
                     value += 0.055 * math.sin(y * 3.1)
+                elif surface == "beard":
+                    # Coarser and more clumped than the collar's fur: fewer,
+                    # thicker strands so a beard does not read as more shawl.
+                    clump = math.sin(x * 1.4 + math.sin(y * 0.13) * 3.1)
+                    value += clump * 0.078
+                    value -= 0.055 if ((x * 3 + y * 2) % 29) < 5 else 0.0
             elif column == 1:
                 # Leather: directional grain plus scattered creases.
                 grain = math.sin(y * 0.63 + math.sin(x * 0.18) * 1.6)
@@ -669,6 +906,14 @@ def make_atlas():
                     # Wrap: repeating diagonal binding.
                     wrap = ((x * 0.7 + y * 1.9) % 22.0) / 22.0
                     value += 0.070 if wrap < 0.22 else -0.022
+                elif surface == "skin":
+                    # Skin wants the opposite of leather grain: almost no
+                    # structure, just broad uneven weathering. Anything with a
+                    # visible repeat reads as a texture on a face rather than
+                    # as a face, so the leather grain above is cancelled first.
+                    value -= grain * 0.052
+                    value += 0.030 * math.sin(x * 0.037 + y * 0.021)
+                    value += 0.018 * math.sin(x * 0.13 + math.sin(y * 0.05) * 2.0)
             else:
                 # Metal: broad polish plus wear concentrated at the edges.
                 polish = math.sin(x * 0.21 + y * 0.05)
