@@ -1,12 +1,12 @@
 {
-  "generatedAt": "2026-08-06T06:08:55.326Z",
+  "generatedAt": "2026-08-06T06:15:49.601Z",
   "blenderRequired": true,
   "assets": [
     {
       "key": "hero",
       "status": "ok",
       "path": "public/assets/models/characters/hero.glb",
-      "sizeBytes": 1329008,
+      "sizeBytes": 1347080,
       "nodes": 31,
       "meshes": 6,
       "materials": 3,
@@ -58,11 +58,11 @@
         "Hit": 54,
         "Death": 54
       },
-      "triangles": 4816,
+      "triangles": 5096,
       "lodTriangles": {
-        "LOD0": 2604,
-        "LOD1": 1492,
-        "LOD2": 720
+        "LOD0": 2756,
+        "LOD1": 1572,
+        "LOD2": 768
       },
       "surfaceAttributes": {
         "TEXCOORD_0": true,

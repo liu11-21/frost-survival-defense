@@ -221,11 +221,26 @@ def add_body(level):
             (1.00 * H, section(n_l, LIMB * 0.88, LIMB * 0.90, LIMB * 0.88, 2.6, centre_x=sgn * SHOULDER * 1.02)),
             (0.90 * H, section(n_l, LIMB * 0.80, LIMB * 0.82, LIMB * 0.82, 2.6, centre_x=sgn * SHOULDER * 1.02, centre_z=0.012)),
         ], "coat", lambda y, s=side: arm_weights(s, y), cap_bottom=False, cap_top=False)
+        # Hand: a cuff, a palm markedly wider than it is thick, a finger
+        # block angled forward, and a thumb. This was a single rounded
+        # taper -- a mitten -- so every arm in the roster simply stopped.
+        # The cuff is what does the work: a band in a different surface at
+        # the wrist is the cue that says "the sleeve ends and a hand
+        # begins", and it survives to LOD1 where the thumb does not.
+        aw = lambda y, s=side: arm_weights(s, y)
         b.sweep([
-            (0.90 * H, section(n_l, LIMB * 0.90, LIMB * 0.86, LIMB * 0.86, 2.6, centre_x=sgn * SHOULDER * 1.02, centre_z=0.016)),
-            (0.82 * H, section(n_l, LIMB * 0.98, LIMB * 0.84, LIMB * 0.84, 3.0, centre_x=sgn * SHOULDER * 1.00, centre_z=0.036)),
-            (0.75 * H, section(n_l, LIMB * 0.72, LIMB * 0.64, LIMB * 0.64, 2.6, centre_x=sgn * SHOULDER * 0.98, centre_z=0.050)),
-        ], "glove", lambda y, s=side: arm_weights(s, y), cap_bottom=False)
+            (0.938 * H, section(n_l, LIMB * 0.88, LIMB * 0.88, LIMB * 0.88, 2.5, centre_x=sgn * SHOULDER * 1.02, centre_z=0.012)),
+            (0.900 * H, section(n_l, LIMB * 0.98, LIMB * 0.86, LIMB * 0.86, 2.8, centre_x=sgn * SHOULDER * 1.01, centre_z=0.022)),
+        ], "leather", aw, cap_bottom=False, cap_top=False)
+        b.sweep([
+            (0.900 * H, section(n_l, LIMB * 1.04, LIMB * 0.82, LIMB * 0.82, 3.0, centre_x=sgn * SHOULDER * 1.01, centre_z=0.026)),
+            (0.838 * H, section(n_l, LIMB * 1.12, LIMB * 0.86, LIMB * 0.84, 3.2, centre_x=sgn * SHOULDER * 1.00, centre_z=0.048)),
+            (0.786 * H, section(n_l, LIMB * 1.04, LIMB * 0.80, LIMB * 0.78, 3.0, centre_x=sgn * SHOULDER * 0.99, centre_z=0.066)),
+            (0.752 * H, section(n_l, LIMB * 0.74, LIMB * 0.62, LIMB * 0.60, 2.6, centre_x=sgn * SHOULDER * 0.98, centre_z=0.076)),
+        ], "glove", aw, cap_bottom=False)
+        if level == 0:
+            b.box((sgn * SHOULDER * 0.95, 0.866 * H, 0.074), (LIMB * 0.44, LIMB * 0.88, LIMB * 0.54), "glove",
+                  blend(f"hand.{side}", f"lower_arm.{side}", 0.10), rotate_z=sgn * 0.30, taper=0.78)
         if level == 0:
             b.sweep([
                 (1.32 * H, section(n_l, LIMB * 1.06, LIMB * 1.08, LIMB * 1.04, 2.6, centre_x=sx * 0.98)),

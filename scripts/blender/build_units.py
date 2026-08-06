@@ -227,11 +227,26 @@ def add_body(level, a, cfg):
             (1.00 * h, section(n_l, lb * 0.86, lb * 0.88, lb * 0.86, 2.6, centre_x=sgn * (sh * 1.02))),
             (0.90 * h, section(n_l, lb * 0.78, lb * 0.80, lb * 0.80, 2.6, centre_x=sgn * (sh * 1.02), centre_z=0.012)),
         ], "body", lambda y, s=side: arm_weights(s, y), cap_bottom=False, cap_top=False)
-        b.sweep([
-            (0.90 * h, section(n_l, lb * 0.88, lb * 0.84, lb * 0.84, 2.6, centre_x=sgn * (sh * 1.02), centre_z=0.016)),
-            (0.82 * h, section(n_l, lb * 0.96, lb * 0.82, lb * 0.82, 3.0, centre_x=sgn * (sh * 1.00), centre_z=0.036)),
-            (0.75 * h, section(n_l, lb * 0.70, lb * 0.62, lb * 0.62, 2.6, centre_x=sgn * (sh * 0.98), centre_z=0.050)),
-        ], "leather", lambda y, s=side: arm_weights(s, y), cap_bottom=False)
+            # Hand: a cuff, a palm markedly wider than it is thick, a finger
+            # block angled forward, and a thumb. This was a single rounded
+            # taper -- a mitten -- so every arm in the roster simply stopped.
+            # The cuff is what does the work: a band in a different surface at
+            # the wrist is the cue that says "the sleeve ends and a hand
+            # begins", and it survives to LOD1 where the thumb does not.
+            aw = lambda y, s=side: arm_weights(s, y)
+            b.sweep([
+                (0.938 * h, section(n_l, lb * 0.86, lb * 0.86, lb * 0.86, 2.5, centre_x=sgn * (sh * 1.02), centre_z=0.012)),
+                (0.900 * h, section(n_l, lb * 0.96, lb * 0.84, lb * 0.84, 2.8, centre_x=sgn * (sh * 1.01), centre_z=0.022)),
+            ], "grip", aw, cap_bottom=False, cap_top=False)
+            b.sweep([
+                (0.900 * h, section(n_l, lb * 1.02, lb * 0.80, lb * 0.80, 3.0, centre_x=sgn * (sh * 1.01), centre_z=0.026)),
+                (0.838 * h, section(n_l, lb * 1.10, lb * 0.84, lb * 0.82, 3.2, centre_x=sgn * (sh * 1.00), centre_z=0.048)),
+                (0.786 * h, section(n_l, lb * 1.02, lb * 0.78, lb * 0.76, 3.0, centre_x=sgn * (sh * 0.99), centre_z=0.066)),
+                (0.752 * h, section(n_l, lb * 0.72, lb * 0.60, lb * 0.58, 2.6, centre_x=sgn * (sh * 0.98), centre_z=0.076)),
+            ], "leather", aw, cap_bottom=False)
+            if level == 0:
+                b.box((sgn * sh * 0.95, 0.866 * h, 0.074), (lb * 0.42, lb * 0.86, lb * 0.52), "leather",
+                      blend(f"hand.{side}", f"lower_arm.{side}", 0.10), rotate_z=sgn * 0.30, taper=0.78)
 
     if a["skirt"]:
         # Casters get a flared robe instead of legs: an unmistakable
