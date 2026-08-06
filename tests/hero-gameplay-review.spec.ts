@@ -3,8 +3,8 @@ import { mkdirSync, writeFileSync } from "node:fs";
 import { resolve } from "node:path";
 
 type AnimationName = "Idle" | "Walk" | "Run" | "MeleeAttack" | "RangedAttack" | "Hit" | "Death";
-type CameraName = "gameplay" | "tactical" | "three-quarter" | "back" | "portrait" | "portrait-side" | "head";
-type LightingName = "snow-daylight" | "furnace-warm";
+type CameraName = "gameplay" | "tactical" | "three-quarter" | "back" | "portrait" | "portrait-side" | "portrait-three-quarter" | "head" | "pair";
+type LightingName = "snow-daylight" | "furnace-warm" | "studio-neutral";
 type ContextName = "alone" | "friends" | "battle";
 type LodName = 0 | 1 | 2;
 type BoneTransform = {
@@ -237,6 +237,18 @@ test("verifies Hero in the formal snow, furnace, ally and enemy gameplay context
       });
       expect(overlap, `${name}: review HUD must not sit over the close framing`).toBe(false);
     }
+    // Caption burned into the frame, built from what the runtime reports it is
+    // showing rather than from the arguments passed in. If the review ever
+    // fails to apply a camera, a light or an LOD, the label says so instead of
+    // agreeing with the filename.
+    const caption = `hero.glb  |  ${state.currentCamera}  |  ${state.lighting}  |  LOD${state.lod ?? 0}  |  ${state.currentAnimation}`;
+    await page.evaluate((text) => {
+      const el = document.getElementById("art-evidence-label") ?? document.createElement("div");
+      el.id = "art-evidence-label";
+      el.style.cssText = "position:fixed;left:18px;bottom:18px;z-index:99999;font:600 15px/1.4 ui-monospace,SFMono-Regular,monospace;color:#eef3ff;background:rgba(8,12,20,.82);padding:8px 13px;border-radius:6px;letter-spacing:.02em;pointer-events:none";
+      el.textContent = text;
+      if (!el.isConnected) document.body.appendChild(el);
+    }, caption);
     const screenshotPath = resolve(outputRoot, `${name}.png`);
     await page.screenshot({ path: screenshotPath, fullPage: false });
     captures.push({ captureId: name, capturedAt: new Date().toISOString(), screenshot: screenshotPath, state, metadata: frame.capture });
@@ -257,10 +269,20 @@ test("verifies Hero in the formal snow, furnace, ally and enemy gameplay context
     // Close-range Hero evidence, in gameplay lighting. Without these the only
     // frames of the player character are hundred-pixel figures in a wide shot,
     // where "the Hero reads as the Hero" cannot be judged or disproved.
-    await capture("hero-portrait-front", "portrait", "snow-daylight", "alone", "Idle", 0, false);
-    await capture("hero-portrait-side", "portrait-side", "snow-daylight", "alone", "Idle", 0, false);
+    // The formal art-review sheet. Every frame is LOD0, from this build, and
+    // carries a caption read back out of live review state rather than typed
+    // here -- a label written by hand can describe a frame that was never
+    // taken, which is exactly how a LOD2 image once shipped as LOD0 evidence.
+    await capture("hero-studio-front", "portrait", "studio-neutral", "alone", "Idle", 0, false);
+    await capture("hero-studio-side", "portrait-side", "studio-neutral", "alone", "Idle", 0, false);
+    await capture("hero-studio-three-quarter", "portrait-three-quarter", "studio-neutral", "alone", "Idle", 0, false);
+    await capture("hero-studio-head", "head", "studio-neutral", "alone", "Idle", 0, false);
+    await capture("hero-studio-grip", "portrait-three-quarter", "studio-neutral", "alone", "Idle", 0, false);
+    await capture("hero-studio-melee", "portrait-three-quarter", "studio-neutral", "battle", "MeleeAttack", 0.55, false);
+    await capture("hero-vs-warrior-studio", "pair", "studio-neutral", "friends", "Idle", 0, false);
+    await capture("hero-portrait-snow", "portrait", "snow-daylight", "alone", "Idle", 0, false);
+    await capture("hero-portrait-furnace", "portrait", "furnace-warm", "alone", "Idle", 0, false);
     await capture("hero-portrait-head", "head", "snow-daylight", "alone", "Idle", 0, false);
-    await capture("hero-portrait-melee", "portrait", "snow-daylight", "battle", "MeleeAttack", 0.55, false);
     await capture("gameplay-tactical", "tactical", "snow-daylight", "battle", "Idle");
     await capture("gameplay-walk", "gameplay", "snow-daylight", "battle", "Walk", 0.4);
     await capture("gameplay-run", "gameplay", "snow-daylight", "battle", "Run", 0.4);

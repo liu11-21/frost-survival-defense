@@ -62,7 +62,7 @@ CHEST_D = 0.224
 WAIST = 0.236
 HIP = 0.268
 LIMB = 0.098
-COAT = (0.284, 0.312, 0.368)
+COAT = (0.322, 0.352, 0.412)
 ACCENT = (0.96, 0.62, 0.20)
 
 
@@ -225,28 +225,64 @@ def add_body(level):
     # The head is also deliberately *smaller* relative to the body than the
     # Warrior's. Heroic proportion is a head-count question: the same figure
     # reads as a commander at eight heads and as a mascot at six.
-    b.sweep(thin([
-        (1.520 * H, section(n_h, hd * 0.72, hd * 0.78, hd * 0.74, 2.2, centre_z=0.004)),
-        (1.560 * H, section(n_h, hd * 0.86, hd * 0.98, hd * 0.86, 2.2, centre_z=0.016)),
-        (1.600 * H, section(n_h, hd * 1.02, hd * 1.14, hd * 0.98, 2.4, centre_z=0.020)),
-        (1.645 * H, section(n_h, hd * 1.18, hd * 1.20, hd * 1.06, 2.7, centre_z=0.016)),
-        (1.685 * H, section(n_h, hd * 1.22, hd * 1.20, hd * 1.10, 2.9, centre_z=0.010)),
-        (1.722 * H, section(n_h, hd * 1.19, hd * 1.22, hd * 1.13, 3.0, centre_z=0.006)),
-        (1.760 * H, section(n_h, hd * 1.14, hd * 1.13, hd * 1.13, 2.8, centre_z=0.000)),
-        (1.800 * H, section(n_h, hd * 1.06, hd * 1.04, hd * 1.08, 2.6, centre_z=-0.004)),
-        (1.842 * H, section(n_h, hd * 0.86, hd * 0.84, hd * 0.90, 2.4, centre_z=-0.008)),
-        (1.868 * H, section(n_h, hd * 0.54, hd * 0.54, hd * 0.58, 2.2, centre_z=-0.010)),
-    ], level), "skin", head_weights, cap_bottom=False)
+    # Kept as parameters, not as built rings: the face panels below have to
+    # lie on exactly this surface, and rebuilding a brow against a guessed
+    # radius is how a feature ends up floating off a skull or buried in it.
+    # (t in H units, then half-width / front depth / back depth in hd units,
+    # the superellipse exponent, and an absolute centre_z.)
+    HEAD_PROFILE = (
+        (1.520, 0.72, 0.78, 0.74, 2.2, 0.004),
+        (1.560, 0.86, 0.98, 0.86, 2.2, 0.016),
+        (1.600, 1.02, 1.14, 0.98, 2.4, 0.020),
+        (1.645, 1.18, 1.20, 1.06, 2.7, 0.016),
+        (1.685, 1.22, 1.20, 1.10, 2.9, 0.010),
+        (1.722, 1.19, 1.22, 1.13, 3.0, 0.006),
+        (1.760, 1.14, 1.13, 1.13, 2.8, 0.000),
+        (1.800, 1.06, 1.04, 1.08, 2.6, -0.004),
+        (1.842, 0.86, 0.84, 0.90, 2.4, -0.008),
+        (1.868, 0.54, 0.54, 0.58, 2.2, -0.010),
+    )
+    b.sweep(thin([(t * H, section(n_h, w * hd, df * hd, db * hd, e, centre_z=cz))
+                  for t, w, df, db, e, cz in HEAD_PROFILE], level),
+            "skin", head_weights, cap_bottom=False)
 
     # Beard: the jaw mass, and the one piece of the head that survives to a
     # dozen pixels. Shorter and squarer than the Warrior's -- the Hero is the
     # commander, not the oldest man in the settlement.
+    # Beard. The first version was a single smooth hemisphere clamped to the
+    # jaw, which reads as a helmet chin-guard rather than as hair -- a review
+    # called it a grey hard shell and was right. Hair has *direction*, and at
+    # this resolution direction means a small number of tufts that break the
+    # outline, not a subdivided surface. The shell below is pulled tight to
+    # the jaw and the silhouette is carried by the tufts hanging off it.
     b.sweep([
-        (1.502 * H, section(n_h, hd * 0.60, hd * 0.92, hd * 0.44, 2.0, centre_z=0.026)),
-        (1.540 * H, section(n_h, hd * 0.96, hd * 1.28, hd * 0.76, 2.2, centre_z=0.026)),
-        (1.578 * H, section(n_h, hd * 1.20, hd * 1.36, hd * 1.02, 2.4, centre_z=0.018)),
-        (1.616 * H, section(n_h, hd * 1.26, hd * 1.14, hd * 1.14, 2.6, centre_z=0.022)),
+        (1.512 * H, section(n_h, hd * 0.56, hd * 0.86, hd * 0.42, 2.0, centre_z=0.024)),
+        (1.548 * H, section(n_h, hd * 0.94, hd * 1.22, hd * 0.74, 2.2, centre_z=0.024)),
+        (1.580 * H, section(n_h, hd * 1.16, hd * 1.30, hd * 1.00, 2.4, centre_z=0.018)),
+        (1.616 * H, section(n_h, hd * 1.24, hd * 1.12, hd * 1.12, 2.6, centre_z=0.022)),
     ], "beard", head_weights)
+    if level <= 1:
+        bw = blend("head", "neck", 0.10)
+        # Chin tuft, two jaw tufts either side, each ending in a point and
+        # each hanging at its own angle. Authored as X/Y silhouettes because a
+        # tuft is read from the front, and a pointed lower edge is the whole
+        # difference between hair and a moulded cup.
+        for x0, x1, y_top, y_tip, z_c, thick in (
+            (-0.34, 0.34, 1.590, 1.478, 1.05, 1.00),
+            (-0.92, -0.26, 1.606, 1.520, 0.86, 0.86),
+            (0.26, 0.92, 1.606, 1.520, 0.86, 0.86),
+        ):
+            b.prism([
+                (x0 * hd, y_top * H), (x1 * hd, y_top * H),
+                ((x0 + x1) * 0.5 * hd + hd * 0.10, y_tip * H),
+                ((x0 + x1) * 0.5 * hd - hd * 0.10, y_tip * H),
+            ], z_c * hd * 0.62, thick * hd, "beard", bw)
+        # Moustache: two wedges sweeping down and out from under the nose.
+        for sgn in (-1, 1):
+            b.prism([
+                (sgn * hd * 0.05, 1.6425 * H), (sgn * hd * 0.46, 1.6365 * H),
+                (sgn * hd * 0.53, 1.6060 * H), (sgn * hd * 0.07, 1.6120 * H),
+            ], hd * 1.02, hd * 0.62, "beard", bw)
 
     # Open helm over the cranium, with a rolled `edge` rim at the brow.
     b.sweep(thin([
@@ -256,11 +292,23 @@ def add_body(level):
         (1.850 * H, section(n_h, hd * 0.97, hd * 0.94, hd * 1.01, 2.5, centre_z=-0.008)),
         (1.884 * H, section(n_h, hd * 0.56, hd * 0.54, hd * 0.60, 2.3, centre_z=-0.010)),
     ], level), "metal", head_weights, cap_bottom=False)
+    # Brim: out, down, then back under. The helmet read as a smooth plastic
+    # hard hat because its edge was a single fold with no thickness -- a real
+    # brim has an underside, and the underside is where the shadow lives.
     b.sweep([
-        (1.716 * H, section(n_h, hd * 1.32, hd * 1.35, hd * 1.28, 3.0, centre_z=0.006)),
-        (1.705 * H, section(n_h, hd * 1.41, hd * 1.45, hd * 1.37, 3.0, centre_z=0.008)),
-        (1.694 * H, section(n_h, hd * 1.20, hd * 1.17, hd * 1.16, 3.0, centre_z=0.006)),
+        (1.7220 * H, section(n_h, hd * 1.32, hd * 1.35, hd * 1.28, 3.0, centre_z=0.006)),
+        (1.7115 * H, section(n_h, hd * 1.44, hd * 1.48, hd * 1.40, 3.2, centre_z=0.008)),
+        (1.7010 * H, section(n_h, hd * 1.45, hd * 1.49, hd * 1.41, 3.2, centre_z=0.008)),
+        (1.6960 * H, section(n_h, hd * 1.33, hd * 1.36, hd * 1.30, 3.0, centre_z=0.007)),
     ], "edge", head_weights, cap_bottom=False, cap_top=False)
+    if level <= 1:
+        # Liner showing under the brim: a darker ring inboard of the shell, so
+        # the helmet reads as something worn over a head rather than as the
+        # head's own top surface.
+        b.sweep([
+            (1.7000 * H, section(n_h, hd * 1.28, hd * 1.31, hd * 1.25, 3.0, centre_z=0.006)),
+            (1.6870 * H, section(n_h, hd * 1.25, hd * 1.28, hd * 1.22, 3.0, centre_z=0.006)),
+        ], "leather", head_weights, cap_bottom=False, cap_top=False)
 
     # Crest comb, front to back over the crown. This is the single strongest
     # rank cue available at gameplay distance: it changes the *outline* of the
@@ -287,19 +335,88 @@ def add_body(level):
             ], hd * 0.22, hd * 0.78, "metal", fw)
 
     if level == 0:
-        # Brow, eyes and nose, each placed against the measured superellipse.
-        # Placing them by eye is how the Warrior's first pass put them 17mm
-        # inside the skull and rendered a blank plane. Geometry cannot cut a
-        # socket, so the eye is a dark slab straddling the surface under a
-        # brow that overhangs it: what reads as an eye is the brow's shadow.
-        # The brow has to stay *inside* the skull's own width. At hd*1.30
-        # against a face of hd*1.19 it overhung both temples and read as a
-        # sun visor bolted across the head rather than as a brow ridge.
-        b.box((0.0, 1.7165 * H, hd * 1.20), (hd * 1.02, hd * 0.34, hd * 0.32), "skin", fw, taper=0.84)
-        b.box((0.0, 1.6935 * H, hd * 1.30), (hd * 0.21, hd * 0.48, hd * 0.36), "skin", fw, taper=0.72)
-        b.box((0.0, 1.6600 * H, hd * 1.34), (hd * 0.42, hd * 0.30, hd * 0.40), "skin", fw, taper=0.88)
+        # The face, rebuilt out of boxes.
+        #
+        # Boxes were the problem. A brow is not a plank, a nose is not two
+        # stacked cubes, and an eye is not a dark rectangle laid on a cheek --
+        # under corrected review lighting all three were plainly visible as
+        # exactly those things. Each feature below is authored as the kind of
+        # form it actually is: the brow as a band riding the skull's own
+        # curve, the nose as a shape lofted forward along +Z, the eye as an
+        # almond set into the surface under an overhanging lid.
+        #
+        # `head_at` interpolates the skull table so every panel sits on the
+        # real superellipse rather than on a guessed radius. Guessing is how
+        # the Warrior's first face landed 17mm inside its own skull.
+        FRONT = math.tau / 4.0
+
+        def head_at(t):
+            rows = HEAD_PROFILE
+            if t <= rows[0][0]:
+                return rows[0][1:]
+            for lo, hi in zip(rows, rows[1:]):
+                if t <= hi[0]:
+                    k = (t - lo[0]) / (hi[0] - lo[0])
+                    return tuple(a + (c - a) * k for a, c in zip(lo[1:], hi[1:]))
+            return rows[-1][1:]
+
+        def face_band(t_top, t_bot, a0, a1, surface, outer, inner, n=9):
+            rings = []
+            for t in (t_top, t_bot):
+                w, df, db, e, cz = head_at(t)
+                rings.append((t * H,
+                              super_arc(n, w * hd, df * hd, db * hd, e, a0, a1, centre_z=cz, scale=outer),
+                              super_arc(n, w * hd, df * hd, db * hd, e, a0, a1, centre_z=cz, scale=inner)))
+            b.band(rings, surface, lambda _y: fw)
+
+        def surface_z(t, x):
+            """Where the skull actually is at this height and this x."""
+            w, df, db, e, cz = head_at(t)
+            sx = min(0.999, abs(x) / (w * hd))
+            c = sx ** (e / 2.0)
+            sz = max(0.0, 1.0 - c * c) ** (1.0 / e)
+            return cz + df * hd * sz
+
+        # One brow band only, and a narrow one. Three panels across a face this
+        # size is a stack of plate edges, not anatomy.
+        face_band(1.7240, 1.7080, FRONT - 0.78, FRONT + 0.78, "skin", 1.055, 1.004, n=7)
+
+        # Eyes: an almond set into the surface, not a rectangle laid on it.
+        # The inner corner sits proud and the outer corner sinks behind the
+        # cheek, which is what makes it read as recessed rather than stuck on.
+        eye_y = 1.6960 * H
         for sgn in (-1, 1):
-            b.box((sgn * hd * 0.60, 1.6975 * H, hd * 1.24), (hd * 0.38, hd * 0.17, hd * 0.22), "glove", fw, taper=0.88)
+            b.prism([
+                (sgn * hd * 0.26, eye_y + hd * 0.015),
+                (sgn * hd * 0.56, eye_y + hd * 0.105),
+                (sgn * hd * 0.92, eye_y + hd * 0.020),
+                (sgn * hd * 0.58, eye_y - hd * 0.095),
+            ], surface_z(1.6960, hd * 0.58) - hd * 0.070, hd * 0.16, "glove", fw)
+            # 10mm proud, no more. At +60mm this was a dark tab stuck on the
+            # cheek; at -5mm it vanished inside the skull entirely. The window
+            # where a flat almond reads as a socket is narrow and it is here.
+
+        # Nose, lofted forward along +Z: bridge root between the brows, then
+        # falling and widening to the tip and the wings. Two stacked boxes
+        # cannot make that shape, which is why it read as a post.
+        b.sweep_z([
+            (hd * 1.05, section(8, hd * 0.13, hd * 0.30, hd * 0.26, 2.6, centre_z=1.7085 * H)),
+            (hd * 1.22, section(8, hd * 0.17, hd * 0.24, hd * 0.36, 2.6, centre_z=1.6975 * H)),
+            (hd * 1.36, section(8, hd * 0.23, hd * 0.15, hd * 0.45, 2.6, centre_z=1.6855 * H)),
+            (hd * 1.45, section(8, hd * 0.29, hd * 0.08, hd * 0.38, 2.4, centre_z=1.6745 * H)),
+        ], "skin", lambda _z: fw, cap_back=False)
+        # Nostril wings, one either side of the base.
+        for sgn in (-1, 1):
+            b.box((sgn * hd * 0.25, 1.6690 * H, hd * 1.27), (hd * 0.15, hd * 0.14, hd * 0.20),
+                  "skin", fw, taper=0.66)
+
+        # Mouth: a shadow line, with the lower lip and the chin below it. The
+        # beard covers most of this, and that is the point -- what shows is
+        # the break between lip and beard, which is what says there is a mouth.
+        b.prism([
+            (-hd * 0.36, 1.6335 * H), (hd * 0.36, 1.6335 * H),
+            (hd * 0.30, 1.6255 * H), (-hd * 0.30, 1.6255 * H),
+        ], surface_z(1.6300, 0.0) - hd * 0.03, hd * 0.10, "glove", fw)
 
     # Survival pack on the back.
     if level <= 1:

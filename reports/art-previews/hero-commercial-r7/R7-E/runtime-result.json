@@ -10,7 +10,7 @@
   "captures": [
     {
       "captureId": "hero-alone-snow",
-      "capturedAt": "2026-08-06T13:21:08.003Z",
+      "capturedAt": "2026-08-06T13:56:15.898Z",
       "screenshot": "D:\\codex\\遊戲開發\\reports\\art-previews\\hero-commercial-r7\\R7-E\\hero-alone-snow.png",
       "state": {
         "captureMode": "heroGameplayReview=1",
@@ -267,9 +267,9 @@
             "forward": 0.0166
           }
         },
-        "fps": 1.92,
-        "drawCalls": 815,
-        "activeMeshes": 121,
+        "fps": 2.22,
+        "drawCalls": 804,
+        "activeMeshes": 118,
         "animationGroups": [
           "hero.player:Idle",
           "hero.player:Walk",
@@ -551,9 +551,9 @@
             "forward": 0.0166
           }
         },
-        "fps": 1.92,
-        "drawCalls": 815,
-        "activeMeshes": 121,
+        "fps": 2.22,
+        "drawCalls": 804,
+        "activeMeshes": 118,
         "animationGroups": [
           "hero.player:Idle",
           "hero.player:Walk",
@@ -567,7 +567,7 @@
     },
     {
       "captureId": "hero-alone-furnace",
-      "capturedAt": "2026-08-06T13:21:08.839Z",
+      "capturedAt": "2026-08-06T13:56:16.705Z",
       "screenshot": "D:\\codex\\遊戲開發\\reports\\art-previews\\hero-commercial-r7\\R7-E\\hero-alone-furnace.png",
       "state": {
         "captureMode": "heroGameplayReview=1",
@@ -824,9 +824,9 @@
             "forward": 0.0166
           }
         },
-        "fps": 1.92,
-        "drawCalls": 1069,
-        "activeMeshes": 121,
+        "fps": 2.22,
+        "drawCalls": 1052,
+        "activeMeshes": 118,
         "animationGroups": [
           "hero.player:Idle",
           "hero.player:Walk",
@@ -1108,9 +1108,9 @@
             "forward": 0.0166
           }
         },
-        "fps": 1.92,
-        "drawCalls": 1069,
-        "activeMeshes": 121,
+        "fps": 2.22,
+        "drawCalls": 1052,
+        "activeMeshes": 118,
         "animationGroups": [
           "hero.player:Idle",
           "hero.player:Walk",
@@ -1124,7 +1124,7 @@
     },
     {
       "captureId": "hero-with-allies",
-      "capturedAt": "2026-08-06T13:21:09.557Z",
+      "capturedAt": "2026-08-06T13:56:17.516Z",
       "screenshot": "D:\\codex\\遊戲開發\\reports\\art-previews\\hero-commercial-r7\\R7-E\\hero-with-allies.png",
       "state": {
         "captureMode": "heroGameplayReview=1",
@@ -1381,9 +1381,9 @@
             "forward": 0.0166
           }
         },
-        "fps": 1.92,
-        "drawCalls": 1391,
-        "activeMeshes": 155,
+        "fps": 2.22,
+        "drawCalls": 1368,
+        "activeMeshes": 152,
         "animationGroups": [
           "hero.player:Idle",
           "hero.player:Walk",
@@ -1665,9 +1665,9 @@
             "forward": 0.0166
           }
         },
-        "fps": 1.92,
-        "drawCalls": 1391,
-        "activeMeshes": 155,
+        "fps": 2.22,
+        "drawCalls": 1368,
+        "activeMeshes": 152,
         "animationGroups": [
           "hero.player:Idle",
           "hero.player:Walk",
@@ -1681,7 +1681,7 @@
     },
     {
       "captureId": "hero-battle",
-      "capturedAt": "2026-08-06T13:21:10.189Z",
+      "capturedAt": "2026-08-06T13:56:18.074Z",
       "screenshot": "D:\\codex\\遊戲開發\\reports\\art-previews\\hero-commercial-r7\\R7-E\\hero-battle.png",
       "state": {
         "captureMode": "heroGameplayReview=1",
@@ -1938,9 +1938,9 @@
             "forward": 0.0166
           }
         },
-        "fps": 1.92,
-        "drawCalls": 1817,
-        "activeMeshes": 207,
+        "fps": 2.22,
+        "drawCalls": 1788,
+        "activeMeshes": 204,
         "animationGroups": [
           "hero.player:Idle",
           "hero.player:Walk",
@@ -2222,9 +2222,9 @@
             "forward": 0.0166
           }
         },
-        "fps": 1.92,
-        "drawCalls": 1817,
-        "activeMeshes": 207,
+        "fps": 2.22,
+        "drawCalls": 1788,
+        "activeMeshes": 204,
         "animationGroups": [
           "hero.player:Idle",
           "hero.player:Walk",
@@ -2238,7 +2238,7 @@
     },
     {
       "captureId": "gameplay-front",
-      "capturedAt": "2026-08-06T13:21:10.818Z",
+      "capturedAt": "2026-08-06T13:56:18.642Z",
       "screenshot": "D:\\codex\\遊戲開發\\reports\\art-previews\\hero-commercial-r7\\R7-E\\gameplay-front.png",
       "state": {
         "captureMode": "heroGameplayReview=1",
@@ -2495,9 +2495,9 @@
             "forward": 0.0166
           }
         },
-        "fps": 1.92,
-        "drawCalls": 2243,
-        "activeMeshes": 207,
+        "fps": 2.22,
+        "drawCalls": 2208,
+        "activeMeshes": 204,
         "animationGroups": [
           "hero.player:Idle",
           "hero.player:Walk",
@@ -2779,9 +2779,9 @@
             "forward": 0.0166
           }
         },
-        "fps": 1.92,
-        "drawCalls": 2243,
-        "activeMeshes": 207,
+        "fps": 2.22,
+        "drawCalls": 2208,
+        "activeMeshes": 204,
         "animationGroups": [
           "hero.player:Idle",
           "hero.player:Walk",
@@ -2795,7 +2795,7 @@
     },
     {
       "captureId": "gameplay-back",
-      "capturedAt": "2026-08-06T13:21:11.491Z",
+      "capturedAt": "2026-08-06T13:56:19.259Z",
       "screenshot": "D:\\codex\\遊戲開發\\reports\\art-previews\\hero-commercial-r7\\R7-E\\gameplay-back.png",
       "state": {
         "captureMode": "heroGameplayReview=1",
@@ -3052,9 +3052,9 @@
             "forward": 0.0166
           }
         },
-        "fps": 1.92,
-        "drawCalls": 2513,
-        "activeMeshes": 129,
+        "fps": 2.22,
+        "drawCalls": 2480,
+        "activeMeshes": 130,
         "animationGroups": [
           "hero.player:Idle",
           "hero.player:Walk",
@@ -3336,9 +3336,9 @@
             "forward": 0.0166
           }
         },
-        "fps": 1.92,
-        "drawCalls": 2513,
-        "activeMeshes": 129,
+        "fps": 2.22,
+        "drawCalls": 2480,
+        "activeMeshes": 130,
         "animationGroups": [
           "hero.player:Idle",
           "hero.player:Walk",
@@ -3351,9 +3351,3908 @@
       }
     },
     {
-      "captureId": "hero-portrait-front",
-      "capturedAt": "2026-08-06T13:21:12.053Z",
-      "screenshot": "D:\\codex\\遊戲開發\\reports\\art-previews\\hero-commercial-r7\\R7-E\\hero-portrait-front.png",
+      "captureId": "hero-studio-front",
+      "capturedAt": "2026-08-06T13:56:20.347Z",
+      "screenshot": "D:\\codex\\遊戲開發\\reports\\art-previews\\hero-commercial-r7\\R7-E\\hero-studio-front.png",
+      "state": {
+        "captureMode": "heroGameplayReview=1",
+        "cameraMode": "portrait",
+        "lighting": "studio-neutral",
+        "animation": "Idle",
+        "context": "alone",
+        "lod": 0,
+        "lodMode": "forced",
+        "modelSource": "GLB",
+        "heroWorldPosition": {
+          "x": 0,
+          "y": 0,
+          "z": -4.5
+        },
+        "screenSpaceBoundingBox": {
+          "x": 610.67,
+          "y": 171.49,
+          "width": 378.66,
+          "height": 741.63,
+          "right": 989.33,
+          "bottom": 913.13
+        },
+        "viewport": {
+          "width": 1600,
+          "height": 900
+        },
+        "authoredVisibleMeshCount": 5,
+        "proceduralVisibleMeshCount": 0,
+        "allyCount": 8,
+        "enemyCount": 4,
+        "visible": false,
+        "uiOccluded": false,
+        "animationNormalized": 0,
+        "boneTransforms": {
+          "root": {
+            "position": [
+              0,
+              0,
+              0
+            ],
+            "rotation": [
+              -0.7071,
+              0,
+              0,
+              0.7071
+            ]
+          },
+          "pelvis": {
+            "position": [
+              0,
+              0.595,
+              0
+            ],
+            "rotation": [
+              0.004,
+              0,
+              0,
+              1
+            ]
+          },
+          "chest": {
+            "position": [
+              0,
+              0.3332,
+              0
+            ],
+            "rotation": [
+              0.006,
+              0,
+              0,
+              1
+            ]
+          },
+          "head": {
+            "position": [
+              0,
+              0.1309,
+              0
+            ],
+            "rotation": [
+              0,
+              0.009,
+              0,
+              1
+            ]
+          },
+          "upper_arm.L": {
+            "position": [
+              -0.3094,
+              0.3094,
+              0
+            ],
+            "rotation": [
+              0,
+              0,
+              0.9966,
+              0.0825
+            ]
+          },
+          "lower_arm.L": {
+            "position": [
+              0,
+              0.2895,
+              0
+            ],
+            "rotation": [
+              0.0824,
+              -0.9955,
+              -0.0464,
+              0.0038
+            ]
+          },
+          "hand.L": {
+            "position": [
+              0,
+              0.2151,
+              0
+            ],
+            "rotation": [
+              -0.1172,
+              -0.5045,
+              -0.0235,
+              0.8551
+            ]
+          },
+          "upper_arm.R": {
+            "position": [
+              0.3094,
+              0.3094,
+              0
+            ],
+            "rotation": [
+              0,
+              0,
+              -0.9966,
+              0.0825
+            ]
+          },
+          "lower_arm.R": {
+            "position": [
+              0,
+              0.2895,
+              0
+            ],
+            "rotation": [
+              0.0824,
+              0.9955,
+              0.0464,
+              0.0038
+            ]
+          },
+          "hand.R": {
+            "position": [
+              0,
+              0.2151,
+              0
+            ],
+            "rotation": [
+              -0.1172,
+              0.5045,
+              0.0235,
+              0.8551
+            ]
+          },
+          "thigh.L": {
+            "position": [
+              -0.1428,
+              0.0476,
+              0
+            ],
+            "rotation": [
+              0,
+              0,
+              0.9997,
+              0.0227
+            ]
+          },
+          "shin.L": {
+            "position": [
+              0,
+              0.2621,
+              0
+            ],
+            "rotation": [
+              0.0227,
+              -0.9995,
+              -0.0221,
+              0.0005
+            ]
+          },
+          "foot.L": {
+            "position": [
+              0,
+              0.2263,
+              0
+            ],
+            "rotation": [
+              -0.3827,
+              0,
+              0,
+              0.9239
+            ]
+          },
+          "thigh.R": {
+            "position": [
+              0.1428,
+              0.0476,
+              0
+            ],
+            "rotation": [
+              0,
+              0,
+              -0.9997,
+              0.0227
+            ]
+          },
+          "shin.R": {
+            "position": [
+              0,
+              0.2621,
+              0
+            ],
+            "rotation": [
+              0.0227,
+              0.9995,
+              0.0221,
+              0.0005
+            ]
+          },
+          "foot.R": {
+            "position": [
+              0,
+              0.2263,
+              0
+            ],
+            "rotation": [
+              -0.3827,
+              0,
+              0,
+              0.9239
+            ]
+          }
+        },
+        "gestureReach": {
+          "hand.L": {
+            "right": 0.2785,
+            "up": 0.8165,
+            "forward": 0.0166
+          },
+          "hand.R": {
+            "right": -0.2785,
+            "up": 0.8165,
+            "forward": 0.0166
+          }
+        },
+        "fps": 2.22,
+        "drawCalls": 2580,
+        "activeMeshes": 44,
+        "animationGroups": [
+          "hero.player:Idle",
+          "hero.player:Walk",
+          "hero.player:Run",
+          "hero.player:MeleeAttack",
+          "hero.player:RangedAttack",
+          "hero.player:Hit",
+          "hero.player:Death"
+        ],
+        "ready": false,
+        "currentCamera": "portrait",
+        "currentAnimation": "Idle",
+        "currentLod": "LOD0",
+        "authoredVisibleMeshes": 5,
+        "proceduralVisibleMeshes": 0,
+        "heroScreenBounds": {
+          "x": 610.67,
+          "y": 171.49,
+          "width": 378.66,
+          "height": 741.63,
+          "right": 989.33,
+          "bottom": 913.13,
+          "visible": false
+        },
+        "consoleErrors": []
+      },
+      "metadata": {
+        "captureMode": "heroGameplayReview=1",
+        "cameraMode": "portrait",
+        "lighting": "studio-neutral",
+        "animation": "Idle",
+        "context": "alone",
+        "lod": 0,
+        "lodMode": "forced",
+        "modelSource": "GLB",
+        "heroWorldPosition": {
+          "x": 0,
+          "y": 0,
+          "z": -4.5
+        },
+        "screenSpaceBoundingBox": {
+          "x": 610.67,
+          "y": 171.49,
+          "width": 378.66,
+          "height": 741.63,
+          "right": 989.33,
+          "bottom": 913.13
+        },
+        "viewport": {
+          "width": 1600,
+          "height": 900
+        },
+        "authoredVisibleMeshCount": 5,
+        "proceduralVisibleMeshCount": 0,
+        "allyCount": 8,
+        "enemyCount": 4,
+        "visible": false,
+        "uiOccluded": false,
+        "animationNormalized": 0,
+        "boneTransforms": {
+          "root": {
+            "position": [
+              0,
+              0,
+              0
+            ],
+            "rotation": [
+              -0.7071,
+              0,
+              0,
+              0.7071
+            ]
+          },
+          "pelvis": {
+            "position": [
+              0,
+              0.595,
+              0
+            ],
+            "rotation": [
+              0.004,
+              0,
+              0,
+              1
+            ]
+          },
+          "chest": {
+            "position": [
+              0,
+              0.3332,
+              0
+            ],
+            "rotation": [
+              0.006,
+              0,
+              0,
+              1
+            ]
+          },
+          "head": {
+            "position": [
+              0,
+              0.1309,
+              0
+            ],
+            "rotation": [
+              0,
+              0.009,
+              0,
+              1
+            ]
+          },
+          "upper_arm.L": {
+            "position": [
+              -0.3094,
+              0.3094,
+              0
+            ],
+            "rotation": [
+              0,
+              0,
+              0.9966,
+              0.0825
+            ]
+          },
+          "lower_arm.L": {
+            "position": [
+              0,
+              0.2895,
+              0
+            ],
+            "rotation": [
+              0.0824,
+              -0.9955,
+              -0.0464,
+              0.0038
+            ]
+          },
+          "hand.L": {
+            "position": [
+              0,
+              0.2151,
+              0
+            ],
+            "rotation": [
+              -0.1172,
+              -0.5045,
+              -0.0235,
+              0.8551
+            ]
+          },
+          "upper_arm.R": {
+            "position": [
+              0.3094,
+              0.3094,
+              0
+            ],
+            "rotation": [
+              0,
+              0,
+              -0.9966,
+              0.0825
+            ]
+          },
+          "lower_arm.R": {
+            "position": [
+              0,
+              0.2895,
+              0
+            ],
+            "rotation": [
+              0.0824,
+              0.9955,
+              0.0464,
+              0.0038
+            ]
+          },
+          "hand.R": {
+            "position": [
+              0,
+              0.2151,
+              0
+            ],
+            "rotation": [
+              -0.1172,
+              0.5045,
+              0.0235,
+              0.8551
+            ]
+          },
+          "thigh.L": {
+            "position": [
+              -0.1428,
+              0.0476,
+              0
+            ],
+            "rotation": [
+              0,
+              0,
+              0.9997,
+              0.0227
+            ]
+          },
+          "shin.L": {
+            "position": [
+              0,
+              0.2621,
+              0
+            ],
+            "rotation": [
+              0.0227,
+              -0.9995,
+              -0.0221,
+              0.0005
+            ]
+          },
+          "foot.L": {
+            "position": [
+              0,
+              0.2263,
+              0
+            ],
+            "rotation": [
+              -0.3827,
+              0,
+              0,
+              0.9239
+            ]
+          },
+          "thigh.R": {
+            "position": [
+              0.1428,
+              0.0476,
+              0
+            ],
+            "rotation": [
+              0,
+              0,
+              -0.9997,
+              0.0227
+            ]
+          },
+          "shin.R": {
+            "position": [
+              0,
+              0.2621,
+              0
+            ],
+            "rotation": [
+              0.0227,
+              0.9995,
+              0.0221,
+              0.0005
+            ]
+          },
+          "foot.R": {
+            "position": [
+              0,
+              0.2263,
+              0
+            ],
+            "rotation": [
+              -0.3827,
+              0,
+              0,
+              0.9239
+            ]
+          }
+        },
+        "gestureReach": {
+          "hand.L": {
+            "right": 0.2785,
+            "up": 0.8165,
+            "forward": 0.0166
+          },
+          "hand.R": {
+            "right": -0.2785,
+            "up": 0.8165,
+            "forward": 0.0166
+          }
+        },
+        "fps": 2.22,
+        "drawCalls": 2580,
+        "activeMeshes": 44,
+        "animationGroups": [
+          "hero.player:Idle",
+          "hero.player:Walk",
+          "hero.player:Run",
+          "hero.player:MeleeAttack",
+          "hero.player:RangedAttack",
+          "hero.player:Hit",
+          "hero.player:Death"
+        ]
+      }
+    },
+    {
+      "captureId": "hero-studio-side",
+      "capturedAt": "2026-08-06T13:56:20.912Z",
+      "screenshot": "D:\\codex\\遊戲開發\\reports\\art-previews\\hero-commercial-r7\\R7-E\\hero-studio-side.png",
+      "state": {
+        "captureMode": "heroGameplayReview=1",
+        "cameraMode": "portrait-side",
+        "lighting": "studio-neutral",
+        "animation": "Idle",
+        "context": "alone",
+        "lod": 0,
+        "lodMode": "forced",
+        "modelSource": "GLB",
+        "heroWorldPosition": {
+          "x": 0,
+          "y": 0,
+          "z": -4.5
+        },
+        "screenSpaceBoundingBox": {
+          "x": 663.14,
+          "y": 158.5,
+          "width": 236.91,
+          "height": 787.59,
+          "right": 900.05,
+          "bottom": 946.09
+        },
+        "viewport": {
+          "width": 1600,
+          "height": 900
+        },
+        "authoredVisibleMeshCount": 5,
+        "proceduralVisibleMeshCount": 0,
+        "allyCount": 8,
+        "enemyCount": 4,
+        "visible": false,
+        "uiOccluded": false,
+        "animationNormalized": 0,
+        "boneTransforms": {
+          "root": {
+            "position": [
+              0,
+              0,
+              0
+            ],
+            "rotation": [
+              -0.7071,
+              0,
+              0,
+              0.7071
+            ]
+          },
+          "pelvis": {
+            "position": [
+              0,
+              0.595,
+              0
+            ],
+            "rotation": [
+              0.004,
+              0,
+              0,
+              1
+            ]
+          },
+          "chest": {
+            "position": [
+              0,
+              0.3332,
+              0
+            ],
+            "rotation": [
+              0.006,
+              0,
+              0,
+              1
+            ]
+          },
+          "head": {
+            "position": [
+              0,
+              0.1309,
+              0
+            ],
+            "rotation": [
+              0,
+              0.009,
+              0,
+              1
+            ]
+          },
+          "upper_arm.L": {
+            "position": [
+              -0.3094,
+              0.3094,
+              0
+            ],
+            "rotation": [
+              0,
+              0,
+              0.9966,
+              0.0825
+            ]
+          },
+          "lower_arm.L": {
+            "position": [
+              0,
+              0.2895,
+              0
+            ],
+            "rotation": [
+              0.0824,
+              -0.9955,
+              -0.0464,
+              0.0038
+            ]
+          },
+          "hand.L": {
+            "position": [
+              0,
+              0.2151,
+              0
+            ],
+            "rotation": [
+              -0.1172,
+              -0.5045,
+              -0.0235,
+              0.8551
+            ]
+          },
+          "upper_arm.R": {
+            "position": [
+              0.3094,
+              0.3094,
+              0
+            ],
+            "rotation": [
+              0,
+              0,
+              -0.9966,
+              0.0825
+            ]
+          },
+          "lower_arm.R": {
+            "position": [
+              0,
+              0.2895,
+              0
+            ],
+            "rotation": [
+              0.0824,
+              0.9955,
+              0.0464,
+              0.0038
+            ]
+          },
+          "hand.R": {
+            "position": [
+              0,
+              0.2151,
+              0
+            ],
+            "rotation": [
+              -0.1172,
+              0.5045,
+              0.0235,
+              0.8551
+            ]
+          },
+          "thigh.L": {
+            "position": [
+              -0.1428,
+              0.0476,
+              0
+            ],
+            "rotation": [
+              0,
+              0,
+              0.9997,
+              0.0227
+            ]
+          },
+          "shin.L": {
+            "position": [
+              0,
+              0.2621,
+              0
+            ],
+            "rotation": [
+              0.0227,
+              -0.9995,
+              -0.0221,
+              0.0005
+            ]
+          },
+          "foot.L": {
+            "position": [
+              0,
+              0.2263,
+              0
+            ],
+            "rotation": [
+              -0.3827,
+              0,
+              0,
+              0.9239
+            ]
+          },
+          "thigh.R": {
+            "position": [
+              0.1428,
+              0.0476,
+              0
+            ],
+            "rotation": [
+              0,
+              0,
+              -0.9997,
+              0.0227
+            ]
+          },
+          "shin.R": {
+            "position": [
+              0,
+              0.2621,
+              0
+            ],
+            "rotation": [
+              0.0227,
+              0.9995,
+              0.0221,
+              0.0005
+            ]
+          },
+          "foot.R": {
+            "position": [
+              0,
+              0.2263,
+              0
+            ],
+            "rotation": [
+              -0.3827,
+              0,
+              0,
+              0.9239
+            ]
+          }
+        },
+        "gestureReach": {
+          "hand.L": {
+            "right": 0.2785,
+            "up": 0.8165,
+            "forward": 0.0166
+          },
+          "hand.R": {
+            "right": -0.2785,
+            "up": 0.8165,
+            "forward": 0.0166
+          }
+        },
+        "fps": 2.22,
+        "drawCalls": 2746,
+        "activeMeshes": 77,
+        "animationGroups": [
+          "hero.player:Idle",
+          "hero.player:Walk",
+          "hero.player:Run",
+          "hero.player:MeleeAttack",
+          "hero.player:RangedAttack",
+          "hero.player:Hit",
+          "hero.player:Death"
+        ],
+        "ready": false,
+        "currentCamera": "portrait-side",
+        "currentAnimation": "Idle",
+        "currentLod": "LOD0",
+        "authoredVisibleMeshes": 5,
+        "proceduralVisibleMeshes": 0,
+        "heroScreenBounds": {
+          "x": 663.14,
+          "y": 158.5,
+          "width": 236.91,
+          "height": 787.59,
+          "right": 900.05,
+          "bottom": 946.09,
+          "visible": false
+        },
+        "consoleErrors": []
+      },
+      "metadata": {
+        "captureMode": "heroGameplayReview=1",
+        "cameraMode": "portrait-side",
+        "lighting": "studio-neutral",
+        "animation": "Idle",
+        "context": "alone",
+        "lod": 0,
+        "lodMode": "forced",
+        "modelSource": "GLB",
+        "heroWorldPosition": {
+          "x": 0,
+          "y": 0,
+          "z": -4.5
+        },
+        "screenSpaceBoundingBox": {
+          "x": 663.14,
+          "y": 158.5,
+          "width": 236.91,
+          "height": 787.59,
+          "right": 900.05,
+          "bottom": 946.09
+        },
+        "viewport": {
+          "width": 1600,
+          "height": 900
+        },
+        "authoredVisibleMeshCount": 5,
+        "proceduralVisibleMeshCount": 0,
+        "allyCount": 8,
+        "enemyCount": 4,
+        "visible": false,
+        "uiOccluded": false,
+        "animationNormalized": 0,
+        "boneTransforms": {
+          "root": {
+            "position": [
+              0,
+              0,
+              0
+            ],
+            "rotation": [
+              -0.7071,
+              0,
+              0,
+              0.7071
+            ]
+          },
+          "pelvis": {
+            "position": [
+              0,
+              0.595,
+              0
+            ],
+            "rotation": [
+              0.004,
+              0,
+              0,
+              1
+            ]
+          },
+          "chest": {
+            "position": [
+              0,
+              0.3332,
+              0
+            ],
+            "rotation": [
+              0.006,
+              0,
+              0,
+              1
+            ]
+          },
+          "head": {
+            "position": [
+              0,
+              0.1309,
+              0
+            ],
+            "rotation": [
+              0,
+              0.009,
+              0,
+              1
+            ]
+          },
+          "upper_arm.L": {
+            "position": [
+              -0.3094,
+              0.3094,
+              0
+            ],
+            "rotation": [
+              0,
+              0,
+              0.9966,
+              0.0825
+            ]
+          },
+          "lower_arm.L": {
+            "position": [
+              0,
+              0.2895,
+              0
+            ],
+            "rotation": [
+              0.0824,
+              -0.9955,
+              -0.0464,
+              0.0038
+            ]
+          },
+          "hand.L": {
+            "position": [
+              0,
+              0.2151,
+              0
+            ],
+            "rotation": [
+              -0.1172,
+              -0.5045,
+              -0.0235,
+              0.8551
+            ]
+          },
+          "upper_arm.R": {
+            "position": [
+              0.3094,
+              0.3094,
+              0
+            ],
+            "rotation": [
+              0,
+              0,
+              -0.9966,
+              0.0825
+            ]
+          },
+          "lower_arm.R": {
+            "position": [
+              0,
+              0.2895,
+              0
+            ],
+            "rotation": [
+              0.0824,
+              0.9955,
+              0.0464,
+              0.0038
+            ]
+          },
+          "hand.R": {
+            "position": [
+              0,
+              0.2151,
+              0
+            ],
+            "rotation": [
+              -0.1172,
+              0.5045,
+              0.0235,
+              0.8551
+            ]
+          },
+          "thigh.L": {
+            "position": [
+              -0.1428,
+              0.0476,
+              0
+            ],
+            "rotation": [
+              0,
+              0,
+              0.9997,
+              0.0227
+            ]
+          },
+          "shin.L": {
+            "position": [
+              0,
+              0.2621,
+              0
+            ],
+            "rotation": [
+              0.0227,
+              -0.9995,
+              -0.0221,
+              0.0005
+            ]
+          },
+          "foot.L": {
+            "position": [
+              0,
+              0.2263,
+              0
+            ],
+            "rotation": [
+              -0.3827,
+              0,
+              0,
+              0.9239
+            ]
+          },
+          "thigh.R": {
+            "position": [
+              0.1428,
+              0.0476,
+              0
+            ],
+            "rotation": [
+              0,
+              0,
+              -0.9997,
+              0.0227
+            ]
+          },
+          "shin.R": {
+            "position": [
+              0,
+              0.2621,
+              0
+            ],
+            "rotation": [
+              0.0227,
+              0.9995,
+              0.0221,
+              0.0005
+            ]
+          },
+          "foot.R": {
+            "position": [
+              0,
+              0.2263,
+              0
+            ],
+            "rotation": [
+              -0.3827,
+              0,
+              0,
+              0.9239
+            ]
+          }
+        },
+        "gestureReach": {
+          "hand.L": {
+            "right": 0.2785,
+            "up": 0.8165,
+            "forward": 0.0166
+          },
+          "hand.R": {
+            "right": -0.2785,
+            "up": 0.8165,
+            "forward": 0.0166
+          }
+        },
+        "fps": 2.22,
+        "drawCalls": 2746,
+        "activeMeshes": 77,
+        "animationGroups": [
+          "hero.player:Idle",
+          "hero.player:Walk",
+          "hero.player:Run",
+          "hero.player:MeleeAttack",
+          "hero.player:RangedAttack",
+          "hero.player:Hit",
+          "hero.player:Death"
+        ]
+      }
+    },
+    {
+      "captureId": "hero-studio-three-quarter",
+      "capturedAt": "2026-08-06T13:56:21.436Z",
+      "screenshot": "D:\\codex\\遊戲開發\\reports\\art-previews\\hero-commercial-r7\\R7-E\\hero-studio-three-quarter.png",
+      "state": {
+        "captureMode": "heroGameplayReview=1",
+        "cameraMode": "portrait-three-quarter",
+        "lighting": "studio-neutral",
+        "animation": "Idle",
+        "context": "alone",
+        "lod": 0,
+        "lodMode": "forced",
+        "modelSource": "GLB",
+        "heroWorldPosition": {
+          "x": 0,
+          "y": 0,
+          "z": -4.5
+        },
+        "screenSpaceBoundingBox": {
+          "x": 602.3,
+          "y": 162.05,
+          "width": 370.33,
+          "height": 788.66,
+          "right": 972.63,
+          "bottom": 950.71
+        },
+        "viewport": {
+          "width": 1600,
+          "height": 900
+        },
+        "authoredVisibleMeshCount": 5,
+        "proceduralVisibleMeshCount": 0,
+        "allyCount": 8,
+        "enemyCount": 4,
+        "visible": false,
+        "uiOccluded": false,
+        "animationNormalized": 0,
+        "boneTransforms": {
+          "root": {
+            "position": [
+              0,
+              0,
+              0
+            ],
+            "rotation": [
+              -0.7071,
+              0,
+              0,
+              0.7071
+            ]
+          },
+          "pelvis": {
+            "position": [
+              0,
+              0.595,
+              0
+            ],
+            "rotation": [
+              0.004,
+              0,
+              0,
+              1
+            ]
+          },
+          "chest": {
+            "position": [
+              0,
+              0.3332,
+              0
+            ],
+            "rotation": [
+              0.006,
+              0,
+              0,
+              1
+            ]
+          },
+          "head": {
+            "position": [
+              0,
+              0.1309,
+              0
+            ],
+            "rotation": [
+              0,
+              0.009,
+              0,
+              1
+            ]
+          },
+          "upper_arm.L": {
+            "position": [
+              -0.3094,
+              0.3094,
+              0
+            ],
+            "rotation": [
+              0,
+              0,
+              0.9966,
+              0.0825
+            ]
+          },
+          "lower_arm.L": {
+            "position": [
+              0,
+              0.2895,
+              0
+            ],
+            "rotation": [
+              0.0824,
+              -0.9955,
+              -0.0464,
+              0.0038
+            ]
+          },
+          "hand.L": {
+            "position": [
+              0,
+              0.2151,
+              0
+            ],
+            "rotation": [
+              -0.1172,
+              -0.5045,
+              -0.0235,
+              0.8551
+            ]
+          },
+          "upper_arm.R": {
+            "position": [
+              0.3094,
+              0.3094,
+              0
+            ],
+            "rotation": [
+              0,
+              0,
+              -0.9966,
+              0.0825
+            ]
+          },
+          "lower_arm.R": {
+            "position": [
+              0,
+              0.2895,
+              0
+            ],
+            "rotation": [
+              0.0824,
+              0.9955,
+              0.0464,
+              0.0038
+            ]
+          },
+          "hand.R": {
+            "position": [
+              0,
+              0.2151,
+              0
+            ],
+            "rotation": [
+              -0.1172,
+              0.5045,
+              0.0235,
+              0.8551
+            ]
+          },
+          "thigh.L": {
+            "position": [
+              -0.1428,
+              0.0476,
+              0
+            ],
+            "rotation": [
+              0,
+              0,
+              0.9997,
+              0.0227
+            ]
+          },
+          "shin.L": {
+            "position": [
+              0,
+              0.2621,
+              0
+            ],
+            "rotation": [
+              0.0227,
+              -0.9995,
+              -0.0221,
+              0.0005
+            ]
+          },
+          "foot.L": {
+            "position": [
+              0,
+              0.2263,
+              0
+            ],
+            "rotation": [
+              -0.3827,
+              0,
+              0,
+              0.9239
+            ]
+          },
+          "thigh.R": {
+            "position": [
+              0.1428,
+              0.0476,
+              0
+            ],
+            "rotation": [
+              0,
+              0,
+              -0.9997,
+              0.0227
+            ]
+          },
+          "shin.R": {
+            "position": [
+              0,
+              0.2621,
+              0
+            ],
+            "rotation": [
+              0.0227,
+              0.9995,
+              0.0221,
+              0.0005
+            ]
+          },
+          "foot.R": {
+            "position": [
+              0,
+              0.2263,
+              0
+            ],
+            "rotation": [
+              -0.3827,
+              0,
+              0,
+              0.9239
+            ]
+          }
+        },
+        "gestureReach": {
+          "hand.L": {
+            "right": 0.2785,
+            "up": 0.8165,
+            "forward": 0.0166
+          },
+          "hand.R": {
+            "right": -0.2785,
+            "up": 0.8165,
+            "forward": 0.0166
+          }
+        },
+        "fps": 2.22,
+        "drawCalls": 2900,
+        "activeMeshes": 71,
+        "animationGroups": [
+          "hero.player:Idle",
+          "hero.player:Walk",
+          "hero.player:Run",
+          "hero.player:MeleeAttack",
+          "hero.player:RangedAttack",
+          "hero.player:Hit",
+          "hero.player:Death"
+        ],
+        "ready": false,
+        "currentCamera": "portrait-three-quarter",
+        "currentAnimation": "Idle",
+        "currentLod": "LOD0",
+        "authoredVisibleMeshes": 5,
+        "proceduralVisibleMeshes": 0,
+        "heroScreenBounds": {
+          "x": 602.3,
+          "y": 162.05,
+          "width": 370.33,
+          "height": 788.66,
+          "right": 972.63,
+          "bottom": 950.71,
+          "visible": false
+        },
+        "consoleErrors": []
+      },
+      "metadata": {
+        "captureMode": "heroGameplayReview=1",
+        "cameraMode": "portrait-three-quarter",
+        "lighting": "studio-neutral",
+        "animation": "Idle",
+        "context": "alone",
+        "lod": 0,
+        "lodMode": "forced",
+        "modelSource": "GLB",
+        "heroWorldPosition": {
+          "x": 0,
+          "y": 0,
+          "z": -4.5
+        },
+        "screenSpaceBoundingBox": {
+          "x": 602.3,
+          "y": 162.05,
+          "width": 370.33,
+          "height": 788.66,
+          "right": 972.63,
+          "bottom": 950.71
+        },
+        "viewport": {
+          "width": 1600,
+          "height": 900
+        },
+        "authoredVisibleMeshCount": 5,
+        "proceduralVisibleMeshCount": 0,
+        "allyCount": 8,
+        "enemyCount": 4,
+        "visible": false,
+        "uiOccluded": false,
+        "animationNormalized": 0,
+        "boneTransforms": {
+          "root": {
+            "position": [
+              0,
+              0,
+              0
+            ],
+            "rotation": [
+              -0.7071,
+              0,
+              0,
+              0.7071
+            ]
+          },
+          "pelvis": {
+            "position": [
+              0,
+              0.595,
+              0
+            ],
+            "rotation": [
+              0.004,
+              0,
+              0,
+              1
+            ]
+          },
+          "chest": {
+            "position": [
+              0,
+              0.3332,
+              0
+            ],
+            "rotation": [
+              0.006,
+              0,
+              0,
+              1
+            ]
+          },
+          "head": {
+            "position": [
+              0,
+              0.1309,
+              0
+            ],
+            "rotation": [
+              0,
+              0.009,
+              0,
+              1
+            ]
+          },
+          "upper_arm.L": {
+            "position": [
+              -0.3094,
+              0.3094,
+              0
+            ],
+            "rotation": [
+              0,
+              0,
+              0.9966,
+              0.0825
+            ]
+          },
+          "lower_arm.L": {
+            "position": [
+              0,
+              0.2895,
+              0
+            ],
+            "rotation": [
+              0.0824,
+              -0.9955,
+              -0.0464,
+              0.0038
+            ]
+          },
+          "hand.L": {
+            "position": [
+              0,
+              0.2151,
+              0
+            ],
+            "rotation": [
+              -0.1172,
+              -0.5045,
+              -0.0235,
+              0.8551
+            ]
+          },
+          "upper_arm.R": {
+            "position": [
+              0.3094,
+              0.3094,
+              0
+            ],
+            "rotation": [
+              0,
+              0,
+              -0.9966,
+              0.0825
+            ]
+          },
+          "lower_arm.R": {
+            "position": [
+              0,
+              0.2895,
+              0
+            ],
+            "rotation": [
+              0.0824,
+              0.9955,
+              0.0464,
+              0.0038
+            ]
+          },
+          "hand.R": {
+            "position": [
+              0,
+              0.2151,
+              0
+            ],
+            "rotation": [
+              -0.1172,
+              0.5045,
+              0.0235,
+              0.8551
+            ]
+          },
+          "thigh.L": {
+            "position": [
+              -0.1428,
+              0.0476,
+              0
+            ],
+            "rotation": [
+              0,
+              0,
+              0.9997,
+              0.0227
+            ]
+          },
+          "shin.L": {
+            "position": [
+              0,
+              0.2621,
+              0
+            ],
+            "rotation": [
+              0.0227,
+              -0.9995,
+              -0.0221,
+              0.0005
+            ]
+          },
+          "foot.L": {
+            "position": [
+              0,
+              0.2263,
+              0
+            ],
+            "rotation": [
+              -0.3827,
+              0,
+              0,
+              0.9239
+            ]
+          },
+          "thigh.R": {
+            "position": [
+              0.1428,
+              0.0476,
+              0
+            ],
+            "rotation": [
+              0,
+              0,
+              -0.9997,
+              0.0227
+            ]
+          },
+          "shin.R": {
+            "position": [
+              0,
+              0.2621,
+              0
+            ],
+            "rotation": [
+              0.0227,
+              0.9995,
+              0.0221,
+              0.0005
+            ]
+          },
+          "foot.R": {
+            "position": [
+              0,
+              0.2263,
+              0
+            ],
+            "rotation": [
+              -0.3827,
+              0,
+              0,
+              0.9239
+            ]
+          }
+        },
+        "gestureReach": {
+          "hand.L": {
+            "right": 0.2785,
+            "up": 0.8165,
+            "forward": 0.0166
+          },
+          "hand.R": {
+            "right": -0.2785,
+            "up": 0.8165,
+            "forward": 0.0166
+          }
+        },
+        "fps": 2.22,
+        "drawCalls": 2900,
+        "activeMeshes": 71,
+        "animationGroups": [
+          "hero.player:Idle",
+          "hero.player:Walk",
+          "hero.player:Run",
+          "hero.player:MeleeAttack",
+          "hero.player:RangedAttack",
+          "hero.player:Hit",
+          "hero.player:Death"
+        ]
+      }
+    },
+    {
+      "captureId": "hero-studio-head",
+      "capturedAt": "2026-08-06T13:56:22.068Z",
+      "screenshot": "D:\\codex\\遊戲開發\\reports\\art-previews\\hero-commercial-r7\\R7-E\\hero-studio-head.png",
+      "state": {
+        "captureMode": "heroGameplayReview=1",
+        "cameraMode": "head",
+        "lighting": "studio-neutral",
+        "animation": "Idle",
+        "context": "alone",
+        "lod": 0,
+        "lodMode": "forced",
+        "modelSource": "GLB",
+        "heroWorldPosition": {
+          "x": 0,
+          "y": 0,
+          "z": -4.5
+        },
+        "screenSpaceBoundingBox": {
+          "x": 79.89,
+          "y": 188.96,
+          "width": 1443.43,
+          "height": 3158.98,
+          "right": 1523.32,
+          "bottom": 3347.94
+        },
+        "viewport": {
+          "width": 1600,
+          "height": 900
+        },
+        "authoredVisibleMeshCount": 5,
+        "proceduralVisibleMeshCount": 0,
+        "allyCount": 8,
+        "enemyCount": 4,
+        "visible": false,
+        "uiOccluded": true,
+        "animationNormalized": 0,
+        "boneTransforms": {
+          "root": {
+            "position": [
+              0,
+              0,
+              0
+            ],
+            "rotation": [
+              -0.7071,
+              0,
+              0,
+              0.7071
+            ]
+          },
+          "pelvis": {
+            "position": [
+              0,
+              0.595,
+              0
+            ],
+            "rotation": [
+              0.004,
+              0,
+              0,
+              1
+            ]
+          },
+          "chest": {
+            "position": [
+              0,
+              0.3332,
+              0
+            ],
+            "rotation": [
+              0.006,
+              0,
+              0,
+              1
+            ]
+          },
+          "head": {
+            "position": [
+              0,
+              0.1309,
+              0
+            ],
+            "rotation": [
+              0,
+              0.009,
+              0,
+              1
+            ]
+          },
+          "upper_arm.L": {
+            "position": [
+              -0.3094,
+              0.3094,
+              0
+            ],
+            "rotation": [
+              0,
+              0,
+              0.9966,
+              0.0825
+            ]
+          },
+          "lower_arm.L": {
+            "position": [
+              0,
+              0.2895,
+              0
+            ],
+            "rotation": [
+              0.0824,
+              -0.9955,
+              -0.0464,
+              0.0038
+            ]
+          },
+          "hand.L": {
+            "position": [
+              0,
+              0.2151,
+              0
+            ],
+            "rotation": [
+              -0.1172,
+              -0.5045,
+              -0.0235,
+              0.8551
+            ]
+          },
+          "upper_arm.R": {
+            "position": [
+              0.3094,
+              0.3094,
+              0
+            ],
+            "rotation": [
+              0,
+              0,
+              -0.9966,
+              0.0825
+            ]
+          },
+          "lower_arm.R": {
+            "position": [
+              0,
+              0.2895,
+              0
+            ],
+            "rotation": [
+              0.0824,
+              0.9955,
+              0.0464,
+              0.0038
+            ]
+          },
+          "hand.R": {
+            "position": [
+              0,
+              0.2151,
+              0
+            ],
+            "rotation": [
+              -0.1172,
+              0.5045,
+              0.0235,
+              0.8551
+            ]
+          },
+          "thigh.L": {
+            "position": [
+              -0.1428,
+              0.0476,
+              0
+            ],
+            "rotation": [
+              0,
+              0,
+              0.9997,
+              0.0227
+            ]
+          },
+          "shin.L": {
+            "position": [
+              0,
+              0.2621,
+              0
+            ],
+            "rotation": [
+              0.0227,
+              -0.9995,
+              -0.0221,
+              0.0005
+            ]
+          },
+          "foot.L": {
+            "position": [
+              0,
+              0.2263,
+              0
+            ],
+            "rotation": [
+              -0.3827,
+              0,
+              0,
+              0.9239
+            ]
+          },
+          "thigh.R": {
+            "position": [
+              0.1428,
+              0.0476,
+              0
+            ],
+            "rotation": [
+              0,
+              0,
+              -0.9997,
+              0.0227
+            ]
+          },
+          "shin.R": {
+            "position": [
+              0,
+              0.2621,
+              0
+            ],
+            "rotation": [
+              0.0227,
+              0.9995,
+              0.0221,
+              0.0005
+            ]
+          },
+          "foot.R": {
+            "position": [
+              0,
+              0.2263,
+              0
+            ],
+            "rotation": [
+              -0.3827,
+              0,
+              0,
+              0.9239
+            ]
+          }
+        },
+        "gestureReach": {
+          "hand.L": {
+            "right": 0.2785,
+            "up": 0.8165,
+            "forward": 0.0166
+          },
+          "hand.R": {
+            "right": -0.2785,
+            "up": 0.8165,
+            "forward": 0.0166
+          }
+        },
+        "fps": 2.22,
+        "drawCalls": 2996,
+        "activeMeshes": 42,
+        "animationGroups": [
+          "hero.player:Idle",
+          "hero.player:Walk",
+          "hero.player:Run",
+          "hero.player:MeleeAttack",
+          "hero.player:RangedAttack",
+          "hero.player:Hit",
+          "hero.player:Death"
+        ],
+        "ready": false,
+        "currentCamera": "head",
+        "currentAnimation": "Idle",
+        "currentLod": "LOD0",
+        "authoredVisibleMeshes": 5,
+        "proceduralVisibleMeshes": 0,
+        "heroScreenBounds": {
+          "x": 79.89,
+          "y": 188.96,
+          "width": 1443.43,
+          "height": 3158.98,
+          "right": 1523.32,
+          "bottom": 3347.94,
+          "visible": false
+        },
+        "consoleErrors": []
+      },
+      "metadata": {
+        "captureMode": "heroGameplayReview=1",
+        "cameraMode": "head",
+        "lighting": "studio-neutral",
+        "animation": "Idle",
+        "context": "alone",
+        "lod": 0,
+        "lodMode": "forced",
+        "modelSource": "GLB",
+        "heroWorldPosition": {
+          "x": 0,
+          "y": 0,
+          "z": -4.5
+        },
+        "screenSpaceBoundingBox": {
+          "x": 79.89,
+          "y": 188.96,
+          "width": 1443.43,
+          "height": 3158.98,
+          "right": 1523.32,
+          "bottom": 3347.94
+        },
+        "viewport": {
+          "width": 1600,
+          "height": 900
+        },
+        "authoredVisibleMeshCount": 5,
+        "proceduralVisibleMeshCount": 0,
+        "allyCount": 8,
+        "enemyCount": 4,
+        "visible": false,
+        "uiOccluded": true,
+        "animationNormalized": 0,
+        "boneTransforms": {
+          "root": {
+            "position": [
+              0,
+              0,
+              0
+            ],
+            "rotation": [
+              -0.7071,
+              0,
+              0,
+              0.7071
+            ]
+          },
+          "pelvis": {
+            "position": [
+              0,
+              0.595,
+              0
+            ],
+            "rotation": [
+              0.004,
+              0,
+              0,
+              1
+            ]
+          },
+          "chest": {
+            "position": [
+              0,
+              0.3332,
+              0
+            ],
+            "rotation": [
+              0.006,
+              0,
+              0,
+              1
+            ]
+          },
+          "head": {
+            "position": [
+              0,
+              0.1309,
+              0
+            ],
+            "rotation": [
+              0,
+              0.009,
+              0,
+              1
+            ]
+          },
+          "upper_arm.L": {
+            "position": [
+              -0.3094,
+              0.3094,
+              0
+            ],
+            "rotation": [
+              0,
+              0,
+              0.9966,
+              0.0825
+            ]
+          },
+          "lower_arm.L": {
+            "position": [
+              0,
+              0.2895,
+              0
+            ],
+            "rotation": [
+              0.0824,
+              -0.9955,
+              -0.0464,
+              0.0038
+            ]
+          },
+          "hand.L": {
+            "position": [
+              0,
+              0.2151,
+              0
+            ],
+            "rotation": [
+              -0.1172,
+              -0.5045,
+              -0.0235,
+              0.8551
+            ]
+          },
+          "upper_arm.R": {
+            "position": [
+              0.3094,
+              0.3094,
+              0
+            ],
+            "rotation": [
+              0,
+              0,
+              -0.9966,
+              0.0825
+            ]
+          },
+          "lower_arm.R": {
+            "position": [
+              0,
+              0.2895,
+              0
+            ],
+            "rotation": [
+              0.0824,
+              0.9955,
+              0.0464,
+              0.0038
+            ]
+          },
+          "hand.R": {
+            "position": [
+              0,
+              0.2151,
+              0
+            ],
+            "rotation": [
+              -0.1172,
+              0.5045,
+              0.0235,
+              0.8551
+            ]
+          },
+          "thigh.L": {
+            "position": [
+              -0.1428,
+              0.0476,
+              0
+            ],
+            "rotation": [
+              0,
+              0,
+              0.9997,
+              0.0227
+            ]
+          },
+          "shin.L": {
+            "position": [
+              0,
+              0.2621,
+              0
+            ],
+            "rotation": [
+              0.0227,
+              -0.9995,
+              -0.0221,
+              0.0005
+            ]
+          },
+          "foot.L": {
+            "position": [
+              0,
+              0.2263,
+              0
+            ],
+            "rotation": [
+              -0.3827,
+              0,
+              0,
+              0.9239
+            ]
+          },
+          "thigh.R": {
+            "position": [
+              0.1428,
+              0.0476,
+              0
+            ],
+            "rotation": [
+              0,
+              0,
+              -0.9997,
+              0.0227
+            ]
+          },
+          "shin.R": {
+            "position": [
+              0,
+              0.2621,
+              0
+            ],
+            "rotation": [
+              0.0227,
+              0.9995,
+              0.0221,
+              0.0005
+            ]
+          },
+          "foot.R": {
+            "position": [
+              0,
+              0.2263,
+              0
+            ],
+            "rotation": [
+              -0.3827,
+              0,
+              0,
+              0.9239
+            ]
+          }
+        },
+        "gestureReach": {
+          "hand.L": {
+            "right": 0.2785,
+            "up": 0.8165,
+            "forward": 0.0166
+          },
+          "hand.R": {
+            "right": -0.2785,
+            "up": 0.8165,
+            "forward": 0.0166
+          }
+        },
+        "fps": 2.22,
+        "drawCalls": 2996,
+        "activeMeshes": 42,
+        "animationGroups": [
+          "hero.player:Idle",
+          "hero.player:Walk",
+          "hero.player:Run",
+          "hero.player:MeleeAttack",
+          "hero.player:RangedAttack",
+          "hero.player:Hit",
+          "hero.player:Death"
+        ]
+      }
+    },
+    {
+      "captureId": "hero-studio-grip",
+      "capturedAt": "2026-08-06T13:56:22.635Z",
+      "screenshot": "D:\\codex\\遊戲開發\\reports\\art-previews\\hero-commercial-r7\\R7-E\\hero-studio-grip.png",
+      "state": {
+        "captureMode": "heroGameplayReview=1",
+        "cameraMode": "portrait-three-quarter",
+        "lighting": "studio-neutral",
+        "animation": "Idle",
+        "context": "alone",
+        "lod": 0,
+        "lodMode": "forced",
+        "modelSource": "GLB",
+        "heroWorldPosition": {
+          "x": 0,
+          "y": 0,
+          "z": -4.5
+        },
+        "screenSpaceBoundingBox": {
+          "x": 602.3,
+          "y": 162.05,
+          "width": 370.33,
+          "height": 788.66,
+          "right": 972.63,
+          "bottom": 950.71
+        },
+        "viewport": {
+          "width": 1600,
+          "height": 900
+        },
+        "authoredVisibleMeshCount": 5,
+        "proceduralVisibleMeshCount": 0,
+        "allyCount": 8,
+        "enemyCount": 4,
+        "visible": false,
+        "uiOccluded": false,
+        "animationNormalized": 0,
+        "boneTransforms": {
+          "root": {
+            "position": [
+              0,
+              0,
+              0
+            ],
+            "rotation": [
+              -0.7071,
+              0,
+              0,
+              0.7071
+            ]
+          },
+          "pelvis": {
+            "position": [
+              0,
+              0.595,
+              0
+            ],
+            "rotation": [
+              0.004,
+              0,
+              0,
+              1
+            ]
+          },
+          "chest": {
+            "position": [
+              0,
+              0.3332,
+              0
+            ],
+            "rotation": [
+              0.006,
+              0,
+              0,
+              1
+            ]
+          },
+          "head": {
+            "position": [
+              0,
+              0.1309,
+              0
+            ],
+            "rotation": [
+              0,
+              0.009,
+              0,
+              1
+            ]
+          },
+          "upper_arm.L": {
+            "position": [
+              -0.3094,
+              0.3094,
+              0
+            ],
+            "rotation": [
+              0,
+              0,
+              0.9966,
+              0.0825
+            ]
+          },
+          "lower_arm.L": {
+            "position": [
+              0,
+              0.2895,
+              0
+            ],
+            "rotation": [
+              0.0824,
+              -0.9955,
+              -0.0464,
+              0.0038
+            ]
+          },
+          "hand.L": {
+            "position": [
+              0,
+              0.2151,
+              0
+            ],
+            "rotation": [
+              -0.1172,
+              -0.5045,
+              -0.0235,
+              0.8551
+            ]
+          },
+          "upper_arm.R": {
+            "position": [
+              0.3094,
+              0.3094,
+              0
+            ],
+            "rotation": [
+              0,
+              0,
+              -0.9966,
+              0.0825
+            ]
+          },
+          "lower_arm.R": {
+            "position": [
+              0,
+              0.2895,
+              0
+            ],
+            "rotation": [
+              0.0824,
+              0.9955,
+              0.0464,
+              0.0038
+            ]
+          },
+          "hand.R": {
+            "position": [
+              0,
+              0.2151,
+              0
+            ],
+            "rotation": [
+              -0.1172,
+              0.5045,
+              0.0235,
+              0.8551
+            ]
+          },
+          "thigh.L": {
+            "position": [
+              -0.1428,
+              0.0476,
+              0
+            ],
+            "rotation": [
+              0,
+              0,
+              0.9997,
+              0.0227
+            ]
+          },
+          "shin.L": {
+            "position": [
+              0,
+              0.2621,
+              0
+            ],
+            "rotation": [
+              0.0227,
+              -0.9995,
+              -0.0221,
+              0.0005
+            ]
+          },
+          "foot.L": {
+            "position": [
+              0,
+              0.2263,
+              0
+            ],
+            "rotation": [
+              -0.3827,
+              0,
+              0,
+              0.9239
+            ]
+          },
+          "thigh.R": {
+            "position": [
+              0.1428,
+              0.0476,
+              0
+            ],
+            "rotation": [
+              0,
+              0,
+              -0.9997,
+              0.0227
+            ]
+          },
+          "shin.R": {
+            "position": [
+              0,
+              0.2621,
+              0
+            ],
+            "rotation": [
+              0.0227,
+              0.9995,
+              0.0221,
+              0.0005
+            ]
+          },
+          "foot.R": {
+            "position": [
+              0,
+              0.2263,
+              0
+            ],
+            "rotation": [
+              -0.3827,
+              0,
+              0,
+              0.9239
+            ]
+          }
+        },
+        "gestureReach": {
+          "hand.L": {
+            "right": 0.2785,
+            "up": 0.8165,
+            "forward": 0.0166
+          },
+          "hand.R": {
+            "right": -0.2785,
+            "up": 0.8165,
+            "forward": 0.0166
+          }
+        },
+        "fps": 2.22,
+        "drawCalls": 3150,
+        "activeMeshes": 71,
+        "animationGroups": [
+          "hero.player:Idle",
+          "hero.player:Walk",
+          "hero.player:Run",
+          "hero.player:MeleeAttack",
+          "hero.player:RangedAttack",
+          "hero.player:Hit",
+          "hero.player:Death"
+        ],
+        "ready": false,
+        "currentCamera": "portrait-three-quarter",
+        "currentAnimation": "Idle",
+        "currentLod": "LOD0",
+        "authoredVisibleMeshes": 5,
+        "proceduralVisibleMeshes": 0,
+        "heroScreenBounds": {
+          "x": 602.3,
+          "y": 162.05,
+          "width": 370.33,
+          "height": 788.66,
+          "right": 972.63,
+          "bottom": 950.71,
+          "visible": false
+        },
+        "consoleErrors": []
+      },
+      "metadata": {
+        "captureMode": "heroGameplayReview=1",
+        "cameraMode": "portrait-three-quarter",
+        "lighting": "studio-neutral",
+        "animation": "Idle",
+        "context": "alone",
+        "lod": 0,
+        "lodMode": "forced",
+        "modelSource": "GLB",
+        "heroWorldPosition": {
+          "x": 0,
+          "y": 0,
+          "z": -4.5
+        },
+        "screenSpaceBoundingBox": {
+          "x": 602.3,
+          "y": 162.05,
+          "width": 370.33,
+          "height": 788.66,
+          "right": 972.63,
+          "bottom": 950.71
+        },
+        "viewport": {
+          "width": 1600,
+          "height": 900
+        },
+        "authoredVisibleMeshCount": 5,
+        "proceduralVisibleMeshCount": 0,
+        "allyCount": 8,
+        "enemyCount": 4,
+        "visible": false,
+        "uiOccluded": false,
+        "animationNormalized": 0,
+        "boneTransforms": {
+          "root": {
+            "position": [
+              0,
+              0,
+              0
+            ],
+            "rotation": [
+              -0.7071,
+              0,
+              0,
+              0.7071
+            ]
+          },
+          "pelvis": {
+            "position": [
+              0,
+              0.595,
+              0
+            ],
+            "rotation": [
+              0.004,
+              0,
+              0,
+              1
+            ]
+          },
+          "chest": {
+            "position": [
+              0,
+              0.3332,
+              0
+            ],
+            "rotation": [
+              0.006,
+              0,
+              0,
+              1
+            ]
+          },
+          "head": {
+            "position": [
+              0,
+              0.1309,
+              0
+            ],
+            "rotation": [
+              0,
+              0.009,
+              0,
+              1
+            ]
+          },
+          "upper_arm.L": {
+            "position": [
+              -0.3094,
+              0.3094,
+              0
+            ],
+            "rotation": [
+              0,
+              0,
+              0.9966,
+              0.0825
+            ]
+          },
+          "lower_arm.L": {
+            "position": [
+              0,
+              0.2895,
+              0
+            ],
+            "rotation": [
+              0.0824,
+              -0.9955,
+              -0.0464,
+              0.0038
+            ]
+          },
+          "hand.L": {
+            "position": [
+              0,
+              0.2151,
+              0
+            ],
+            "rotation": [
+              -0.1172,
+              -0.5045,
+              -0.0235,
+              0.8551
+            ]
+          },
+          "upper_arm.R": {
+            "position": [
+              0.3094,
+              0.3094,
+              0
+            ],
+            "rotation": [
+              0,
+              0,
+              -0.9966,
+              0.0825
+            ]
+          },
+          "lower_arm.R": {
+            "position": [
+              0,
+              0.2895,
+              0
+            ],
+            "rotation": [
+              0.0824,
+              0.9955,
+              0.0464,
+              0.0038
+            ]
+          },
+          "hand.R": {
+            "position": [
+              0,
+              0.2151,
+              0
+            ],
+            "rotation": [
+              -0.1172,
+              0.5045,
+              0.0235,
+              0.8551
+            ]
+          },
+          "thigh.L": {
+            "position": [
+              -0.1428,
+              0.0476,
+              0
+            ],
+            "rotation": [
+              0,
+              0,
+              0.9997,
+              0.0227
+            ]
+          },
+          "shin.L": {
+            "position": [
+              0,
+              0.2621,
+              0
+            ],
+            "rotation": [
+              0.0227,
+              -0.9995,
+              -0.0221,
+              0.0005
+            ]
+          },
+          "foot.L": {
+            "position": [
+              0,
+              0.2263,
+              0
+            ],
+            "rotation": [
+              -0.3827,
+              0,
+              0,
+              0.9239
+            ]
+          },
+          "thigh.R": {
+            "position": [
+              0.1428,
+              0.0476,
+              0
+            ],
+            "rotation": [
+              0,
+              0,
+              -0.9997,
+              0.0227
+            ]
+          },
+          "shin.R": {
+            "position": [
+              0,
+              0.2621,
+              0
+            ],
+            "rotation": [
+              0.0227,
+              0.9995,
+              0.0221,
+              0.0005
+            ]
+          },
+          "foot.R": {
+            "position": [
+              0,
+              0.2263,
+              0
+            ],
+            "rotation": [
+              -0.3827,
+              0,
+              0,
+              0.9239
+            ]
+          }
+        },
+        "gestureReach": {
+          "hand.L": {
+            "right": 0.2785,
+            "up": 0.8165,
+            "forward": 0.0166
+          },
+          "hand.R": {
+            "right": -0.2785,
+            "up": 0.8165,
+            "forward": 0.0166
+          }
+        },
+        "fps": 2.22,
+        "drawCalls": 3150,
+        "activeMeshes": 71,
+        "animationGroups": [
+          "hero.player:Idle",
+          "hero.player:Walk",
+          "hero.player:Run",
+          "hero.player:MeleeAttack",
+          "hero.player:RangedAttack",
+          "hero.player:Hit",
+          "hero.player:Death"
+        ]
+      }
+    },
+    {
+      "captureId": "hero-studio-melee",
+      "capturedAt": "2026-08-06T13:56:23.200Z",
+      "screenshot": "D:\\codex\\遊戲開發\\reports\\art-previews\\hero-commercial-r7\\R7-E\\hero-studio-melee.png",
+      "state": {
+        "captureMode": "heroGameplayReview=1",
+        "cameraMode": "portrait-three-quarter",
+        "lighting": "studio-neutral",
+        "animation": "MeleeAttack",
+        "context": "battle",
+        "lod": 0,
+        "lodMode": "forced",
+        "modelSource": "GLB",
+        "heroWorldPosition": {
+          "x": 0,
+          "y": 0,
+          "z": -4.5
+        },
+        "screenSpaceBoundingBox": {
+          "x": 589.77,
+          "y": 171.23,
+          "width": 442.05,
+          "height": 801.27,
+          "right": 1031.82,
+          "bottom": 972.51
+        },
+        "viewport": {
+          "width": 1600,
+          "height": 900
+        },
+        "authoredVisibleMeshCount": 5,
+        "proceduralVisibleMeshCount": 0,
+        "allyCount": 8,
+        "enemyCount": 4,
+        "visible": false,
+        "uiOccluded": false,
+        "animationNormalized": 0.55,
+        "boneTransforms": {
+          "root": {
+            "position": [
+              0,
+              0,
+              0
+            ],
+            "rotation": [
+              -0.7048,
+              0.0141,
+              -0.0565,
+              0.707
+            ]
+          },
+          "pelvis": {
+            "position": [
+              0,
+              0.595,
+              0
+            ],
+            "rotation": [
+              -0.0713,
+              -0.0581,
+              -0.0291,
+              0.9953
+            ]
+          },
+          "chest": {
+            "position": [
+              0,
+              0.3332,
+              0
+            ],
+            "rotation": [
+              0.1553,
+              0.126,
+              0.0891,
+              0.9757
+            ]
+          },
+          "head": {
+            "position": [
+              0,
+              0.1309,
+              0
+            ],
+            "rotation": [
+              -0.0691,
+              -0.027,
+              0.0282,
+              0.9968
+            ]
+          },
+          "upper_arm.L": {
+            "position": [
+              -0.3094,
+              0.3094,
+              0
+            ],
+            "rotation": [
+              0.0673,
+              -0.1781,
+              0.9724,
+              0.1351
+            ]
+          },
+          "lower_arm.L": {
+            "position": [
+              0,
+              0.2895,
+              0
+            ],
+            "rotation": [
+              0.0824,
+              -0.9955,
+              -0.0464,
+              0.0038
+            ]
+          },
+          "hand.L": {
+            "position": [
+              0,
+              0.2151,
+              0
+            ],
+            "rotation": [
+              -0.1172,
+              -0.5045,
+              -0.0235,
+              0.8551
+            ]
+          },
+          "upper_arm.R": {
+            "position": [
+              0.3094,
+              0.3094,
+              0
+            ],
+            "rotation": [
+              0.2296,
+              -0.6575,
+              -0.7128,
+              0.083
+            ]
+          },
+          "lower_arm.R": {
+            "position": [
+              0,
+              0.2895,
+              0
+            ],
+            "rotation": [
+              0.0283,
+              0.9445,
+              -0.3167,
+              0.0832
+            ]
+          },
+          "hand.R": {
+            "position": [
+              0,
+              0.2151,
+              0
+            ],
+            "rotation": [
+              0.0662,
+              0.487,
+              -0.1163,
+              0.8631
+            ]
+          },
+          "thigh.L": {
+            "position": [
+              -0.1428,
+              0.0476,
+              0
+            ],
+            "rotation": [
+              0,
+              0,
+              0.9997,
+              0.0227
+            ]
+          },
+          "shin.L": {
+            "position": [
+              0,
+              0.2621,
+              0
+            ],
+            "rotation": [
+              0.0227,
+              -0.9995,
+              -0.0221,
+              0.0005
+            ]
+          },
+          "foot.L": {
+            "position": [
+              0,
+              0.2263,
+              0
+            ],
+            "rotation": [
+              -0.4284,
+              0,
+              0,
+              0.9036
+            ]
+          },
+          "thigh.R": {
+            "position": [
+              0.1428,
+              0.0476,
+              0
+            ],
+            "rotation": [
+              0,
+              0,
+              -0.9997,
+              0.0227
+            ]
+          },
+          "shin.R": {
+            "position": [
+              0,
+              0.2621,
+              0
+            ],
+            "rotation": [
+              0.0227,
+              0.9995,
+              0.0221,
+              0.0005
+            ]
+          },
+          "foot.R": {
+            "position": [
+              0,
+              0.2263,
+              0
+            ],
+            "rotation": [
+              -0.2981,
+              0,
+              0,
+              0.9545
+            ]
+          }
+        },
+        "gestureReach": {
+          "hand.L": {
+            "right": 0.2571,
+            "up": 0.8322,
+            "forward": -0.1343
+          },
+          "hand.R": {
+            "right": -0.3591,
+            "up": 1.0107,
+            "forward": 0.2288
+          }
+        },
+        "fps": 2.22,
+        "drawCalls": 3308,
+        "activeMeshes": 73,
+        "animationGroups": [
+          "hero.player:Idle",
+          "hero.player:Walk",
+          "hero.player:Run",
+          "hero.player:MeleeAttack",
+          "hero.player:RangedAttack",
+          "hero.player:Hit",
+          "hero.player:Death"
+        ],
+        "ready": false,
+        "currentCamera": "portrait-three-quarter",
+        "currentAnimation": "MeleeAttack",
+        "currentLod": "LOD0",
+        "authoredVisibleMeshes": 5,
+        "proceduralVisibleMeshes": 0,
+        "heroScreenBounds": {
+          "x": 589.77,
+          "y": 171.23,
+          "width": 442.05,
+          "height": 801.27,
+          "right": 1031.82,
+          "bottom": 972.51,
+          "visible": false
+        },
+        "consoleErrors": []
+      },
+      "metadata": {
+        "captureMode": "heroGameplayReview=1",
+        "cameraMode": "portrait-three-quarter",
+        "lighting": "studio-neutral",
+        "animation": "MeleeAttack",
+        "context": "battle",
+        "lod": 0,
+        "lodMode": "forced",
+        "modelSource": "GLB",
+        "heroWorldPosition": {
+          "x": 0,
+          "y": 0,
+          "z": -4.5
+        },
+        "screenSpaceBoundingBox": {
+          "x": 589.77,
+          "y": 171.23,
+          "width": 442.05,
+          "height": 801.27,
+          "right": 1031.82,
+          "bottom": 972.51
+        },
+        "viewport": {
+          "width": 1600,
+          "height": 900
+        },
+        "authoredVisibleMeshCount": 5,
+        "proceduralVisibleMeshCount": 0,
+        "allyCount": 8,
+        "enemyCount": 4,
+        "visible": false,
+        "uiOccluded": false,
+        "animationNormalized": 0.55,
+        "boneTransforms": {
+          "root": {
+            "position": [
+              0,
+              0,
+              0
+            ],
+            "rotation": [
+              -0.7048,
+              0.0141,
+              -0.0565,
+              0.707
+            ]
+          },
+          "pelvis": {
+            "position": [
+              0,
+              0.595,
+              0
+            ],
+            "rotation": [
+              -0.0713,
+              -0.0581,
+              -0.0291,
+              0.9953
+            ]
+          },
+          "chest": {
+            "position": [
+              0,
+              0.3332,
+              0
+            ],
+            "rotation": [
+              0.1553,
+              0.126,
+              0.0891,
+              0.9757
+            ]
+          },
+          "head": {
+            "position": [
+              0,
+              0.1309,
+              0
+            ],
+            "rotation": [
+              -0.0691,
+              -0.027,
+              0.0282,
+              0.9968
+            ]
+          },
+          "upper_arm.L": {
+            "position": [
+              -0.3094,
+              0.3094,
+              0
+            ],
+            "rotation": [
+              0.0673,
+              -0.1781,
+              0.9724,
+              0.1351
+            ]
+          },
+          "lower_arm.L": {
+            "position": [
+              0,
+              0.2895,
+              0
+            ],
+            "rotation": [
+              0.0824,
+              -0.9955,
+              -0.0464,
+              0.0038
+            ]
+          },
+          "hand.L": {
+            "position": [
+              0,
+              0.2151,
+              0
+            ],
+            "rotation": [
+              -0.1172,
+              -0.5045,
+              -0.0235,
+              0.8551
+            ]
+          },
+          "upper_arm.R": {
+            "position": [
+              0.3094,
+              0.3094,
+              0
+            ],
+            "rotation": [
+              0.2296,
+              -0.6575,
+              -0.7128,
+              0.083
+            ]
+          },
+          "lower_arm.R": {
+            "position": [
+              0,
+              0.2895,
+              0
+            ],
+            "rotation": [
+              0.0283,
+              0.9445,
+              -0.3167,
+              0.0832
+            ]
+          },
+          "hand.R": {
+            "position": [
+              0,
+              0.2151,
+              0
+            ],
+            "rotation": [
+              0.0662,
+              0.487,
+              -0.1163,
+              0.8631
+            ]
+          },
+          "thigh.L": {
+            "position": [
+              -0.1428,
+              0.0476,
+              0
+            ],
+            "rotation": [
+              0,
+              0,
+              0.9997,
+              0.0227
+            ]
+          },
+          "shin.L": {
+            "position": [
+              0,
+              0.2621,
+              0
+            ],
+            "rotation": [
+              0.0227,
+              -0.9995,
+              -0.0221,
+              0.0005
+            ]
+          },
+          "foot.L": {
+            "position": [
+              0,
+              0.2263,
+              0
+            ],
+            "rotation": [
+              -0.4284,
+              0,
+              0,
+              0.9036
+            ]
+          },
+          "thigh.R": {
+            "position": [
+              0.1428,
+              0.0476,
+              0
+            ],
+            "rotation": [
+              0,
+              0,
+              -0.9997,
+              0.0227
+            ]
+          },
+          "shin.R": {
+            "position": [
+              0,
+              0.2621,
+              0
+            ],
+            "rotation": [
+              0.0227,
+              0.9995,
+              0.0221,
+              0.0005
+            ]
+          },
+          "foot.R": {
+            "position": [
+              0,
+              0.2263,
+              0
+            ],
+            "rotation": [
+              -0.2981,
+              0,
+              0,
+              0.9545
+            ]
+          }
+        },
+        "gestureReach": {
+          "hand.L": {
+            "right": 0.2571,
+            "up": 0.8322,
+            "forward": -0.1343
+          },
+          "hand.R": {
+            "right": -0.3591,
+            "up": 1.0107,
+            "forward": 0.2288
+          }
+        },
+        "fps": 2.22,
+        "drawCalls": 3308,
+        "activeMeshes": 73,
+        "animationGroups": [
+          "hero.player:Idle",
+          "hero.player:Walk",
+          "hero.player:Run",
+          "hero.player:MeleeAttack",
+          "hero.player:RangedAttack",
+          "hero.player:Hit",
+          "hero.player:Death"
+        ]
+      }
+    },
+    {
+      "captureId": "hero-vs-warrior-studio",
+      "capturedAt": "2026-08-06T13:56:23.939Z",
+      "screenshot": "D:\\codex\\遊戲開發\\reports\\art-previews\\hero-commercial-r7\\R7-E\\hero-vs-warrior-studio.png",
+      "state": {
+        "captureMode": "heroGameplayReview=1",
+        "cameraMode": "pair",
+        "lighting": "studio-neutral",
+        "animation": "Idle",
+        "context": "friends",
+        "lod": 0,
+        "lodMode": "forced",
+        "modelSource": "GLB",
+        "heroWorldPosition": {
+          "x": 0,
+          "y": 0,
+          "z": -4.5
+        },
+        "screenSpaceBoundingBox": {
+          "x": 869.24,
+          "y": 408.65,
+          "width": 167.59,
+          "height": 326.46,
+          "right": 1036.83,
+          "bottom": 735.11
+        },
+        "viewport": {
+          "width": 1600,
+          "height": 900
+        },
+        "authoredVisibleMeshCount": 5,
+        "proceduralVisibleMeshCount": 0,
+        "allyCount": 8,
+        "enemyCount": 4,
+        "visible": true,
+        "uiOccluded": false,
+        "animationNormalized": 0,
+        "boneTransforms": {
+          "root": {
+            "position": [
+              0,
+              0,
+              0
+            ],
+            "rotation": [
+              -0.7071,
+              0,
+              0,
+              0.7071
+            ]
+          },
+          "pelvis": {
+            "position": [
+              0,
+              0.595,
+              0
+            ],
+            "rotation": [
+              0.004,
+              0,
+              0,
+              1
+            ]
+          },
+          "chest": {
+            "position": [
+              0,
+              0.3332,
+              0
+            ],
+            "rotation": [
+              0.006,
+              0,
+              0,
+              1
+            ]
+          },
+          "head": {
+            "position": [
+              0,
+              0.1309,
+              0
+            ],
+            "rotation": [
+              0,
+              0.009,
+              0,
+              1
+            ]
+          },
+          "upper_arm.L": {
+            "position": [
+              -0.3094,
+              0.3094,
+              0
+            ],
+            "rotation": [
+              0,
+              0,
+              0.9966,
+              0.0825
+            ]
+          },
+          "lower_arm.L": {
+            "position": [
+              0,
+              0.2895,
+              0
+            ],
+            "rotation": [
+              0.0824,
+              -0.9955,
+              -0.0464,
+              0.0038
+            ]
+          },
+          "hand.L": {
+            "position": [
+              0,
+              0.2151,
+              0
+            ],
+            "rotation": [
+              -0.1172,
+              -0.5045,
+              -0.0235,
+              0.8551
+            ]
+          },
+          "upper_arm.R": {
+            "position": [
+              0.3094,
+              0.3094,
+              0
+            ],
+            "rotation": [
+              0,
+              0,
+              -0.9966,
+              0.0825
+            ]
+          },
+          "lower_arm.R": {
+            "position": [
+              0,
+              0.2895,
+              0
+            ],
+            "rotation": [
+              0.0824,
+              0.9955,
+              0.0464,
+              0.0038
+            ]
+          },
+          "hand.R": {
+            "position": [
+              0,
+              0.2151,
+              0
+            ],
+            "rotation": [
+              -0.1172,
+              0.5045,
+              0.0235,
+              0.8551
+            ]
+          },
+          "thigh.L": {
+            "position": [
+              -0.1428,
+              0.0476,
+              0
+            ],
+            "rotation": [
+              0,
+              0,
+              0.9997,
+              0.0227
+            ]
+          },
+          "shin.L": {
+            "position": [
+              0,
+              0.2621,
+              0
+            ],
+            "rotation": [
+              0.0227,
+              -0.9995,
+              -0.0221,
+              0.0005
+            ]
+          },
+          "foot.L": {
+            "position": [
+              0,
+              0.2263,
+              0
+            ],
+            "rotation": [
+              -0.3827,
+              0,
+              0,
+              0.9239
+            ]
+          },
+          "thigh.R": {
+            "position": [
+              0.1428,
+              0.0476,
+              0
+            ],
+            "rotation": [
+              0,
+              0,
+              -0.9997,
+              0.0227
+            ]
+          },
+          "shin.R": {
+            "position": [
+              0,
+              0.2621,
+              0
+            ],
+            "rotation": [
+              0.0227,
+              0.9995,
+              0.0221,
+              0.0005
+            ]
+          },
+          "foot.R": {
+            "position": [
+              0,
+              0.2263,
+              0
+            ],
+            "rotation": [
+              -0.3827,
+              0,
+              0,
+              0.9239
+            ]
+          }
+        },
+        "gestureReach": {
+          "hand.L": {
+            "right": 0.2785,
+            "up": 0.8165,
+            "forward": 0.0166
+          },
+          "hand.R": {
+            "right": -0.2785,
+            "up": 0.8165,
+            "forward": 0.0166
+          }
+        },
+        "fps": 2.22,
+        "drawCalls": 3574,
+        "activeMeshes": 127,
+        "animationGroups": [
+          "hero.player:Idle",
+          "hero.player:Walk",
+          "hero.player:Run",
+          "hero.player:MeleeAttack",
+          "hero.player:RangedAttack",
+          "hero.player:Hit",
+          "hero.player:Death"
+        ],
+        "ready": true,
+        "currentCamera": "pair",
+        "currentAnimation": "Idle",
+        "currentLod": "LOD0",
+        "authoredVisibleMeshes": 5,
+        "proceduralVisibleMeshes": 0,
+        "heroScreenBounds": {
+          "x": 869.24,
+          "y": 408.65,
+          "width": 167.59,
+          "height": 326.46,
+          "right": 1036.83,
+          "bottom": 735.11,
+          "visible": true
+        },
+        "consoleErrors": []
+      },
+      "metadata": {
+        "captureMode": "heroGameplayReview=1",
+        "cameraMode": "pair",
+        "lighting": "studio-neutral",
+        "animation": "Idle",
+        "context": "friends",
+        "lod": 0,
+        "lodMode": "forced",
+        "modelSource": "GLB",
+        "heroWorldPosition": {
+          "x": 0,
+          "y": 0,
+          "z": -4.5
+        },
+        "screenSpaceBoundingBox": {
+          "x": 869.24,
+          "y": 408.65,
+          "width": 167.59,
+          "height": 326.46,
+          "right": 1036.83,
+          "bottom": 735.11
+        },
+        "viewport": {
+          "width": 1600,
+          "height": 900
+        },
+        "authoredVisibleMeshCount": 5,
+        "proceduralVisibleMeshCount": 0,
+        "allyCount": 8,
+        "enemyCount": 4,
+        "visible": true,
+        "uiOccluded": false,
+        "animationNormalized": 0,
+        "boneTransforms": {
+          "root": {
+            "position": [
+              0,
+              0,
+              0
+            ],
+            "rotation": [
+              -0.7071,
+              0,
+              0,
+              0.7071
+            ]
+          },
+          "pelvis": {
+            "position": [
+              0,
+              0.595,
+              0
+            ],
+            "rotation": [
+              0.004,
+              0,
+              0,
+              1
+            ]
+          },
+          "chest": {
+            "position": [
+              0,
+              0.3332,
+              0
+            ],
+            "rotation": [
+              0.006,
+              0,
+              0,
+              1
+            ]
+          },
+          "head": {
+            "position": [
+              0,
+              0.1309,
+              0
+            ],
+            "rotation": [
+              0,
+              0.009,
+              0,
+              1
+            ]
+          },
+          "upper_arm.L": {
+            "position": [
+              -0.3094,
+              0.3094,
+              0
+            ],
+            "rotation": [
+              0,
+              0,
+              0.9966,
+              0.0825
+            ]
+          },
+          "lower_arm.L": {
+            "position": [
+              0,
+              0.2895,
+              0
+            ],
+            "rotation": [
+              0.0824,
+              -0.9955,
+              -0.0464,
+              0.0038
+            ]
+          },
+          "hand.L": {
+            "position": [
+              0,
+              0.2151,
+              0
+            ],
+            "rotation": [
+              -0.1172,
+              -0.5045,
+              -0.0235,
+              0.8551
+            ]
+          },
+          "upper_arm.R": {
+            "position": [
+              0.3094,
+              0.3094,
+              0
+            ],
+            "rotation": [
+              0,
+              0,
+              -0.9966,
+              0.0825
+            ]
+          },
+          "lower_arm.R": {
+            "position": [
+              0,
+              0.2895,
+              0
+            ],
+            "rotation": [
+              0.0824,
+              0.9955,
+              0.0464,
+              0.0038
+            ]
+          },
+          "hand.R": {
+            "position": [
+              0,
+              0.2151,
+              0
+            ],
+            "rotation": [
+              -0.1172,
+              0.5045,
+              0.0235,
+              0.8551
+            ]
+          },
+          "thigh.L": {
+            "position": [
+              -0.1428,
+              0.0476,
+              0
+            ],
+            "rotation": [
+              0,
+              0,
+              0.9997,
+              0.0227
+            ]
+          },
+          "shin.L": {
+            "position": [
+              0,
+              0.2621,
+              0
+            ],
+            "rotation": [
+              0.0227,
+              -0.9995,
+              -0.0221,
+              0.0005
+            ]
+          },
+          "foot.L": {
+            "position": [
+              0,
+              0.2263,
+              0
+            ],
+            "rotation": [
+              -0.3827,
+              0,
+              0,
+              0.9239
+            ]
+          },
+          "thigh.R": {
+            "position": [
+              0.1428,
+              0.0476,
+              0
+            ],
+            "rotation": [
+              0,
+              0,
+              -0.9997,
+              0.0227
+            ]
+          },
+          "shin.R": {
+            "position": [
+              0,
+              0.2621,
+              0
+            ],
+            "rotation": [
+              0.0227,
+              0.9995,
+              0.0221,
+              0.0005
+            ]
+          },
+          "foot.R": {
+            "position": [
+              0,
+              0.2263,
+              0
+            ],
+            "rotation": [
+              -0.3827,
+              0,
+              0,
+              0.9239
+            ]
+          }
+        },
+        "gestureReach": {
+          "hand.L": {
+            "right": 0.2785,
+            "up": 0.8165,
+            "forward": 0.0166
+          },
+          "hand.R": {
+            "right": -0.2785,
+            "up": 0.8165,
+            "forward": 0.0166
+          }
+        },
+        "fps": 2.22,
+        "drawCalls": 3574,
+        "activeMeshes": 127,
+        "animationGroups": [
+          "hero.player:Idle",
+          "hero.player:Walk",
+          "hero.player:Run",
+          "hero.player:MeleeAttack",
+          "hero.player:RangedAttack",
+          "hero.player:Hit",
+          "hero.player:Death"
+        ]
+      }
+    },
+    {
+      "captureId": "hero-portrait-snow",
+      "capturedAt": "2026-08-06T13:56:24.688Z",
+      "screenshot": "D:\\codex\\遊戲開發\\reports\\art-previews\\hero-commercial-r7\\R7-E\\hero-portrait-snow.png",
       "state": {
         "captureMode": "heroGameplayReview=1",
         "cameraMode": "portrait",
@@ -3609,9 +7508,9 @@
             "forward": 0.0166
           }
         },
-        "fps": 1.92,
-        "drawCalls": 2621,
-        "activeMeshes": 48,
+        "fps": 2.22,
+        "drawCalls": 3674,
+        "activeMeshes": 44,
         "animationGroups": [
           "hero.player:Idle",
           "hero.player:Walk",
@@ -3893,9 +7792,9 @@
             "forward": 0.0166
           }
         },
-        "fps": 1.92,
-        "drawCalls": 2621,
-        "activeMeshes": 48,
+        "fps": 2.22,
+        "drawCalls": 3674,
+        "activeMeshes": 44,
         "animationGroups": [
           "hero.player:Idle",
           "hero.player:Walk",
@@ -3908,13 +7807,13 @@
       }
     },
     {
-      "captureId": "hero-portrait-side",
-      "capturedAt": "2026-08-06T13:21:12.616Z",
-      "screenshot": "D:\\codex\\遊戲開發\\reports\\art-previews\\hero-commercial-r7\\R7-E\\hero-portrait-side.png",
+      "captureId": "hero-portrait-furnace",
+      "capturedAt": "2026-08-06T13:56:25.449Z",
+      "screenshot": "D:\\codex\\遊戲開發\\reports\\art-previews\\hero-commercial-r7\\R7-E\\hero-portrait-furnace.png",
       "state": {
         "captureMode": "heroGameplayReview=1",
-        "cameraMode": "portrait-side",
-        "lighting": "snow-daylight",
+        "cameraMode": "portrait",
+        "lighting": "furnace-warm",
         "animation": "Idle",
         "context": "alone",
         "lod": 0,
@@ -3926,12 +7825,12 @@
           "z": -4.5
         },
         "screenSpaceBoundingBox": {
-          "x": 663.14,
-          "y": 158.5,
-          "width": 236.91,
-          "height": 787.59,
-          "right": 900.05,
-          "bottom": 946.09
+          "x": 610.67,
+          "y": 171.49,
+          "width": 378.66,
+          "height": 741.63,
+          "right": 989.33,
+          "bottom": 913.13
         },
         "viewport": {
           "width": 1600,
@@ -4166,9 +8065,9 @@
             "forward": 0.0166
           }
         },
-        "fps": 1.92,
-        "drawCalls": 2785,
-        "activeMeshes": 76,
+        "fps": 2.22,
+        "drawCalls": 3774,
+        "activeMeshes": 44,
         "animationGroups": [
           "hero.player:Idle",
           "hero.player:Walk",
@@ -4179,26 +8078,26 @@
           "hero.player:Death"
         ],
         "ready": false,
-        "currentCamera": "portrait-side",
+        "currentCamera": "portrait",
         "currentAnimation": "Idle",
         "currentLod": "LOD0",
         "authoredVisibleMeshes": 5,
         "proceduralVisibleMeshes": 0,
         "heroScreenBounds": {
-          "x": 663.14,
-          "y": 158.5,
-          "width": 236.91,
-          "height": 787.59,
-          "right": 900.05,
-          "bottom": 946.09,
+          "x": 610.67,
+          "y": 171.49,
+          "width": 378.66,
+          "height": 741.63,
+          "right": 989.33,
+          "bottom": 913.13,
           "visible": false
         },
         "consoleErrors": []
       },
       "metadata": {
         "captureMode": "heroGameplayReview=1",
-        "cameraMode": "portrait-side",
-        "lighting": "snow-daylight",
+        "cameraMode": "portrait",
+        "lighting": "furnace-warm",
         "animation": "Idle",
         "context": "alone",
         "lod": 0,
@@ -4210,12 +8109,12 @@
           "z": -4.5
         },
         "screenSpaceBoundingBox": {
-          "x": 663.14,
-          "y": 158.5,
-          "width": 236.91,
-          "height": 787.59,
-          "right": 900.05,
-          "bottom": 946.09
+          "x": 610.67,
+          "y": 171.49,
+          "width": 378.66,
+          "height": 741.63,
+          "right": 989.33,
+          "bottom": 913.13
         },
         "viewport": {
           "width": 1600,
@@ -4450,9 +8349,9 @@
             "forward": 0.0166
           }
         },
-        "fps": 1.92,
-        "drawCalls": 2785,
-        "activeMeshes": 76,
+        "fps": 2.22,
+        "drawCalls": 3774,
+        "activeMeshes": 44,
         "animationGroups": [
           "hero.player:Idle",
           "hero.player:Walk",
@@ -4466,7 +8365,7 @@
     },
     {
       "captureId": "hero-portrait-head",
-      "capturedAt": "2026-08-06T13:21:13.252Z",
+      "capturedAt": "2026-08-06T13:56:26.333Z",
       "screenshot": "D:\\codex\\遊戲開發\\reports\\art-previews\\hero-commercial-r7\\R7-E\\hero-portrait-head.png",
       "state": {
         "captureMode": "heroGameplayReview=1",
@@ -4723,9 +8622,9 @@
             "forward": 0.0166
           }
         },
-        "fps": 1.92,
-        "drawCalls": 2873,
-        "activeMeshes": 38,
+        "fps": 2.22,
+        "drawCalls": 3870,
+        "activeMeshes": 42,
         "animationGroups": [
           "hero.player:Idle",
           "hero.player:Walk",
@@ -5007,566 +8906,9 @@
             "forward": 0.0166
           }
         },
-        "fps": 1.92,
-        "drawCalls": 2873,
-        "activeMeshes": 38,
-        "animationGroups": [
-          "hero.player:Idle",
-          "hero.player:Walk",
-          "hero.player:Run",
-          "hero.player:MeleeAttack",
-          "hero.player:RangedAttack",
-          "hero.player:Hit",
-          "hero.player:Death"
-        ]
-      }
-    },
-    {
-      "captureId": "hero-portrait-melee",
-      "capturedAt": "2026-08-06T13:21:13.809Z",
-      "screenshot": "D:\\codex\\遊戲開發\\reports\\art-previews\\hero-commercial-r7\\R7-E\\hero-portrait-melee.png",
-      "state": {
-        "captureMode": "heroGameplayReview=1",
-        "cameraMode": "portrait",
-        "lighting": "snow-daylight",
-        "animation": "MeleeAttack",
-        "context": "battle",
-        "lod": 0,
-        "lodMode": "forced",
-        "modelSource": "GLB",
-        "heroWorldPosition": {
-          "x": 0,
-          "y": 0,
-          "z": -4.5
-        },
-        "screenSpaceBoundingBox": {
-          "x": 632.18,
-          "y": 177.42,
-          "width": 408.26,
-          "height": 765.39,
-          "right": 1040.44,
-          "bottom": 942.81
-        },
-        "viewport": {
-          "width": 1600,
-          "height": 900
-        },
-        "authoredVisibleMeshCount": 5,
-        "proceduralVisibleMeshCount": 0,
-        "allyCount": 8,
-        "enemyCount": 4,
-        "visible": false,
-        "uiOccluded": false,
-        "animationNormalized": 0.55,
-        "boneTransforms": {
-          "root": {
-            "position": [
-              0,
-              0,
-              0
-            ],
-            "rotation": [
-              -0.7048,
-              0.0141,
-              -0.0565,
-              0.707
-            ]
-          },
-          "pelvis": {
-            "position": [
-              0,
-              0.595,
-              0
-            ],
-            "rotation": [
-              -0.0713,
-              -0.0581,
-              -0.0291,
-              0.9953
-            ]
-          },
-          "chest": {
-            "position": [
-              0,
-              0.3332,
-              0
-            ],
-            "rotation": [
-              0.1553,
-              0.126,
-              0.0891,
-              0.9757
-            ]
-          },
-          "head": {
-            "position": [
-              0,
-              0.1309,
-              0
-            ],
-            "rotation": [
-              -0.0691,
-              -0.027,
-              0.0282,
-              0.9968
-            ]
-          },
-          "upper_arm.L": {
-            "position": [
-              -0.3094,
-              0.3094,
-              0
-            ],
-            "rotation": [
-              0.0673,
-              -0.1781,
-              0.9724,
-              0.1351
-            ]
-          },
-          "lower_arm.L": {
-            "position": [
-              0,
-              0.2895,
-              0
-            ],
-            "rotation": [
-              0.0824,
-              -0.9955,
-              -0.0464,
-              0.0038
-            ]
-          },
-          "hand.L": {
-            "position": [
-              0,
-              0.2151,
-              0
-            ],
-            "rotation": [
-              -0.1172,
-              -0.5045,
-              -0.0235,
-              0.8551
-            ]
-          },
-          "upper_arm.R": {
-            "position": [
-              0.3094,
-              0.3094,
-              0
-            ],
-            "rotation": [
-              0.2296,
-              -0.6575,
-              -0.7128,
-              0.083
-            ]
-          },
-          "lower_arm.R": {
-            "position": [
-              0,
-              0.2895,
-              0
-            ],
-            "rotation": [
-              0.0283,
-              0.9445,
-              -0.3167,
-              0.0832
-            ]
-          },
-          "hand.R": {
-            "position": [
-              0,
-              0.2151,
-              0
-            ],
-            "rotation": [
-              0.0662,
-              0.487,
-              -0.1163,
-              0.8631
-            ]
-          },
-          "thigh.L": {
-            "position": [
-              -0.1428,
-              0.0476,
-              0
-            ],
-            "rotation": [
-              0,
-              0,
-              0.9997,
-              0.0227
-            ]
-          },
-          "shin.L": {
-            "position": [
-              0,
-              0.2621,
-              0
-            ],
-            "rotation": [
-              0.0227,
-              -0.9995,
-              -0.0221,
-              0.0005
-            ]
-          },
-          "foot.L": {
-            "position": [
-              0,
-              0.2263,
-              0
-            ],
-            "rotation": [
-              -0.4284,
-              0,
-              0,
-              0.9036
-            ]
-          },
-          "thigh.R": {
-            "position": [
-              0.1428,
-              0.0476,
-              0
-            ],
-            "rotation": [
-              0,
-              0,
-              -0.9997,
-              0.0227
-            ]
-          },
-          "shin.R": {
-            "position": [
-              0,
-              0.2621,
-              0
-            ],
-            "rotation": [
-              0.0227,
-              0.9995,
-              0.0221,
-              0.0005
-            ]
-          },
-          "foot.R": {
-            "position": [
-              0,
-              0.2263,
-              0
-            ],
-            "rotation": [
-              -0.2981,
-              0,
-              0,
-              0.9545
-            ]
-          }
-        },
-        "gestureReach": {
-          "hand.L": {
-            "right": 0.2571,
-            "up": 0.8322,
-            "forward": -0.1343
-          },
-          "hand.R": {
-            "right": -0.3591,
-            "up": 1.0107,
-            "forward": 0.2288
-          }
-        },
-        "fps": 1.92,
-        "drawCalls": 2987,
-        "activeMeshes": 51,
-        "animationGroups": [
-          "hero.player:Idle",
-          "hero.player:Walk",
-          "hero.player:Run",
-          "hero.player:MeleeAttack",
-          "hero.player:RangedAttack",
-          "hero.player:Hit",
-          "hero.player:Death"
-        ],
-        "ready": false,
-        "currentCamera": "portrait",
-        "currentAnimation": "MeleeAttack",
-        "currentLod": "LOD0",
-        "authoredVisibleMeshes": 5,
-        "proceduralVisibleMeshes": 0,
-        "heroScreenBounds": {
-          "x": 632.18,
-          "y": 177.42,
-          "width": 408.26,
-          "height": 765.39,
-          "right": 1040.44,
-          "bottom": 942.81,
-          "visible": false
-        },
-        "consoleErrors": []
-      },
-      "metadata": {
-        "captureMode": "heroGameplayReview=1",
-        "cameraMode": "portrait",
-        "lighting": "snow-daylight",
-        "animation": "MeleeAttack",
-        "context": "battle",
-        "lod": 0,
-        "lodMode": "forced",
-        "modelSource": "GLB",
-        "heroWorldPosition": {
-          "x": 0,
-          "y": 0,
-          "z": -4.5
-        },
-        "screenSpaceBoundingBox": {
-          "x": 632.18,
-          "y": 177.42,
-          "width": 408.26,
-          "height": 765.39,
-          "right": 1040.44,
-          "bottom": 942.81
-        },
-        "viewport": {
-          "width": 1600,
-          "height": 900
-        },
-        "authoredVisibleMeshCount": 5,
-        "proceduralVisibleMeshCount": 0,
-        "allyCount": 8,
-        "enemyCount": 4,
-        "visible": false,
-        "uiOccluded": false,
-        "animationNormalized": 0.55,
-        "boneTransforms": {
-          "root": {
-            "position": [
-              0,
-              0,
-              0
-            ],
-            "rotation": [
-              -0.7048,
-              0.0141,
-              -0.0565,
-              0.707
-            ]
-          },
-          "pelvis": {
-            "position": [
-              0,
-              0.595,
-              0
-            ],
-            "rotation": [
-              -0.0713,
-              -0.0581,
-              -0.0291,
-              0.9953
-            ]
-          },
-          "chest": {
-            "position": [
-              0,
-              0.3332,
-              0
-            ],
-            "rotation": [
-              0.1553,
-              0.126,
-              0.0891,
-              0.9757
-            ]
-          },
-          "head": {
-            "position": [
-              0,
-              0.1309,
-              0
-            ],
-            "rotation": [
-              -0.0691,
-              -0.027,
-              0.0282,
-              0.9968
-            ]
-          },
-          "upper_arm.L": {
-            "position": [
-              -0.3094,
-              0.3094,
-              0
-            ],
-            "rotation": [
-              0.0673,
-              -0.1781,
-              0.9724,
-              0.1351
-            ]
-          },
-          "lower_arm.L": {
-            "position": [
-              0,
-              0.2895,
-              0
-            ],
-            "rotation": [
-              0.0824,
-              -0.9955,
-              -0.0464,
-              0.0038
-            ]
-          },
-          "hand.L": {
-            "position": [
-              0,
-              0.2151,
-              0
-            ],
-            "rotation": [
-              -0.1172,
-              -0.5045,
-              -0.0235,
-              0.8551
-            ]
-          },
-          "upper_arm.R": {
-            "position": [
-              0.3094,
-              0.3094,
-              0
-            ],
-            "rotation": [
-              0.2296,
-              -0.6575,
-              -0.7128,
-              0.083
-            ]
-          },
-          "lower_arm.R": {
-            "position": [
-              0,
-              0.2895,
-              0
-            ],
-            "rotation": [
-              0.0283,
-              0.9445,
-              -0.3167,
-              0.0832
-            ]
-          },
-          "hand.R": {
-            "position": [
-              0,
-              0.2151,
-              0
-            ],
-            "rotation": [
-              0.0662,
-              0.487,
-              -0.1163,
-              0.8631
-            ]
-          },
-          "thigh.L": {
-            "position": [
-              -0.1428,
-              0.0476,
-              0
-            ],
-            "rotation": [
-              0,
-              0,
-              0.9997,
-              0.0227
-            ]
-          },
-          "shin.L": {
-            "position": [
-              0,
-              0.2621,
-              0
-            ],
-            "rotation": [
-              0.0227,
-              -0.9995,
-              -0.0221,
-              0.0005
-            ]
-          },
-          "foot.L": {
-            "position": [
-              0,
-              0.2263,
-              0
-            ],
-            "rotation": [
-              -0.4284,
-              0,
-              0,
-              0.9036
-            ]
-          },
-          "thigh.R": {
-            "position": [
-              0.1428,
-              0.0476,
-              0
-            ],
-            "rotation": [
-              0,
-              0,
-              -0.9997,
-              0.0227
-            ]
-          },
-          "shin.R": {
-            "position": [
-              0,
-              0.2621,
-              0
-            ],
-            "rotation": [
-              0.0227,
-              0.9995,
-              0.0221,
-              0.0005
-            ]
-          },
-          "foot.R": {
-            "position": [
-              0,
-              0.2263,
-              0
-            ],
-            "rotation": [
-              -0.2981,
-              0,
-              0,
-              0.9545
-            ]
-          }
-        },
-        "gestureReach": {
-          "hand.L": {
-            "right": 0.2571,
-            "up": 0.8322,
-            "forward": -0.1343
-          },
-          "hand.R": {
-            "right": -0.3591,
-            "up": 1.0107,
-            "forward": 0.2288
-          }
-        },
-        "fps": 1.92,
-        "drawCalls": 2987,
-        "activeMeshes": 51,
+        "fps": 2.22,
+        "drawCalls": 3870,
+        "activeMeshes": 42,
         "animationGroups": [
           "hero.player:Idle",
           "hero.player:Walk",
@@ -5580,7 +8922,7 @@
     },
     {
       "captureId": "gameplay-tactical",
-      "capturedAt": "2026-08-06T13:21:14.437Z",
+      "capturedAt": "2026-08-06T13:56:26.949Z",
       "screenshot": "D:\\codex\\遊戲開發\\reports\\art-previews\\hero-commercial-r7\\R7-E\\gameplay-tactical.png",
       "state": {
         "captureMode": "heroGameplayReview=1",
@@ -5837,9 +9179,9 @@
             "forward": 0.0166
           }
         },
-        "fps": 1.92,
-        "drawCalls": 3325,
-        "activeMeshes": 163,
+        "fps": 2.22,
+        "drawCalls": 4210,
+        "activeMeshes": 164,
         "animationGroups": [
           "hero.player:Idle",
           "hero.player:Walk",
@@ -6121,9 +9463,9 @@
             "forward": 0.0166
           }
         },
-        "fps": 1.92,
-        "drawCalls": 3325,
-        "activeMeshes": 163,
+        "fps": 2.22,
+        "drawCalls": 4210,
+        "activeMeshes": 164,
         "animationGroups": [
           "hero.player:Idle",
           "hero.player:Walk",
@@ -6137,7 +9479,7 @@
     },
     {
       "captureId": "gameplay-walk",
-      "capturedAt": "2026-08-06T13:21:15.001Z",
+      "capturedAt": "2026-08-06T13:56:27.482Z",
       "screenshot": "D:\\codex\\遊戲開發\\reports\\art-previews\\hero-commercial-r7\\R7-E\\gameplay-walk.png",
       "state": {
         "captureMode": "heroGameplayReview=1",
@@ -6394,9 +9736,9 @@
             "forward": 0.1596
           }
         },
-        "fps": 1.92,
-        "drawCalls": 3751,
-        "activeMeshes": 207,
+        "fps": 2.22,
+        "drawCalls": 4630,
+        "activeMeshes": 204,
         "animationGroups": [
           "hero.player:Idle",
           "hero.player:Walk",
@@ -6678,9 +10020,9 @@
             "forward": 0.1596
           }
         },
-        "fps": 1.92,
-        "drawCalls": 3751,
-        "activeMeshes": 207,
+        "fps": 2.22,
+        "drawCalls": 4630,
+        "activeMeshes": 204,
         "animationGroups": [
           "hero.player:Idle",
           "hero.player:Walk",
@@ -6694,7 +10036,7 @@
     },
     {
       "captureId": "gameplay-run",
-      "capturedAt": "2026-08-06T13:21:15.618Z",
+      "capturedAt": "2026-08-06T13:56:28.047Z",
       "screenshot": "D:\\codex\\遊戲開發\\reports\\art-previews\\hero-commercial-r7\\R7-E\\gameplay-run.png",
       "state": {
         "captureMode": "heroGameplayReview=1",
@@ -6951,9 +10293,9 @@
             "forward": 0.2457
           }
         },
-        "fps": 1.92,
-        "drawCalls": 4177,
-        "activeMeshes": 207,
+        "fps": 2.22,
+        "drawCalls": 5050,
+        "activeMeshes": 204,
         "animationGroups": [
           "hero.player:Idle",
           "hero.player:Walk",
@@ -7235,9 +10577,9 @@
             "forward": 0.2457
           }
         },
-        "fps": 1.92,
-        "drawCalls": 4177,
-        "activeMeshes": 207,
+        "fps": 2.22,
+        "drawCalls": 5050,
+        "activeMeshes": 204,
         "animationGroups": [
           "hero.player:Idle",
           "hero.player:Walk",
@@ -7251,7 +10593,7 @@
     },
     {
       "captureId": "gameplay-melee-windup",
-      "capturedAt": "2026-08-06T13:21:16.217Z",
+      "capturedAt": "2026-08-06T13:56:28.632Z",
       "screenshot": "D:\\codex\\遊戲開發\\reports\\art-previews\\hero-commercial-r7\\R7-E\\gameplay-melee-windup.png",
       "state": {
         "captureMode": "heroGameplayReview=1",
@@ -7508,9 +10850,9 @@
             "forward": -0.1983
           }
         },
-        "fps": 1.92,
-        "drawCalls": 4603,
-        "activeMeshes": 207,
+        "fps": 2.22,
+        "drawCalls": 5470,
+        "activeMeshes": 204,
         "animationGroups": [
           "hero.player:Idle",
           "hero.player:Walk",
@@ -7792,9 +11134,9 @@
             "forward": -0.1983
           }
         },
-        "fps": 1.92,
-        "drawCalls": 4603,
-        "activeMeshes": 207,
+        "fps": 2.22,
+        "drawCalls": 5470,
+        "activeMeshes": 204,
         "animationGroups": [
           "hero.player:Idle",
           "hero.player:Walk",
@@ -7808,7 +11150,7 @@
     },
     {
       "captureId": "gameplay-melee-impact",
-      "capturedAt": "2026-08-06T13:21:16.821Z",
+      "capturedAt": "2026-08-06T13:56:29.211Z",
       "screenshot": "D:\\codex\\遊戲開發\\reports\\art-previews\\hero-commercial-r7\\R7-E\\gameplay-melee-impact.png",
       "state": {
         "captureMode": "heroGameplayReview=1",
@@ -8065,9 +11407,9 @@
             "forward": 0.2288
           }
         },
-        "fps": 1.92,
-        "drawCalls": 5029,
-        "activeMeshes": 207,
+        "fps": 2.22,
+        "drawCalls": 5890,
+        "activeMeshes": 204,
         "animationGroups": [
           "hero.player:Idle",
           "hero.player:Walk",
@@ -8349,9 +11691,9 @@
             "forward": 0.2288
           }
         },
-        "fps": 1.92,
-        "drawCalls": 5029,
-        "activeMeshes": 207,
+        "fps": 2.22,
+        "drawCalls": 5890,
+        "activeMeshes": 204,
         "animationGroups": [
           "hero.player:Idle",
           "hero.player:Walk",
@@ -8365,7 +11707,7 @@
     },
     {
       "captureId": "gameplay-ranged-aim",
-      "capturedAt": "2026-08-06T13:21:17.425Z",
+      "capturedAt": "2026-08-06T13:56:29.786Z",
       "screenshot": "D:\\codex\\遊戲開發\\reports\\art-previews\\hero-commercial-r7\\R7-E\\gameplay-ranged-aim.png",
       "state": {
         "captureMode": "heroGameplayReview=1",
@@ -8622,9 +11964,9 @@
             "forward": 0.4035
           }
         },
-        "fps": 1.92,
-        "drawCalls": 5455,
-        "activeMeshes": 207,
+        "fps": 2.22,
+        "drawCalls": 6310,
+        "activeMeshes": 204,
         "animationGroups": [
           "hero.player:Idle",
           "hero.player:Walk",
@@ -8906,9 +12248,9 @@
             "forward": 0.4035
           }
         },
-        "fps": 1.92,
-        "drawCalls": 5455,
-        "activeMeshes": 207,
+        "fps": 2.22,
+        "drawCalls": 6310,
+        "activeMeshes": 204,
         "animationGroups": [
           "hero.player:Idle",
           "hero.player:Walk",
@@ -8922,7 +12264,7 @@
     },
     {
       "captureId": "gameplay-ranged-fire",
-      "capturedAt": "2026-08-06T13:21:18.046Z",
+      "capturedAt": "2026-08-06T13:56:30.357Z",
       "screenshot": "D:\\codex\\遊戲開發\\reports\\art-previews\\hero-commercial-r7\\R7-E\\gameplay-ranged-fire.png",
       "state": {
         "captureMode": "heroGameplayReview=1",
@@ -9179,9 +12521,9 @@
             "forward": 0.3913
           }
         },
-        "fps": 1.92,
-        "drawCalls": 5881,
-        "activeMeshes": 207,
+        "fps": 2.22,
+        "drawCalls": 6730,
+        "activeMeshes": 204,
         "animationGroups": [
           "hero.player:Idle",
           "hero.player:Walk",
@@ -9463,9 +12805,9 @@
             "forward": 0.3913
           }
         },
-        "fps": 1.92,
-        "drawCalls": 5881,
-        "activeMeshes": 207,
+        "fps": 2.22,
+        "drawCalls": 6730,
+        "activeMeshes": 204,
         "animationGroups": [
           "hero.player:Idle",
           "hero.player:Walk",
@@ -9479,7 +12821,7 @@
     },
     {
       "captureId": "gameplay-death",
-      "capturedAt": "2026-08-06T13:21:18.679Z",
+      "capturedAt": "2026-08-06T13:56:30.926Z",
       "screenshot": "D:\\codex\\遊戲開發\\reports\\art-previews\\hero-commercial-r7\\R7-E\\gameplay-death.png",
       "state": {
         "captureMode": "heroGameplayReview=1",
@@ -9736,9 +13078,9 @@
             "forward": 0.7246
           }
         },
-        "fps": 1.92,
-        "drawCalls": 6307,
-        "activeMeshes": 207,
+        "fps": 2.22,
+        "drawCalls": 7150,
+        "activeMeshes": 204,
         "animationGroups": [
           "hero.player:Idle",
           "hero.player:Walk",
@@ -10020,9 +13362,9 @@
             "forward": 0.7246
           }
         },
-        "fps": 1.92,
-        "drawCalls": 6307,
-        "activeMeshes": 207,
+        "fps": 2.22,
+        "drawCalls": 7150,
+        "activeMeshes": 204,
         "animationGroups": [
           "hero.player:Idle",
           "hero.player:Walk",
@@ -10292,9 +13634,9 @@
             "forward": 0.7246
           }
         },
-        "fps": 1.92,
-        "drawCalls": 6476,
-        "activeMeshes": 163,
+        "fps": 2.22,
+        "drawCalls": 7320,
+        "activeMeshes": 164,
         "animationGroups": [
           "hero.player:Idle",
           "hero.player:Walk",
@@ -10576,9 +13918,9 @@
             "forward": 0.7246
           }
         },
-        "fps": 1.92,
-        "drawCalls": 6476,
-        "activeMeshes": 163,
+        "fps": 2.22,
+        "drawCalls": 7320,
+        "activeMeshes": 164,
         "animationGroups": [
           "hero.player:Idle",
           "hero.player:Walk",
@@ -10848,9 +14190,9 @@
             "forward": 0.7246
           }
         },
-        "fps": 1.92,
-        "drawCalls": 6644,
-        "activeMeshes": 162,
+        "fps": 2.22,
+        "drawCalls": 7489,
+        "activeMeshes": 163,
         "animationGroups": [
           "hero.player:Idle",
           "hero.player:Walk",
@@ -11132,9 +14474,9 @@
             "forward": 0.7246
           }
         },
-        "fps": 1.92,
-        "drawCalls": 6644,
-        "activeMeshes": 162,
+        "fps": 2.22,
+        "drawCalls": 7489,
+        "activeMeshes": 163,
         "animationGroups": [
           "hero.player:Idle",
           "hero.player:Walk",
@@ -11404,9 +14746,9 @@
             "forward": 0.7246
           }
         },
-        "fps": 1.92,
-        "drawCalls": 6810,
-        "activeMeshes": 160,
+        "fps": 2.22,
+        "drawCalls": 7656,
+        "activeMeshes": 161,
         "animationGroups": [
           "hero.player:Idle",
           "hero.player:Walk",
@@ -11688,9 +15030,9 @@
             "forward": 0.7246
           }
         },
-        "fps": 1.92,
-        "drawCalls": 6810,
-        "activeMeshes": 160,
+        "fps": 2.22,
+        "drawCalls": 7656,
+        "activeMeshes": 161,
         "animationGroups": [
           "hero.player:Idle",
           "hero.player:Walk",
@@ -11964,9 +15306,9 @@
             "forward": 0.0166
           }
         },
-        "fps": 1.92,
-        "drawCalls": 7822,
-        "activeMeshes": 204,
+        "fps": 2.22,
+        "drawCalls": 8675,
+        "activeMeshes": 207,
         "animationGroups": [
           "hero.player:Idle",
           "hero.player:Walk",
@@ -12248,9 +15590,9 @@
             "forward": 0.0166
           }
         },
-        "fps": 1.92,
-        "drawCalls": 7822,
-        "activeMeshes": 204,
+        "fps": 2.22,
+        "drawCalls": 8675,
+        "activeMeshes": 207,
         "animationGroups": [
           "hero.player:Idle",
           "hero.player:Walk",
@@ -12522,9 +15864,9 @@
             "forward": 0.011
           }
         },
-        "fps": 1.92,
-        "drawCalls": 8032,
-        "activeMeshes": 204,
+        "fps": 2.22,
+        "drawCalls": 8888,
+        "activeMeshes": 207,
         "animationGroups": [
           "hero.player:Idle",
           "hero.player:Walk",
@@ -12806,9 +16148,9 @@
             "forward": 0.011
           }
         },
-        "fps": 1.92,
-        "drawCalls": 8032,
-        "activeMeshes": 204,
+        "fps": 2.22,
+        "drawCalls": 8888,
+        "activeMeshes": 207,
         "animationGroups": [
           "hero.player:Idle",
           "hero.player:Walk",
@@ -13080,9 +16422,9 @@
             "forward": 0.0092
           }
         },
-        "fps": 1.92,
-        "drawCalls": 8242,
-        "activeMeshes": 204,
+        "fps": 2.22,
+        "drawCalls": 9101,
+        "activeMeshes": 207,
         "animationGroups": [
           "hero.player:Idle",
           "hero.player:Walk",
@@ -13364,9 +16706,9 @@
             "forward": 0.0092
           }
         },
-        "fps": 1.92,
-        "drawCalls": 8242,
-        "activeMeshes": 204,
+        "fps": 2.22,
+        "drawCalls": 9101,
+        "activeMeshes": 207,
         "animationGroups": [
           "hero.player:Idle",
           "hero.player:Walk",
@@ -13638,9 +16980,9 @@
             "forward": 0.0205
           }
         },
-        "fps": 1.92,
-        "drawCalls": 8452,
-        "activeMeshes": 204,
+        "fps": 2.22,
+        "drawCalls": 9314,
+        "activeMeshes": 207,
         "animationGroups": [
           "hero.player:Idle",
           "hero.player:Walk",
@@ -13922,9 +17264,9 @@
             "forward": 0.0205
           }
         },
-        "fps": 1.92,
-        "drawCalls": 8452,
-        "activeMeshes": 204,
+        "fps": 2.22,
+        "drawCalls": 9314,
+        "activeMeshes": 207,
         "animationGroups": [
           "hero.player:Idle",
           "hero.player:Walk",
@@ -14196,9 +17538,9 @@
             "forward": 0.015
           }
         },
-        "fps": 1.92,
-        "drawCalls": 8662,
-        "activeMeshes": 204,
+        "fps": 2.22,
+        "drawCalls": 9527,
+        "activeMeshes": 207,
         "animationGroups": [
           "hero.player:Idle",
           "hero.player:Walk",
@@ -14480,9 +17822,9 @@
             "forward": 0.015
           }
         },
-        "fps": 1.92,
-        "drawCalls": 8662,
-        "activeMeshes": 204,
+        "fps": 2.22,
+        "drawCalls": 9527,
+        "activeMeshes": 207,
         "animationGroups": [
           "hero.player:Idle",
           "hero.player:Walk",
@@ -14754,9 +18096,9 @@
             "forward": 0.0141
           }
         },
-        "fps": 1.92,
-        "drawCalls": 8872,
-        "activeMeshes": 204,
+        "fps": 2.22,
+        "drawCalls": 9740,
+        "activeMeshes": 207,
         "animationGroups": [
           "hero.player:Idle",
           "hero.player:Walk",
@@ -15038,9 +18380,9 @@
             "forward": 0.0141
           }
         },
-        "fps": 1.92,
-        "drawCalls": 8872,
-        "activeMeshes": 204,
+        "fps": 2.22,
+        "drawCalls": 9740,
+        "activeMeshes": 207,
         "animationGroups": [
           "hero.player:Idle",
           "hero.player:Walk",
@@ -15312,9 +18654,9 @@
             "forward": -0.1664
           }
         },
-        "fps": 1.92,
-        "drawCalls": 9292,
-        "activeMeshes": 204,
+        "fps": 2.22,
+        "drawCalls": 10166,
+        "activeMeshes": 207,
         "animationGroups": [
           "hero.player:Idle",
           "hero.player:Walk",
@@ -15596,9 +18938,9 @@
             "forward": -0.1664
           }
         },
-        "fps": 1.92,
-        "drawCalls": 9292,
-        "activeMeshes": 204,
+        "fps": 2.22,
+        "drawCalls": 10166,
+        "activeMeshes": 207,
         "animationGroups": [
           "hero.player:Idle",
           "hero.player:Walk",
@@ -15870,9 +19212,9 @@
             "forward": 0.0384
           }
         },
-        "fps": 1.92,
-        "drawCalls": 9502,
-        "activeMeshes": 204,
+        "fps": 2.22,
+        "drawCalls": 10379,
+        "activeMeshes": 207,
         "animationGroups": [
           "hero.player:Idle",
           "hero.player:Walk",
@@ -16154,9 +19496,9 @@
             "forward": 0.0384
           }
         },
-        "fps": 1.92,
-        "drawCalls": 9502,
-        "activeMeshes": 204,
+        "fps": 2.22,
+        "drawCalls": 10379,
+        "activeMeshes": 207,
         "animationGroups": [
           "hero.player:Idle",
           "hero.player:Walk",
@@ -16428,9 +19770,9 @@
             "forward": 0.1596
           }
         },
-        "fps": 1.92,
-        "drawCalls": 9712,
-        "activeMeshes": 204,
+        "fps": 2.22,
+        "drawCalls": 10592,
+        "activeMeshes": 207,
         "animationGroups": [
           "hero.player:Idle",
           "hero.player:Walk",
@@ -16712,9 +20054,9 @@
             "forward": 0.1596
           }
         },
-        "fps": 1.92,
-        "drawCalls": 9712,
-        "activeMeshes": 204,
+        "fps": 2.22,
+        "drawCalls": 10592,
+        "activeMeshes": 207,
         "animationGroups": [
           "hero.player:Idle",
           "hero.player:Walk",
@@ -16986,9 +20328,9 @@
             "forward": -0.0859
           }
         },
-        "fps": 1.92,
-        "drawCalls": 9922,
-        "activeMeshes": 204,
+        "fps": 2.22,
+        "drawCalls": 10805,
+        "activeMeshes": 207,
         "animationGroups": [
           "hero.player:Idle",
           "hero.player:Walk",
@@ -17270,9 +20612,9 @@
             "forward": -0.0859
           }
         },
-        "fps": 1.92,
-        "drawCalls": 9922,
-        "activeMeshes": 204,
+        "fps": 2.22,
+        "drawCalls": 10805,
+        "activeMeshes": 207,
         "animationGroups": [
           "hero.player:Idle",
           "hero.player:Walk",
@@ -17544,9 +20886,9 @@
             "forward": -0.0098
           }
         },
-        "fps": 1.92,
-        "drawCalls": 10132,
-        "activeMeshes": 204,
+        "fps": 2.22,
+        "drawCalls": 11018,
+        "activeMeshes": 207,
         "animationGroups": [
           "hero.player:Idle",
           "hero.player:Walk",
@@ -17828,9 +21170,9 @@
             "forward": -0.0098
           }
         },
-        "fps": 1.92,
-        "drawCalls": 10132,
-        "activeMeshes": 204,
+        "fps": 2.22,
+        "drawCalls": 11018,
+        "activeMeshes": 207,
         "animationGroups": [
           "hero.player:Idle",
           "hero.player:Walk",
@@ -18102,9 +21444,9 @@
             "forward": -0.12
           }
         },
-        "fps": 1.92,
-        "drawCalls": 10342,
-        "activeMeshes": 204,
+        "fps": 2.22,
+        "drawCalls": 11231,
+        "activeMeshes": 207,
         "animationGroups": [
           "hero.player:Idle",
           "hero.player:Walk",
@@ -18386,9 +21728,9 @@
             "forward": -0.12
           }
         },
-        "fps": 1.92,
-        "drawCalls": 10342,
-        "activeMeshes": 204,
+        "fps": 2.22,
+        "drawCalls": 11231,
+        "activeMeshes": 207,
         "animationGroups": [
           "hero.player:Idle",
           "hero.player:Walk",
@@ -18660,9 +22002,9 @@
             "forward": -0.2782
           }
         },
-        "fps": 1.92,
-        "drawCalls": 10762,
-        "activeMeshes": 204,
+        "fps": 2.22,
+        "drawCalls": 11657,
+        "activeMeshes": 207,
         "animationGroups": [
           "hero.player:Idle",
           "hero.player:Walk",
@@ -18944,9 +22286,9 @@
             "forward": -0.2782
           }
         },
-        "fps": 1.92,
-        "drawCalls": 10762,
-        "activeMeshes": 204,
+        "fps": 2.22,
+        "drawCalls": 11657,
+        "activeMeshes": 207,
         "animationGroups": [
           "hero.player:Idle",
           "hero.player:Walk",
@@ -18979,9 +22321,9 @@
         },
         "screenSpaceBoundingBox": {
           "x": 488.47,
-          "y": 538.19,
+          "y": 538.07,
           "width": 86.89,
-          "height": 148.73,
+          "height": 148.86,
           "right": 575.36,
           "bottom": 686.92
         },
@@ -19218,9 +22560,9 @@
             "forward": 0.0177
           }
         },
-        "fps": 1.92,
-        "drawCalls": 10972,
-        "activeMeshes": 204,
+        "fps": 2.22,
+        "drawCalls": 11870,
+        "activeMeshes": 207,
         "animationGroups": [
           "hero.player:Idle",
           "hero.player:Walk",
@@ -19238,9 +22580,9 @@
         "proceduralVisibleMeshes": 0,
         "heroScreenBounds": {
           "x": 488.47,
-          "y": 538.19,
+          "y": 538.07,
           "width": 86.89,
-          "height": 148.73,
+          "height": 148.86,
           "right": 575.36,
           "bottom": 686.92,
           "visible": true
@@ -19263,9 +22605,9 @@
         },
         "screenSpaceBoundingBox": {
           "x": 488.47,
-          "y": 538.19,
+          "y": 538.07,
           "width": 86.89,
-          "height": 148.73,
+          "height": 148.86,
           "right": 575.36,
           "bottom": 686.92
         },
@@ -19502,9 +22844,9 @@
             "forward": 0.0177
           }
         },
-        "fps": 1.92,
-        "drawCalls": 10972,
-        "activeMeshes": 204,
+        "fps": 2.22,
+        "drawCalls": 11870,
+        "activeMeshes": 207,
         "animationGroups": [
           "hero.player:Idle",
           "hero.player:Walk",
@@ -19776,9 +23118,9 @@
             "forward": 0.2457
           }
         },
-        "fps": 1.92,
-        "drawCalls": 11182,
-        "activeMeshes": 204,
+        "fps": 2.22,
+        "drawCalls": 12083,
+        "activeMeshes": 207,
         "animationGroups": [
           "hero.player:Idle",
           "hero.player:Walk",
@@ -20060,9 +23402,9 @@
             "forward": 0.2457
           }
         },
-        "fps": 1.92,
-        "drawCalls": 11182,
-        "activeMeshes": 204,
+        "fps": 2.22,
+        "drawCalls": 12083,
+        "activeMeshes": 207,
         "animationGroups": [
           "hero.player:Idle",
           "hero.player:Walk",
@@ -20334,9 +23676,9 @@
             "forward": -0.1754
           }
         },
-        "fps": 1.92,
-        "drawCalls": 11392,
-        "activeMeshes": 204,
+        "fps": 2.22,
+        "drawCalls": 12296,
+        "activeMeshes": 207,
         "animationGroups": [
           "hero.player:Idle",
           "hero.player:Walk",
@@ -20618,9 +23960,9 @@
             "forward": -0.1754
           }
         },
-        "fps": 1.92,
-        "drawCalls": 11392,
-        "activeMeshes": 204,
+        "fps": 2.22,
+        "drawCalls": 12296,
+        "activeMeshes": 207,
         "animationGroups": [
           "hero.player:Idle",
           "hero.player:Walk",
@@ -20653,9 +23995,9 @@
         },
         "screenSpaceBoundingBox": {
           "x": 488.42,
-          "y": 538.16,
+          "y": 538.04,
           "width": 86.91,
-          "height": 148.74,
+          "height": 148.86,
           "right": 575.34,
           "bottom": 686.9
         },
@@ -20892,9 +24234,9 @@
             "forward": -0.0222
           }
         },
-        "fps": 1.92,
-        "drawCalls": 11602,
-        "activeMeshes": 204,
+        "fps": 2.22,
+        "drawCalls": 12509,
+        "activeMeshes": 207,
         "animationGroups": [
           "hero.player:Idle",
           "hero.player:Walk",
@@ -20912,9 +24254,9 @@
         "proceduralVisibleMeshes": 0,
         "heroScreenBounds": {
           "x": 488.42,
-          "y": 538.16,
+          "y": 538.04,
           "width": 86.91,
-          "height": 148.74,
+          "height": 148.86,
           "right": 575.34,
           "bottom": 686.9,
           "visible": true
@@ -20937,9 +24279,9 @@
         },
         "screenSpaceBoundingBox": {
           "x": 488.42,
-          "y": 538.16,
+          "y": 538.04,
           "width": 86.91,
-          "height": 148.74,
+          "height": 148.86,
           "right": 575.34,
           "bottom": 686.9
         },
@@ -21176,9 +24518,9 @@
             "forward": -0.0222
           }
         },
-        "fps": 1.92,
-        "drawCalls": 11602,
-        "activeMeshes": 204,
+        "fps": 2.22,
+        "drawCalls": 12509,
+        "activeMeshes": 207,
         "animationGroups": [
           "hero.player:Idle",
           "hero.player:Walk",
@@ -21450,9 +24792,9 @@
             "forward": -0.2251
           }
         },
-        "fps": 1.92,
-        "drawCalls": 11812,
-        "activeMeshes": 204,
+        "fps": 2.22,
+        "drawCalls": 12722,
+        "activeMeshes": 207,
         "animationGroups": [
           "hero.player:Idle",
           "hero.player:Walk",
@@ -21734,9 +25076,9 @@
             "forward": -0.2251
           }
         },
-        "fps": 1.92,
-        "drawCalls": 11812,
-        "activeMeshes": 204,
+        "fps": 2.22,
+        "drawCalls": 12722,
+        "activeMeshes": 207,
         "animationGroups": [
           "hero.player:Idle",
           "hero.player:Walk",
@@ -21769,10 +25111,10 @@
         },
         "screenSpaceBoundingBox": {
           "x": 491.66,
-          "y": 538.66,
-          "width": 85.5,
-          "height": 148.63,
-          "right": 577.15,
+          "y": 538.52,
+          "width": 85.66,
+          "height": 148.76,
+          "right": 577.31,
           "bottom": 687.28
         },
         "viewport": {
@@ -22008,9 +25350,9 @@
             "forward": -0.1586
           }
         },
-        "fps": 1.92,
-        "drawCalls": 12232,
-        "activeMeshes": 204,
+        "fps": 2.22,
+        "drawCalls": 13148,
+        "activeMeshes": 207,
         "animationGroups": [
           "hero.player:Idle",
           "hero.player:Walk",
@@ -22028,10 +25370,10 @@
         "proceduralVisibleMeshes": 0,
         "heroScreenBounds": {
           "x": 491.66,
-          "y": 538.66,
-          "width": 85.5,
-          "height": 148.63,
-          "right": 577.15,
+          "y": 538.52,
+          "width": 85.66,
+          "height": 148.76,
+          "right": 577.31,
           "bottom": 687.28,
           "visible": true
         },
@@ -22053,10 +25395,10 @@
         },
         "screenSpaceBoundingBox": {
           "x": 491.66,
-          "y": 538.66,
-          "width": 85.5,
-          "height": 148.63,
-          "right": 577.15,
+          "y": 538.52,
+          "width": 85.66,
+          "height": 148.76,
+          "right": 577.31,
           "bottom": 687.28
         },
         "viewport": {
@@ -22292,9 +25634,9 @@
             "forward": -0.1586
           }
         },
-        "fps": 1.92,
-        "drawCalls": 12232,
-        "activeMeshes": 204,
+        "fps": 2.22,
+        "drawCalls": 13148,
+        "activeMeshes": 207,
         "animationGroups": [
           "hero.player:Idle",
           "hero.player:Walk",
@@ -22566,9 +25908,9 @@
             "forward": -0.1983
           }
         },
-        "fps": 1.92,
-        "drawCalls": 12442,
-        "activeMeshes": 204,
+        "fps": 2.22,
+        "drawCalls": 13361,
+        "activeMeshes": 207,
         "animationGroups": [
           "hero.player:Idle",
           "hero.player:Walk",
@@ -22850,9 +26192,9 @@
             "forward": -0.1983
           }
         },
-        "fps": 1.92,
-        "drawCalls": 12442,
-        "activeMeshes": 204,
+        "fps": 2.22,
+        "drawCalls": 13361,
+        "activeMeshes": 207,
         "animationGroups": [
           "hero.player:Idle",
           "hero.player:Walk",
@@ -23124,9 +26466,9 @@
             "forward": 0.2019
           }
         },
-        "fps": 1.92,
-        "drawCalls": 12652,
-        "activeMeshes": 204,
+        "fps": 2.22,
+        "drawCalls": 13574,
+        "activeMeshes": 207,
         "animationGroups": [
           "hero.player:Idle",
           "hero.player:Walk",
@@ -23408,9 +26750,9 @@
             "forward": 0.2019
           }
         },
-        "fps": 1.92,
-        "drawCalls": 12652,
-        "activeMeshes": 204,
+        "fps": 2.22,
+        "drawCalls": 13574,
+        "activeMeshes": 207,
         "animationGroups": [
           "hero.player:Idle",
           "hero.player:Walk",
@@ -23682,9 +27024,9 @@
             "forward": 0.2364
           }
         },
-        "fps": 1.92,
-        "drawCalls": 12862,
-        "activeMeshes": 204,
+        "fps": 2.22,
+        "drawCalls": 13787,
+        "activeMeshes": 207,
         "animationGroups": [
           "hero.player:Idle",
           "hero.player:Walk",
@@ -23966,9 +27308,9 @@
             "forward": 0.2364
           }
         },
-        "fps": 1.92,
-        "drawCalls": 12862,
-        "activeMeshes": 204,
+        "fps": 2.22,
+        "drawCalls": 13787,
+        "activeMeshes": 207,
         "animationGroups": [
           "hero.player:Idle",
           "hero.player:Walk",
@@ -24001,10 +27343,10 @@
         },
         "screenSpaceBoundingBox": {
           "x": 490.62,
-          "y": 538.48,
-          "width": 85.07,
-          "height": 148.52,
-          "right": 575.7,
+          "y": 538.35,
+          "width": 85.01,
+          "height": 148.65,
+          "right": 575.63,
           "bottom": 687
         },
         "viewport": {
@@ -24240,9 +27582,9 @@
             "forward": -0.0989
           }
         },
-        "fps": 1.92,
-        "drawCalls": 13072,
-        "activeMeshes": 204,
+        "fps": 2.22,
+        "drawCalls": 14000,
+        "activeMeshes": 207,
         "animationGroups": [
           "hero.player:Idle",
           "hero.player:Walk",
@@ -24260,10 +27602,10 @@
         "proceduralVisibleMeshes": 0,
         "heroScreenBounds": {
           "x": 490.62,
-          "y": 538.48,
-          "width": 85.07,
-          "height": 148.52,
-          "right": 575.7,
+          "y": 538.35,
+          "width": 85.01,
+          "height": 148.65,
+          "right": 575.63,
           "bottom": 687,
           "visible": true
         },
@@ -24285,10 +27627,10 @@
         },
         "screenSpaceBoundingBox": {
           "x": 490.62,
-          "y": 538.48,
-          "width": 85.07,
-          "height": 148.52,
-          "right": 575.7,
+          "y": 538.35,
+          "width": 85.01,
+          "height": 148.65,
+          "right": 575.63,
           "bottom": 687
         },
         "viewport": {
@@ -24524,9 +27866,9 @@
             "forward": -0.0989
           }
         },
-        "fps": 1.92,
-        "drawCalls": 13072,
-        "activeMeshes": 204,
+        "fps": 2.22,
+        "drawCalls": 14000,
+        "activeMeshes": 207,
         "animationGroups": [
           "hero.player:Idle",
           "hero.player:Walk",
@@ -24798,9 +28140,9 @@
             "forward": 0.1684
           }
         },
-        "fps": 1.92,
-        "drawCalls": 13282,
-        "activeMeshes": 204,
+        "fps": 2.22,
+        "drawCalls": 14213,
+        "activeMeshes": 207,
         "animationGroups": [
           "hero.player:Idle",
           "hero.player:Walk",
@@ -25082,9 +28424,9 @@
             "forward": 0.1684
           }
         },
-        "fps": 1.92,
-        "drawCalls": 13282,
-        "activeMeshes": 204,
+        "fps": 2.22,
+        "drawCalls": 14213,
+        "activeMeshes": 207,
         "animationGroups": [
           "hero.player:Idle",
           "hero.player:Walk",
@@ -25356,9 +28698,9 @@
             "forward": 0.2034
           }
         },
-        "fps": 1.92,
-        "drawCalls": 13702,
-        "activeMeshes": 204,
+        "fps": 2.22,
+        "drawCalls": 14639,
+        "activeMeshes": 207,
         "animationGroups": [
           "hero.player:Idle",
           "hero.player:Walk",
@@ -25640,9 +28982,9 @@
             "forward": 0.2034
           }
         },
-        "fps": 1.92,
-        "drawCalls": 13702,
-        "activeMeshes": 204,
+        "fps": 2.22,
+        "drawCalls": 14639,
+        "activeMeshes": 207,
         "animationGroups": [
           "hero.player:Idle",
           "hero.player:Walk",
@@ -25914,9 +29256,9 @@
             "forward": 0.3029
           }
         },
-        "fps": 1.92,
-        "drawCalls": 13912,
-        "activeMeshes": 204,
+        "fps": 2.22,
+        "drawCalls": 14852,
+        "activeMeshes": 207,
         "animationGroups": [
           "hero.player:Idle",
           "hero.player:Walk",
@@ -26198,9 +29540,9 @@
             "forward": 0.3029
           }
         },
-        "fps": 1.92,
-        "drawCalls": 13912,
-        "activeMeshes": 204,
+        "fps": 2.22,
+        "drawCalls": 14852,
+        "activeMeshes": 207,
         "animationGroups": [
           "hero.player:Idle",
           "hero.player:Walk",
@@ -26472,9 +29814,9 @@
             "forward": 0.4035
           }
         },
-        "fps": 1.92,
-        "drawCalls": 14122,
-        "activeMeshes": 204,
+        "fps": 2.22,
+        "drawCalls": 15065,
+        "activeMeshes": 207,
         "animationGroups": [
           "hero.player:Idle",
           "hero.player:Walk",
@@ -26756,9 +30098,9 @@
             "forward": 0.4035
           }
         },
-        "fps": 1.92,
-        "drawCalls": 14122,
-        "activeMeshes": 204,
+        "fps": 2.22,
+        "drawCalls": 15065,
+        "activeMeshes": 207,
         "animationGroups": [
           "hero.player:Idle",
           "hero.player:Walk",
@@ -27030,9 +30372,9 @@
             "forward": 0.3913
           }
         },
-        "fps": 1.92,
-        "drawCalls": 14332,
-        "activeMeshes": 204,
+        "fps": 2.22,
+        "drawCalls": 15278,
+        "activeMeshes": 207,
         "animationGroups": [
           "hero.player:Idle",
           "hero.player:Walk",
@@ -27314,9 +30656,9 @@
             "forward": 0.3913
           }
         },
-        "fps": 1.92,
-        "drawCalls": 14332,
-        "activeMeshes": 204,
+        "fps": 2.22,
+        "drawCalls": 15278,
+        "activeMeshes": 207,
         "animationGroups": [
           "hero.player:Idle",
           "hero.player:Walk",
@@ -27588,9 +30930,9 @@
             "forward": 0.2849
           }
         },
-        "fps": 1.92,
-        "drawCalls": 14542,
-        "activeMeshes": 204,
+        "fps": 2.22,
+        "drawCalls": 15491,
+        "activeMeshes": 207,
         "animationGroups": [
           "hero.player:Idle",
           "hero.player:Walk",
@@ -27872,9 +31214,9 @@
             "forward": 0.2849
           }
         },
-        "fps": 1.92,
-        "drawCalls": 14542,
-        "activeMeshes": 204,
+        "fps": 2.22,
+        "drawCalls": 15491,
+        "activeMeshes": 207,
         "animationGroups": [
           "hero.player:Idle",
           "hero.player:Walk",
@@ -28146,9 +31488,9 @@
             "forward": 0.2596
           }
         },
-        "fps": 1.92,
-        "drawCalls": 14752,
-        "activeMeshes": 204,
+        "fps": 2.22,
+        "drawCalls": 15704,
+        "activeMeshes": 207,
         "animationGroups": [
           "hero.player:Idle",
           "hero.player:Walk",
@@ -28430,9 +31772,9 @@
             "forward": 0.2596
           }
         },
-        "fps": 1.92,
-        "drawCalls": 14752,
-        "activeMeshes": 204,
+        "fps": 2.22,
+        "drawCalls": 15704,
+        "activeMeshes": 207,
         "animationGroups": [
           "hero.player:Idle",
           "hero.player:Walk",
@@ -28464,9 +31806,9 @@
           "z": -4.5
         },
         "screenSpaceBoundingBox": {
-          "x": 487.67,
+          "x": 487.62,
           "y": 539.46,
-          "width": 86.69,
+          "width": 86.74,
           "height": 148.01,
           "right": 574.36,
           "bottom": 687.48
@@ -28704,9 +32046,9 @@
             "forward": -0.0148
           }
         },
-        "fps": 1.92,
-        "drawCalls": 15172,
-        "activeMeshes": 204,
+        "fps": 2.22,
+        "drawCalls": 16130,
+        "activeMeshes": 207,
         "animationGroups": [
           "hero.player:Idle",
           "hero.player:Walk",
@@ -28723,9 +32065,9 @@
         "authoredVisibleMeshes": 5,
         "proceduralVisibleMeshes": 0,
         "heroScreenBounds": {
-          "x": 487.67,
+          "x": 487.62,
           "y": 539.46,
-          "width": 86.69,
+          "width": 86.74,
           "height": 148.01,
           "right": 574.36,
           "bottom": 687.48,
@@ -28748,9 +32090,9 @@
           "z": -4.5
         },
         "screenSpaceBoundingBox": {
-          "x": 487.67,
+          "x": 487.62,
           "y": 539.46,
-          "width": 86.69,
+          "width": 86.74,
           "height": 148.01,
           "right": 574.36,
           "bottom": 687.48
@@ -28988,9 +32330,9 @@
             "forward": -0.0148
           }
         },
-        "fps": 1.92,
-        "drawCalls": 15172,
-        "activeMeshes": 204,
+        "fps": 2.22,
+        "drawCalls": 16130,
+        "activeMeshes": 207,
         "animationGroups": [
           "hero.player:Idle",
           "hero.player:Walk",
@@ -29262,9 +32604,9 @@
             "forward": -0.02
           }
         },
-        "fps": 1.92,
-        "drawCalls": 15382,
-        "activeMeshes": 204,
+        "fps": 2.22,
+        "drawCalls": 16343,
+        "activeMeshes": 207,
         "animationGroups": [
           "hero.player:Idle",
           "hero.player:Walk",
@@ -29546,9 +32888,9 @@
             "forward": -0.02
           }
         },
-        "fps": 1.92,
-        "drawCalls": 15382,
-        "activeMeshes": 204,
+        "fps": 2.22,
+        "drawCalls": 16343,
+        "activeMeshes": 207,
         "animationGroups": [
           "hero.player:Idle",
           "hero.player:Walk",
@@ -29820,9 +33162,9 @@
             "forward": -0.0374
           }
         },
-        "fps": 1.92,
-        "drawCalls": 15592,
-        "activeMeshes": 204,
+        "fps": 2.22,
+        "drawCalls": 16556,
+        "activeMeshes": 207,
         "animationGroups": [
           "hero.player:Idle",
           "hero.player:Walk",
@@ -30104,9 +33446,9 @@
             "forward": -0.0374
           }
         },
-        "fps": 1.92,
-        "drawCalls": 15592,
-        "activeMeshes": 204,
+        "fps": 2.22,
+        "drawCalls": 16556,
+        "activeMeshes": 207,
         "animationGroups": [
           "hero.player:Idle",
           "hero.player:Walk",
@@ -30378,9 +33720,9 @@
             "forward": -0.0318
           }
         },
-        "fps": 1.92,
-        "drawCalls": 15802,
-        "activeMeshes": 204,
+        "fps": 2.22,
+        "drawCalls": 16769,
+        "activeMeshes": 207,
         "animationGroups": [
           "hero.player:Idle",
           "hero.player:Walk",
@@ -30662,9 +34004,9 @@
             "forward": -0.0318
           }
         },
-        "fps": 1.92,
-        "drawCalls": 15802,
-        "activeMeshes": 204,
+        "fps": 2.22,
+        "drawCalls": 16769,
+        "activeMeshes": 207,
         "animationGroups": [
           "hero.player:Idle",
           "hero.player:Walk",
@@ -30696,9 +34038,9 @@
           "z": -4.5
         },
         "screenSpaceBoundingBox": {
-          "x": 487.61,
+          "x": 487.59,
           "y": 539.39,
-          "width": 87.29,
+          "width": 87.31,
           "height": 148.45,
           "right": 574.9,
           "bottom": 687.84
@@ -30936,9 +34278,9 @@
             "forward": -0.011
           }
         },
-        "fps": 1.92,
-        "drawCalls": 16012,
-        "activeMeshes": 204,
+        "fps": 2.22,
+        "drawCalls": 16982,
+        "activeMeshes": 207,
         "animationGroups": [
           "hero.player:Idle",
           "hero.player:Walk",
@@ -30955,9 +34297,9 @@
         "authoredVisibleMeshes": 5,
         "proceduralVisibleMeshes": 0,
         "heroScreenBounds": {
-          "x": 487.61,
+          "x": 487.59,
           "y": 539.39,
-          "width": 87.29,
+          "width": 87.31,
           "height": 148.45,
           "right": 574.9,
           "bottom": 687.84,
@@ -30980,9 +34322,9 @@
           "z": -4.5
         },
         "screenSpaceBoundingBox": {
-          "x": 487.61,
+          "x": 487.59,
           "y": 539.39,
-          "width": 87.29,
+          "width": 87.31,
           "height": 148.45,
           "right": 574.9,
           "bottom": 687.84
@@ -31220,9 +34562,9 @@
             "forward": -0.011
           }
         },
-        "fps": 1.92,
-        "drawCalls": 16012,
-        "activeMeshes": 204,
+        "fps": 2.22,
+        "drawCalls": 16982,
+        "activeMeshes": 207,
         "animationGroups": [
           "hero.player:Idle",
           "hero.player:Walk",
@@ -31494,9 +34836,9 @@
             "forward": 0.0012
           }
         },
-        "fps": 1.92,
-        "drawCalls": 16222,
-        "activeMeshes": 204,
+        "fps": 2.22,
+        "drawCalls": 17195,
+        "activeMeshes": 207,
         "animationGroups": [
           "hero.player:Idle",
           "hero.player:Walk",
@@ -31778,9 +35120,9 @@
             "forward": 0.0012
           }
         },
-        "fps": 1.92,
-        "drawCalls": 16222,
-        "activeMeshes": 204,
+        "fps": 2.22,
+        "drawCalls": 17195,
+        "activeMeshes": 207,
         "animationGroups": [
           "hero.player:Idle",
           "hero.player:Walk",
@@ -32052,9 +35394,9 @@
             "forward": 0.599
           }
         },
-        "fps": 1.92,
-        "drawCalls": 16642,
-        "activeMeshes": 204,
+        "fps": 2.22,
+        "drawCalls": 17621,
+        "activeMeshes": 207,
         "animationGroups": [
           "hero.player:Idle",
           "hero.player:Walk",
@@ -32336,9 +35678,9 @@
             "forward": 0.599
           }
         },
-        "fps": 1.92,
-        "drawCalls": 16642,
-        "activeMeshes": 204,
+        "fps": 2.22,
+        "drawCalls": 17621,
+        "activeMeshes": 207,
         "animationGroups": [
           "hero.player:Idle",
           "hero.player:Walk",
@@ -32610,9 +35952,9 @@
             "forward": 0.6089
           }
         },
-        "fps": 1.92,
-        "drawCalls": 16852,
-        "activeMeshes": 204,
+        "fps": 2.22,
+        "drawCalls": 17834,
+        "activeMeshes": 207,
         "animationGroups": [
           "hero.player:Idle",
           "hero.player:Walk",
@@ -32894,9 +36236,9 @@
             "forward": 0.6089
           }
         },
-        "fps": 1.92,
-        "drawCalls": 16852,
-        "activeMeshes": 204,
+        "fps": 2.22,
+        "drawCalls": 17834,
+        "activeMeshes": 207,
         "animationGroups": [
           "hero.player:Idle",
           "hero.player:Walk",
@@ -33168,9 +36510,9 @@
             "forward": 0.7424
           }
         },
-        "fps": 1.92,
-        "drawCalls": 17062,
-        "activeMeshes": 204,
+        "fps": 2.22,
+        "drawCalls": 18047,
+        "activeMeshes": 207,
         "animationGroups": [
           "hero.player:Idle",
           "hero.player:Walk",
@@ -33452,9 +36794,9 @@
             "forward": 0.7424
           }
         },
-        "fps": 1.92,
-        "drawCalls": 17062,
-        "activeMeshes": 204,
+        "fps": 2.22,
+        "drawCalls": 18047,
+        "activeMeshes": 207,
         "animationGroups": [
           "hero.player:Idle",
           "hero.player:Walk",
@@ -33726,9 +37068,9 @@
             "forward": 0.8159
           }
         },
-        "fps": 1.92,
-        "drawCalls": 17272,
-        "activeMeshes": 204,
+        "fps": 2.22,
+        "drawCalls": 18260,
+        "activeMeshes": 207,
         "animationGroups": [
           "hero.player:Idle",
           "hero.player:Walk",
@@ -34010,9 +37352,9 @@
             "forward": 0.8159
           }
         },
-        "fps": 1.92,
-        "drawCalls": 17272,
-        "activeMeshes": 204,
+        "fps": 2.22,
+        "drawCalls": 18260,
+        "activeMeshes": 207,
         "animationGroups": [
           "hero.player:Idle",
           "hero.player:Walk",
@@ -34284,9 +37626,9 @@
             "forward": 0.7625
           }
         },
-        "fps": 1.92,
-        "drawCalls": 17482,
-        "activeMeshes": 204,
+        "fps": 2.22,
+        "drawCalls": 18473,
+        "activeMeshes": 207,
         "animationGroups": [
           "hero.player:Idle",
           "hero.player:Walk",
@@ -34568,9 +37910,9 @@
             "forward": 0.7625
           }
         },
-        "fps": 1.92,
-        "drawCalls": 17482,
-        "activeMeshes": 204,
+        "fps": 2.22,
+        "drawCalls": 18473,
+        "activeMeshes": 207,
         "animationGroups": [
           "hero.player:Idle",
           "hero.player:Walk",
@@ -34842,9 +38184,9 @@
             "forward": 0.7246
           }
         },
-        "fps": 1.92,
-        "drawCalls": 17692,
-        "activeMeshes": 204,
+        "fps": 2.22,
+        "drawCalls": 18686,
+        "activeMeshes": 207,
         "animationGroups": [
           "hero.player:Idle",
           "hero.player:Walk",
@@ -35126,9 +38468,9 @@
             "forward": 0.7246
           }
         },
-        "fps": 1.92,
-        "drawCalls": 17692,
-        "activeMeshes": 204,
+        "fps": 2.22,
+        "drawCalls": 18686,
+        "activeMeshes": 207,
         "animationGroups": [
           "hero.player:Idle",
           "hero.player:Walk",
@@ -35144,5 +38486,5 @@
   "consoleErrors": [],
   "pageErrors": [],
   "requestFailures": [],
-  "finishedAt": "2026-08-06T13:21:22.320Z"
+  "finishedAt": "2026-08-06T13:56:34.081Z"
 }

@@ -1,9 +1,9 @@
-import { Color3, Matrix, Vector3 } from "@babylonjs/core";
+import { Color3, DirectionalLight, HemisphericLight, Matrix, Vector3 } from "@babylonjs/core";
 import type { GameSystems } from "../game/GameSystems";
 import type { CombatUnit } from "../combat/CombatUnit";
 
-export type HeroGameplayReviewCamera = "gameplay" | "tactical" | "three-quarter" | "back" | "portrait" | "portrait-side" | "head";
-export type HeroGameplayReviewLighting = "snow-daylight" | "furnace-warm";
+export type HeroGameplayReviewCamera = "gameplay" | "tactical" | "three-quarter" | "back" | "portrait" | "portrait-side" | "portrait-three-quarter" | "head" | "pair";
+export type HeroGameplayReviewLighting = "snow-daylight" | "furnace-warm" | "studio-neutral";
 export type HeroGameplayReviewAnimation = "Idle" | "Walk" | "Run" | "MeleeAttack" | "RangedAttack" | "Hit" | "Death";
 export type HeroGameplayReviewContext = "alone" | "friends" | "battle";
 export type HeroGameplayReviewLod = 0 | 1 | 2;
@@ -37,6 +37,13 @@ export interface HeroGameplayReviewCaptureMetadata {
 
 interface SavedLightState {
   sunIntensity: number;
+  sunDiffuse: Color3;
+  sunSpecular: Color3;
+  skyIntensity: number;
+  skyDiffuse: Color3;
+  skyGround: Color3;
+  skySpecular: Color3;
+  environmentIntensity: number;
   exposure: number;
   contrast: number;
   furnaceIntensity: number;
@@ -58,6 +65,7 @@ export class HeroGameplayReviewMode {
   private lod: HeroGameplayReviewLod = 0;
   private lodMode: "auto" | "forced" = "forced";
   private readonly savedLight: SavedLightState;
+  private studioLights: Array<DirectionalLight | HemisphericLight> = [];
   private reviewUnits: CombatUnit[] = [];
   private readonly originalPositions = new Map<number, { x: number; z: number }>();
 
@@ -66,6 +74,13 @@ export class HeroGameplayReviewMode {
     const ip = s.scene.imageProcessingConfiguration;
     this.savedLight = {
       sunIntensity: s.lighting.sun.intensity,
+      sunDiffuse: s.lighting.sun.diffuse.clone(),
+      sunSpecular: s.lighting.sun.specular.clone(),
+      skyIntensity: s.lighting.sky.intensity,
+      skyDiffuse: s.lighting.sky.diffuse.clone(),
+      skyGround: s.lighting.sky.groundColor.clone(),
+      skySpecular: s.lighting.sky.specular.clone(),
+      environmentIntensity: s.scene.environmentIntensity,
       exposure: ip.exposure,
       contrast: ip.contrast,
       furnaceIntensity: furnaceLight.intensity,
@@ -152,6 +167,11 @@ export class HeroGameplayReviewMode {
       // height looks straight over the helmet -- which is exactly what the
       // first version of this preset did.
       head: { position: new Vector3(0.46, 1.72, -3.52), target: new Vector3(0, 1.60, -4.5), fov: 0.55 },
+      "portrait-three-quarter": { position: new Vector3(2.25, 1.38, -2.35), target: new Vector3(0, 1.10, -4.5), fov: 0.70 },
+      // Hero and the nearest recruits in one frame under one light. A material
+      // comparison shot taken in two different sessions proves nothing about
+      // either model, because the lighting is the variable being tested.
+      pair: { position: new Vector3(0.6, 4.30, -12.2), target: new Vector3(-1.15, 1.05, -3.1), fov: 0.60 },
     };
     const preset = presets[mode];
     camera.position.copyFrom(preset.position);
@@ -161,26 +181,107 @@ export class HeroGameplayReviewMode {
 
   setLighting(lighting: HeroGameplayReviewLighting): void {
     this.lighting = lighting;
-    // This mode owns its exposure rather than inheriting the gameplay value.
-    // The arena is graded for mood at 1.38; a review frame is meant to be a
-    // neutral read of the model, and this mode already raises the sun on top
-    // of that, so it blew the snow to white and took the Hero with it. Every
-    // Playwright assertion still passed, because none of them look at a pixel.
     const ip = this.s.scene.imageProcessingConfiguration;
-    ip.exposure = lighting === "furnace-warm" ? 0.98 : 0.90;
-    ip.contrast = 1.18;
+    const sun = this.s.lighting.sun;
+    const sky = this.s.lighting.sky;
     const furnaceLight = this.s.lighting.furnaceLight;
+    const saved = this.savedLight;
+
+    // Every mode restarts from the saved scene values, so switching is not
+    // order-dependent. Without this the studio rig's reductions leaked into
+    // the next snow-daylight frame and the two could not be compared.
+    sun.diffuse = saved.sunDiffuse.clone();
+    sun.specular = saved.sunSpecular.clone();
+    sky.intensity = saved.skyIntensity;
+    sky.diffuse = saved.skyDiffuse.clone();
+    sky.groundColor = saved.skyGround.clone();
+    sky.specular = saved.skySpecular.clone();
+    this.s.scene.environmentIntensity = saved.environmentIntensity;
+    this.studioRig(false);
+
     if (lighting === "furnace-warm") {
-      this.s.lighting.sun.intensity = 0.62;
-      furnaceLight.intensity = 270;
+      ip.exposure = 0.94;
+      ip.contrast = 1.10;
+      sun.intensity = 0.58;
+      furnaceLight.intensity = 250;
       furnaceLight.range = 30;
-      furnaceLight.diffuse = new Color3(1.0, 0.40, 0.10);
-    } else {
-      this.s.lighting.sun.intensity = 1.32;
-      furnaceLight.intensity = 92;
-      furnaceLight.range = 22;
-      furnaceLight.diffuse = new Color3(0.72, 0.82, 1.0);
+      furnaceLight.diffuse = new Color3(1.0, 0.42, 0.12);
+      return;
     }
+
+    if (lighting === "studio-neutral") {
+      // The art-review baseline, and deliberately not "snow-daylight turned
+      // down". The arena rig is one raking directional plus a strong snow
+      // bounce plus an IBL built from the sky: a *mood* rig. Under it the
+      // helmet and cuirass clipped to white, skin washed out, and a beard
+      // authored at 0.32 rendered as mid grey -- so no judgement about cloth,
+      // leather, metal or hair was actually being made from those frames.
+      //
+      // Three-point instead: a key at three-quarter front-left, a broad low
+      // fill so the face never falls into dead black, and a cool rim from
+      // behind to hold the silhouette off the background. Specular is pulled
+      // right down on every source and the IBL roughly halved, because the
+      // clipping was specular rather than diffuse -- dropping exposure alone
+      // would have crushed the darks and kept the blown highlights.
+      ip.exposure = 1.06;
+      ip.contrast = 1.0;
+      sun.intensity = 0.0;
+      sky.intensity = 0.0;
+      furnaceLight.intensity = 0;
+      furnaceLight.range = 1;
+      // The IBL cannot be cut the way the directionals can. These are PBR
+      // metals, and a metal has no diffuse response at all -- everything it
+      // shows is reflected environment. Halving this to kill the clipping
+      // turned the helmet and the cuirass near-black instead, which is the
+      // same failure with the sign flipped. It stays near its scene value and
+      // the *specular* on the directionals does the clipping control.
+      this.s.scene.environmentIntensity = 0.88;
+      this.studioRig(true);
+      return;
+    }
+
+    // snow-daylight, corrected. A 1.32 sun on top of an arena already graded
+    // for mood, with contrast at 1.18 on top of that, is what blew the snow
+    // to white and took the Hero with it.
+    ip.exposure = 0.96;
+    ip.contrast = 1.04;
+    sun.intensity = 1.02;
+    sun.specular = new Color3(0.30, 0.34, 0.44);
+    sky.specular = new Color3(0.06, 0.07, 0.10);
+    this.s.scene.environmentIntensity = 0.62;
+    furnaceLight.intensity = 78;
+    furnaceLight.range = 22;
+    furnaceLight.diffuse = new Color3(0.72, 0.82, 1.0);
+  }
+
+  /** Create or tear down the three review-owned studio lights. */
+  private studioRig(enabled: boolean): void {
+    if (!enabled) {
+      for (const light of this.studioLights) light.dispose();
+      this.studioLights = [];
+      return;
+    }
+    if (this.studioLights.length) return;
+    const scene = this.s.scene;
+    // The Hero faces +Z and the review cameras sit on the +Z side, so a light
+    // travelling in -Z is coming from in front of the character.
+    const key = new DirectionalLight("review.key", new Vector3(0.38, -0.62, -0.68), scene);
+    key.intensity = 1.52;
+    key.diffuse = new Color3(1.0, 0.98, 0.94);
+    key.specular = new Color3(0.22, 0.23, 0.26);
+
+    const fill = new HemisphericLight("review.fill", new Vector3(-0.25, 0.55, 0.80), scene);
+    fill.intensity = 0.92;
+    fill.diffuse = new Color3(0.74, 0.79, 0.90);
+    fill.groundColor = new Color3(0.40, 0.41, 0.45);
+    fill.specular = new Color3(0.03, 0.03, 0.04);
+
+    const rim = new DirectionalLight("review.rim", new Vector3(-0.55, -0.24, 0.80), scene);
+    rim.intensity = 1.02;
+    rim.diffuse = new Color3(0.62, 0.74, 0.98);
+    rim.specular = new Color3(0.18, 0.21, 0.28);
+
+    this.studioLights = [key, fill, rim];
   }
 
   setAnimation(animation: HeroGameplayReviewAnimation): void {
@@ -299,9 +400,17 @@ export class HeroGameplayReviewMode {
 
   dispose(): void {
     const ip = this.s.scene.imageProcessingConfiguration;
+    this.studioRig(false);
     ip.exposure = this.savedLight.exposure;
     ip.contrast = this.savedLight.contrast;
     this.s.lighting.sun.intensity = this.savedLight.sunIntensity;
+    this.s.lighting.sun.diffuse = this.savedLight.sunDiffuse;
+    this.s.lighting.sun.specular = this.savedLight.sunSpecular;
+    this.s.lighting.sky.intensity = this.savedLight.skyIntensity;
+    this.s.lighting.sky.diffuse = this.savedLight.skyDiffuse;
+    this.s.lighting.sky.groundColor = this.savedLight.skyGround;
+    this.s.lighting.sky.specular = this.savedLight.skySpecular;
+    this.s.scene.environmentIntensity = this.savedLight.environmentIntensity;
     const furnaceLight = this.s.lighting.furnaceLight;
     furnaceLight.intensity = this.savedLight.furnaceIntensity;
     furnaceLight.range = this.savedLight.furnaceRange;

@@ -32,7 +32,7 @@ declare global {
     currentCamera: string;
     currentAnimation: string;
     currentLod: "LOD0" | "LOD1" | "LOD2";
-    lighting: "snow-daylight" | "furnace-warm";
+    lighting: "snow-daylight" | "furnace-warm" | "studio-neutral";
     context: "alone" | "friends" | "battle";
     lod: 0 | 1 | 2;
     lodMode: "auto" | "forced";
