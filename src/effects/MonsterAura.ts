@@ -1,36 +1,40 @@
 import { Color3, Mesh, MeshBuilder, Scene, StandardMaterial, TransformNode, Vector3 } from "@babylonjs/core";
 
 /**
- * The effect an elite or a boss carries with it, all the time.
+ * The light an elite or a boss gives off.
  *
- * A bigger model is not a threat read. In a melee with a dozen figures on
- * screen the player has to know *before* resolving any silhouette which one
- * is the dangerous one, and the only thing that survives that much visual
- * noise is motion and light that nothing else on the field has.
+ * The first version of this was a torus at the feet, a sphere, and four
+ * polyhedra on a perfectly regular orbit. It read as a debug gizmo, and at
+ * boss scale the ring dominated the whole frame — an audit called it exactly
+ * that and was right. A complete geometric ring and evenly spaced orbiting
+ * crystals are the visual language of an editor overlay, not of a creature.
  *
- * So this is deliberately not a particle system. It is a small number of
- * unlit meshes parented to the unit's own root, which means they inherit its
- * position, its facing and its death without a single per-frame lookup:
+ * This version is built from the body outward instead. Everything is placed
+ * against the parts `add_monster_body` actually produces:
  *
- * - a **ground ring** of frost that breathes, so the footprint reads even
- *   when the body is hidden behind allies;
- * - **orbiting ice shards** at head height, the only orbital motion in the
- *   scene, which is what catches the eye first;
- * - a **core glow** inside the ribcage, so the fissure light reads through
- *   the body from any angle.
+ * - a **core** deep in the ribcage, so the light reads as coming from inside;
+ * - **fissures** — thin quads down the dorsal line, sitting where the builder
+ *   puts its spines and back plates, so the glow looks like it is escaping
+ *   between plates rather than floating near them;
+ * - **frost shards** at the feet as a broken, uneven skirt of spikes with
+ *   randomised angle, radius and length, with a wedge left open at the front;
+ * - **breath**, a few motes drifting up from the jaw.
  *
- * Boss adds a second, wider and slower ring, and taller shards. Everything
- * scales off `tier`, so raising a unit to elite is one data change.
+ * Nothing here is a closed circle and nothing orbits at a constant radius.
+ * The skirt is deliberately irregular and the motes drift rather than
+ * revolve. That is the whole difference between "creature" and "selection
+ * marker".
  *
- * Cost is three meshes plus `shards` for a unit type that is never numerous;
- * `dispose()` is called from the unit's own teardown.
+ * Parented to the unit's rig root, so it inherits position, facing and
+ * teardown with no per-frame lookup. `dispose()` runs from the unit's own
+ * teardown.
  */
+export type AuraTier = "elite" | "boss";
+
 /**
- * Which enemies carry an aura, and at what strength.
- *
- * Kept here rather than in UnitDefinitions because it is an art-direction
- * decision about threat reading, not a balance number: raising a unit to
- * elite is one line, and nothing about its combat data changes.
+ * Which enemies carry an aura, and at what strength. Kept here rather than in
+ * UnitDefinitions because it is an art-direction decision about threat
+ * reading, not a balance number.
  */
 export const AURA_TIER: Record<string, AuraTier | undefined> = {
   icearmor: "elite",
@@ -40,19 +44,17 @@ export const AURA_TIER: Record<string, AuraTier | undefined> = {
   boss: "boss",
 };
 
-export type AuraTier = "elite" | "boss";
-
 /**
- * Aura colour per unit. Violet is the faction note the enemy palette already
- * carries; the ice units shift toward cyan so their aura says which kind of
- * threat it is, not merely that there is one.
+ * Aura colour per unit. Violet is the faction note the enemy palette carries;
+ * the ice units shift toward cyan so the aura says which kind of threat it is,
+ * not merely that there is one.
  */
 const AURA_COLOUR: Record<string, [number, number, number]> = {
-  icearmor: [0.46, 0.86, 1.00],
-  flyingColossus: [0.52, 0.78, 1.00],
+  icearmor: [0.46, 0.86, 1.0],
+  flyingColossus: [0.52, 0.78, 1.0],
   commander: [0.86, 0.34, 0.98],
   juggernaut: [0.78, 0.34, 0.96],
-  boss: [1.00, 0.26, 0.62],
+  boss: [1.0, 0.26, 0.62],
 };
 
 export function auraColour(id: string): Color3 {
@@ -60,19 +62,27 @@ export function auraColour(id: string): Color3 {
 }
 
 const PROFILE: Record<AuraTier, {
-  ring: number; ringWidth: number; shards: number; shardSize: number;
-  orbit: number; orbitHeight: number; spin: number; pulse: number; core: number;
+  coreY: number; coreSize: number; fissures: number; fissureLen: number;
+  shards: number; shardRadius: number; shardSize: number; motes: number;
+  jawY: number; pulse: number;
 }> = {
-  elite: { ring: 1.35, ringWidth: 0.16, shards: 4, shardSize: 0.17, orbit: 0.86, orbitHeight: 1.42, spin: 1.15, pulse: 1.9, core: 0.21 },
-  boss: { ring: 2.30, ringWidth: 0.26, shards: 7, shardSize: 0.27, orbit: 1.42, orbitHeight: 2.05, spin: 0.78, pulse: 1.25, core: 0.36 },
+  elite: { coreY: 1.02, coreSize: 0.20, fissures: 5, fissureLen: 0.28, shards: 7, shardRadius: 0.58, shardSize: 0.14, motes: 2, jawY: 1.26, pulse: 1.7 },
+  boss: { coreY: 1.50, coreSize: 0.32, fissures: 8, fissureLen: 0.42, shards: 11, shardRadius: 0.96, shardSize: 0.22, motes: 3, jawY: 1.92, pulse: 1.15 },
 };
+
+/** Deterministic jitter, so a given unit's skirt is uneven but stable. */
+function jitter(seed: number): number {
+  const x = Math.sin(seed * 127.1 + 43.7) * 43758.5453;
+  return x - Math.floor(x);
+}
 
 export class MonsterAura {
   private readonly node: TransformNode;
-  private readonly ring: Mesh;
-  private readonly outerRing: Mesh | null;
   private readonly core: Mesh;
+  private readonly fissures: Mesh[] = [];
   private readonly shards: Mesh[] = [];
+  private readonly motes: Mesh[] = [];
+  private readonly moteBase: number[] = [];
   private readonly profile: (typeof PROFILE)[AuraTier];
   private time = Math.random() * 10;
 
@@ -83,51 +93,79 @@ export class MonsterAura {
     this.node.parent = parent;
     this.node.scaling.setAll(scale);
 
-    // Unlit so the aura keeps its colour in furnace light, in daylight and in
+    // Unlit, so the aura keeps its colour in furnace light, in daylight and in
     // shadow alike. A lit material would go dark exactly when the melee is
     // busiest and the read matters most.
-    const glow = (name: string, intensity: number): StandardMaterial => {
+    const glow = (name: string, intensity: number, alpha: number): StandardMaterial => {
       const material = new StandardMaterial(name, scene);
       material.disableLighting = true;
       material.emissiveColor = colour.scale(intensity);
       material.diffuseColor = Color3.Black();
       material.specularColor = Color3.Black();
-      material.alpha = 0.68;
+      material.alpha = alpha;
       material.backFaceCulling = false;
       return material;
     };
 
-    this.ring = MeshBuilder.CreateTorus(`aura.${tier}.ring`, { diameter: p.ring, thickness: p.ringWidth, tessellation: 20 }, scene);
-    this.ring.parent = this.node;
-    this.ring.position.y = 0.05;
-    this.ring.scaling.y = 0.16;
-    this.ring.material = glow(`aura.${tier}.ringMat`, 1.0);
-    this.ring.isPickable = false;
+    const coreMat = glow(`aura.${tier}.coreMat`, 1.7, 0.9);
+    const fissureMat = glow(`aura.${tier}.fissureMat`, 1.35, 0.72);
+    const shardMat = glow(`aura.${tier}.shardMat`, 0.9, 0.55);
+    const moteMat = glow(`aura.${tier}.moteMat`, 1.1, 0.42);
 
-    this.outerRing = tier === "boss"
-      ? MeshBuilder.CreateTorus(`aura.${tier}.ring2`, { diameter: p.ring * 1.55, thickness: p.ringWidth * 0.62, tessellation: 24 }, scene)
-      : null;
-    if (this.outerRing) {
-      this.outerRing.parent = this.node;
-      this.outerRing.position.y = 0.03;
-      this.outerRing.scaling.y = 0.12;
-      this.outerRing.material = glow(`aura.${tier}.ring2Mat`, 0.65);
-      this.outerRing.isPickable = false;
-    }
-
-    this.core = MeshBuilder.CreateSphere(`aura.${tier}.core`, { diameter: p.core, segments: 8 }, scene);
+    // Core, inside the ribcage rather than floating in front of it.
+    this.core = MeshBuilder.CreateSphere(`aura.${tier}.core`, { diameter: p.coreSize, segments: 8 }, scene);
     this.core.parent = this.node;
-    this.core.position.y = p.orbitHeight * 0.52;
-    this.core.material = glow(`aura.${tier}.coreMat`, 1.5);
+    this.core.position.y = p.coreY;
+    this.core.material = coreMat;
     this.core.isPickable = false;
 
-    const shardMaterial = glow(`aura.${tier}.shardMat`, 1.2);
+    // Fissures down the dorsal line, where the builder puts spines and plates.
+    for (let i = 0; i < p.fissures; i++) {
+      const t = (i + 0.5) / p.fissures;
+      const quad = MeshBuilder.CreatePlane(`aura.${tier}.fissure${i}`, {
+        width: 0.05 + 0.03 * jitter(i),
+        height: p.fissureLen * (0.6 + 0.7 * Math.sin(t * Math.PI)),
+      }, scene);
+      quad.parent = this.node;
+      quad.position.set(
+        (jitter(i * 3) - 0.5) * p.coreSize * 1.6,
+        p.coreY * (0.55 + 0.85 * t),
+        -p.coreSize * (0.7 + 0.5 * jitter(i * 5)),
+      );
+      quad.rotation.z = (jitter(i * 7) - 0.5) * 0.7;
+      quad.material = fissureMat;
+      quad.isPickable = false;
+      this.fissures.push(quad);
+    }
+
+    // Frost at the feet: an uneven skirt of spikes, never a closed ring. The
+    // open wedge and the varying height are what stop it reading as a marker.
     for (let i = 0; i < p.shards; i++) {
-      const shard = MeshBuilder.CreatePolyhedron(`aura.${tier}.shard${i}`, { type: 1, size: p.shardSize }, scene);
-      shard.parent = this.node;
-      shard.material = shardMaterial;
-      shard.isPickable = false;
-      this.shards.push(shard);
+      const spike = MeshBuilder.CreateCylinder(`aura.${tier}.shard${i}`, {
+        height: p.shardSize * (1.2 + 1.6 * jitter(i * 11)),
+        diameterTop: 0,
+        diameterBottom: p.shardSize * (0.5 + 0.5 * jitter(i * 13)),
+        tessellation: 4,
+      }, scene);
+      spike.parent = this.node;
+      const angle = (i / p.shards) * Math.PI * 1.72 + jitter(i * 17) * 0.5 + Math.PI * 0.14;
+      const radius = p.shardRadius * (0.72 + 0.5 * jitter(i * 19));
+      spike.position.set(Math.cos(angle) * radius, p.shardSize * 0.5, Math.sin(angle) * radius);
+      spike.rotation.z = (jitter(i * 23) - 0.5) * 0.8;
+      spike.rotation.x = (jitter(i * 29) - 0.5) * 0.8;
+      spike.material = shardMat;
+      spike.isPickable = false;
+      this.shards.push(spike);
+    }
+
+    // Breath from the jaw, drifting rather than orbiting.
+    for (let i = 0; i < p.motes; i++) {
+      const mote = MeshBuilder.CreateSphere(`aura.${tier}.mote${i}`, { diameter: p.coreSize * 0.32, segments: 6 }, scene);
+      mote.parent = this.node;
+      mote.material = moteMat;
+      mote.isPickable = false;
+      this.motes.push(mote);
+      this.moteBase.push(jitter(i * 31));
     }
   }
 
@@ -135,30 +173,30 @@ export class MonsterAura {
     this.time += dt;
     const p = this.profile;
 
-    const breathe = 1 + Math.sin(this.time * p.pulse) * 0.10;
-    this.ring.scaling.x = breathe;
-    this.ring.scaling.z = breathe;
-    if (this.outerRing) {
-      const slow = 1 + Math.sin(this.time * p.pulse * 0.55 + 1.1) * 0.07;
-      this.outerRing.scaling.x = slow;
-      this.outerRing.scaling.z = slow;
+    // The core is the only thing that pulses hard; a body lit from inside
+    // breathes, it does not strobe.
+    this.core.scaling.setAll(1 + Math.sin(this.time * p.pulse) * 0.18);
+
+    for (let i = 0; i < this.fissures.length; i++) {
+      // Each fissure runs on its own phase, so the back never flickers as one
+      // block. That uniformity was part of what made the old version read as a
+      // single UI element rather than as a surface.
+      const flicker = 0.55 + 0.45 * Math.abs(Math.sin(this.time * (p.pulse * 0.8 + i * 0.23) + i));
+      this.fissures[i].scaling.y = flicker;
+      this.fissures[i].scaling.x = 0.8 + 0.4 * flicker;
     }
 
-    const corePulse = 1 + Math.sin(this.time * p.pulse * 1.7) * 0.22;
-    this.core.scaling.setAll(corePulse);
-
-    // Shards orbit and tumble. Both axes matter: the orbit is what is visible
-    // at gameplay distance, the tumble is what reads in a close frame.
     for (let i = 0; i < this.shards.length; i++) {
-      const shard = this.shards[i];
-      const phase = (i / this.shards.length) * Math.PI * 2 + this.time * p.spin;
-      shard.position.set(
-        Math.cos(phase) * p.orbit,
-        p.orbitHeight + Math.sin(phase * 2 + i) * 0.14,
-        Math.sin(phase) * p.orbit,
-      );
-      shard.rotation.y = phase * 1.6;
-      shard.rotation.x = this.time * 0.9 + i;
+      this.shards[i].scaling.y = 0.85 + 0.3 * Math.abs(Math.sin(this.time * 0.9 + i * 1.7));
+    }
+
+    for (let i = 0; i < this.motes.length; i++) {
+      // Rise from the jaw, fade, restart. `t` wraps, so no allocation and no
+      // particle system for what is three spheres.
+      const t = (this.time * 0.42 + this.moteBase[i]) % 1;
+      const drift = this.moteBase[i] - 0.5;
+      this.motes[i].position.set(drift * p.coreSize * 1.4, p.jawY + t * p.coreSize * 3.2, p.coreSize * (1.1 + t * 0.9));
+      this.motes[i].scaling.setAll(Math.max(0.05, 1 - t) * (0.7 + 0.5 * Math.sin(t * Math.PI)));
     }
   }
 
