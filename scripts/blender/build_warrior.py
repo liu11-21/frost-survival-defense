@@ -249,15 +249,53 @@ def add_body_geometry(level):
     # One fitted pauldron that follows the shoulder curve, much smaller than
     # the W1 wedge.
     if level <= 1:
-        # A shallow plate that caps the deltoid and skirts outward, rather
-        # than a rounded blob sitting on top of it.
+        # A layered pauldron: a cap over the deltoid and two lames skirting
+        # below it. This was one smooth swept dome, which with a real
+        # environment to reflect turned into a black egg -- no edges, so no
+        # highlight anywhere to say it was steel. Armour reads as armour
+        # because of the line where one plate laps over the next, so each lame
+        # sits slightly proud of the one above and carries a rim in `blade`,
+        # the brightest surface in the palette. Those rims are the only thing
+        # that survives to LOD1, and they are the part worth keeping.
         n_sh = (12, 6)[level]
+        sh_w = lambda y: blend("upper_arm.L", "chest", 0.34)
+
+        # A shoulder is wider front-to-back than it is outboard, so the plate
+        # that caps it has to be too. Equal radii gave a stack of discs that
+        # read as a tin can sleeved onto the arm.
+        def ring(r, x, exp):
+            return section(n_sh, r, r * 1.16, r * 1.08, exp, centre_x=x)
+
+        def lame(y_top, y_bot, r_top, r_bot, x_top, x_bot, exp=3.1):
+            b.sweep([
+                (y_top, ring(r_top, x_top, exp)),
+                (y_bot, ring(r_bot, x_bot, exp)),
+            ], "plate", sh_w, cap_top=False)
+            # Rolled rim along the lower edge, where a real lame is thickest.
+            b.sweep([
+                (y_bot, ring(r_bot, x_bot, exp)),
+                (y_bot - 0.024, ring(r_bot * 0.95, x_bot - 0.006, exp)),
+            ], "blade", sh_w, cap_top=False)
+
+        # Cap over the deltoid, then two lames each lapping outside the last.
+        # Each lame flares wider than the one above it, so the pauldron skirts
+        # away from the deltoid instead of closing back in like a cylinder.
         b.sweep([
-            (1.745, section(n_sh, 0.098, 0.102, 0.098, 2.6, centre_x=-0.398)),
-            (1.670, section(n_sh, 0.166, 0.164, 0.156, 3.1, centre_x=-0.418)),
-            (1.585, section(n_sh, 0.178, 0.172, 0.162, 3.3, centre_x=-0.436)),
-            (1.520, section(n_sh, 0.156, 0.148, 0.142, 3.1, centre_x=-0.452)),
-        ], "plate", lambda y: blend("upper_arm.L", "chest", 0.34))
+            (1.748, ring(0.092, -0.396, 2.6)),
+            (1.706, ring(0.138, -0.404, 2.9)),
+            (1.672, ring(0.158, -0.412, 3.1)),
+        ], "plate", sh_w, cap_bottom=False)
+        lame(1.676, 1.610, 0.166, 0.188, -0.414, -0.428)
+        lame(1.614, 1.544, 0.192, 0.208, -0.430, -0.446)
+
+        if level == 0:
+            # Rivets along the cap, which is where a pauldron is actually
+            # strapped. Three is enough to catch the light and read as a join.
+            # box() takes a weight dict; only sweep() takes a weight function.
+            rivet_w = blend("upper_arm.L", "chest", 0.34)
+            for t in (-1, 0, 1):
+                b.box((-0.404 + t * 0.006, 1.686, t * 0.088), (0.030, 0.024, 0.030),
+                      "blade", rivet_w, taper=0.55)
 
     # --- belt and faction strip ------------------------------------------
     # Pelvis/seat mass under the belt, so the coat hem has hips inside it
@@ -274,7 +312,14 @@ def add_body_geometry(level):
     ], "belt", torso_weights, cap_bottom=False, cap_top=False)
     if level == 0:
         b.box((0.0, 1.42, 0.268), (0.104, 0.190, 0.026), "amber", blend("chest", "spine", 0.34), rotate_z=-0.13)
-        b.box((0.0, 1.03, 0.216), (0.086, 0.074, 0.030), "plate", blend("pelvis", "spine", 0.40))
+        # Belt buckle: frame, tongue and a strap end hanging past it. The belt
+        # was an unbroken band of leather, so the waist -- the narrowest point
+        # of the whole silhouette, and where the eye goes -- had nothing on it.
+        belt_w = blend("pelvis", "spine", 0.40)
+        b.box((0.0, 1.030, 0.222), (0.128, 0.108, 0.028), "plate", belt_w)
+        b.box((0.0, 1.030, 0.238), (0.086, 0.066, 0.022), "blade", belt_w, taper=0.88)
+        b.box((0.0, 1.030, 0.246), (0.020, 0.096, 0.018), "blade", belt_w, taper=0.7)
+        b.box((0.086, 1.004, 0.226), (0.062, 0.148, 0.020), "belt", belt_w, taper=0.82)
 
     # --- arms -------------------------------------------------------------
     for side, sign in (("L", -1), ("R", 1)):
