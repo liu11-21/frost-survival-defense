@@ -7,6 +7,7 @@ import {
   Scene,
 } from "@babylonjs/core";
 import { COLORS, FOG_DENSITY } from "../game/GameConfig";
+import { createSnowEnvironment } from "./EnvironmentTexture";
 
 export interface SceneBundle {
   scene: Scene;
@@ -38,11 +39,26 @@ export function createScene(engine: Engine): SceneBundle {
   scene.fogColor = new Color3(...COLORS.fog);
   scene.fogDensity = FOG_DENSITY;
 
+  // Metals reflect the environment or they reflect nothing; see the note in
+  // EnvironmentTexture.ts for why every 0.86-metallic surface in this project
+  // was rendering black without it.
+  scene.environmentTexture = createSnowEnvironment(scene);
+  scene.environmentIntensity = 0.85;
+
   scene.imageProcessingConfiguration.toneMappingEnabled = true;
   scene.imageProcessingConfiguration.toneMappingType =
     ImageProcessingConfiguration.TONEMAPPING_ACES;
-  scene.imageProcessingConfiguration.exposure = 1.12;
-  scene.imageProcessingConfiguration.contrast = 1.12;
+  // The scene was sitting in the shoulder of the ACES curve, which is why it
+  // read dark and why nothing fixed it. Measured against a fixed pixel mask of
+  // the actual meshes: tripling the sky light moved facility luminance from
+  // 111 to 123 and a 2.5x sun moved it to the same 123, but exposure alone
+  // took it to 155. More light could not escape the compression; the frame was
+  // simply under-exposed. Contrast came down with it, because 1.12 was pushing
+  // the shadow end back down as fast as exposure lifted it. Swept seven pairs
+  // and checked for blown highlights at each: snow sits at 189 with zero
+  // clipped pixels, against 175 before.
+  scene.imageProcessingConfiguration.exposure = 1.38;
+  scene.imageProcessingConfiguration.contrast = 1.05;
   scene.imageProcessingConfiguration.vignetteEnabled = true;
   scene.imageProcessingConfiguration.vignetteWeight = 1.1;
   scene.imageProcessingConfiguration.vignetteColor = new Color4(0.03, 0.05, 0.1, 0);

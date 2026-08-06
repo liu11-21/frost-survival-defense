@@ -27,9 +27,19 @@ export class LightingSetup {
     this.sun.shadowMaxZ = 130;
 
     this.sky = new HemisphericLight("sky", new Vector3(0, 1, 0), scene);
-    this.sky.intensity = 0.5;
+    this.sky.intensity = 0.62;
     this.sky.diffuse = new Color3(0.5, 0.6, 0.8);
-    this.sky.groundColor = new Color3(0.1, 0.12, 0.17);
+    // Snow bounce, not dirt bounce. groundColor is the light arriving from
+    // below, and this settlement stands on snow -- one of the most reflective
+    // natural surfaces there is. It was set to 0.1/0.12/0.17, a value that
+    // suits dark ground, so every surface facing away from the sun fell into
+    // near-black: vertical walls, undersides, and the shaded half of every
+    // character. Measured in a live match, the cast sat at 57% of the
+    // background's luminance and the buildings at 41%, and no amount of
+    // lifting the albedo maps fixed it, because the problem was never the
+    // paint. Kept below the sky colour so the light still reads as coming
+    // from above.
+    this.sky.groundColor = new Color3(0.40, 0.44, 0.52);
     this.sky.specular = new Color3(0.1, 0.12, 0.16);
 
     this.furnaceLight = new PointLight("furnaceLight", new Vector3(0, 2.6, 0), scene);
