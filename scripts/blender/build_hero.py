@@ -167,6 +167,24 @@ def add_body(level):
         (1.72 * H, section(n_h, hd * 1.06, hd * 1.06, hd * 1.02, 2.7)),
         (1.82 * H, section(n_h, hd * 0.70, hd * 0.70, hd * 0.72, 2.4)),
     ], "metal", lambda y: blend("head", "neck", 0.10), cap_bottom=False)
+    if level <= 1:
+        # Face structure, matching the treatment given to the Warrior and the
+        # roster: an overhanging brow, a centre line, recessed eye slits and a
+        # cheek plate. The Hero wears a helmet shell already, so these read as
+        # the front of that helm rather than as skin. Authored against this
+        # rig's own head scale rather than shared, because brow height and head
+        # width differ across the three character generators.
+        fw = blend("head", "neck", 0.10)
+        b.box((0.0, 1.700 * H, hd * 0.90), (hd * 1.58, hd * 0.28, hd * 0.42), "metal", fw, taper=0.80)
+        b.box((0.0, 1.648 * H, hd * 0.94), (hd * 0.26, hd * 0.90, hd * 0.32), "metal", fw, taper=1.14)
+        for sgn in (-1, 1):
+            b.box((sgn * hd * 0.44, 1.674 * H, hd * 0.78), (hd * 0.46, hd * 0.18, hd * 0.17), "glove", fw, taper=0.92)
+        for sgn in (-1, 1):
+            b.prism([
+                (sgn * hd * 0.50, 1.664 * H), (sgn * hd * 1.02, 1.652 * H),
+                (sgn * hd * 0.96, 1.576 * H), (sgn * hd * 0.42, 1.566 * H),
+            ], hd * 0.68, hd * 0.30, "metal", fw)
+
     if level == 0:
         b.box((0.0, 1.665 * H, hd * 0.80), (hd * 1.62, hd * 0.34, hd * 0.26), "accent",
               blend("head", "neck", 0.10), taper=0.86)

@@ -206,12 +206,44 @@ def add_body_geometry(level):
         (2.47, section(n_head, 0.100, 0.098, 0.102, 2.3, centre_z=-0.012)),  # crown, rounded
     ]
     b.sweep(head_rings, "coat", head_weights, cap_bottom=False)
-    if level == 0:
-        # Hood brim over the brow, and a cheek guard either side: small planes
-        # that give the head a facing direction without a second object.
-        b.box((0.0, 2.238, 0.166), (0.250, 0.032, 0.052), "plate", blend("head", "neck", 0.10), taper=0.80)
+    if level <= 1:
+        # The face. Up close this was a blank plane with two painted slits, so
+        # the head had a direction but no features. It is a helm rather than
+        # skin, which means the features to build are hard-surface ones -- and
+        # they have to be structure, not micro-detail, because most of the time
+        # this head is forty pixels tall.
+        head_w = blend("head", "neck", 0.10)
+        brow_y, eye_y = 2.232, 2.190
+
+        # Brow band, deepened and pushed forward so it overhangs the eyes and
+        # drops them into shadow. This is what makes a face read at distance:
+        # the shadow under the brow, not the eyes themselves.
+        b.box((0.0, brow_y, 0.170), (0.268, 0.046, 0.070), "plate", head_w, taper=0.78)
+
+        # Nasal bar, brow to below the cheekbone. A helm's centre line is the
+        # single strongest cue that a head is facing you.
+        b.box((0.0, 2.150, 0.176), (0.040, 0.150, 0.052), "plate", head_w, taper=1.18)
+
+        # Eye slits, inset behind the brow and the nasal bar so they read as
+        # recesses rather than as decals. The darkest surface in the palette.
         for sign in (-1, 1):
-            b.box((sign * 0.152, 2.130, 0.070), (0.036, 0.150, 0.108), "plate", blend("head", "neck", 0.10), taper=0.86)
+            b.box((sign * 0.078, eye_y, 0.152), (0.078, 0.030, 0.028), "grip", head_w, taper=0.92)
+
+        # Cheek plates, angled in toward the chin so the lower face tapers
+        # instead of ending in a flat wall.
+        for sign in (-1, 1):
+            b.prism([
+                (sign * 0.088, 2.166), (sign * 0.176, 2.150),
+                (sign * 0.166, 2.036), (sign * 0.074, 2.022),
+            ], 0.128, 0.052, "plate", head_w)
+
+    if level == 0:
+        # Jaw guard closing the chin, and a small crest at the crown: the two
+        # ends of the head silhouette, which are what a top-down camera sees.
+        b.box((0.0, 2.038, 0.140), (0.132, 0.052, 0.078), "plate", head_w, taper=0.74)
+        b.box((0.0, 2.472, -0.010), (0.056, 0.070, 0.170), "plate", head_w, taper=0.62)
+        for sign in (-1, 1):
+            b.box((sign * 0.158, 2.108, 0.062), (0.034, 0.140, 0.104), "plate", head_w, taper=0.86)
 
     # --- shoulders --------------------------------------------------------
     # One fitted pauldron that follows the shoulder curve, much smaller than

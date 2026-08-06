@@ -194,6 +194,26 @@ def add_body(level, a, cfg):
         (1.79 * h, section(n_h, hd * 0.62, hd * 0.62, hd * 0.64, 2.3, centre_z=-0.006)),
     ], "body", head_weights, cap_bottom=False)
 
+    if level <= 1:
+        # Face structure. Every head in this roster was a smooth swept mass, so
+        # up close a unit had a direction but no features. These are hard
+        # surfaces rather than skin -- the roster wears helms -- and they are
+        # deliberately structure, not detail: a brow that overhangs, a centre
+        # line, and a recess for the eyes. At crowd distance what survives is
+        # the shadow under the brow, which is what makes a head read as facing
+        # you. Authored per-rig rather than shared, because head scale and
+        # brow height differ between this roster, the Hero and the Warrior.
+        fw = blend("head", "neck", 0.10)
+        b.box((0.0, 1.686 * h, hd * 0.88), (hd * 1.60, hd * 0.28, hd * 0.42), "metal", fw, taper=0.80)
+        b.box((0.0, 1.638 * h, hd * 0.92), (hd * 0.26, hd * 0.86, hd * 0.32), "metal", fw, taper=1.14)
+        for sgn in (-1, 1):
+            b.box((sgn * hd * 0.44, 1.662 * h, hd * 0.76), (hd * 0.46, hd * 0.18, hd * 0.17), "grip", fw, taper=0.92)
+        for sgn in (-1, 1):
+            b.prism([
+                (sgn * hd * 0.50, 1.652 * h), (sgn * hd * 1.00, 1.640 * h),
+                (sgn * hd * 0.94, 1.566 * h), (sgn * hd * 0.42, 1.556 * h),
+            ], hd * 0.66, hd * 0.30, "metal", fw)
+
     lb = a["limb"]
     for side, sgn in (("L", -1), ("R", 1)):
         sx = sgn * (sh * 0.86)

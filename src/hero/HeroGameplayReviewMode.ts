@@ -36,6 +36,8 @@ export interface HeroGameplayReviewCaptureMetadata {
 
 interface SavedLightState {
   sunIntensity: number;
+  exposure: number;
+  contrast: number;
   furnaceIntensity: number;
   furnaceRange: number;
   furnaceDiffuse: Color3;
@@ -60,8 +62,11 @@ export class HeroGameplayReviewMode {
 
   constructor(private readonly s: GameSystems) {
     const furnaceLight = s.lighting.furnaceLight;
+    const ip = s.scene.imageProcessingConfiguration;
     this.savedLight = {
       sunIntensity: s.lighting.sun.intensity,
+      exposure: ip.exposure,
+      contrast: ip.contrast,
       furnaceIntensity: furnaceLight.intensity,
       furnaceRange: furnaceLight.range,
       furnaceDiffuse: furnaceLight.diffuse.clone(),
@@ -143,6 +148,14 @@ export class HeroGameplayReviewMode {
 
   setLighting(lighting: HeroGameplayReviewLighting): void {
     this.lighting = lighting;
+    // This mode owns its exposure rather than inheriting the gameplay value.
+    // The arena is graded for mood at 1.38; a review frame is meant to be a
+    // neutral read of the model, and this mode already raises the sun on top
+    // of that, so it blew the snow to white and took the Hero with it. Every
+    // Playwright assertion still passed, because none of them look at a pixel.
+    const ip = this.s.scene.imageProcessingConfiguration;
+    ip.exposure = lighting === "furnace-warm" ? 0.98 : 0.90;
+    ip.contrast = 1.18;
     const furnaceLight = this.s.lighting.furnaceLight;
     if (lighting === "furnace-warm") {
       this.s.lighting.sun.intensity = 0.62;
@@ -271,6 +284,9 @@ export class HeroGameplayReviewMode {
   }
 
   dispose(): void {
+    const ip = this.s.scene.imageProcessingConfiguration;
+    ip.exposure = this.savedLight.exposure;
+    ip.contrast = this.savedLight.contrast;
     this.s.lighting.sun.intensity = this.savedLight.sunIntensity;
     const furnaceLight = this.s.lighting.furnaceLight;
     furnaceLight.intensity = this.savedLight.furnaceIntensity;
