@@ -46,12 +46,13 @@ import re
 import sys
 
 import bpy
-from mathutils import Vector
+from mathutils import Matrix, Vector
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 ROOT = os.path.abspath(os.path.join(HERE, "..", ".."))
 sys.path.append(HERE)
 from common import collision_box, empty, export_glb, reset_scene, save_source, collection  # noqa: E402
+import human_rig  # noqa: E402
 
 PROFILES_PATH = os.path.join(HERE, "human_source_profiles.json")
 # The 18 bones every existing clip and every runtime contract is written
@@ -111,56 +112,90 @@ def clean(objects, profile):
     is measuring the actual character rather than a control cage around it.
     """
     patterns = [re.compile(p, re.IGNORECASE) for p in profile.get("drop_nodes", [])]
-    removed = []
+    # Decide first, delete second, and re-read the survivors from the scene.
+    # Holding Python references to objects across a removal and then touching
+    # `.name` raises "StructRNA has been removed" -- the reference outlives the
+    # data it points at.
+    keep_names, drop_names = [], []
     for obj in list(objects):
         drop = obj.type in {"CAMERA", "LIGHT", "SPEAKER"}
         drop = drop or any(p.search(obj.name) for p in patterns)
-        if drop:
-            removed.append(obj.name)
+        (drop_names if drop else keep_names).append(obj.name)
+    for name in drop_names:
+        obj = bpy.data.objects.get(name)
+        if obj is not None:
             bpy.data.objects.remove(obj, do_unlink=True)
-    survivors = [o for o in objects if o.name not in removed]
+    removed = drop_names
+    survivors = [bpy.data.objects[n] for n in keep_names if n in bpy.data.objects]
     meshes = [o for o in survivors if o.type == "MESH"]
     armatures = [o for o in survivors if o.type == "ARMATURE"]
     return meshes, armatures, removed
 
 
-# --- 3. bone mapping -------------------------------------------------------
-def map_bones(armature, profile):
-    """Rename the source's bones onto this project's names.
+# --- 3. rig ---------------------------------------------------------------
+# Bone analysis, rest-pose alignment and retargeting live in human_rig.py.
+# They were inline here as a single rename loop, which is not retargeting: it
+# makes LeftArm answer to upper_arm.L and does nothing about the fact that our
+# clips are quaternions written against *our* rest orientation.
 
-    A source bone is matched by the ordered candidate list in the profile, and
-    the first hit wins. Anything unmatched is *reported*, never guessed: a rig
-    whose pelvis did not map would still export, still pass a triangle budget,
-    and animate as garbage.
+
+def synthesise_root(armature):
+    """Give a rig without a root bone one, at the origin, above the pelvis.
+
+    Sources like Mixamo have no root -- the hips are the top of the hierarchy.
+    The profile used to paper over that by mapping both `root` and `pelvis` to
+    Hips, which collapses two levels into one and makes every root-relative
+    offset silently wrong.
     """
-    if armature is None:
-        return {}, list(REQUIRED_BONES), []
-    strip = profile.get("strip_bone_prefix", [])
-    for bone in armature.data.bones:
-        for prefix in strip:
-            if bone.name.startswith(prefix):
-                bone.name = bone.name[len(prefix):]
-
-    available = {b.name.lower(): b.name for b in armature.data.bones}
-    mapping, missing = {}, []
-    wanted = dict(profile.get("bones", {}))
-    wanted.update(profile.get("optional_bones", {}))
-    for target, candidates in wanted.items():
-        hit = next((available[c.lower()] for c in candidates if c.lower() in available), None)
-        if hit:
-            mapping[target] = hit
-        elif target in REQUIRED_BONES:
-            missing.append(target)
-    # Rename last, so a candidate list cannot match a bone this loop just
-    # renamed on a previous iteration.
-    for target, source in mapping.items():
-        if source != target:
-            armature.data.bones[source].name = target
-    extra = [b.name for b in armature.data.bones if b.name not in mapping]
-    return mapping, missing, extra
+    if "root" in armature.data.bones:
+        return False
+    previous = bpy.context.view_layer.objects.active
+    bpy.context.view_layer.objects.active = armature
+    bpy.ops.object.mode_set(mode="EDIT")
+    edit = armature.data.edit_bones
+    root = edit.new("root")
+    root.head = (0.0, 0.0, 0.0)
+    root.tail = (0.0, 0.0, 0.10)
+    for bone in edit:
+        if bone.name != "root" and bone.parent is None:
+            bone.parent = root
+    bpy.ops.object.mode_set(mode="OBJECT")
+    bpy.context.view_layer.objects.active = previous
+    return True
 
 
 # --- 4. orientation, scale, grounding -------------------------------------
+def measure_basis(armature):
+    """The character's own (right, up, forward) frame, read off its skeleton.
+
+    Returns None when the rig does not carry enough landmarks, in which case
+    the caller falls back to the profile's declared axes.
+    """
+    if armature is None:
+        return None
+    bones = armature.data.bones
+    pelvis, head = bones.get("pelvis"), bones.get("head")
+    left, right_hip = bones.get("thigh.L"), bones.get("thigh.R")
+    if not (pelvis and head and left and right_hip):
+        return None
+    m = armature.matrix_world
+    up = ((m @ head.head_local) - (m @ pelvis.head_local))
+    right = ((m @ right_hip.head_local) - (m @ left.head_local))
+    if up.length < 1e-6 or right.length < 1e-6:
+        return None
+    up.normalize()
+    # Re-orthogonalise: hips are rarely exactly perpendicular to the spine.
+    right = (right - up * right.dot(up))
+    if right.length < 1e-6:
+        return None
+    right.normalize()
+    forward = right.cross(up)
+    if forward.length < 1e-6:
+        return None
+    return right, up, forward.normalized()
+
+
+
 def normalise(meshes, armatures, profile, target_height):
     """Babylon Y-up, forward +Z, feet on the floor, and a known height.
 
@@ -174,15 +209,45 @@ def normalise(meshes, armatures, profile, target_height):
     if not objects:
         raise SystemExit("nothing left to normalise after cleaning")
     root = empty("SourceRoot", (0, 0, 0), "EXPORT", "PLAIN_AXES")
-    for obj in objects:
-        if obj.parent is None:
-            obj.parent = root
+    # Reparent the *topmost ancestors*, not the objects with no parent at all.
+    # An imported GLB usually arrives under its own root empty, so every mesh
+    # and armature already has a parent -- "if obj.parent is None" then matches
+    # nothing, SourceRoot ends up empty, and rotating it rotates nothing while
+    # every later measurement quietly reports the unrotated model.
+    # Scene-level roots, not "objects in my list with no parent". An imported
+    # character hangs off empties this list never contains -- UnitRoot,
+    # LOD markers, weapon sockets -- so walking only meshes and armatures
+    # stops one level short and reparents nothing at all. That is precisely
+    # what happened on the first real input: SourceRoot rotated an empty
+    # hierarchy while every measurement reported the unrotated model.
+    tops = [o for o in bpy.data.objects if o.parent is None and o is not root]
+    for obj in tops:
+        obj.parent = root
 
-    if profile.get("up_axis", "Y").upper() == "Z":
+    # Orientation is *measured off the skeleton*, not taken from a profile flag.
+    #
+    # The flag approach failed on the first real input and the gate caught it:
+    # the profile said the file was Y-up, which was true, but Blender's glTF
+    # importer converts to Blender's Z-up on the way in -- so by the time this
+    # code measured anything the character was lying on its back, 2.58m tall,
+    # facing -Y. A profile cannot know that, because the answer depends on the
+    # importer as much as on the file.
+    #
+    # A humanoid rig already carries its own frame: pelvis-to-head is up, and
+    # left-hip-to-right-hip is the character's right. Forward is their cross
+    # product. That is true of every source regardless of file convention,
+    # importer behaviour or what the exporter believed.
+    armature = armatures[0] if armatures else None
+    basis = measure_basis(armature)
+    if basis is not None:
+        right, up, forward = basis
+        # Rows map the measured frame onto the project's: +X right, +Y up,
+        # +Z forward.
+        rotation = Matrix((right, up, forward)).to_4x4()
+        root.matrix_world = rotation @ root.matrix_world
+    elif profile.get("up_axis", "Y").upper() == "Z":
         root.rotation_euler[0] = -math.pi / 2
-    if profile.get("forward_axis", "+Z") == "-Z":
-        root.rotation_euler[1] += math.pi
-    root.scale = (profile.get("unit_scale", 1.0),) * 3
+    root.scale = tuple(v * profile.get("unit_scale", 1.0) for v in root.scale)
     bpy.context.view_layer.update()
 
     lo = Vector((1e9, 1e9, 1e9))
@@ -206,21 +271,88 @@ def normalise(meshes, armatures, profile, target_height):
     return root, {"sourceHeight": round(height, 4), "scaleFactor": round(factor, 5)}
 
 
-# --- 5. materials ----------------------------------------------------------
-def convert_materials(meshes, budget):
-    """Force every material to a Babylon-loadable PBR metallic-roughness set.
+def verify_normalised(meshes, armature, target_height, tolerance=0.02):
+    """Measure the result instead of trusting the transform that produced it.
 
-    An imported character routinely arrives with a specular/glossiness stack,
-    per-part materials for eyelashes and teeth, and image nodes Babylon's glTF
-    loader will not follow. This keeps Base Color / Normal / Roughness /
-    Metallic and drops everything else, then reports the count rather than
-    silently exceeding the budget.
+    Every item here is something that survives to a shipped GLB, passes a
+    triangle budget and a JOINTS_0 check, and is instantly obvious the first
+    time anybody looks: a character on its back, sunk through the floor, or
+    facing away from the camera.
     """
-    kept = {}
+    lo = Vector((1e9, 1e9, 1e9))
+    hi = Vector((-1e9, -1e9, -1e9))
+    for mesh in meshes:
+        for corner in mesh.bound_box:
+            world = mesh.matrix_world @ Vector(corner)
+            lo = Vector((min(lo[i], world[i]) for i in range(3)))
+            hi = Vector((max(hi[i], world[i]) for i in range(3)))
+    height = hi[1] - lo[1]
+    # Facing is read off the rig: the vector from the pelvis to the head is up,
+    # and a human's chest normal is the cross of up with the hip-to-hip axis.
+    facing = None
+    if armature is not None:
+        bones = armature.data.bones
+        left, right = bones.get("thigh.L"), bones.get("thigh.R")
+        pelvis, head = bones.get("pelvis"), bones.get("head")
+        if left and right and pelvis and head:
+            m = armature.matrix_world
+            hip = (m @ right.head_local) - (m @ left.head_local)
+            up = (m @ head.head_local) - (m @ pelvis.head_local)
+            if hip.length > 1e-6 and up.length > 1e-6:
+                facing = hip.normalized().cross(up.normalized())
+    checks = {
+        "feetOnFloor": abs(lo[1]) <= tolerance,
+        "footY": round(lo[1], 5),
+        "heightMetres": round(height, 4),
+        "heightOnTarget": abs(height - target_height) <= tolerance,
+        "centredOnX": abs((lo[0] + hi[0]) * 0.5) <= tolerance * 4,
+        "yUp": height >= (hi[0] - lo[0]) and height >= (hi[2] - lo[2]),
+        "facingVector": [round(v, 4) for v in facing] if facing else None,
+        "facesPositiveZ": bool(facing and facing.z > 0.5),
+        "sameCoordinateSystem": all(
+            (m.matrix_world.translation - (armature.matrix_world.translation if armature else Vector())).length < 50.0
+            for m in meshes
+        ),
+    }
+    checks["allPassed"] = all(
+        checks[k] for k in ("feetOnFloor", "heightOnTarget", "yUp", "sameCoordinateSystem")
+    )
+    return checks
+
+
+# --- 5. materials ----------------------------------------------------------
+# Channels Babylon's glTF loader consumes. Anything else on an imported
+# character -- specular/glossiness stacks, subsurface, sheen -- is dropped
+# rather than left connected and silently ignored at runtime.
+PBR_INPUTS = ("Base Color", "Normal", "Roughness", "Metallic", "Alpha")
+# Materials a human base ships that must not be merged into the skin: they
+# need their own alpha or their own shading and merging them produces a face
+# with an opaque grey slab across the eyes.
+KEEP_SEPARATE = ("eyelash", "eyebrow", "eye", "cornea", "sclera", "iris",
+                 "tear", "teeth", "tongue", "nail", "hair")
+
+
+def classify(name):
+    lowered = name.lower()
+    for token in KEEP_SEPARATE:
+        if token in lowered:
+            return token
+    return "body"
+
+
+def convert_materials(meshes, budget, enforce=True):
+    """Force PBR metallic-roughness, record what is actually wired, enforce budget.
+
+    The previous version reported `withinBudget: false` and carried on, which
+    is the same as not having a budget. Over budget is now either merged (for
+    materials that are safe to merge) or a hard failure -- never a note in a
+    report nobody reads.
+    """
+    seen = {}
     for mesh in meshes:
         for slot in mesh.material_slots:
             mat = slot.material
-            if mat is None or mat.name in kept:
+            if mat is None or mat.name in seen:
                 continue
             mat.use_nodes = True
             nodes = mat.node_tree.nodes
@@ -229,20 +361,68 @@ def convert_materials(meshes, budget):
                 bsdf = nodes.new("ShaderNodeBsdfPrincipled")
                 out = nodes.get("Material Output") or nodes.new("ShaderNodeOutputMaterial")
                 mat.node_tree.links.new(bsdf.outputs["BSDF"], out.inputs["Surface"])
-            for name in ("Specular IOR Level", "Sheen Weight", "Coat Weight", "Transmission Weight"):
+            for name in ("Specular IOR Level", "Sheen Weight", "Coat Weight",
+                         "Transmission Weight", "Subsurface Weight"):
                 if name in bsdf.inputs:
                     bsdf.inputs[name].default_value = 0.0
-            kept[mat.name] = {
-                "images": sorted({
-                    n.image.name for n in nodes
-                    if n.type == "TEX_IMAGE" and n.image is not None
-                }),
-            }
+            connections = {}
+            for channel in PBR_INPUTS:
+                socket = bsdf.inputs.get(channel)
+                linked = bool(socket and socket.is_linked)
+                image = None
+                if linked:
+                    node = socket.links[0].from_node
+                    # Walk one hop through a Normal Map or a separator node.
+                    if node.type != "TEX_IMAGE":
+                        for candidate in node.inputs:
+                            if candidate.is_linked and candidate.links[0].from_node.type == "TEX_IMAGE":
+                                node = candidate.links[0].from_node
+                                break
+                    image = node.image.name if getattr(node, "image", None) else None
+                connections[channel] = {"connected": linked, "image": image}
+            kind = classify(mat.name)
+            if kind in ("eye", "cornea", "tear", "eyelash", "eyebrow", "hair"):
+                # Alpha-blended parts of a human base. Left opaque, eyelashes
+                # render as black rectangles across the eye.
+                mat.blend_method = "BLEND" if hasattr(mat, "blend_method") else mat.blend_method
+            seen[mat.name] = {"channels": connections, "class": kind}
+
+    over = len(seen) - budget
+    merged = []
+    if over > 0:
+        # Only body materials are candidates: eyes, lashes and hair carry alpha
+        # or their own shading and merging them destroys the face.
+        body = sorted(n for n, v in seen.items() if v["class"] == "body")
+        if len(body) - 1 >= over:
+            keep = body[0]
+            victims = body[1:1 + over]
+            target = bpy.data.materials.get(keep)
+            for mesh in meshes:
+                for slot in mesh.material_slots:
+                    if slot.material is not None and slot.material.name in victims:
+                        slot.material = target
+            for name in victims:
+                seen.pop(name, None)
+            merged = victims
+        elif enforce:
+            raise human_rig.RigError(
+                "material budget exceeded: %d materials, budget %d, and only %d "
+                "body materials are safe to merge (eyes, lashes and hair must stay "
+                "separate). Reduce them in the source export or raise "
+                "--material-budget deliberately. Nothing was written."
+                % (len(seen), budget, len(body))
+            )
     return {
-        "materials": sorted(kept),
-        "materialCount": len(kept),
-        "textures": sorted({img for v in kept.values() for img in v["images"]}),
-        "withinBudget": len(kept) <= budget,
+        "materials": {name: value for name, value in sorted(seen.items())},
+        "materialCount": len(seen),
+        "merged": merged,
+        "budget": budget,
+        "withinBudget": len(seen) <= budget,
+        "textures": sorted({
+            c["image"] for v in seen.values() for c in v["channels"].values() if c["image"]
+        }),
+        "alphaMaterials": sorted(n for n, v in seen.items()
+                                 if v["class"] in ("eye", "cornea", "tear", "eyelash", "eyebrow", "hair")),
     }
 
 
@@ -285,7 +465,71 @@ def triangle_count(objects):
     return total
 
 
-# --- 7. report -------------------------------------------------------------
+# --- 7. LOD verification ---------------------------------------------------
+def verify_lods(tiers, armature):
+    """Prove the decimation kept what the runtime needs.
+
+    Decimate is happy to delete the vertices that carried a bone's only
+    influence. The result still loads, still reports a sensible triangle count,
+    and comes apart the first time the clip plays -- so weights, joint
+    attributes and per-tier alignment are all measured here rather than
+    assumed.
+    """
+    groups_lod0 = None
+    report = {"tiers": [], "allPassed": True}
+    for level, made in enumerate(tiers):
+        weighted = 0
+        unweighted = 0
+        names = set()
+        lo = [1e9, 1e9, 1e9]
+        hi = [-1e9, -1e9, -1e9]
+        for obj in made:
+            names.update(g.name for g in obj.vertex_groups)
+            for vertex in obj.data.vertices:
+                if any(g.weight > 0.0 for g in vertex.groups):
+                    weighted += 1
+                else:
+                    unweighted += 1
+            for corner in obj.bound_box:
+                world = obj.matrix_world @ Vector(corner)
+                lo = [min(lo[i], world[i]) for i in range(3)]
+                hi = [max(hi[i], world[i]) for i in range(3)]
+        if level == 0:
+            groups_lod0 = names
+        tier = {
+            "lod": level,
+            "meshes": len(made),
+            "weightedVertices": weighted,
+            "unweightedVertices": unweighted,
+            "everyVertexWeighted": unweighted == 0,
+            "vertexGroups": len(names),
+            "keptEveryLod0Bone": groups_lod0 is not None and groups_lod0.issubset(names) if level else True,
+            "bounds": {"min": [round(v, 4) for v in lo], "max": [round(v, 4) for v in hi]},
+        }
+        if armature is None:
+            tier["everyVertexWeighted"] = False
+        report["tiers"].append(tier)
+
+    base = report["tiers"][0]["bounds"] if report["tiers"] else None
+    for tier in report["tiers"][1:]:
+        if base is None:
+            continue
+        drift = max(
+            abs(tier["bounds"]["min"][i] - base["min"][i]) for i in range(3)
+        ) if base else 0.0
+        drift = max(drift, max(abs(tier["bounds"]["max"][i] - base["max"][i]) for i in range(3)))
+        tier["boundsDriftFromLod0"] = round(drift, 4)
+        # A tier that moves or resizes on switch is a pop the player sees.
+        tier["alignedWithLod0"] = drift <= 0.05
+    report["allPassed"] = all(
+        t.get("everyVertexWeighted", False) and t.get("keptEveryLod0Bone", False)
+        and t.get("alignedWithLod0", True)
+        for t in report["tiers"]
+    )
+    return report
+
+
+# --- 8. report -------------------------------------------------------------
 def write_report(path, payload):
     with open(path, "w", encoding="utf-8") as handle:
         json.dump(payload, handle, indent=2, sort_keys=True)
@@ -300,10 +544,30 @@ def file_hash(path):
     return digest.hexdigest()
 
 
+def load_reference_rig(path):
+    """The project's own rest pose and clip names, read from the shipped Hero.
+
+    The delta that makes retargeting work has to be measured against the rig
+    the clips were actually authored for. Assuming "both are T-pose" is how a
+    renamed rig ends up playing our Idle with its arms somewhere else.
+    """
+    if not os.path.isfile(path):
+        return None
+    before = set(bpy.data.objects)
+    bpy.ops.import_scene.gltf(filepath=path)
+    added = [o for o in bpy.data.objects if o not in before]
+    armature = next((o for o in added if o.type == "ARMATURE"), None)
+    reference = human_rig.rest_pose(armature) if armature else None
+    clips = sorted({a.name.split(":")[-1] for a in bpy.data.actions})
+    for obj in added:
+        bpy.data.objects.remove(obj, do_unlink=True)
+    return {"restPose": reference, "clips": clips} if reference else None
+
+
 def main():
-    # run-blender.mjs already inserts the "--" separator, so a caller who
-    # also writes one produces two. Strip any leading separators rather than
-    # failing with "the following arguments are required" on a correct call.
+    # run-blender.mjs already inserts the "--" separator, so a caller who also
+    # writes one produces two. Strip any leading separators rather than failing
+    # with "the following arguments are required" on a correct call.
     argv = sys.argv[sys.argv.index("--") + 1:] if "--" in sys.argv else []
     while argv and argv[0] == "--":
         argv = argv[1:]
@@ -313,9 +577,10 @@ def main():
     parser.add_argument("--name", default="hero_human_candidate")
     parser.add_argument("--height", type=float, default=1.86)
     parser.add_argument("--material-budget", type=int, default=4)
-    # Smoke runs write outside the shipped asset tree on purpose: a pipeline
-    # rehearsal must not add a file that art:validate then has to explain.
-    parser.add_argument("--out-dir", default=os.path.join(ROOT, "public", "assets", "models", "characters"))
+    parser.add_argument("--reference", default=os.path.join(
+        ROOT, "public", "assets", "models", "characters", "hero.glb"))
+    parser.add_argument("--out-dir", default=os.path.join(
+        ROOT, "public", "assets", "models", "characters"))
     args = parser.parse_args(argv)
 
     if not os.path.isfile(args.input):
@@ -324,19 +589,46 @@ def main():
     if out_name in PROTECTED:
         raise SystemExit(
             "refusing to write %s: it is the working fallback asset. "
-            "Give the candidate its own --name." % out_name
-        )
+            "Give the candidate its own --name." % out_name)
 
     profile = load_profile(args.profile)
     reset_scene()
+
+    # Reference first, and in its own scene pass: importing it after the source
+    # would mix two armatures and two action sets.
+    reference = load_reference_rig(args.reference)
+    reset_scene()
+
     imported = import_source(args.input, profile)
     meshes, armatures, removed = clean(imported, profile)
     if not meshes:
         raise SystemExit("no mesh objects survived cleaning")
     armature = armatures[0] if armatures else None
-    mapping, missing, extra = map_bones(armature, profile)
+    synthesised = synthesise_root(armature) if (armature and profile.get("synthesise_root")) else False
+
+    # ---- gate. Nothing below this line has written a byte. ----------------
+    record = human_rig.analyse(armature, profile)
+    if synthesised:
+        record["mapping"]["root"] = "root"
+        record["missingRequired"] = [b for b in record["missingRequired"] if b != "root"]
+    human_rig.gate(record, args.profile)
+
+    deltas, retarget = {}, {"retargeted": [], "absent": []}
+    if reference:
+        deltas = human_rig.align_rest_pose(armature, record["mapping"], reference["restPose"])
+        retarget = human_rig.retarget_actions(armature, deltas, reference["clips"])
+    else:
+        human_rig.align_rest_pose(armature, record["mapping"], {})
+
     source_root, scale_info = normalise(meshes, armatures, profile, args.height)
-    materials = convert_materials(meshes, args.material_budget)
+    placement = verify_normalised(meshes, armature, args.height)
+    if not placement["allPassed"]:
+        raise human_rig.RigError(
+            "normalisation failed its own checks: %s. Nothing was written."
+            % json.dumps({k: v for k, v in placement.items() if k != "allPassed"}))
+
+    materials = convert_materials(meshes, args.material_budget, enforce=True)
+    poses = human_rig.pose_tests(armature) if armature else {"allPassed": False}
 
     root = empty("UnitRoot", (0, 0, 0), "EXPORT", "PLAIN_AXES")
     root["assetRole"] = args.name
@@ -351,11 +643,12 @@ def main():
     source_root.parent = root
 
     tiers = build_lods(meshes, armature, args.name)
-    for level, made in enumerate(tiers):
+    for made in tiers:
         for obj in made:
             obj.parent = root
     for mesh in meshes:
         bpy.data.objects.remove(mesh, do_unlink=True)
+    lods = verify_lods(tiers, armature)
 
     collision_box("COL_Unit", (0.82, args.height * 1.02, 0.70), (0, args.height * 0.5, 0), root)
 
@@ -365,6 +658,8 @@ def main():
     save_source(blend_path)
     export_glb(glb_path)
 
+    joints = human_rig.verify_joint_order(glb_path, human_rig.LEGACY_BONES)
+
     report = {
         "input": os.path.abspath(args.input),
         "profile": args.profile,
@@ -372,19 +667,29 @@ def main():
         "output": glb_path,
         "outputSha256": file_hash(glb_path),
         "outputBytes": os.path.getsize(glb_path),
+        "referenceRig": args.reference if reference else None,
         "normalisation": scale_info,
+        "placementChecks": placement,
         "targetHeightMetres": args.height,
         "removedNodes": removed,
+        "synthesisedRoot": synthesised,
         "bones": {
-            "mapped": mapping,
-            "missingRequired": missing,
-            "unmapped": extra,
-            "satisfiesLegacyRig": not missing,
+            "mapped": record["mapping"],
+            "missingRequired": record["missingRequired"],
+            "duplicateSourceBones": record["duplicateSourceBones"],
+            "unmappedSource": record["unmappedSource"],
+            "fingerChains": record["fingerChains"],
+            "fingerBoneCount": record["fingerBoneCount"],
+            "satisfiesLegacyRig": not record["missingRequired"],
         },
+        "restPoseDeltas": deltas,
+        "retarget": retarget,
+        "poseTests": poses,
+        "gltfJoints": joints,
         "materials": materials,
+        "lodChecks": lods,
         "lodTriangles": {
-            "LOD%d" % level: triangle_count(made) for level, made in enumerate(tiers)
-        },
+            "LOD%d" % level: triangle_count(made) for level, made in enumerate(tiers)},
         "animations": sorted(a.name for a in bpy.data.actions),
     }
     report_dir = os.path.join(ROOT, ".runtime", "human-adapter")
@@ -392,13 +697,21 @@ def main():
     write_report(os.path.join(report_dir, "%s.report.json" % args.name), report)
 
     print("HUMAN_ADAPTER_OK %s" % glb_path)
-    print("HUMAN_ADAPTER_REPORT %s" % json.dumps(report["lodTriangles"]))
-    if missing:
-        # Loud, and non-zero, because an unmapped required bone means the
-        # existing animation set cannot drive this asset at all.
-        print("HUMAN_ADAPTER_MISSING_BONES %s" % ",".join(missing))
-        raise SystemExit("required bones were not mapped: %s" % ", ".join(missing))
+    print("HUMAN_ADAPTER_SUMMARY %s" % json.dumps({
+        "lod": report["lodTriangles"],
+        "placement": placement["allPassed"],
+        "lodChecks": lods["allPassed"],
+        "poseTests": poses.get("allPassed"),
+        "jointOrder": joints.get("orderMatchesPrefix"),
+        "materials": materials["materialCount"],
+        "fingers": record["fingerBoneCount"],
+        "retargeted": len(retarget["retargeted"]),
+    }))
 
 
 if __name__ == "__main__":
-    main()
+    try:
+        main()
+    except human_rig.RigError as error:
+        # Loud and non-zero, and -- crucially -- raised before export.
+        raise SystemExit("RigError: %s" % error)

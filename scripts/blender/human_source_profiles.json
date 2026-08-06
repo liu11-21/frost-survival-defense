@@ -14,123 +14,460 @@
     "not reach the GLB.",
     "",
     "`up_axis`/`forward_axis` describe what the SOURCE uses. The adapter converts",
-    "to this project's contract: Babylon Y-up, forward +Z, feet on y=0."
+    "to this project's contract: Babylon Y-up, forward +Z, feet on y=0.",
+    "synthesise_root: the source has no dedicated root bone, so the adapter creates one at the origin and parents the pelvis to it. Mapping root and pelvis to the same source bone is a profile bug, not a shortcut."
   ],
   "profiles": {
     "generic-gltf": {
       "label": "Any glTF/GLB with a humanoid skeleton",
-      "extension": [".glb", ".gltf"],
+      "extension": [
+        ".glb",
+        ".gltf"
+      ],
       "up_axis": "Y",
       "forward_axis": "+Z",
       "unit_scale": 1.0,
-      "drop_nodes": ["^Camera", "^Light", "^Lamp", "_IK$", "^CTRL_", "^helper_"],
+      "drop_nodes": [
+        "^Camera",
+        "^Light",
+        "^Lamp",
+        "_IK$",
+        "^CTRL_",
+        "^helper_",
+        "^COL_",
+        "^Icosphere",
+        "^UCX_",
+        "_collision$"
+      ],
       "bones": {
-        "root": ["root", "Root", "Armature"],
-        "pelvis": ["pelvis", "Hips", "hip"],
-        "spine": ["spine", "Spine", "Spine1"],
-        "chest": ["chest", "Spine2", "Chest", "UpperChest"],
-        "neck": ["neck", "Neck"],
-        "head": ["head", "Head"],
-        "upper_arm.L": ["upper_arm.L", "LeftArm", "arm_L", "upperarm_l"],
-        "lower_arm.L": ["lower_arm.L", "LeftForeArm", "forearm_L", "lowerarm_l"],
-        "hand.L": ["hand.L", "LeftHand", "hand_l"],
-        "upper_arm.R": ["upper_arm.R", "RightArm", "arm_R", "upperarm_r"],
-        "lower_arm.R": ["lower_arm.R", "RightForeArm", "forearm_R", "lowerarm_r"],
-        "hand.R": ["hand.R", "RightHand", "hand_r"],
-        "thigh.L": ["thigh.L", "LeftUpLeg", "upperleg_L", "thigh_l"],
-        "shin.L": ["shin.L", "LeftLeg", "lowerleg_L", "calf_l"],
-        "foot.L": ["foot.L", "LeftFoot", "foot_l"],
-        "thigh.R": ["thigh.R", "RightUpLeg", "upperleg_R", "thigh_r"],
-        "shin.R": ["shin.R", "RightLeg", "lowerleg_R", "calf_r"],
-        "foot.R": ["foot.R", "RightFoot", "foot_r"]
+        "root": [
+          "root",
+          "Root",
+          "Armature"
+        ],
+        "pelvis": [
+          "pelvis",
+          "Hips",
+          "hip"
+        ],
+        "spine": [
+          "spine",
+          "Spine",
+          "Spine1"
+        ],
+        "chest": [
+          "chest",
+          "Spine2",
+          "Chest",
+          "UpperChest"
+        ],
+        "neck": [
+          "neck",
+          "Neck"
+        ],
+        "head": [
+          "head",
+          "Head"
+        ],
+        "upper_arm.L": [
+          "upper_arm.L",
+          "LeftArm",
+          "arm_L",
+          "upperarm_l"
+        ],
+        "lower_arm.L": [
+          "lower_arm.L",
+          "LeftForeArm",
+          "forearm_L",
+          "lowerarm_l"
+        ],
+        "hand.L": [
+          "hand.L",
+          "LeftHand",
+          "hand_l"
+        ],
+        "upper_arm.R": [
+          "upper_arm.R",
+          "RightArm",
+          "arm_R",
+          "upperarm_r"
+        ],
+        "lower_arm.R": [
+          "lower_arm.R",
+          "RightForeArm",
+          "forearm_R",
+          "lowerarm_r"
+        ],
+        "hand.R": [
+          "hand.R",
+          "RightHand",
+          "hand_r"
+        ],
+        "thigh.L": [
+          "thigh.L",
+          "LeftUpLeg",
+          "upperleg_L",
+          "thigh_l"
+        ],
+        "shin.L": [
+          "shin.L",
+          "LeftLeg",
+          "lowerleg_L",
+          "calf_l"
+        ],
+        "foot.L": [
+          "foot.L",
+          "LeftFoot",
+          "foot_l"
+        ],
+        "thigh.R": [
+          "thigh.R",
+          "RightUpLeg",
+          "upperleg_R",
+          "thigh_r"
+        ],
+        "shin.R": [
+          "shin.R",
+          "RightLeg",
+          "lowerleg_R",
+          "calf_r"
+        ],
+        "foot.R": [
+          "foot.R",
+          "RightFoot",
+          "foot_r"
+        ]
       },
       "optional_bones": {
-        "clavicle.L": ["clavicle.L", "LeftShoulder", "shoulder_L", "clavicle_l"],
-        "clavicle.R": ["clavicle.R", "RightShoulder", "shoulder_R", "clavicle_r"],
-        "thumb.L": ["thumb.L", "LeftHandThumb1", "thumb01_l"],
-        "thumb.R": ["thumb.R", "RightHandThumb1", "thumb01_r"],
-        "fingers.L": ["fingers.L", "LeftHandIndex1", "index01_l"],
-        "fingers.R": ["fingers.R", "RightHandIndex1", "index01_r"],
-        "toe.L": ["toe.L", "LeftToeBase", "ball_l"],
-        "toe.R": ["toe.R", "RightToeBase", "ball_r"]
-      }
+        "clavicle.L": [
+          "clavicle.L",
+          "LeftShoulder",
+          "shoulder_L",
+          "clavicle_l"
+        ],
+        "clavicle.R": [
+          "clavicle.R",
+          "RightShoulder",
+          "shoulder_R",
+          "clavicle_r"
+        ],
+        "thumb.L": [
+          "thumb.L",
+          "LeftHandThumb1",
+          "thumb01_l"
+        ],
+        "thumb.R": [
+          "thumb.R",
+          "RightHandThumb1",
+          "thumb01_r"
+        ],
+        "toe.L": [
+          "toe.L",
+          "LeftToeBase",
+          "ball_l"
+        ],
+        "toe.R": [
+          "toe.R",
+          "RightToeBase",
+          "ball_r"
+        ],
+        "index.L": [
+          "index.L",
+          "LeftHandIndex1",
+          "finger2-1.L",
+          "index01_l"
+        ],
+        "index.R": [
+          "index.R",
+          "RightHandIndex1",
+          "finger2-1.R",
+          "index01_r"
+        ],
+        "forearm_twist.L": [
+          "forearm_twist.L",
+          "LeftForeArmTwist",
+          "lowerarm_twist01_l"
+        ],
+        "forearm_twist.R": [
+          "forearm_twist.R",
+          "RightForeArmTwist",
+          "lowerarm_twist01_r"
+        ]
+      },
+      "keep_bone_chains": [
+        "thumb",
+        "index",
+        "middle",
+        "ring",
+        "pinky",
+        "little"
+      ]
     },
     "makehuman-fbx": {
       "label": "MakeHuman FBX export (CC0 output -- verify the licence text shipped with your build)",
-      "extension": [".fbx"],
+      "extension": [
+        ".fbx"
+      ],
       "up_axis": "Y",
       "forward_axis": "-Z",
       "unit_scale": 1.0,
-      "drop_nodes": ["^Camera", "^Light", "^Lamp"],
+      "drop_nodes": [
+        "^Camera",
+        "^Light",
+        "^Lamp",
+        "^COL_",
+        "^Icosphere",
+        "^UCX_",
+        "_collision$"
+      ],
       "bones": {
-        "root": ["Root", "root"],
-        "pelvis": ["Hips", "pelvis"],
-        "spine": ["Spine", "spine01"],
-        "chest": ["Spine2", "Spine1", "spine03"],
-        "neck": ["Neck", "neck01"],
-        "head": ["Head", "head"],
-        "upper_arm.L": ["LeftArm", "upperarm01.L"],
-        "lower_arm.L": ["LeftForeArm", "lowerarm01.L"],
-        "hand.L": ["LeftHand", "wrist.L"],
-        "upper_arm.R": ["RightArm", "upperarm01.R"],
-        "lower_arm.R": ["RightForeArm", "lowerarm01.R"],
-        "hand.R": ["RightHand", "wrist.R"],
-        "thigh.L": ["LeftUpLeg", "upperleg01.L"],
-        "shin.L": ["LeftLeg", "lowerleg01.L"],
-        "foot.L": ["LeftFoot", "foot.L"],
-        "thigh.R": ["RightUpLeg", "upperleg01.R"],
-        "shin.R": ["RightLeg", "lowerleg01.R"],
-        "foot.R": ["RightFoot", "foot.R"]
+        "root": [
+          "Root",
+          "root"
+        ],
+        "pelvis": [
+          "Hips",
+          "pelvis"
+        ],
+        "spine": [
+          "Spine",
+          "spine01"
+        ],
+        "chest": [
+          "Spine2",
+          "Spine1",
+          "spine03"
+        ],
+        "neck": [
+          "Neck",
+          "neck01"
+        ],
+        "head": [
+          "Head",
+          "head"
+        ],
+        "upper_arm.L": [
+          "LeftArm",
+          "upperarm01.L"
+        ],
+        "lower_arm.L": [
+          "LeftForeArm",
+          "lowerarm01.L"
+        ],
+        "hand.L": [
+          "LeftHand",
+          "wrist.L"
+        ],
+        "upper_arm.R": [
+          "RightArm",
+          "upperarm01.R"
+        ],
+        "lower_arm.R": [
+          "RightForeArm",
+          "lowerarm01.R"
+        ],
+        "hand.R": [
+          "RightHand",
+          "wrist.R"
+        ],
+        "thigh.L": [
+          "LeftUpLeg",
+          "upperleg01.L"
+        ],
+        "shin.L": [
+          "LeftLeg",
+          "lowerleg01.L"
+        ],
+        "foot.L": [
+          "LeftFoot",
+          "foot.L"
+        ],
+        "thigh.R": [
+          "RightUpLeg",
+          "upperleg01.R"
+        ],
+        "shin.R": [
+          "RightLeg",
+          "lowerleg01.R"
+        ],
+        "foot.R": [
+          "RightFoot",
+          "foot.R"
+        ]
       },
       "optional_bones": {
-        "clavicle.L": ["LeftShoulder", "clavicle.L"],
-        "clavicle.R": ["RightShoulder", "clavicle.R"],
-        "thumb.L": ["LeftHandThumb1", "thumb01.L"],
-        "thumb.R": ["RightHandThumb1", "thumb01.R"],
-        "fingers.L": ["LeftHandIndex1", "finger2-1.L"],
-        "fingers.R": ["RightHandIndex1", "finger2-1.R"],
-        "toe.L": ["LeftToeBase", "toe1-1.L"],
-        "toe.R": ["RightToeBase", "toe1-1.R"]
-      }
+        "clavicle.L": [
+          "LeftShoulder",
+          "clavicle.L"
+        ],
+        "clavicle.R": [
+          "RightShoulder",
+          "clavicle.R"
+        ],
+        "thumb.L": [
+          "LeftHandThumb1",
+          "thumb01.L"
+        ],
+        "thumb.R": [
+          "RightHandThumb1",
+          "thumb01.R"
+        ],
+        "toe.L": [
+          "LeftToeBase",
+          "toe1-1.L"
+        ],
+        "toe.R": [
+          "RightToeBase",
+          "toe1-1.R"
+        ],
+        "index.L": [
+          "index.L",
+          "LeftHandIndex1",
+          "finger2-1.L",
+          "index01_l"
+        ],
+        "index.R": [
+          "index.R",
+          "RightHandIndex1",
+          "finger2-1.R",
+          "index01_r"
+        ],
+        "forearm_twist.L": [
+          "forearm_twist.L",
+          "LeftForeArmTwist",
+          "lowerarm_twist01_l"
+        ],
+        "forearm_twist.R": [
+          "forearm_twist.R",
+          "RightForeArmTwist",
+          "lowerarm_twist01_r"
+        ]
+      },
+      "keep_bone_chains": [
+        "thumb",
+        "index",
+        "middle",
+        "ring",
+        "pinky",
+        "little"
+      ]
     },
     "mixamo-fbx": {
       "label": "Mixamo / Character Creator style FBX (mixamorig: prefix)",
-      "extension": [".fbx"],
+      "extension": [
+        ".fbx"
+      ],
       "up_axis": "Y",
       "forward_axis": "-Z",
       "unit_scale": 0.01,
-      "strip_bone_prefix": ["mixamorig:", "mixamorig1:"],
-      "drop_nodes": ["^Camera", "^Light", "^Lamp"],
+      "strip_bone_prefix": [
+        "mixamorig:",
+        "mixamorig1:"
+      ],
+      "drop_nodes": [
+        "^Camera",
+        "^Light",
+        "^Lamp",
+        "^COL_",
+        "^Icosphere",
+        "^UCX_",
+        "_collision$"
+      ],
       "bones": {
-        "root": ["Hips"],
-        "pelvis": ["Hips"],
-        "spine": ["Spine"],
-        "chest": ["Spine2", "Spine1"],
-        "neck": ["Neck"],
-        "head": ["Head"],
-        "upper_arm.L": ["LeftArm"],
-        "lower_arm.L": ["LeftForeArm"],
-        "hand.L": ["LeftHand"],
-        "upper_arm.R": ["RightArm"],
-        "lower_arm.R": ["RightForeArm"],
-        "hand.R": ["RightHand"],
-        "thigh.L": ["LeftUpLeg"],
-        "shin.L": ["LeftLeg"],
-        "foot.L": ["LeftFoot"],
-        "thigh.R": ["RightUpLeg"],
-        "shin.R": ["RightLeg"],
-        "foot.R": ["RightFoot"]
+        "pelvis": [
+          "Hips"
+        ],
+        "spine": [
+          "Spine"
+        ],
+        "chest": [
+          "Spine2",
+          "Spine1"
+        ],
+        "neck": [
+          "Neck"
+        ],
+        "head": [
+          "Head"
+        ],
+        "upper_arm.L": [
+          "LeftArm"
+        ],
+        "lower_arm.L": [
+          "LeftForeArm"
+        ],
+        "hand.L": [
+          "LeftHand"
+        ],
+        "upper_arm.R": [
+          "RightArm"
+        ],
+        "lower_arm.R": [
+          "RightForeArm"
+        ],
+        "hand.R": [
+          "RightHand"
+        ],
+        "thigh.L": [
+          "LeftUpLeg"
+        ],
+        "shin.L": [
+          "LeftLeg"
+        ],
+        "foot.L": [
+          "LeftFoot"
+        ],
+        "thigh.R": [
+          "RightUpLeg"
+        ],
+        "shin.R": [
+          "RightLeg"
+        ],
+        "foot.R": [
+          "RightFoot"
+        ]
       },
       "optional_bones": {
-        "clavicle.L": ["LeftShoulder"],
-        "clavicle.R": ["RightShoulder"],
-        "thumb.L": ["LeftHandThumb1"],
-        "thumb.R": ["RightHandThumb1"],
-        "fingers.L": ["LeftHandIndex1"],
-        "fingers.R": ["RightHandIndex1"],
-        "toe.L": ["LeftToeBase"],
-        "toe.R": ["RightToeBase"]
-      }
+        "clavicle.L": [
+          "LeftShoulder"
+        ],
+        "clavicle.R": [
+          "RightShoulder"
+        ],
+        "thumb.L": [
+          "LeftHandThumb1"
+        ],
+        "thumb.R": [
+          "RightHandThumb1"
+        ],
+        "toe.L": [
+          "LeftToeBase"
+        ],
+        "toe.R": [
+          "RightToeBase"
+        ],
+        "index.L": [
+          "LeftHandIndex1"
+        ],
+        "index.R": [
+          "RightHandIndex1"
+        ],
+        "forearm_twist.L": [
+          "LeftForeArmTwist"
+        ],
+        "forearm_twist.R": [
+          "RightForeArmTwist"
+        ]
+      },
+      "synthesise_root": true,
+      "keep_bone_chains": [
+        "thumb",
+        "index",
+        "middle",
+        "ring",
+        "pinky",
+        "little"
+      ]
     }
   }
 }
