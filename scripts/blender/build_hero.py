@@ -62,7 +62,7 @@ CHEST_D = 0.224
 WAIST = 0.236
 HIP = 0.268
 LIMB = 0.098
-COAT = (0.146, 0.170, 0.212)
+COAT = (0.340, 0.370, 0.420)
 ACCENT = (0.96, 0.62, 0.20)
 
 
@@ -331,10 +331,10 @@ def make_atlas():
     image = bpy.data.images.new(name, width=size, height=size, alpha=True)
     pixels = array("f", [0.0]) * (size * size * 4)
     trim = tuple(min(1.0, c * 1.42 + 0.05) for c in COAT)
-    leather = (0.236, 0.150, 0.090)
-    glove = (0.192, 0.122, 0.078)
-    metal = (0.196, 0.212, 0.236)
-    edge = (0.360, 0.386, 0.418)
+    leather = (0.446, 0.346, 0.259)
+    glove = (0.397, 0.308, 0.240)
+    metal = (0.402, 0.420, 0.446)
+    edge = (0.564, 0.587, 0.614)
     bands = {0: (COAT, trim, ACCENT, COAT), 1: (leather, glove, leather, leather), 2: (metal, edge, metal, metal)}
     for y in range(size):
         v = y / size

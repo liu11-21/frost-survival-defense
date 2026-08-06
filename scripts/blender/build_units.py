@@ -74,31 +74,31 @@ ARCHETYPES = {
 
 UNITS = {
     # --- allies ---
-    "shield":     dict(arch="heavy",     body=(0.150, 0.230, 0.300), accent=(0.62, 0.80, 0.94), weapon="shield", crest="greatHelm"),
-    "archer":     dict(arch="light",     body=(0.156, 0.212, 0.150), accent=(0.66, 0.82, 0.48), weapon="bow",    crest="hood"),
-    "medic":      dict(arch="light",     body=(0.300, 0.310, 0.320), accent=(0.42, 0.86, 0.66), weapon="staff",  crest="hood"),
-    "flagbearer": dict(arch="commander", body=(0.250, 0.120, 0.108), accent=(0.90, 0.66, 0.22), weapon="banner", crest="crest"),
-    "mage":       dict(arch="caster",    body=(0.140, 0.120, 0.240), accent=(0.66, 0.44, 0.92), weapon="staff",  crest="hat"),
-    "assault":    dict(arch="medium",    body=(0.120, 0.130, 0.160), accent=(0.90, 0.34, 0.24), weapon="dagger", crest="visor"),
-    "engineer":   dict(arch="medium",    body=(0.280, 0.170, 0.078), accent=(0.92, 0.68, 0.22), weapon="wrench", crest="hardhat"),
-    "musketeer":  dict(arch="medium",    body=(0.140, 0.160, 0.216), accent=(0.90, 0.72, 0.28), weapon="musket", crest="tricorne"),
-    "frostmage":  dict(arch="caster",    body=(0.160, 0.290, 0.350), accent=(0.56, 0.88, 0.96), weapon="staff",  crest="iceCrown"),
+    "shield":     dict(arch="heavy",     body=(0.346, 0.439, 0.510), accent=(0.62, 0.80, 0.94), weapon="shield", crest="greatHelm"),
+    "archer":     dict(arch="light",     body=(0.353, 0.420, 0.346), accent=(0.66, 0.82, 0.48), weapon="bow",    crest="hood"),
+    "medic":      dict(arch="light",     body=(0.510, 0.519, 0.528), accent=(0.42, 0.86, 0.66), weapon="staff",  crest="hood"),
+    "flagbearer": dict(arch="commander", body=(0.460, 0.305, 0.288), accent=(0.90, 0.66, 0.22), weapon="banner", crest="crest"),
+    "mage":       dict(arch="caster",    body=(0.333, 0.305, 0.449), accent=(0.66, 0.44, 0.92), weapon="staff",  crest="hat"),
+    "assault":    dict(arch="medium",    body=(0.305, 0.319, 0.358), accent=(0.90, 0.34, 0.24), weapon="dagger", crest="visor"),
+    "engineer":   dict(arch="medium",    body=(0.490, 0.370, 0.240), accent=(0.92, 0.68, 0.22), weapon="wrench", crest="hardhat"),
+    "musketeer":  dict(arch="medium",    body=(0.333, 0.358, 0.424), accent=(0.90, 0.72, 0.28), weapon="musket", crest="tricorne"),
+    "frostmage":  dict(arch="caster",    body=(0.358, 0.500, 0.556), accent=(0.56, 0.88, 0.96), weapon="staff",  crest="iceCrown"),
     # --- enemies ---
-    "grunt":      dict(arch="medium",    body=(0.180, 0.126, 0.240), accent=(0.66, 0.44, 0.90), weapon="club",   crest="horn"),
-    "slinger":    dict(arch="light",     body=(0.150, 0.160, 0.270), accent=(0.46, 0.72, 0.94), weapon="sling",  crest="hood"),
-    "bruiser":    dict(arch="heavy",     body=(0.146, 0.120, 0.208), accent=(0.72, 0.44, 0.92), weapon="club",   crest="horn"),
-    "marksman":   dict(arch="light",     body=(0.116, 0.180, 0.256), accent=(0.46, 0.80, 0.94), weapon="bow",    crest="visor"),
-    "juggernaut": dict(arch="heavy",     body=(0.112, 0.124, 0.164), accent=(0.76, 0.44, 0.92), weapon="shield", crest="greatHelm"),
-    "bombardier": dict(arch="caster",    body=(0.230, 0.120, 0.260), accent=(0.94, 0.40, 0.80), weapon="staff",  crest="hood"),
-    "boss":       dict(arch="commander", body=(0.086, 0.150, 0.216), accent=(0.40, 0.86, 0.96), weapon="club",   crest="crown"),
-    "breacher":   dict(arch="heavy",     body=(0.170, 0.200, 0.250), accent=(0.60, 0.84, 0.96), weapon="ram",    crest="greatHelm"),
-    "icearmor":   dict(arch="heavy",     body=(0.170, 0.320, 0.390), accent=(0.68, 0.90, 0.98), weapon="shield", crest="iceCrown"),
-    "commander":  dict(arch="commander", body=(0.160, 0.110, 0.230), accent=(0.92, 0.68, 0.26), weapon="banner", crest="crown"),
-    "bomber":     dict(arch="medium",    body=(0.120, 0.270, 0.290), accent=(0.50, 0.92, 0.94), weapon="none",   crest="core"),
-    "flyingMelee":       dict(arch="flying", body=(0.156, 0.118, 0.250), accent=(0.46, 0.84, 0.96), weapon="club",   crest="horn"),
-    "flyingEliteArcher": dict(arch="flying", body=(0.104, 0.180, 0.262), accent=(0.44, 0.92, 0.96), weapon="bow",    crest="visor"),
-    "flyingBomber":      dict(arch="flying", body=(0.230, 0.110, 0.268), accent=(0.94, 0.38, 0.86), weapon="staff",  crest="core"),
-    "flyingColossus":    dict(arch="flying", body=(0.086, 0.156, 0.216), accent=(0.40, 0.90, 0.96), weapon="shield", crest="crown"),
+    "grunt":      dict(arch="medium",    body=(0.383, 0.314, 0.449), accent=(0.66, 0.44, 0.90), weapon="club",   crest="horn"),
+    "slinger":    dict(arch="light",     body=(0.346, 0.358, 0.480), accent=(0.46, 0.72, 0.94), weapon="sling",  crest="hood"),
+    "bruiser":    dict(arch="heavy",     body=(0.340, 0.305, 0.415), accent=(0.72, 0.44, 0.92), weapon="club",   crest="horn"),
+    "marksman":   dict(arch="light",     body=(0.299, 0.383, 0.466), accent=(0.46, 0.80, 0.94), weapon="bow",    crest="visor"),
+    "juggernaut": dict(arch="heavy",     body=(0.293, 0.311, 0.363), accent=(0.76, 0.44, 0.92), weapon="shield", crest="greatHelm"),
+    "bombardier": dict(arch="caster",    body=(0.439, 0.305, 0.470), accent=(0.94, 0.40, 0.80), weapon="staff",  crest="hood"),
+    "boss":       dict(arch="commander", body=(0.254, 0.346, 0.424), accent=(0.40, 0.86, 0.96), weapon="club",   crest="crown"),
+    "breacher":   dict(arch="heavy",     body=(0.370, 0.406, 0.460), accent=(0.60, 0.84, 0.96), weapon="ram",    crest="greatHelm"),
+    "icearmor":   dict(arch="heavy",     body=(0.370, 0.528, 0.590), accent=(0.68, 0.90, 0.98), weapon="shield", crest="iceCrown"),
+    "commander":  dict(arch="commander", body=(0.358, 0.290, 0.439), accent=(0.92, 0.68, 0.26), weapon="banner", crest="crown"),
+    "bomber":     dict(arch="medium",    body=(0.305, 0.480, 0.500), accent=(0.50, 0.92, 0.94), weapon="none",   crest="core"),
+    "flyingMelee":       dict(arch="flying", body=(0.353, 0.302, 0.460), accent=(0.46, 0.84, 0.96), weapon="club",   crest="horn"),
+    "flyingEliteArcher": dict(arch="flying", body=(0.281, 0.383, 0.473), accent=(0.44, 0.92, 0.96), weapon="bow",    crest="visor"),
+    "flyingBomber":      dict(arch="flying", body=(0.439, 0.290, 0.479), accent=(0.94, 0.38, 0.86), weapon="staff",  crest="core"),
+    "flyingColossus":    dict(arch="flying", body=(0.254, 0.353, 0.424), accent=(0.40, 0.90, 0.96), weapon="shield", crest="crown"),
 }
 
 SURFACES = {"body": (0, 0), "trim": (0, 1), "accent": (0, 2),
@@ -484,10 +484,10 @@ def make_atlas(name, body, accent):
     image = bpy.data.images.new(name, width=size, height=size, alpha=True)
     pixels = array("f", [0.0]) * (size * size * 4)
     trim = tuple(min(1.0, c * 1.45 + 0.06) for c in body)
-    leather = (0.230, 0.140, 0.082)
-    grip = (0.170, 0.108, 0.070)
-    metal = (0.190, 0.205, 0.228)
-    edge = (0.330, 0.356, 0.386)
+    leather = (0.439, 0.333, 0.247)
+    grip = (0.370, 0.288, 0.225)
+    metal = (0.395, 0.412, 0.437)
+    edge = (0.537, 0.561, 0.587)
     bands = {0: (body, trim, accent, body), 1: (leather, grip, leather, leather), 2: (metal, edge, metal, metal)}
     for y in range(size):
         v = y / size

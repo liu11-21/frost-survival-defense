@@ -45,32 +45,39 @@ SURFACES = {"wall": (0, 0), "roof": (0, 1), "accent": (0, 2),
 MATERIALS = {}
 
 # Footprint half-width / half-depth, wall height, roof style and pitch.
+#
+# Economy walls were raised about 30% and their roof peaks by more, because
+# at the gameplay camera these sat no taller than the terrain rock they were
+# standing next to and the pitched roofs were too shallow to read as roofs.
+# Footprints are unchanged, so slot layout and placement checks still hold.
+# Attack emplacements keep their wall and peak untouched: `muzzle` hangs off
+# yawPivot at `top + 0.10`, so their height is where projectiles spawn.
 # These are what make a silhouette identifiable from the gameplay camera.
 FACILITIES = {
     # --- economy -----------------------------------------------------------
-    "mine":           dict(kind="economy", w=1.30, d=1.15, wall=1.15, roof="pitched", peak=0.85,
-                           body=(0.190, 0.186, 0.196), accent=(0.42, 0.62, 0.70), prop="headframe"),
-    "gold_mine":      dict(kind="economy", w=1.30, d=1.15, wall=1.15, roof="pitched", peak=0.85,
-                           body=(0.214, 0.178, 0.140), accent=(1.00, 0.66, 0.14), prop="headframe"),
-    "lumberyard":     dict(kind="economy", w=1.55, d=1.20, wall=0.95, roof="pitched", peak=0.60,
-                           body=(0.230, 0.148, 0.086), accent=(0.82, 0.48, 0.18), prop="sawblade"),
-    "warehouse":      dict(kind="economy", w=1.70, d=1.30, wall=1.05, roof="barrel", peak=0.70,
-                           body=(0.196, 0.164, 0.126), accent=(0.94, 0.70, 0.30), prop="crates"),
-    "recruit_hall":   dict(kind="economy", w=1.35, d=1.20, wall=1.55, roof="pitched", peak=0.95,
-                           body=(0.150, 0.146, 0.196), accent=(0.84, 0.32, 0.20), prop="banner"),
-    "auto_collector": dict(kind="economy", w=0.95, d=0.95, wall=1.70, roof="flat", peak=0.25,
-                           body=(0.110, 0.150, 0.170), accent=(0.30, 1.00, 0.64), prop="pylon"),
-    "auto_rebuilder": dict(kind="economy", w=0.95, d=0.95, wall=1.70, roof="flat", peak=0.25,
-                           body=(0.116, 0.140, 0.176), accent=(0.30, 0.72, 1.00), prop="pylon"),
+    "mine":           dict(kind="economy", w=1.30, d=1.15, wall=1.52, roof="pitched", peak=1.18,
+                           body=(0.439, 0.434, 0.446), accent=(0.42, 0.62, 0.70), prop="headframe"),
+    "gold_mine":      dict(kind="economy", w=1.30, d=1.15, wall=1.52, roof="pitched", peak=1.18,
+                           body=(0.465, 0.425, 0.378), accent=(1.00, 0.66, 0.14), prop="headframe"),
+    "lumberyard":     dict(kind="economy", w=1.55, d=1.20, wall=1.28, roof="pitched", peak=0.98,
+                           body=(0.482, 0.388, 0.296), accent=(0.82, 0.48, 0.18), prop="sawblade"),
+    "warehouse":      dict(kind="economy", w=1.70, d=1.30, wall=1.40, roof="barrel", peak=1.02,
+                           body=(0.446, 0.408, 0.358), accent=(0.94, 0.70, 0.30), prop="crates"),
+    "recruit_hall":   dict(kind="economy", w=1.35, d=1.20, wall=2.02, roof="pitched", peak=1.34,
+                           body=(0.390, 0.385, 0.446), accent=(0.84, 0.32, 0.20), prop="banner"),
+    "auto_collector": dict(kind="economy", w=0.95, d=0.95, wall=2.08, roof="flat", peak=0.34,
+                           body=(0.334, 0.390, 0.415), accent=(0.30, 1.00, 0.64), prop="pylon"),
+    "auto_rebuilder": dict(kind="economy", w=0.95, d=0.95, wall=2.08, roof="flat", peak=0.34,
+                           body=(0.344, 0.378, 0.423), accent=(0.30, 0.72, 1.00), prop="pylon"),
     # --- attack ------------------------------------------------------------
     "crossbow_tower": dict(kind="attack", w=0.98, d=0.98, wall=2.05, roof="battlement", peak=0.30,
-                           body=(0.206, 0.150, 0.096), accent=(0.94, 0.60, 0.20), barrel="bolt"),
+                           body=(0.456, 0.390, 0.313), accent=(0.94, 0.60, 0.20), barrel="bolt"),
     "frost_tower":    dict(kind="attack", w=0.92, d=0.92, wall=2.25, roof="spire", peak=0.75,
-                           body=(0.132, 0.250, 0.320), accent=(0.44, 0.94, 1.00), barrel="crystal"),
+                           body=(0.366, 0.502, 0.568), accent=(0.44, 0.94, 1.00), barrel="crystal"),
     "sniper_tower":   dict(kind="attack", w=0.86, d=0.86, wall=2.60, roof="flat", peak=0.22,
-                           body=(0.166, 0.174, 0.206), accent=(0.52, 0.86, 1.00), barrel="long"),
+                           body=(0.410, 0.420, 0.456), accent=(0.52, 0.86, 1.00), barrel="long"),
     "mortar":         dict(kind="attack", w=1.25, d=1.25, wall=0.80, roof="flat", peak=0.18,
-                           body=(0.150, 0.156, 0.180), accent=(1.00, 0.34, 0.12), barrel="stub"),
+                           body=(0.390, 0.398, 0.427), accent=(1.00, 0.34, 0.12), barrel="stub"),
 }
 
 BARREL_LENGTH = {"bolt": 1.15, "crystal": 0.85, "long": 1.55, "stub": 0.72}
@@ -206,10 +213,10 @@ def make_atlas(key, body, accent):
         bpy.data.images.remove(image)
     image = bpy.data.images.new(name, width=size, height=size, alpha=True)
     pixels = array("f", [0.0]) * (size * size * 4)
-    roof = tuple(max(0.0, c * 0.72) for c in body)
-    timber = (0.196, 0.126, 0.076)
-    trim = (0.268, 0.180, 0.108)
-    metal = (0.190, 0.205, 0.228)
+    roof = tuple(max(0.0, c * 0.68) for c in body)
+    timber = (0.446, 0.358, 0.278)
+    trim = (0.520, 0.427, 0.332)
+    metal = (0.439, 0.455, 0.480)
     bands = {0: (body, roof, accent, body), 1: (timber, trim, timber, timber), 2: (metal, accent, metal, metal)}
     for y in range(size):
         v = y / size

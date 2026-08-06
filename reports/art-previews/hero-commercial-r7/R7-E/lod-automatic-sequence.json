@@ -244,8 +244,8 @@
           ]
         }
       },
-      "fps": 2.07,
-      "drawCalls": 5619,
+      "fps": 2.73,
+      "drawCalls": 5986,
       "activeMeshes": 158,
       "animationGroups": [
         "hero.player:Idle",
@@ -516,8 +516,8 @@
           ]
         }
       },
-      "fps": 2.07,
-      "drawCalls": 5619,
+      "fps": 2.73,
+      "drawCalls": 5986,
       "activeMeshes": 158,
       "animationGroups": [
         "hero.player:Idle",
@@ -775,9 +775,9 @@
           ]
         }
       },
-      "fps": 2.07,
-      "drawCalls": 5795,
-      "activeMeshes": 170,
+      "fps": 2.73,
+      "drawCalls": 6176,
+      "activeMeshes": 184,
       "animationGroups": [
         "hero.player:Idle",
         "hero.player:Walk",
@@ -1047,9 +1047,9 @@
           ]
         }
       },
-      "fps": 2.07,
-      "drawCalls": 5795,
-      "activeMeshes": 170,
+      "fps": 2.73,
+      "drawCalls": 6176,
+      "activeMeshes": 184,
       "animationGroups": [
         "hero.player:Idle",
         "hero.player:Walk",
@@ -1306,8 +1306,8 @@
           ]
         }
       },
-      "fps": 2.07,
-      "drawCalls": 5942,
+      "fps": 2.73,
+      "drawCalls": 6323,
       "activeMeshes": 141,
       "animationGroups": [
         "hero.player:Idle",
@@ -1578,8 +1578,8 @@
           ]
         }
       },
-      "fps": 2.07,
-      "drawCalls": 5942,
+      "fps": 2.73,
+      "drawCalls": 6323,
       "activeMeshes": 141,
       "animationGroups": [
         "hero.player:Idle",
