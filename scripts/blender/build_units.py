@@ -84,21 +84,31 @@ UNITS = {
     "musketeer":  dict(arch="medium",    body=(0.333, 0.358, 0.424), accent=(0.90, 0.72, 0.28), weapon="musket", crest="tricorne"),
     "frostmage":  dict(arch="caster",    body=(0.358, 0.500, 0.556), accent=(0.56, 0.88, 0.96), weapon="staff",  crest="iceCrown"),
     # --- enemies ---
-    "grunt":      dict(arch="medium",    body=(0.383, 0.314, 0.449), accent=(0.66, 0.44, 0.90), weapon="club",   crest="horn"),
-    "slinger":    dict(arch="light",     body=(0.346, 0.358, 0.480), accent=(0.46, 0.72, 0.94), weapon="sling",  crest="hood"),
-    "bruiser":    dict(arch="heavy",     body=(0.340, 0.305, 0.415), accent=(0.72, 0.44, 0.92), weapon="club",   crest="horn"),
-    "marksman":   dict(arch="light",     body=(0.299, 0.383, 0.466), accent=(0.46, 0.80, 0.94), weapon="bow",    crest="visor"),
-    "juggernaut": dict(arch="heavy",     body=(0.293, 0.311, 0.363), accent=(0.76, 0.44, 0.92), weapon="shield", crest="greatHelm"),
-    "bombardier": dict(arch="caster",    body=(0.439, 0.305, 0.470), accent=(0.94, 0.40, 0.80), weapon="staff",  crest="hood"),
-    "boss":       dict(arch="commander", body=(0.254, 0.346, 0.424), accent=(0.40, 0.86, 0.96), weapon="club",   crest="crown"),
-    "breacher":   dict(arch="heavy",     body=(0.370, 0.406, 0.460), accent=(0.60, 0.84, 0.96), weapon="ram",    crest="greatHelm"),
-    "icearmor":   dict(arch="heavy",     body=(0.370, 0.528, 0.590), accent=(0.68, 0.90, 0.98), weapon="shield", crest="iceCrown"),
-    "commander":  dict(arch="commander", body=(0.358, 0.290, 0.439), accent=(0.92, 0.68, 0.26), weapon="banner", crest="crown"),
-    "bomber":     dict(arch="medium",    body=(0.305, 0.480, 0.500), accent=(0.50, 0.92, 0.94), weapon="none",   crest="core"),
-    "flyingMelee":       dict(arch="flying", body=(0.353, 0.302, 0.460), accent=(0.46, 0.84, 0.96), weapon="club",   crest="horn"),
-    "flyingEliteArcher": dict(arch="flying", body=(0.281, 0.383, 0.473), accent=(0.44, 0.92, 0.96), weapon="bow",    crest="visor"),
-    "flyingBomber":      dict(arch="flying", body=(0.439, 0.290, 0.479), accent=(0.94, 0.38, 0.86), weapon="staff",  crest="core"),
-    "flyingColossus":    dict(arch="flying", body=(0.254, 0.353, 0.424), accent=(0.40, 0.90, 0.96), weapon="shield", crest="crown"),
+    #
+    # Faction law: enemy bodies live in the plum band and their accents run
+    # crimson to violet. Before this the two sides shared a palette --
+    # `juggernaut` at (0.293, 0.311, 0.363) against the ally `assault` at
+    # (0.305, 0.319, 0.358) is the same colour -- and half of the attackers
+    # carried the cyan accent the friendly casters use. Standing side by side
+    # at the gameplay camera there was nothing to tell a player which figures
+    # were coming for the furnace. Hue is rotated at constant luminance and
+    # saturation is capped, so light enemies stay light, dark ones stay dark,
+    # nothing turns neon, and each enemy still reads against the others.
+    "grunt":      dict(arch="medium",    body=(0.465, 0.297, 0.376), accent=(0.86, 0.43, 0.42), weapon="club",   crest="horn"),
+    "slinger":    dict(arch="light",     body=(0.499, 0.319, 0.412), accent=(0.98, 0.55, 0.62), weapon="sling",  crest="hood"),
+    "bruiser":    dict(arch="heavy",     body=(0.440, 0.281, 0.358), accent=(0.89, 0.44, 0.43), weapon="club",   crest="horn"),
+    "marksman":   dict(arch="light",     body=(0.530, 0.317, 0.434), accent=(0.98, 0.60, 0.69), weapon="bow",    crest="visor"),
+    "juggernaut": dict(arch="heavy",     body=(0.426, 0.272, 0.354), accent=(0.90, 0.45, 0.43), weapon="shield", crest="greatHelm"),
+    "bombardier": dict(arch="caster",    body=(0.491, 0.298, 0.385), accent=(0.91, 0.45, 0.39), weapon="staff",  crest="hood"),
+    "boss":       dict(arch="commander", body=(0.499, 0.276, 0.399), accent=(0.98, 0.59, 0.71), weapon="club",   crest="crown"),
+    "breacher":   dict(arch="heavy",     body=(0.551, 0.352, 0.460), accent=(0.98, 0.70, 0.76), weapon="ram",    crest="greatHelm"),
+    "icearmor":   dict(arch="heavy",     body=(0.725, 0.422, 0.593), accent=(0.98, 0.78, 0.83), weapon="shield", crest="iceCrown"),
+    "commander":  dict(arch="commander", body=(0.442, 0.274, 0.354), accent=(0.98, 0.43, 0.96), weapon="banner", crest="crown"),
+    "bomber":     dict(arch="medium",    body=(0.658, 0.371, 0.537), accent=(0.98, 0.69, 0.80), weapon="none",   crest="core"),
+    "flyingMelee":       dict(arch="flying", body=(0.457, 0.281, 0.366), accent=(0.98, 0.62, 0.72), weapon="club",   crest="horn"),
+    "flyingEliteArcher": dict(arch="flying", body=(0.556, 0.304, 0.443), accent=(0.98, 0.65, 0.78), weapon="bow",    crest="visor"),
+    "flyingBomber":      dict(arch="flying", body=(0.502, 0.281, 0.381), accent=(0.93, 0.43, 0.38), weapon="staff",  crest="core"),
+    "flyingColossus":    dict(arch="flying", body=(0.507, 0.280, 0.405), accent=(0.98, 0.61, 0.75), weapon="shield", crest="crown"),
 }
 
 SURFACES = {"body": (0, 0), "trim": (0, 1), "accent": (0, 2),
@@ -227,26 +237,26 @@ def add_body(level, a, cfg):
             (1.00 * h, section(n_l, lb * 0.86, lb * 0.88, lb * 0.86, 2.6, centre_x=sgn * (sh * 1.02))),
             (0.90 * h, section(n_l, lb * 0.78, lb * 0.80, lb * 0.80, 2.6, centre_x=sgn * (sh * 1.02), centre_z=0.012)),
         ], "body", lambda y, s=side: arm_weights(s, y), cap_bottom=False, cap_top=False)
-            # Hand: a cuff, a palm markedly wider than it is thick, a finger
-            # block angled forward, and a thumb. This was a single rounded
-            # taper -- a mitten -- so every arm in the roster simply stopped.
-            # The cuff is what does the work: a band in a different surface at
-            # the wrist is the cue that says "the sleeve ends and a hand
-            # begins", and it survives to LOD1 where the thumb does not.
-            aw = lambda y, s=side: arm_weights(s, y)
-            b.sweep([
-                (0.938 * h, section(n_l, lb * 0.86, lb * 0.86, lb * 0.86, 2.5, centre_x=sgn * (sh * 1.02), centre_z=0.012)),
-                (0.900 * h, section(n_l, lb * 0.96, lb * 0.84, lb * 0.84, 2.8, centre_x=sgn * (sh * 1.01), centre_z=0.022)),
-            ], "grip", aw, cap_bottom=False, cap_top=False)
-            b.sweep([
-                (0.900 * h, section(n_l, lb * 1.02, lb * 0.80, lb * 0.80, 3.0, centre_x=sgn * (sh * 1.01), centre_z=0.026)),
-                (0.838 * h, section(n_l, lb * 1.10, lb * 0.84, lb * 0.82, 3.2, centre_x=sgn * (sh * 1.00), centre_z=0.048)),
-                (0.786 * h, section(n_l, lb * 1.02, lb * 0.78, lb * 0.76, 3.0, centre_x=sgn * (sh * 0.99), centre_z=0.066)),
-                (0.752 * h, section(n_l, lb * 0.72, lb * 0.60, lb * 0.58, 2.6, centre_x=sgn * (sh * 0.98), centre_z=0.076)),
-            ], "leather", aw, cap_bottom=False)
-            if level == 0:
-                b.box((sgn * sh * 0.95, 0.866 * h, 0.074), (lb * 0.42, lb * 0.86, lb * 0.52), "leather",
-                      blend(f"hand.{side}", f"lower_arm.{side}", 0.10), rotate_z=sgn * 0.30, taper=0.78)
+        # Hand: a cuff, a palm markedly wider than it is thick, a finger
+        # block angled forward, and a thumb. This was a single rounded
+        # taper -- a mitten -- so every arm in the roster simply stopped.
+        # The cuff is what does the work: a band in a different surface at
+        # the wrist is the cue that says "the sleeve ends and a hand
+        # begins", and it survives to LOD1 where the thumb does not.
+        aw = lambda y, s=side: arm_weights(s, y)
+        b.sweep([
+            (0.938 * h, section(n_l, lb * 0.86, lb * 0.86, lb * 0.86, 2.5, centre_x=sgn * (sh * 1.02), centre_z=0.012)),
+            (0.900 * h, section(n_l, lb * 0.96, lb * 0.84, lb * 0.84, 2.8, centre_x=sgn * (sh * 1.01), centre_z=0.022)),
+        ], "grip", aw, cap_bottom=False, cap_top=False)
+        b.sweep([
+            (0.900 * h, section(n_l, lb * 1.02, lb * 0.80, lb * 0.80, 3.0, centre_x=sgn * (sh * 1.01), centre_z=0.026)),
+            (0.838 * h, section(n_l, lb * 1.10, lb * 0.84, lb * 0.82, 3.2, centre_x=sgn * (sh * 1.00), centre_z=0.048)),
+            (0.786 * h, section(n_l, lb * 1.02, lb * 0.78, lb * 0.76, 3.0, centre_x=sgn * (sh * 0.99), centre_z=0.066)),
+            (0.752 * h, section(n_l, lb * 0.72, lb * 0.60, lb * 0.58, 2.6, centre_x=sgn * (sh * 0.98), centre_z=0.076)),
+        ], "leather", aw, cap_bottom=False)
+        if level == 0:
+            b.box((sgn * sh * 0.95, 0.866 * h, 0.074), (lb * 0.42, lb * 0.86, lb * 0.52), "leather",
+                  blend(f"hand.{side}", f"lower_arm.{side}", 0.10), rotate_z=sgn * 0.30, taper=0.78)
 
     if a["skirt"]:
         # Casters get a flared robe instead of legs: an unmistakable

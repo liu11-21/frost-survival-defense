@@ -90,9 +90,19 @@ const result = invokeBlender(
 if (result.stdout) process.stdout.write(result.stdout);
 if (result.stderr) process.stderr.write(result.stderr);
 
+// A compile-time error -- SyntaxError, IndentationError, TabError -- is
+// reported by Blender WITHOUT a "Traceback" header, because the module never
+// starts executing. The first version of this guard only looked for the
+// header, so an IndentationError in build_units.py slipped through: the
+// command reported success, twenty-four unit .glb files silently kept their
+// previous contents, and a commit went out claiming work those artifacts did
+// not contain. Match the exception line itself, not the header.
 const output = `${result.stdout ?? ""}${result.stderr ?? ""}`;
-if (/Traceback \(most recent call last\)/.test(output)) {
-  console.error(`\nrun-blender: ${script} raised a Python exception (Blender still exited ${result.status}).`);
+const failure =
+  /Traceback \(most recent call last\)/.exec(output) ??
+  /^(?:\w+\.)*(?:Syntax|Indentation|Tab|Name|Type|Attribute|Value|Key|Index|Import|Zero.*Division|Runtime|OS|IO|Assertion|NotImplemented)Error:.*$/m.exec(output);
+if (failure) {
+  console.error(`\nrun-blender: ${script} failed with "${failure[0].trim()}" (Blender still exited ${result.status}).`);
   console.error("The asset on disk is now stale. Treat any suite that passes against it as meaningless.");
   process.exit(1);
 }
