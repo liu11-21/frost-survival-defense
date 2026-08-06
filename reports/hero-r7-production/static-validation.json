@@ -1,18 +1,18 @@
 {
-  "generatedAt": "2026-08-06T12:43:18.689Z",
+  "generatedAt": "2026-08-06T13:21:36.910Z",
   "asset": "hero",
   "sourcePath": "assets-source/blender/characters/hero.blend",
   "glbPath": "public/assets/models/characters/hero.glb",
   "status": "pass",
   "source": {
     "commit": "6da6bd523a0545bdc02c3a6ef1d78ab17cb68140",
-    "bytes": 1179022,
-    "sha256": "354127a1496eebc183ab5a5a23a88ed6dab5df57bc04c1a11ea3b16f192c2437",
+    "bytes": 1229231,
+    "sha256": "3fb37f06f341908c595a071c05422f9d84a1d5c286e8287c11c1fab37b0fd05a",
     "lfsPointer": false
   },
   "glb": {
-    "sha256": "1856b619e53e18eb25903fd659ca78ff976a4fb704eb46a79ce1898f6350582a",
-    "bytes": 1347236,
+    "sha256": "5c122206da9a40832ff025dcf0640101be41ffa0b7cf7348f98bb2cb6091f572",
+    "bytes": 1477912,
     "assetVersion": "2.0",
     "nodes": 31,
     "meshes": 6,
@@ -29,11 +29,11 @@
       "Hit",
       "Death"
     ],
-    "triangles": 5096,
+    "triangles": 7468,
     "lodTriangles": {
-      "LOD0": 2756,
-      "LOD1": 1572,
-      "LOD2": 768
+      "LOD0": 4072,
+      "LOD1": 2432,
+      "LOD2": 964
     },
     "lodRenderPrimitives": {
       "LOD0": 5,

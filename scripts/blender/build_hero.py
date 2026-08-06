@@ -34,10 +34,10 @@ from common import (  # noqa: E402
     collision_box, empty, export_glb, material, orient_for_babylon,
     reset_scene, save_source, collection,
 )
-from authoring import MeshBuilder, arc, section  # noqa: E402
+from authoring import MeshBuilder, arc, section, super_arc, thin  # noqa: E402
 
-SURFACES = {"coat": (0, 0), "trim": (0, 1), "accent": (0, 2),
-            "leather": (1, 0), "glove": (1, 1),
+SURFACES = {"coat": (0, 0), "trim": (0, 1), "accent": (0, 2), "beard": (0, 3),
+            "leather": (1, 0), "glove": (1, 1), "skin": (1, 2),
             "metal": (2, 0), "edge": (2, 1)}
 MATERIALS = {}
 BONE_ORDER = ("root", "pelvis", "spine", "chest", "neck", "head",
@@ -62,7 +62,7 @@ CHEST_D = 0.224
 WAIST = 0.236
 HIP = 0.268
 LIMB = 0.098
-COAT = (0.340, 0.370, 0.420)
+COAT = (0.284, 0.312, 0.368)
 ACCENT = (0.96, 0.62, 0.20)
 
 
@@ -139,6 +139,51 @@ def add_body(level):
         (0.815 * H, section(n_t, WAIST * 1.08, WAIST * 0.78, WAIST * 0.82, 2.8)),
     ], "leather", torso_weights, cap_bottom=False, cap_top=False)
 
+    # Cuirass over the coat: the rank marker that works from every angle and
+    # at every distance, because it changes the torso's outline rather than
+    # its colour. Bright `edge` rims at the collar and the waist, where a real
+    # breastplate is turned over and is thickest.
+    b.sweep(thin([
+        (0.98 * H, section(n_t, WAIST * 1.10, WAIST * 0.80, WAIST * 0.80, 3.4)),
+        (1.06 * H, section(n_t, WAIST * 1.22, WAIST * 0.86, WAIST * 0.84, 3.5)),
+        (1.16 * H, section(n_t, SHOULDER * 0.98, CHEST_D * 1.02, CHEST_D * 0.92, 3.6)),
+        (1.26 * H, section(n_t, SHOULDER * 1.00, CHEST_D * 1.03, CHEST_D * 0.93, 3.5)),
+        (1.33 * H, section(n_t, SHOULDER * 0.93, CHEST_D * 0.96, CHEST_D * 0.90, 3.2)),
+    ], level), "metal", torso_weights, cap_bottom=False, cap_top=False)
+    if level <= 1:
+        # Keel ridge down the centre of the breastplate. A flat plate needs one
+        # hard vertical to break the highlight into two planes; without it the
+        # whole chest takes a single specular blob and reads as a balloon.
+        b.prism([
+            (-SHOULDER * 0.075, 1.30 * H), (SHOULDER * 0.075, 1.30 * H),
+            (SHOULDER * 0.055, 0.99 * H), (-SHOULDER * 0.055, 0.99 * H),
+        ], CHEST_D * 1.045, SHOULDER * 0.115, "edge", blend("chest", "spine", 0.30))
+    b.sweep([
+        (1.330 * H, section(n_t, SHOULDER * 0.93, CHEST_D * 0.96, CHEST_D * 0.90, 3.2)),
+        (1.346 * H, section(n_t, SHOULDER * 0.95, CHEST_D * 0.98, CHEST_D * 0.92, 3.2)),
+        (1.360 * H, section(n_t, SHOULDER * 0.84, CHEST_D * 0.87, CHEST_D * 0.83, 3.0)),
+    ], "edge", torso_weights, cap_bottom=False, cap_top=False)
+    b.sweep([
+        (0.995 * H, section(n_t, WAIST * 1.20, WAIST * 0.91, WAIST * 0.87, 2.9)),
+        (0.965 * H, section(n_t, WAIST * 1.10, WAIST * 0.84, WAIST * 0.80, 2.9)),
+    ], "edge", torso_weights, cap_bottom=False, cap_top=False)
+
+    # Faulds: plate hanging over the coat skirt at the hip, so the armour
+    # reads as a set rather than as a chest panel stuck on a civilian coat.
+    b.sweep([
+        (0.760 * H, section(n_t, WAIST * 1.14, WAIST * 0.84, WAIST * 0.88, 2.7)),
+        (0.665 * H, section(n_t, HIP * 1.10, HIP * 0.80, HIP * 0.86, 2.5)),
+        (0.620 * H, section(n_t, HIP * 1.16, HIP * 0.84, HIP * 0.90, 2.5)),
+    ], "metal", lambda y: blend("pelvis", "spine", 0.28), cap_bottom=False, cap_top=False)
+
+    if level <= 1:
+        # Baldric across the chest. A hard diagonal is the fastest way to break
+        # a symmetric torso, and the Hero was perfectly symmetric front-on.
+        b.prism([
+            (-SHOULDER * 0.66, 1.32 * H), (-SHOULDER * 0.44, 1.36 * H),
+            (SHOULDER * 0.56, 0.94 * H), (SHOULDER * 0.38, 0.90 * H),
+        ], CHEST_D * 1.12, LIMB * 0.26, "leather", blend("chest", "spine", 0.30))
+
     # Cape hanging off the back: pure silhouette, and the clearest read that
     # this is the player and not another trooper.
     #
@@ -167,41 +212,94 @@ def add_body(level):
         (1.42 * H, section(n_h, 0.078, 0.078, 0.078, 2.4)),
         (1.53 * H, section(n_h, 0.074, 0.076, 0.076, 2.4)),
     ], "coat", head_weights, cap_bottom=False, cap_top=False)
-    hd = 0.132
+    hd = 0.142
+    fw = blend("head", "neck", 0.10)
+
+    # The Hero's head was one swept mass of coat cloth with a metal band, a
+    # centre bar and two dark slits on the front -- the same masked-dummy
+    # construction the Warrior audit rejected, on the character the player
+    # is supposed to identify with. It is now a human skull in `skin`,
+    # widest at the cheekbone and narrowing to a chin, with the helm as
+    # separate geometry above it.
+    #
+    # The head is also deliberately *smaller* relative to the body than the
+    # Warrior's. Heroic proportion is a head-count question: the same figure
+    # reads as a commander at eight heads and as a mascot at six.
+    b.sweep(thin([
+        (1.520 * H, section(n_h, hd * 0.72, hd * 0.78, hd * 0.74, 2.2, centre_z=0.004)),
+        (1.560 * H, section(n_h, hd * 0.86, hd * 0.98, hd * 0.86, 2.2, centre_z=0.016)),
+        (1.600 * H, section(n_h, hd * 1.02, hd * 1.14, hd * 0.98, 2.4, centre_z=0.020)),
+        (1.645 * H, section(n_h, hd * 1.18, hd * 1.20, hd * 1.06, 2.7, centre_z=0.016)),
+        (1.685 * H, section(n_h, hd * 1.22, hd * 1.20, hd * 1.10, 2.9, centre_z=0.010)),
+        (1.722 * H, section(n_h, hd * 1.19, hd * 1.22, hd * 1.13, 3.0, centre_z=0.006)),
+        (1.760 * H, section(n_h, hd * 1.14, hd * 1.13, hd * 1.13, 2.8, centre_z=0.000)),
+        (1.800 * H, section(n_h, hd * 1.06, hd * 1.04, hd * 1.08, 2.6, centre_z=-0.004)),
+        (1.842 * H, section(n_h, hd * 0.86, hd * 0.84, hd * 0.90, 2.4, centre_z=-0.008)),
+        (1.868 * H, section(n_h, hd * 0.54, hd * 0.54, hd * 0.58, 2.2, centre_z=-0.010)),
+    ], level), "skin", head_weights, cap_bottom=False)
+
+    # Beard: the jaw mass, and the one piece of the head that survives to a
+    # dozen pixels. Shorter and squarer than the Warrior's -- the Hero is the
+    # commander, not the oldest man in the settlement.
     b.sweep([
-        (1.53 * H, section(n_h, hd * 0.80, hd * 0.84, hd * 0.78, 2.3, centre_z=0.008)),
-        (1.60 * H, section(n_h, hd * 0.98, hd * 1.02, hd * 0.92, 2.7, centre_z=0.014)),
-        (1.67 * H, section(n_h, hd, hd * 1.00, hd * 0.94, 3.0, centre_z=0.010)),
-        (1.74 * H, section(n_h, hd * 0.92, hd * 0.90, hd * 0.90, 2.7, centre_z=0.000)),
-        (1.79 * H, section(n_h, hd * 0.62, hd * 0.62, hd * 0.64, 2.3, centre_z=-0.006)),
-    ], "coat", head_weights, cap_bottom=False)
-    # Helmet shell over the cranium, plus a visor band across the brow.
+        (1.502 * H, section(n_h, hd * 0.60, hd * 0.92, hd * 0.44, 2.0, centre_z=0.026)),
+        (1.540 * H, section(n_h, hd * 0.96, hd * 1.28, hd * 0.76, 2.2, centre_z=0.026)),
+        (1.578 * H, section(n_h, hd * 1.20, hd * 1.36, hd * 1.02, 2.4, centre_z=0.018)),
+        (1.616 * H, section(n_h, hd * 1.26, hd * 1.14, hd * 1.14, 2.6, centre_z=0.022)),
+    ], "beard", head_weights)
+
+    # Open helm over the cranium, with a rolled `edge` rim at the brow.
+    b.sweep(thin([
+        (1.716 * H, section(n_h, hd * 1.32, hd * 1.35, hd * 1.28, 3.0, centre_z=0.006)),
+        (1.760 * H, section(n_h, hd * 1.28, hd * 1.26, hd * 1.26, 2.9, centre_z=0.000)),
+        (1.806 * H, section(n_h, hd * 1.19, hd * 1.16, hd * 1.21, 2.7, centre_z=-0.004)),
+        (1.850 * H, section(n_h, hd * 0.97, hd * 0.94, hd * 1.01, 2.5, centre_z=-0.008)),
+        (1.884 * H, section(n_h, hd * 0.56, hd * 0.54, hd * 0.60, 2.3, centre_z=-0.010)),
+    ], level), "metal", head_weights, cap_bottom=False)
     b.sweep([
-        (1.58 * H, section(n_h, hd * 1.10, hd * 1.12, hd * 1.06, 2.8)),
-        (1.72 * H, section(n_h, hd * 1.06, hd * 1.06, hd * 1.02, 2.7)),
-        (1.82 * H, section(n_h, hd * 0.70, hd * 0.70, hd * 0.72, 2.4)),
-    ], "metal", lambda y: blend("head", "neck", 0.10), cap_bottom=False)
+        (1.716 * H, section(n_h, hd * 1.32, hd * 1.35, hd * 1.28, 3.0, centre_z=0.006)),
+        (1.705 * H, section(n_h, hd * 1.41, hd * 1.45, hd * 1.37, 3.0, centre_z=0.008)),
+        (1.694 * H, section(n_h, hd * 1.20, hd * 1.17, hd * 1.16, 3.0, centre_z=0.006)),
+    ], "edge", head_weights, cap_bottom=False, cap_top=False)
+
+    # Crest comb, front to back over the crown. This is the single strongest
+    # rank cue available at gameplay distance: it changes the *outline* of the
+    # head, and outline is the only channel still working when the face is
+    # gone. It runs along Z, so it is lofted with sweep_z -- a transverse
+    # prism would give a crest across the head, which reads as a bucket handle.
     if level <= 1:
-        # Face structure, matching the treatment given to the Warrior and the
-        # roster: an overhanging brow, a centre line, recessed eye slits and a
-        # cheek plate. The Hero wears a helmet shell already, so these read as
-        # the front of that helm rather than as skin. Authored against this
-        # rig's own head scale rather than shared, because brow height and head
-        # width differ across the three character generators.
-        fw = blend("head", "neck", 0.10)
-        b.box((0.0, 1.700 * H, hd * 0.90), (hd * 1.58, hd * 0.28, hd * 0.42), "metal", fw, taper=0.80)
-        b.box((0.0, 1.648 * H, hd * 0.94), (hd * 0.26, hd * 0.90, hd * 0.32), "metal", fw, taper=1.14)
-        for sgn in (-1, 1):
-            b.box((sgn * hd * 0.44, 1.674 * H, hd * 0.78), (hd * 0.46, hd * 0.18, hd * 0.17), "glove", fw, taper=0.92)
+        n_comb = (8, 6)[level]
+        b.sweep_z([
+            (-hd * 1.30, section(n_comb, hd * 0.15, hd * 0.06, hd * 0.34, 2.6, centre_z=1.828 * H)),
+            (-hd * 0.55, section(n_comb, hd * 0.20, hd * 0.22, hd * 0.44, 2.8, centre_z=1.858 * H)),
+            (hd * 0.22, section(n_comb, hd * 0.22, hd * 0.25, hd * 0.48, 2.8, centre_z=1.864 * H)),
+            (hd * 0.96, section(n_comb, hd * 0.19, hd * 0.13, hd * 0.56, 2.6, centre_z=1.832 * H)),
+            (hd * 1.34, section(n_comb, hd * 0.13, hd * 0.05, hd * 0.46, 2.4, centre_z=1.784 * H)),
+        ], "accent", lambda _z: fw)
+
+    if level <= 1:
+        # Cheek guards hanging off the helm rim, framing the face rather than
+        # closing over it.
         for sgn in (-1, 1):
             b.prism([
-                (sgn * hd * 0.50, 1.664 * H), (sgn * hd * 1.02, 1.652 * H),
-                (sgn * hd * 0.96, 1.576 * H), (sgn * hd * 0.42, 1.566 * H),
-            ], hd * 0.68, hd * 0.30, "metal", fw)
+                (sgn * hd * 1.06, 1.712 * H), (sgn * hd * 1.46, 1.694 * H),
+                (sgn * hd * 1.38, 1.588 * H), (sgn * hd * 0.96, 1.602 * H),
+            ], hd * 0.22, hd * 0.78, "metal", fw)
 
     if level == 0:
-        b.box((0.0, 1.665 * H, hd * 0.80), (hd * 1.62, hd * 0.34, hd * 0.26), "accent",
-              blend("head", "neck", 0.10), taper=0.86)
+        # Brow, eyes and nose, each placed against the measured superellipse.
+        # Placing them by eye is how the Warrior's first pass put them 17mm
+        # inside the skull and rendered a blank plane. Geometry cannot cut a
+        # socket, so the eye is a dark slab straddling the surface under a
+        # brow that overhangs it: what reads as an eye is the brow's shadow.
+        # The brow has to stay *inside* the skull's own width. At hd*1.30
+        # against a face of hd*1.19 it overhung both temples and read as a
+        # sun visor bolted across the head rather than as a brow ridge.
+        b.box((0.0, 1.7165 * H, hd * 1.20), (hd * 1.02, hd * 0.34, hd * 0.32), "skin", fw, taper=0.84)
+        b.box((0.0, 1.6935 * H, hd * 1.30), (hd * 0.21, hd * 0.48, hd * 0.36), "skin", fw, taper=0.72)
+        b.box((0.0, 1.6600 * H, hd * 1.34), (hd * 0.42, hd * 0.30, hd * 0.40), "skin", fw, taper=0.88)
+        for sgn in (-1, 1):
+            b.box((sgn * hd * 0.60, 1.6975 * H, hd * 1.24), (hd * 0.38, hd * 0.17, hd * 0.22), "glove", fw, taper=0.88)
 
     # Survival pack on the back.
     if level <= 1:
@@ -241,12 +339,26 @@ def add_body(level):
         if level == 0:
             b.box((sgn * SHOULDER * 0.95, 0.866 * H, 0.074), (LIMB * 0.44, LIMB * 0.88, LIMB * 0.54), "glove",
                   blend(f"hand.{side}", f"lower_arm.{side}", 0.10), rotate_z=sgn * 0.30, taper=0.78)
-        if level == 0:
+        if level <= 1:
+            pw = lambda y, s=side: blend(f"upper_arm.{s}", "chest", 0.34)
             b.sweep([
-                (1.32 * H, section(n_l, LIMB * 1.06, LIMB * 1.08, LIMB * 1.04, 2.6, centre_x=sx * 0.98)),
-                (1.24 * H, section(n_l, LIMB * 1.66, LIMB * 1.60, LIMB * 1.52, 3.1, centre_x=sgn * SHOULDER * 0.90)),
-                (1.14 * H, section(n_l, LIMB * 1.48, LIMB * 1.42, LIMB * 1.36, 3.0, centre_x=sgn * SHOULDER * 0.98)),
-            ], "metal", lambda y, s=side: blend(f"upper_arm.{s}", "chest", 0.34))
+                (1.335 * H, section(n_l, LIMB * 1.04, LIMB * 1.06, LIMB * 1.02, 2.6, centre_x=sx * 0.98)),
+                (1.255 * H, section(n_l, LIMB * 1.42, LIMB * 1.40, LIMB * 1.32, 3.0, centre_x=sgn * SHOULDER * 0.92)),
+                (1.190 * H, section(n_l, LIMB * 1.50, LIMB * 1.46, LIMB * 1.38, 3.0, centre_x=sgn * SHOULDER * 0.97)),
+            ], "metal", pw, cap_bottom=False)
+            b.sweep([
+                (1.190 * H, section(n_l, LIMB * 1.50, LIMB * 1.46, LIMB * 1.38, 3.0, centre_x=sgn * SHOULDER * 0.97)),
+                (1.168 * H, section(n_l, LIMB * 1.42, LIMB * 1.38, LIMB * 1.31, 3.0, centre_x=sgn * SHOULDER * 0.98)),
+            ], "edge", pw, cap_bottom=False, cap_top=False)
+            b.sweep([
+                (1.158 * H, section(n_l, LIMB * 1.46, LIMB * 1.42, LIMB * 1.34, 3.0, centre_x=sgn * SHOULDER * 0.99)),
+                (1.075 * H, section(n_l, LIMB * 1.52, LIMB * 1.47, LIMB * 1.39, 3.0, centre_x=sgn * SHOULDER * 1.03)),
+                (1.000 * H, section(n_l, LIMB * 1.54, LIMB * 1.48, LIMB * 1.41, 3.0, centre_x=sgn * SHOULDER * 1.05)),
+            ], "metal", pw, cap_bottom=False, cap_top=False)
+            b.sweep([
+                (1.000 * H, section(n_l, LIMB * 1.54, LIMB * 1.48, LIMB * 1.41, 3.0, centre_x=sgn * SHOULDER * 1.05)),
+                (0.978 * H, section(n_l, LIMB * 1.44, LIMB * 1.39, LIMB * 1.32, 3.0, centre_x=sgn * SHOULDER * 1.05)),
+            ], "edge", pw, cap_bottom=False, cap_top=False)
 
     # Legs with real muscle staging, then a three-part boot.
     for side, sgn in (("L", -1), ("R", 1)):
@@ -279,7 +391,7 @@ def add_body(level):
 
     if level == 0:
         # Faction strip on the chest, the same amber the HUD uses.
-        b.box((0.0, 1.16 * H, CHEST_D * 1.08), (SHOULDER * 0.22, SHOULDER * 0.40, 0.022), "accent",
+        b.box((0.0, 1.175 * H, CHEST_D * 1.20), (SHOULDER * 0.24, SHOULDER * 0.42, 0.024), "accent",
               blend("chest", "spine", 0.32))
     return b
 
@@ -393,11 +505,13 @@ def make_atlas():
     image = bpy.data.images.new(name, width=size, height=size, alpha=True)
     pixels = array("f", [0.0]) * (size * size * 4)
     trim = tuple(min(1.0, c * 1.42 + 0.05) for c in COAT)
-    leather = (0.446, 0.346, 0.259)
-    glove = (0.397, 0.308, 0.240)
-    metal = (0.402, 0.420, 0.446)
-    edge = (0.564, 0.587, 0.614)
-    bands = {0: (COAT, trim, ACCENT, COAT), 1: (leather, glove, leather, leather), 2: (metal, edge, metal, metal)}
+    leather = (0.474, 0.340, 0.226)
+    glove = (0.386, 0.286, 0.212)
+    metal = (0.356, 0.378, 0.412)
+    edge = (0.612, 0.641, 0.676)
+    skin = (0.742, 0.556, 0.446)
+    beard = (0.322, 0.288, 0.258)
+    bands = {0: (COAT, trim, ACCENT, beard), 1: (leather, glove, skin, leather), 2: (metal, edge, metal, metal)}
     for y in range(size):
         v = y / size
         band = min(3, int(v * 4))

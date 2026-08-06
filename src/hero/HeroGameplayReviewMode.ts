@@ -2,7 +2,7 @@ import { Color3, Matrix, Vector3 } from "@babylonjs/core";
 import type { GameSystems } from "../game/GameSystems";
 import type { CombatUnit } from "../combat/CombatUnit";
 
-export type HeroGameplayReviewCamera = "gameplay" | "tactical" | "three-quarter" | "back";
+export type HeroGameplayReviewCamera = "gameplay" | "tactical" | "three-quarter" | "back" | "portrait" | "portrait-side" | "head";
 export type HeroGameplayReviewLighting = "snow-daylight" | "furnace-warm";
 export type HeroGameplayReviewAnimation = "Idle" | "Walk" | "Run" | "MeleeAttack" | "RangedAttack" | "Hit" | "Death";
 export type HeroGameplayReviewContext = "alone" | "friends" | "battle";
@@ -140,6 +140,18 @@ export class HeroGameplayReviewMode {
       tactical: { position: new Vector3(0, 12.5, -16.0), target: new Vector3(0, 0.8, 1.8), fov: 0.58 },
       "three-quarter": { position: new Vector3(10.0, 9.2, -13.0), target: new Vector3(0, 0.8, 1.8), fov: 0.76 },
       back: { position: new Vector3(0, 8.2, 9.0), target: new Vector3(0, 0.8, -2.2), fov: 0.72 },
+      // Close range, in the real snow lighting rather than on a turntable.
+      // Every preset above sits ten or more units back, at which point the
+      // Hero is roughly a hundred pixels tall and no claim about its face,
+      // its armour or its rank markers can be checked at all. The Hero
+      // stands at z = -2.2 in this scene, so these are offsets from there.
+      portrait: { position: new Vector3(0, 1.30, -1.40), target: new Vector3(0, 1.10, -4.5), fov: 0.70 },
+      "portrait-side": { position: new Vector3(3.10, 1.30, -4.42), target: new Vector3(0, 1.10, -4.5), fov: 0.70 },
+      // Aimed at y=1.60, not at the authored crown height. The Hero is
+      // scaled down at runtime, so a camera pointed at model-space head
+      // height looks straight over the helmet -- which is exactly what the
+      // first version of this preset did.
+      head: { position: new Vector3(0.46, 1.72, -3.52), target: new Vector3(0, 1.60, -4.5), fov: 0.55 },
     };
     const preset = presets[mode];
     camera.position.copyFrom(preset.position);

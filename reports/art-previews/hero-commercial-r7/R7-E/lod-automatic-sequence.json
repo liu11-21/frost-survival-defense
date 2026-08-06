@@ -16,10 +16,10 @@
         "z": -4.5
       },
       "screenSpaceBoundingBox": {
-        "x": 491.62,
-        "y": 545.8,
-        "width": 82.26,
-        "height": 140.76,
+        "x": 490.33,
+        "y": 538.99,
+        "width": 83.55,
+        "height": 147.57,
         "right": 573.88,
         "bottom": 686.56
       },
@@ -256,8 +256,8 @@
           "forward": 0.0166
         }
       },
-      "fps": 2.2,
-      "drawCalls": 6759,
+      "fps": 1.92,
+      "drawCalls": 7020,
       "activeMeshes": 204,
       "animationGroups": [
         "hero.player:Idle",
@@ -275,10 +275,10 @@
       "authoredVisibleMeshes": 5,
       "proceduralVisibleMeshes": 0,
       "heroScreenBounds": {
-        "x": 491.62,
-        "y": 545.8,
-        "width": 82.26,
-        "height": 140.76,
+        "x": 490.33,
+        "y": 538.99,
+        "width": 83.55,
+        "height": 147.57,
         "right": 573.88,
         "bottom": 686.56,
         "visible": true
@@ -300,10 +300,10 @@
         "z": -4.5
       },
       "screenSpaceBoundingBox": {
-        "x": 491.62,
-        "y": 545.8,
-        "width": 82.26,
-        "height": 140.76,
+        "x": 490.33,
+        "y": 538.99,
+        "width": 83.55,
+        "height": 147.57,
         "right": 573.88,
         "bottom": 686.56
       },
@@ -540,8 +540,8 @@
           "forward": 0.0166
         }
       },
-      "fps": 2.2,
-      "drawCalls": 6759,
+      "fps": 1.92,
+      "drawCalls": 7020,
       "activeMeshes": 204,
       "animationGroups": [
         "hero.player:Idle",
@@ -571,11 +571,11 @@
         "z": -4.5
       },
       "screenSpaceBoundingBox": {
-        "x": 762.05,
-        "y": 664.82,
-        "width": 75.9,
-        "height": 139.63,
-        "right": 837.95,
+        "x": 759.36,
+        "y": 656.96,
+        "width": 81.29,
+        "height": 147.49,
+        "right": 840.64,
         "bottom": 804.45
       },
       "viewport": {
@@ -811,9 +811,9 @@
           "forward": 0.0166
         }
       },
-      "fps": 2.2,
-      "drawCalls": 6980,
-      "activeMeshes": 215,
+      "fps": 1.92,
+      "drawCalls": 7233,
+      "activeMeshes": 207,
       "animationGroups": [
         "hero.player:Idle",
         "hero.player:Walk",
@@ -830,11 +830,11 @@
       "authoredVisibleMeshes": 5,
       "proceduralVisibleMeshes": 0,
       "heroScreenBounds": {
-        "x": 762.05,
-        "y": 664.82,
-        "width": 75.9,
-        "height": 139.63,
-        "right": 837.95,
+        "x": 759.36,
+        "y": 656.96,
+        "width": 81.29,
+        "height": 147.49,
+        "right": 840.64,
         "bottom": 804.45,
         "visible": true
       },
@@ -855,11 +855,11 @@
         "z": -4.5
       },
       "screenSpaceBoundingBox": {
-        "x": 762.05,
-        "y": 664.82,
-        "width": 75.9,
-        "height": 139.63,
-        "right": 837.95,
+        "x": 759.36,
+        "y": 656.96,
+        "width": 81.29,
+        "height": 147.49,
+        "right": 840.64,
         "bottom": 804.45
       },
       "viewport": {
@@ -1095,9 +1095,9 @@
           "forward": 0.0166
         }
       },
-      "fps": 2.2,
-      "drawCalls": 6980,
-      "activeMeshes": 215,
+      "fps": 1.92,
+      "drawCalls": 7233,
+      "activeMeshes": 207,
       "animationGroups": [
         "hero.player:Idle",
         "hero.player:Walk",
@@ -1126,11 +1126,11 @@
         "z": -4.5
       },
       "screenSpaceBoundingBox": {
-        "x": 759.73,
-        "y": 701.83,
-        "width": 80.54,
-        "height": 146.12,
-        "right": 840.27,
+        "x": 756.92,
+        "y": 693.62,
+        "width": 86.16,
+        "height": 154.33,
+        "right": 843.08,
         "bottom": 847.95
       },
       "viewport": {
@@ -1366,9 +1366,9 @@
           "forward": 0.0166
         }
       },
-      "fps": 2.2,
-      "drawCalls": 7150,
-      "activeMeshes": 164,
+      "fps": 1.92,
+      "drawCalls": 7402,
+      "activeMeshes": 163,
       "animationGroups": [
         "hero.player:Idle",
         "hero.player:Walk",
@@ -1385,11 +1385,11 @@
       "authoredVisibleMeshes": 5,
       "proceduralVisibleMeshes": 0,
       "heroScreenBounds": {
-        "x": 759.73,
-        "y": 701.83,
-        "width": 80.54,
-        "height": 146.12,
-        "right": 840.27,
+        "x": 756.92,
+        "y": 693.62,
+        "width": 86.16,
+        "height": 154.33,
+        "right": 843.08,
         "bottom": 847.95,
         "visible": true
       },
@@ -1410,11 +1410,11 @@
         "z": -4.5
       },
       "screenSpaceBoundingBox": {
-        "x": 759.73,
-        "y": 701.83,
-        "width": 80.54,
-        "height": 146.12,
-        "right": 840.27,
+        "x": 756.92,
+        "y": 693.62,
+        "width": 86.16,
+        "height": 154.33,
+        "right": 843.08,
         "bottom": 847.95
       },
       "viewport": {
@@ -1650,9 +1650,9 @@
           "forward": 0.0166
         }
       },
-      "fps": 2.2,
-      "drawCalls": 7150,
-      "activeMeshes": 164,
+      "fps": 1.92,
+      "drawCalls": 7402,
+      "activeMeshes": 163,
       "animationGroups": [
         "hero.player:Idle",
         "hero.player:Walk",

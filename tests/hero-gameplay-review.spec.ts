@@ -3,7 +3,7 @@ import { mkdirSync, writeFileSync } from "node:fs";
 import { resolve } from "node:path";
 
 type AnimationName = "Idle" | "Walk" | "Run" | "MeleeAttack" | "RangedAttack" | "Hit" | "Death";
-type CameraName = "gameplay" | "tactical" | "three-quarter" | "back";
+type CameraName = "gameplay" | "tactical" | "three-quarter" | "back" | "portrait" | "portrait-side" | "head";
 type LightingName = "snow-daylight" | "furnace-warm";
 type ContextName = "alone" | "friends" | "battle";
 type LodName = 0 | 1 | 2;
@@ -70,10 +70,18 @@ function readState(page: import("@playwright/test").Page): Promise<{ state: Game
   });
 }
 
-function validateState(state: GameplayState | null, expected: { camera: CameraName; lighting: LightingName; context: ContextName; animation: AnimationName }): asserts state is GameplayState {
+// `wholeFigure` is false for the portrait and head framings. Everything about
+// the runtime -- GLB source, no procedural fallback, the full ally and enemy
+// cast present, the right camera, lighting, context and clip -- is still
+// asserted there. What is skipped is the family of checks that require the
+// Hero's *entire* bounding box to sit inside the viewport: `ready`,
+// `uiOccluded`, `visible` and the screen-bounds floors. A close frame crops
+// the body on purpose, and those checks cannot distinguish that from the Hero
+// having walked off screen.
+function validateState(state: GameplayState | null, expected: { camera: CameraName; lighting: LightingName; context: ContextName; animation: AnimationName }, wholeFigure = true): asserts state is GameplayState {
   expect(state, "Hero gameplay review state should be published").not.toBeNull();
   if (!state) throw new Error("Hero gameplay review state should be published");
-  expect(state.ready).toBe(true);
+  if (wholeFigure) expect(state.ready).toBe(true);
   expect(state.captureMode).toBe("heroGameplayReview=1");
   expect(state.modelSource).toBe("GLB");
   expect(state.authoredVisibleMeshes).toBeGreaterThan(0);
@@ -85,32 +93,34 @@ function validateState(state: GameplayState | null, expected: { camera: CameraNa
   expect(state.context).toBe(expected.context);
   expect(state.currentAnimation).toBe(expected.animation);
   expect(animations.every((name) => state.animationGroups.some((group) => group === name || group.endsWith(`:${name}`)))).toBe(true);
-  expect(state.uiOccluded).toBe(false);
-  expect(state.heroScreenBounds.visible).toBe(true);
-  expect(state.heroScreenBounds.x).toBeGreaterThanOrEqual(0);
-  expect(state.heroScreenBounds.y).toBeGreaterThanOrEqual(0);
-  expect(state.heroScreenBounds.right).toBeLessThanOrEqual(1600);
-  expect(state.heroScreenBounds.bottom).toBeLessThanOrEqual(900);
-  // Readability is asserted on the box diagonal, not on height.
-  //
-  // These bounds used to be read off a bounding box that was never refreshed
-  // for the current pose, so every animation reported the rest-pose silhouette
-  // and the old `height >= 135` floor passed vacuously -- it had never once
-  // been evaluated against a real animated pose. With the box now tracking the
-  // skeleton, Death at 60% measures 139.5 x 127.0: the body has gone
-  // horizontal. That is the animation working, not the Hero becoming
-  // unreadable, and no width/height floor can express it, because which axis
-  // carries the body's length depends on the pose.
-  //
-  // The diagonal is the pose-invariant quantity -- the body's length is
-  // conserved as it rotates. Sampled over 4 cameras x 7 animations x 6 phases
-  // (168 states) it spans 134.8 to 198.3, against 116.3 to 198.3 for the long
-  // axis alone. 130 sits just under the measured floor; the 64px narrow-axis
-  // minimum is carried over unchanged (measured minimum 65.0, on the back
-  // camera during RangedAttack) so a thin sliver still fails.
-  const { width, height } = state.heroScreenBounds;
-  expect(Math.hypot(width, height), "Hero silhouette must span 130px on the diagonal").toBeGreaterThanOrEqual(130);
-  expect(Math.min(width, height), "Hero must be at least 64px across its narrow axis").toBeGreaterThanOrEqual(64);
+  if (wholeFigure) {
+    expect(state.uiOccluded).toBe(false);
+    expect(state.heroScreenBounds.visible).toBe(true);
+    expect(state.heroScreenBounds.x).toBeGreaterThanOrEqual(0);
+    expect(state.heroScreenBounds.y).toBeGreaterThanOrEqual(0);
+    expect(state.heroScreenBounds.right).toBeLessThanOrEqual(1600);
+    expect(state.heroScreenBounds.bottom).toBeLessThanOrEqual(900);
+    // Readability is asserted on the box diagonal, not on height.
+    //
+    // These bounds used to be read off a bounding box that was never refreshed
+    // for the current pose, so every animation reported the rest-pose silhouette
+    // and the old `height >= 135` floor passed vacuously -- it had never once
+    // been evaluated against a real animated pose. With the box now tracking the
+    // skeleton, Death at 60% measures 139.5 x 127.0: the body has gone
+    // horizontal. That is the animation working, not the Hero becoming
+    // unreadable, and no width/height floor can express it, because which axis
+    // carries the body's length depends on the pose.
+    //
+    // The diagonal is the pose-invariant quantity -- the body's length is
+    // conserved as it rotates. Sampled over 4 cameras x 7 animations x 6 phases
+    // (168 states) it spans 134.8 to 198.3, against 116.3 to 198.3 for the long
+    // axis alone. 130 sits just under the measured floor; the 64px narrow-axis
+    // minimum is carried over unchanged (measured minimum 65.0, on the back
+    // camera during RangedAttack) so a thin sliver still fails.
+    const { width, height } = state.heroScreenBounds;
+    expect(Math.hypot(width, height), "Hero silhouette must span 130px on the diagonal").toBeGreaterThanOrEqual(130);
+    expect(Math.min(width, height), "Hero must be at least 64px across its narrow axis").toBeGreaterThanOrEqual(64);
+  }
 }
 
 test("verifies Hero in the formal snow, furnace, ally and enemy gameplay context", async ({ page }) => {
@@ -141,7 +151,7 @@ test("verifies Hero in the formal snow, furnace, ally and enemy gameplay context
     if (!request.url().includes("favicon")) requestFailures.push(`${request.url()} ${request.failure()?.errorText ?? "unknown"}`);
   });
 
-  const waitForState = async (expected: { camera: CameraName; lighting: LightingName; context: ContextName; animation: AnimationName }): Promise<GameplayState> => {
+  const waitForState = async (expected: { camera: CameraName; lighting: LightingName; context: ContextName; animation: AnimationName }, wholeFigure = true): Promise<GameplayState> => {
     try {
       await page.waitForFunction(
         (target) => {
@@ -149,15 +159,15 @@ test("verifies Hero in the formal snow, furnace, ally and enemy gameplay context
           const state = reviewWindow.__heroGameplayReviewState;
           return Boolean(
             document.getElementById("renderCanvas") instanceof HTMLCanvasElement &&
-              state?.ready &&
-              state.modelSource === "GLB" &&
-              state.currentCamera === target.camera &&
-              state.lighting === target.lighting &&
-              state.context === target.context &&
-              state.currentAnimation === target.animation,
+              (target.wholeFigure ? state?.ready : Boolean(state)) &&
+              state!.modelSource === "GLB" &&
+              state!.currentCamera === target.camera &&
+              state!.lighting === target.lighting &&
+              state!.context === target.context &&
+              state!.currentAnimation === target.animation,
           );
         },
-        expected,
+        { ...expected, wholeFigure },
         { polling: 100, timeout: 30_000 },
       );
     } catch (error) {
@@ -165,11 +175,11 @@ test("verifies Hero in the formal snow, furnace, ally and enemy gameplay context
       throw new Error(`Hero gameplay review readiness timed out for ${JSON.stringify(expected)}; state=${JSON.stringify(diagnostic.state)}; cause=${String(error)}`);
     }
     const { state } = await readState(page);
-    validateState(state, expected);
+    validateState(state, expected, wholeFigure);
     return state;
   };
 
-  const selectReview = async (camera: CameraName, lighting: LightingName, context: ContextName, animation: AnimationName): Promise<GameplayState> => {
+  const selectReview = async (camera: CameraName, lighting: LightingName, context: ContextName, animation: AnimationName, wholeFigure = true): Promise<GameplayState> => {
     await page.evaluate((target) => {
       const review = (window as GameplayWindow).frostbound?.api().heroGameplayReview;
       if (!review) throw new Error("Hero gameplay review API is unavailable");
@@ -180,10 +190,10 @@ test("verifies Hero in the formal snow, furnace, ally and enemy gameplay context
       review.seekAnimation(0);
       (window as GameplayWindow).frostbound?.renderReviewFrame();
     }, { camera, lighting, context, animation });
-    return waitForState({ camera, lighting, context, animation });
+    return waitForState({ camera, lighting, context, animation }, wholeFigure);
   };
 
-  const seekAndRender = async (normalized: number): Promise<GameplayState> => {
+  const seekAndRender = async (normalized: number, wholeFigure = true): Promise<GameplayState> => {
     await page.evaluate((value) => {
       const review = (window as GameplayWindow).frostbound?.api().heroGameplayReview;
       if (!review) throw new Error("Hero gameplay review API is unavailable");
@@ -196,19 +206,37 @@ test("verifies Hero in the formal snow, furnace, ally and enemy gameplay context
       lighting: (state as GameplayState | null)?.lighting ?? "snow-daylight",
       context: (state as GameplayState | null)?.context ?? "battle",
       animation: (state as GameplayState | null)?.currentAnimation ?? "Idle",
-    });
+    }, wholeFigure);
     if (!state) throw new Error("Hero gameplay review state should be published");
     expect(state.animationNormalized).toBeCloseTo(normalized, 3);
     return state;
   };
 
-  const capture = async (name: string, camera: CameraName, lighting: LightingName, context: ContextName, animation: AnimationName, normalized = 0): Promise<GameplayState> => {
-    await selectReview(camera, lighting, context, animation);
-    const state = await seekAndRender(normalized);
+  const capture = async (name: string, camera: CameraName, lighting: LightingName, context: ContextName, animation: AnimationName, normalized = 0, wholeFigure = true): Promise<GameplayState> => {
+    await selectReview(camera, lighting, context, animation, wholeFigure);
+    const state = await seekAndRender(normalized, wholeFigure);
     const frame = await readState(page);
     expect(frame.capture?.captureMode, `${name} must come from heroGameplayReview=1`).toBe("heroGameplayReview=1");
     expect(frame.capture?.modelSource, `${name} must use the GLB runtime instance`).toBe("GLB");
-    expect(frame.capture?.uiOccluded, `${name} must not be covered by the review panel`).toBe(false);
+    // `uiOccluded` is computed against the Hero's whole-body screen box. At a
+    // portrait or head framing that box runs past the viewport by design, so
+    // it trivially "overlaps" a HUD panel it does not visually touch. The
+    // close frames get a real check instead: nothing the review draws may sit
+    // over the middle of the canvas, which is where the Hero is framed.
+    if (wholeFigure) {
+      expect(frame.capture?.uiOccluded, `${name} must not be covered by the review panel`).toBe(false);
+    } else {
+      const overlap = await page.evaluate(() => {
+        const canvas = document.querySelector("canvas");
+        const panel = document.querySelector<HTMLElement>("[data-review-camera]")?.closest<HTMLElement>("div[style],div");
+        if (!canvas || !panel) return null;
+        const c = canvas.getBoundingClientRect();
+        const r = panel.getBoundingClientRect();
+        const zone = { left: c.left + c.width * 0.28, right: c.right - c.width * 0.28, top: c.top + c.height * 0.05, bottom: c.bottom - c.height * 0.05 };
+        return r.right > zone.left && r.left < zone.right && r.bottom > zone.top && r.top < zone.bottom;
+      });
+      expect(overlap, `${name}: review HUD must not sit over the close framing`).toBe(false);
+    }
     const screenshotPath = resolve(outputRoot, `${name}.png`);
     await page.screenshot({ path: screenshotPath, fullPage: false });
     captures.push({ captureId: name, capturedAt: new Date().toISOString(), screenshot: screenshotPath, state, metadata: frame.capture });
@@ -226,6 +254,13 @@ test("verifies Hero in the formal snow, furnace, ally and enemy gameplay context
     await capture("hero-battle", "gameplay", "snow-daylight", "battle", "Idle");
     await capture("gameplay-front", "gameplay", "snow-daylight", "battle", "Idle");
     await capture("gameplay-back", "back", "snow-daylight", "battle", "Idle");
+    // Close-range Hero evidence, in gameplay lighting. Without these the only
+    // frames of the player character are hundred-pixel figures in a wide shot,
+    // where "the Hero reads as the Hero" cannot be judged or disproved.
+    await capture("hero-portrait-front", "portrait", "snow-daylight", "alone", "Idle", 0, false);
+    await capture("hero-portrait-side", "portrait-side", "snow-daylight", "alone", "Idle", 0, false);
+    await capture("hero-portrait-head", "head", "snow-daylight", "alone", "Idle", 0, false);
+    await capture("hero-portrait-melee", "portrait", "snow-daylight", "battle", "MeleeAttack", 0.55, false);
     await capture("gameplay-tactical", "tactical", "snow-daylight", "battle", "Idle");
     await capture("gameplay-walk", "gameplay", "snow-daylight", "battle", "Walk", 0.4);
     await capture("gameplay-run", "gameplay", "snow-daylight", "battle", "Run", 0.4);
