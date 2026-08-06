@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-08-06T07:52:03.658Z",
+  "generatedAt": "2026-08-06T08:25:10.053Z",
   "blenderRequired": true,
   "assets": [
     {
@@ -938,10 +938,10 @@
       "key": "grunt",
       "status": "ok",
       "path": "public/assets/models/characters/grunt.glb",
-      "sizeBytes": 471372,
+      "sizeBytes": 401880,
       "nodes": 27,
       "meshes": 3,
-      "materials": 3,
+      "materials": 2,
       "textures": 1,
       "skeletons": 1,
       "rootTransforms": [
@@ -962,14 +962,14 @@
       ],
       "bounds": {
         "min": [
-          -0.6940236687660217,
-          0.005039990413933992,
-          -0.16486209630966187
+          -0.3938800096511841,
+          0.016799986362457275,
+          -0.3343999981880188
         ],
         "max": [
-          0.6940236687660217,
-          1.1591999530792236,
-          0.25636032223701477
+          0.3938800096511841,
+          0.5318880081176758,
+          0.593999981880188
         ]
       },
       "animations": [
@@ -988,11 +988,11 @@
         "Hit": 54,
         "Death": 54
       },
-      "triangles": 2394,
+      "triangles": 1120,
       "lodTriangles": {
-        "LOD0": 1178,
-        "LOD1": 774,
-        "LOD2": 442
+        "LOD0": 522,
+        "LOD1": 408,
+        "LOD2": 190
       },
       "surfaceAttributes": {
         "TEXCOORD_0": true,
@@ -1082,7 +1082,7 @@
       "key": "bruiser",
       "status": "ok",
       "path": "public/assets/models/characters/bruiser.glb",
-      "sizeBytes": 484196,
+      "sizeBytes": 432272,
       "nodes": 27,
       "meshes": 3,
       "materials": 3,
@@ -1106,14 +1106,14 @@
       ],
       "bounds": {
         "min": [
-          -0.7088926434516907,
-          0.006119986064732075,
-          -0.2917199730873108
+          -0.5356000065803528,
+          0.004079964943230152,
+          -0.657800018787384
         ],
         "max": [
-          0.7088926434516907,
-          1.5299999713897705,
-          0.31685999035835266
+          0.5356000065803528,
+          1.0506000518798828,
+          1.0612000226974487
         ]
       },
       "animations": [
@@ -1132,11 +1132,11 @@
         "Hit": 54,
         "Death": 54
       },
-      "triangles": 2570,
+      "triangles": 1644,
       "lodTriangles": {
-        "LOD0": 1306,
-        "LOD1": 822,
-        "LOD2": 442
+        "LOD0": 850,
+        "LOD1": 508,
+        "LOD2": 286
       },
       "surfaceAttributes": {
         "TEXCOORD_0": true,
@@ -1226,7 +1226,7 @@
       "key": "juggernaut",
       "status": "ok",
       "path": "public/assets/models/characters/juggernaut.glb",
-      "sizeBytes": 485396,
+      "sizeBytes": 433472,
       "nodes": 27,
       "meshes": 3,
       "materials": 3,
@@ -1250,14 +1250,14 @@
       ],
       "bounds": {
         "min": [
-          -0.7088926434516907,
-          0.006119986064732075,
-          -0.2917199730873108
+          -0.5356000065803528,
+          0.004079964943230152,
+          -0.657800018787384
         ],
         "max": [
-          0.7088926434516907,
-          1.5299999713897705,
-          0.31685999035835266
+          0.5356000065803528,
+          1.0506000518798828,
+          1.0612000226974487
         ]
       },
       "animations": [
@@ -1276,11 +1276,11 @@
         "Hit": 54,
         "Death": 54
       },
-      "triangles": 2570,
+      "triangles": 1644,
       "lodTriangles": {
-        "LOD0": 1306,
-        "LOD1": 822,
-        "LOD2": 442
+        "LOD0": 850,
+        "LOD1": 508,
+        "LOD2": 286
       },
       "surfaceAttributes": {
         "TEXCOORD_0": true,
@@ -1370,7 +1370,7 @@
       "key": "boss",
       "status": "ok",
       "path": "public/assets/models/characters/boss.glb",
-      "sizeBytes": 520756,
+      "sizeBytes": 468696,
       "nodes": 30,
       "meshes": 6,
       "materials": 3,
@@ -1394,14 +1394,14 @@
       ],
       "bounds": {
         "min": [
-          -0.7507200241088867,
-          0.010319983586668968,
-          -0.40595993399620056
+          -0.9631999731063843,
+          0.025799982249736786,
+          -0.42187991738319397
         ],
         "max": [
-          0.7507200241088867,
-          2.683199882507324,
-          0.4139200747013092
+          0.9631999731063843,
+          2.7950000762939453,
+          0.5572000741958618
         ]
       },
       "animations": [
@@ -1420,11 +1420,11 @@
         "Hit": 54,
         "Death": 54
       },
-      "triangles": 2926,
+      "triangles": 2176,
       "lodTriangles": {
-        "LOD0": 1514,
-        "LOD1": 942,
-        "LOD2": 470
+        "LOD0": 1114,
+        "LOD1": 724,
+        "LOD2": 338
       },
       "surfaceAttributes": {
         "TEXCOORD_0": true,
@@ -1442,7 +1442,7 @@
       "key": "breacher",
       "status": "ok",
       "path": "public/assets/models/characters/breacher.glb",
-      "sizeBytes": 493920,
+      "sizeBytes": 442000,
       "nodes": 27,
       "meshes": 3,
       "materials": 3,
@@ -1466,14 +1466,14 @@
       ],
       "bounds": {
         "min": [
-          -0.7088926434516907,
-          0.006119986064732075,
-          -0.2917199730873108
+          -0.5356000065803528,
+          0.004079964943230152,
+          -0.657800018787384
         ],
         "max": [
-          0.7088926434516907,
-          1.5299999713897705,
-          0.31685999035835266
+          0.5356000065803528,
+          1.0506000518798828,
+          1.0612000226974487
         ]
       },
       "animations": [
@@ -1492,11 +1492,11 @@
         "Hit": 54,
         "Death": 54
       },
-      "triangles": 2570,
+      "triangles": 1644,
       "lodTriangles": {
-        "LOD0": 1306,
-        "LOD1": 822,
-        "LOD2": 442
+        "LOD0": 850,
+        "LOD1": 508,
+        "LOD2": 286
       },
       "surfaceAttributes": {
         "TEXCOORD_0": true,
@@ -1658,10 +1658,10 @@
       "key": "bomber",
       "status": "ok",
       "path": "public/assets/models/characters/bomber.glb",
-      "sizeBytes": 480764,
+      "sizeBytes": 411272,
       "nodes": 27,
       "meshes": 3,
-      "materials": 3,
+      "materials": 2,
       "textures": 1,
       "skeletons": 1,
       "rootTransforms": [
@@ -1682,14 +1682,14 @@
       ],
       "bounds": {
         "min": [
-          -0.6940236687660217,
-          0.005039990413933992,
-          -0.16486209630966187
+          -0.3938800096511841,
+          0.016799986362457275,
+          -0.3343999981880188
         ],
         "max": [
-          0.6940236687660217,
-          1.1591999530792236,
-          0.25636032223701477
+          0.3938800096511841,
+          0.5318880081176758,
+          0.593999981880188
         ]
       },
       "animations": [
@@ -1708,11 +1708,11 @@
         "Hit": 54,
         "Death": 54
       },
-      "triangles": 2394,
+      "triangles": 1120,
       "lodTriangles": {
-        "LOD0": 1178,
-        "LOD1": 774,
-        "LOD2": 442
+        "LOD0": 522,
+        "LOD1": 408,
+        "LOD2": 190
       },
       "surfaceAttributes": {
         "TEXCOORD_0": true,
@@ -1730,10 +1730,10 @@
       "key": "flyingMelee",
       "status": "ok",
       "path": "public/assets/models/characters/flyingMelee.glb",
-      "sizeBytes": 472792,
+      "sizeBytes": 403292,
       "nodes": 27,
       "meshes": 3,
-      "materials": 3,
+      "materials": 2,
       "textures": 1,
       "skeletons": 1,
       "rootTransforms": [
@@ -1754,14 +1754,14 @@
       ],
       "bounds": {
         "min": [
-          -0.6940236687660217,
-          0.005039990413933992,
-          -0.16486209630966187
+          -0.3938800096511841,
+          0.016799986362457275,
+          -0.3343999981880188
         ],
         "max": [
-          0.6940236687660217,
-          1.1591999530792236,
-          0.25636032223701477
+          0.3938800096511841,
+          0.5318880081176758,
+          0.593999981880188
         ]
       },
       "animations": [
@@ -1780,11 +1780,11 @@
         "Hit": 54,
         "Death": 54
       },
-      "triangles": 2394,
+      "triangles": 1120,
       "lodTriangles": {
-        "LOD0": 1178,
-        "LOD1": 774,
-        "LOD2": 442
+        "LOD0": 522,
+        "LOD1": 408,
+        "LOD2": 190
       },
       "surfaceAttributes": {
         "TEXCOORD_0": true,

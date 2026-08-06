@@ -86,31 +86,31 @@ ARCHETYPES = {
 MONSTER_FORMS = {
     # Low tier: small, low to the ground, all jaw and speed.
     "swarm": dict(
-        height=0.84, shoulder=0.212, chest_depth=0.176, waist=0.150, hip=0.164,
+        plan="crawler", height=0.84, shoulder=0.212, chest_depth=0.176, waist=0.150, hip=0.164,
         limb=0.062, head=0.132, stance=0.128, hunch=0.62, arm_reach=1.34,
         jaw=1.30, horns="none", spines=3, plates=0,
     ),
     # Mid tier: shoulders carry everything, head sunk between them.
     "brute": dict(
-        height=1.02, shoulder=0.402, chest_depth=0.286, waist=0.226, hip=0.246,
+        plan="beast", height=1.02, shoulder=0.402, chest_depth=0.286, waist=0.226, hip=0.246,
         limb=0.122, head=0.146, stance=0.196, hunch=0.52, arm_reach=1.52,
         jaw=1.42, horns="pair", spines=5, plates=2,
     ),
     # Ranged: lean, elongated, head thrust furthest forward of any form.
     "stalker": dict(
-        height=0.98, shoulder=0.238, chest_depth=0.196, waist=0.150, hip=0.166,
+        plan="hunter", height=0.98, shoulder=0.238, chest_depth=0.196, waist=0.150, hip=0.166,
         limb=0.068, head=0.128, stance=0.138, hunch=0.74, arm_reach=1.46,
         jaw=1.52, horns="swept", spines=4, plates=0,
     ),
     # Elite: taller than any human, crowned with ice, armoured across the back.
     "elite": dict(
-        height=1.28, shoulder=0.418, chest_depth=0.300, waist=0.252, hip=0.276,
+        plan="hunter", height=1.28, shoulder=0.418, chest_depth=0.300, waist=0.252, hip=0.276,
         limb=0.128, head=0.168, stance=0.222, hunch=0.34, arm_reach=1.44,
         jaw=1.36, horns="crown", spines=7, plates=3,
     ),
     # Boss: unique, and big enough that nothing else on the field reads like it.
     "boss": dict(
-        height=1.72, shoulder=0.560, chest_depth=0.398, waist=0.336, hip=0.372,
+        plan="boss", height=1.72, shoulder=0.560, chest_depth=0.398, waist=0.336, hip=0.372,
         limb=0.176, head=0.212, stance=0.290, hunch=0.30, arm_reach=1.50,
         jaw=1.44, horns="crown", spines=9, plates=4,
     ),
@@ -520,6 +520,312 @@ def add_monster_body(level, a, cfg):
     return b
 
 
+
+def _monster_materials(b, level, a, lean, cd, sh, hd, jaw, fz):
+    """Head, horns and dorsal spines, shared by every monster plan.
+
+    These are the parts that say "monster" regardless of how many legs the
+    thing walks on, so they are factored out rather than copied: a jaw where a
+    person has a chin, a lit slot instead of eyes, horns whose type is the
+    tier, and ice growing out through the back.
+    """
+    h = a["height"]
+    hw = blend("head", "neck", 0.10)
+    if level <= 1:
+        b.prism([
+            (-hd * 0.46, 1.255 * h), (hd * 0.46, 1.255 * h),
+            (hd * 0.40, 1.190 * h), (0.0, 1.168 * h), (-hd * 0.40, 1.190 * h),
+        ], fz * 0.86 + hd * jaw * 0.42, hd * 0.62, "leather", hw)
+        b.box((0.0, 1.302 * h, fz * 0.92 + hd * 0.52), (hd * 1.26, hd * 0.22, hd * 0.34), "metal", hw, taper=0.82)
+        b.box((0.0, 1.276 * h, fz * 0.92 + hd * 0.46), (hd * 1.04, hd * 0.16, hd * 0.20), "accent", hw, taper=0.94)
+        horns = a["horns"]
+        if horns != "none":
+            if horns == "pair":
+                spikes = ((0.62, 1.34, 0.9), (-0.62, 1.34, 0.9))
+            elif horns == "swept":
+                spikes = ((0.50, 1.30, 1.5), (-0.50, 1.30, 1.5), (0.0, 1.36, 0.5))
+            else:
+                spikes = ((0.70, 1.32, 0.7), (-0.70, 1.32, 0.7), (0.40, 1.38, 0.2),
+                          (-0.40, 1.38, 0.2), (0.0, 1.40, 0.0))
+            for sx, sy, tilt in spikes:
+                b.prism([
+                    (sx * hd, sy * h), (sx * hd + hd * 0.20, sy * h),
+                    (sx * hd * (1.0 + tilt * 0.30) + hd * 0.10, (sy + 0.16) * h),
+                    (sx * hd * (1.0 + tilt * 0.30), (sy + 0.15) * h),
+                ], fz * 0.5, hd * 0.24, "accent", hw)
+        count = a["spines"]
+        for i in range(count):
+            t = (i + 0.5) / count
+            y = (0.60 + 0.56 * t) * h
+            size = hd * (0.30 + 0.42 * math.sin(t * math.pi))
+            b.prism([
+                (-size * 0.44, y), (size * 0.44, y),
+                (size * 0.16, y + size * 1.5), (-size * 0.16, y + size * 1.5),
+            ], -cd * (0.86 - lean * 0.22 * t), size * 0.52, "accent",
+                blend("chest", "spine", 0.34) if t > 0.45 else blend("spine", "pelvis", 0.34))
+
+
+def add_crawler_body(level, a, cfg):
+    """Species 1: a low, sprawling crawler.
+
+    Not the biped with its numbers turned down -- the torso is horizontal and
+    barely off the ground, and all four limbs splay *outward* from it like a
+    lizard's rather than hanging beneath it. From the gameplay camera this
+    reads as something scuttling, which is a different creature from anything
+    that walks upright, and the difference survives to LOD2 because it is the
+    whole body axis rather than a detail.
+    """
+    b = MeshBuilder(level)
+    n_t = (16, 10, 8)[level]
+    n_l = (10, 8, 6)[level]
+    h = a["height"]
+    sh, cd, hp = a["shoulder"], a["chest_depth"], a["hip"]
+    lb, hd = a["limb"], a["head"]
+
+    # Torso: a long horizontal body, widest at the shoulders, tapering to a
+    # raised abdomen at the back. Swept along Y but squashed, then the mass is
+    # carried by the depth values rather than the height.
+    for i, (y, w, dfr, dbk) in enumerate((
+        (0.30 * h, sh * 0.62, cd * 1.90, cd * 0.30),
+        (0.42 * h, sh * 1.00, cd * 1.60, cd * 0.90),
+        (0.50 * h, sh * 1.06, cd * 0.90, cd * 1.70),
+        (0.44 * h, sh * 0.86, cd * 0.20, cd * 2.10),
+    )[:-1]):
+        pass
+    b.sweep([
+        (0.22 * h, section(n_t, sh * 0.70, cd * 1.30, cd * 1.60, 2.2)),
+        (0.36 * h, section(n_t, sh * 1.04, cd * 1.70, cd * 1.90, 2.4)),
+        (0.48 * h, section(n_t, sh * 0.98, cd * 1.50, cd * 1.70, 2.4)),
+        (0.56 * h, section(n_t, sh * 0.60, cd * 0.90, cd * 1.00, 2.2)),
+    ], "body", torso_weights)
+
+    # Neck and skull run forward almost horizontally, out past the front legs.
+    b.sweep([
+        (0.46 * h, section(n_l, hd * 0.70, hd * 0.80, hd * 0.60, 2.2, centre_z=cd * 1.30)),
+        (0.48 * h, section(n_l, hd * 0.92, hd * 1.10, hd * 0.72, 2.4, centre_z=cd * 2.10)),
+        (0.44 * h, section(n_l, hd * 0.70, hd * 0.90, hd * 0.52, 2.2, centre_z=cd * 2.70)),
+    ], "body", head_weights, cap_bottom=False)
+    hw = blend("head", "neck", 0.10)
+    if level <= 1:
+        b.prism([
+            (-hd * 0.40, 0.470 * h), (hd * 0.40, 0.470 * h),
+            (hd * 0.30, 0.416 * h), (0.0, 0.400 * h), (-hd * 0.30, 0.416 * h),
+        ], cd * 2.45, hd * 0.54, "leather", hw)
+        b.box((0.0, 0.492 * h, cd * 2.30), (hd * 1.00, hd * 0.16, hd * 0.24), "accent", hw, taper=0.9)
+        for i in range(a["spines"]):
+            t = (i + 0.5) / a["spines"]
+            size = hd * (0.26 + 0.30 * math.sin(t * math.pi))
+            b.prism([
+                (-size * 0.44, (0.50 + 0.02 * t) * h), (size * 0.44, (0.50 + 0.02 * t) * h),
+                (size * 0.16, (0.50 + 0.02 * t) * h + size * 1.4), (-size * 0.16, (0.50 + 0.02 * t) * h + size * 1.4),
+            ], cd * (1.20 - 2.10 * t), size * 0.50, "accent",
+                blend("chest", "spine", 0.34) if t > 0.45 else blend("spine", "pelvis", 0.34))
+
+    # Four splayed limbs: elbow/knee held high and out, foot planted wide.
+    for side, sgn in (("L", -1), ("R", 1)):
+        aw = lambda y, s=side: arm_weights(s, y)
+        lw = lambda y, s=side: leg_weights(s, y)
+        for weights, wname, zc, joint_x, foot_x in (
+            (aw, side, cd * 1.20, sgn * sh * 1.30, sgn * sh * 1.70),
+            (lw, side, -cd * 1.00, sgn * sh * 1.24, sgn * sh * 1.62),
+        ):
+            b.sweep([
+                (0.42 * h, section(n_l, lb * 0.92, lb * 0.92, lb * 0.90, 2.4, centre_x=sgn * sh * 0.72, centre_z=zc * 0.6)),
+                (0.50 * h, section(n_l, lb * 0.78, lb * 0.78, lb * 0.76, 2.4, centre_x=joint_x, centre_z=zc)),
+                (0.16 * h, section(n_l, lb * 0.52, lb * 0.52, lb * 0.50, 2.3, centre_x=foot_x, centre_z=zc * 1.10)),
+            ], "body", weights, cap_bottom=False, cap_top=False)
+            if level <= 1:
+                b.sweep([
+                    (0.16 * h, section(n_l, lb * 0.54, lb * 0.54, lb * 0.52, 2.3, centre_x=foot_x, centre_z=zc * 1.10)),
+                    (0.02 * h, section(n_l, lb * 0.46, lb * 0.90, lb * 0.40, 2.6, centre_x=foot_x, centre_z=zc * 1.24)),
+                ], "leather", weights, cap_bottom=False)
+    return b
+
+
+def add_beast_body(level, a, cfg):
+    """Species 3: a quadruped siege beast.
+
+    The arm bones are used as forelegs and the torso is horizontal, so this
+    walks on four legs with its spine level and its head low and forward. On
+    the same rig as everything else -- the clips still drive it, and a walk
+    cycle that swings 'arms' now swings the front pair, which is exactly what
+    a quadruped should do.
+    """
+    b = MeshBuilder(level)
+    n_t = (18, 12, 8)[level]
+    n_l = (12, 8, 6)[level]
+    h = a["height"]
+    sh, cd, wa, hp = a["shoulder"], a["chest_depth"], a["waist"], a["hip"]
+    lb, hd = a["limb"], a["head"]
+
+    # Barrel body: deepest at the shoulders, narrowing to the haunch.
+    b.sweep([
+        (0.50 * h, section(n_t, sh * 0.86, cd * 1.10, cd * 2.30, 2.4)),
+        (0.70 * h, section(n_t, sh * 1.02, cd * 1.60, cd * 2.10, 2.5)),
+        (0.82 * h, section(n_t, sh * 0.96, cd * 1.90, cd * 1.40, 2.5)),
+        (0.76 * h, section(n_t, sh * 0.72, cd * 2.20, cd * 0.60, 2.3)),
+    ], "body", torso_weights)
+    # Haunch mass over the hind legs.
+    b.sweep([
+        (0.44 * h, section(n_t, hp * 0.94, cd * 0.40, cd * 1.90, 2.4)),
+        (0.66 * h, section(n_t, hp * 1.02, cd * 0.60, cd * 2.20, 2.5)),
+    ], "body", torso_weights, cap_top=False)
+
+    # Head slung low and forward off a short thick neck.
+    b.sweep([
+        (0.80 * h, section(n_l, hd * 0.86, hd * 1.00, hd * 0.72, 2.3, centre_z=cd * 2.00)),
+        (0.72 * h, section(n_l, hd * 1.06, hd * 1.30, hd * 0.86, 2.5, centre_z=cd * 2.80)),
+        (0.64 * h, section(n_l, hd * 0.82, hd * 1.00, hd * 0.62, 2.3, centre_z=cd * 3.20)),
+    ], "body", head_weights, cap_bottom=False)
+    hw = blend("head", "neck", 0.10)
+    if level <= 1:
+        b.prism([
+            (-hd * 0.56, 0.700 * h), (hd * 0.56, 0.700 * h),
+            (hd * 0.44, 0.620 * h), (0.0, 0.596 * h), (-hd * 0.44, 0.620 * h),
+        ], cd * 3.00, hd * 0.72, "leather", hw)
+        b.box((0.0, 0.742 * h, cd * 2.90), (hd * 1.30, hd * 0.20, hd * 0.30), "accent", hw, taper=0.9)
+        for sgn in (-1, 1):
+            b.prism([
+                (sgn * hd * 0.56, 0.80 * h), (sgn * hd * 0.76, 0.80 * h),
+                (sgn * hd * 1.30, 1.02 * h), (sgn * hd * 1.06, 1.03 * h),
+            ], cd * 2.20, hd * 0.30, "accent", hw)
+        # Armoured back plates along the spine ridge.
+        for i in range(a["spines"]):
+            t = (i + 0.5) / a["spines"]
+            size = hd * (0.36 + 0.42 * math.sin(t * math.pi))
+            y = (0.86 - 0.10 * t) * h
+            b.prism([
+                (-size * 0.50, y), (size * 0.50, y),
+                (size * 0.18, y + size * 1.3), (-size * 0.18, y + size * 1.3),
+            ], cd * (1.70 - 3.40 * t), size * 0.58, "accent",
+                blend("chest", "spine", 0.34) if t > 0.45 else blend("spine", "pelvis", 0.34))
+
+    # Four columnar legs. Front pair heavier, which is what makes a quadruped
+    # read as front-loaded rather than as a horse.
+    for side, sgn in (("L", -1), ("R", 1)):
+        aw = lambda y, s=side: arm_weights(s, y)
+        lw = lambda y, s=side: leg_weights(s, y)
+        for weights, zc, thick in ((aw, cd * 1.70, 1.30), (lw, -cd * 1.40, 1.05)):
+            b.sweep([
+                (0.74 * h, section(n_l, lb * 1.40 * thick, lb * 1.40 * thick, lb * 1.36 * thick, 2.4,
+                                   centre_x=sgn * sh * 0.78, centre_z=zc * 0.72)),
+                (0.44 * h, section(n_l, lb * 1.02 * thick, lb * 1.06 * thick, lb * 1.00 * thick, 2.5,
+                                   centre_x=sgn * sh * 0.86, centre_z=zc)),
+                (0.16 * h, section(n_l, lb * 0.86 * thick, lb * 0.88 * thick, lb * 0.84 * thick, 2.6,
+                                   centre_x=sgn * sh * 0.88, centre_z=zc * 1.06)),
+            ], "body", weights, cap_bottom=False, cap_top=False)
+            b.sweep([
+                (0.16 * h, section(n_l, lb * 0.88 * thick, lb * 0.90 * thick, lb * 0.86 * thick, 2.6,
+                                   centre_x=sgn * sh * 0.88, centre_z=zc * 1.06)),
+                (0.03 * h, section(n_l, lb * 1.00 * thick, lb * 1.50 * thick, lb * 0.80 * thick, 2.9,
+                                   centre_x=sgn * sh * 0.88, centre_z=zc * 1.18)),
+            ], "leather", weights, cap_bottom=False)
+            if level == 0:
+                fw = blend("hand." + side, "lower_arm." + side, 0.12) if zc > 0 else blend("foot." + side, "shin." + side, 0.14)
+                for k in (-1, 0, 1):
+                    cx = sgn * sh * 0.88 + k * lb * 0.60 * thick
+                    b.prism([
+                        (cx - lb * 0.20, 0.05 * h), (cx + lb * 0.20, 0.05 * h),
+                        (cx + lb * 0.08, 0.004 * h), (cx - lb * 0.08, 0.004 * h),
+                    ], zc * 1.18 + (lb * 1.70 if zc > 0 else -lb * 1.20), lb * 0.30, "metal", fw)
+    return b
+
+
+def add_boss_body(level, a, cfg):
+    """The boss: its own body plan, not a scaled elite.
+
+    Everything below the ribcage is small and the mass is thrown upward and
+    forward -- an enormous shoulder shelf carrying a crown of ice, arms that
+    reach the ground, and legs short enough that it looks like it drags itself
+    along. Nothing else on the field has that proportion, which is the point:
+    a boss should be identifiable from its outline at any distance, before
+    colour, aura or health bar resolve.
+    """
+    b = MeshBuilder(level)
+    n_t = (20, 12, 8)[level]
+    n_l = (14, 8, 6)[level]
+    h = a["height"]
+    sh, cd, wa, hp = a["shoulder"], a["chest_depth"], a["waist"], a["hip"]
+    lb, hd = a["limb"], a["head"]
+    lean = a["hunch"]
+
+    # Pelvis small, chest enormous: an inverted mass distribution.
+    b.sweep([
+        (0.30 * h, section(n_t, hp * 0.58, hp * 0.46, hp * 0.54, 2.2, lean=-lean * 0.4)),
+        (0.46 * h, section(n_t, wa * 0.72, wa * 0.60, wa * 0.70, 2.3, lean=-lean * 0.2)),
+        (0.66 * h, section(n_t, wa * 1.10, cd * 0.86, cd * 0.90, 2.4, lean=lean * 0.3)),
+        (0.86 * h, section(n_t, sh * 0.94, cd * 1.20, cd * 1.00, 2.5, lean=lean * 0.7)),
+        (1.02 * h, section(n_t, sh * 1.20, cd * 1.40, cd * 1.06, 2.6, lean=lean)),
+        (1.12 * h, section(n_t, sh * 1.28, cd * 1.30, cd * 0.96, 2.6, lean=lean * 1.1)),
+        (1.18 * h, section(n_t, sh * 0.90, cd * 0.90, cd * 0.70, 2.3, lean=lean * 1.2)),
+    ], "body", torso_weights)
+
+    # The shoulder shelf, and an ice crown growing out of it rather than out
+    # of the head -- the boss wears its tier on its back.
+    if level <= 1:
+        for sgn in (-1, 1):
+            b.sweep([
+                (1.10 * h, section(n_l, sh * 0.52, cd * 0.70, cd * 0.66, 2.8, centre_x=sgn * sh * 0.96)),
+                (0.96 * h, section(n_l, sh * 0.62, cd * 0.86, cd * 0.78, 3.0, centre_x=sgn * sh * 1.10)),
+                (0.82 * h, section(n_l, sh * 0.46, cd * 0.66, cd * 0.60, 2.8, centre_x=sgn * sh * 1.16)),
+            ], "metal", lambda y, s=("L" if sgn < 0 else "R"): blend("upper_arm." + s, "chest", 0.34))
+        cw = blend("chest", "spine", 0.30)
+        for i, (cx, cy, cz, size) in enumerate((
+            (0.00, 1.16, -0.30, 1.55), (-0.46, 1.10, -0.24, 1.20), (0.46, 1.10, -0.24, 1.20),
+            (-0.80, 1.00, -0.16, 0.85), (0.80, 1.00, -0.16, 0.85),
+        )):
+            b.prism([
+                (cx * sh - hd * 0.24, cy * h), (cx * sh + hd * 0.24, cy * h),
+                (cx * sh * 1.24 + hd * 0.08, (cy + 0.30 * size) * h),
+                (cx * sh * 1.24 - hd * 0.08, (cy + 0.29 * size) * h),
+            ], cz * cd, hd * 0.30, "accent", cw)
+
+    # Head sunk into the shelf, jaw dominant.
+    fz = lean * 0.20
+    b.sweep([
+        (1.10 * h, section(n_l, hd * 0.72, hd * 0.86, hd * 0.76, 2.2, centre_z=fz * 0.6)),
+        (1.20 * h, section(n_l, hd * 1.02, hd * 1.20, hd * 0.90, 2.4, centre_z=fz * 0.9)),
+        (1.28 * h, section(n_l, hd * 0.86, hd * 1.00, hd * 0.76, 2.3, centre_z=fz * 0.8)),
+    ], "body", head_weights, cap_bottom=False)
+    hw = blend("head", "neck", 0.10)
+    if level <= 1:
+        b.prism([
+            (-hd * 0.62, 1.190 * h), (hd * 0.62, 1.190 * h),
+            (hd * 0.50, 1.110 * h), (0.0, 1.082 * h), (-hd * 0.50, 1.110 * h),
+        ], fz * 0.9 + hd * 0.70, hd * 0.78, "leather", hw)
+        b.box((0.0, 1.238 * h, fz * 0.9 + hd * 0.60), (hd * 1.40, hd * 0.20, hd * 0.32), "accent", hw, taper=0.92)
+
+    # Arms to the ground, legs short. The silhouette is a wedge.
+    for side, sgn in (("L", -1), ("R", 1)):
+        aw = lambda y, s=side: arm_weights(s, y)
+        b.sweep([
+            (1.04 * h, section(n_l, lb * 1.40, lb * 1.40, lb * 1.34, 2.4, centre_x=sgn * sh * 1.06)),
+            (0.72 * h, section(n_l, lb * 1.10, lb * 1.10, lb * 1.06, 2.4, centre_x=sgn * sh * 1.22)),
+            (0.40 * h, section(n_l, lb * 0.90, lb * 0.90, lb * 0.86, 2.4, centre_x=sgn * sh * 1.28)),
+            (0.20 * h, section(n_l, lb * 0.74, lb * 0.74, lb * 0.72, 2.3, centre_x=sgn * sh * 1.30)),
+        ], "body", aw, cap_bottom=False, cap_top=False)
+        if level <= 1:
+            for k, spread in ((-1, 0.40), (0, 0.0), (1, -0.40)):
+                cx = sgn * sh * 1.30 + k * lb * 0.62
+                b.prism([
+                    (cx - lb * 0.24, 0.20 * h), (cx + lb * 0.24, 0.20 * h),
+                    (cx + lb * 0.08 + spread * lb, 0.03 * h), (cx - lb * 0.08 + spread * lb, 0.03 * h),
+                ], lb * 0.36, lb * 0.34, "metal", blend("hand." + side, "lower_arm." + side, 0.12))
+
+        lw = lambda y, s=side: leg_weights(s, y)
+        lx = sgn * a["stance"]
+        b.sweep([
+            (0.36 * h, section(n_l, lb * 1.66, lb * 1.72, lb * 1.80, 2.3, centre_x=lx)),
+            (0.22 * h, section(n_l, lb * 1.30, lb * 1.34, lb * 1.44, 2.5, centre_x=lx)),
+            (0.09 * h, section(n_l, lb * 1.00, lb * 1.04, lb * 1.10, 2.6, centre_x=lx)),
+        ], "body", lw, cap_top=False)
+        b.sweep([
+            (0.09 * h, section(n_l, lb * 1.02, lb * 1.06, lb * 1.12, 2.6, centre_x=lx)),
+            (0.015 * h, section(n_l, lb * 1.10, lb * 1.90, lb * 0.80, 3.0, centre_x=lx, centre_z=lb * 0.5)),
+        ], "leather", lw, cap_bottom=False)
+    return b
+
+
 def add_wings(b, level, a, n):
     """Flyers read as creatures from below, so the wing is the silhouette."""
     h, sh, lb = a["height"], a["shoulder"], a["limb"]
@@ -819,6 +1125,19 @@ def add_weapon(level, a, cfg):
     return b
 
 
+# Which builder each monster form uses. Four structurally different plans plus
+# the boss, so an enemy is not the same creature at different settings: a
+# crawler is horizontal and sprawling, a hunter is an upright biped with long
+# arms, a beast walks on four legs with a level spine, and the boss carries an
+# inverted mass distribution nothing else has.
+MONSTER_PLANS = {
+    "crawler": add_crawler_body,
+    "hunter": add_monster_body,
+    "beast": add_beast_body,
+    "boss": add_boss_body,
+}
+
+
 def make_skeleton(root, h):
     data = bpy.data.armatures.new("UnitSkeleton")
     skeleton = bpy.data.objects.new("UnitSkeleton", data)
@@ -1071,7 +1390,7 @@ def build_unit(key, cfg):
 
     for level in (0, 1, 2):
         body_slots = ["body", "leather", "metal"] if level == 0 else (["body", "metal"] if level == 1 else ["body"])
-        builder = add_monster_body(level, a, cfg) if cfg.get("mon") else add_body(level, a, cfg)
+        builder = MONSTER_PLANS[a["plan"]](level, a, cfg) if cfg.get("mon") else add_body(level, a, cfg)
         pieces = [create_mesh(builder, f"LOD{level}_PROD_body", root, skeleton, body_slots, level)]
         weapon_builder = add_weapon(level, a, cfg)
         if weapon_builder and weapon_builder.faces:
