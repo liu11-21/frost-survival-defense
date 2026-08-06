@@ -16,9 +16,9 @@
         "z": -4.5
       },
       "screenSpaceBoundingBox": {
-        "x": 492.46,
+        "x": 491.62,
         "y": 545.8,
-        "width": 80.85,
+        "width": 81.68,
         "height": 140.48,
         "right": 573.31,
         "bottom": 686.28
@@ -244,9 +244,9 @@
           ]
         }
       },
-      "fps": 1.93,
-      "drawCalls": 5724,
-      "activeMeshes": 157,
+      "fps": 2.21,
+      "drawCalls": 5686,
+      "activeMeshes": 159,
       "animationGroups": [
         "hero.player:Idle",
         "hero.player:Walk",
@@ -263,9 +263,9 @@
       "authoredVisibleMeshes": 5,
       "proceduralVisibleMeshes": 0,
       "heroScreenBounds": {
-        "x": 492.46,
+        "x": 491.62,
         "y": 545.8,
-        "width": 80.85,
+        "width": 81.68,
         "height": 140.48,
         "right": 573.31,
         "bottom": 686.28,
@@ -288,9 +288,9 @@
         "z": -4.5
       },
       "screenSpaceBoundingBox": {
-        "x": 492.46,
+        "x": 491.62,
         "y": 545.8,
-        "width": 80.85,
+        "width": 81.68,
         "height": 140.48,
         "right": 573.31,
         "bottom": 686.28
@@ -516,9 +516,9 @@
           ]
         }
       },
-      "fps": 1.93,
-      "drawCalls": 5724,
-      "activeMeshes": 157,
+      "fps": 2.21,
+      "drawCalls": 5686,
+      "activeMeshes": 159,
       "animationGroups": [
         "hero.player:Idle",
         "hero.player:Walk",
@@ -775,9 +775,9 @@
           ]
         }
       },
-      "fps": 1.93,
-      "drawCalls": 5905,
-      "activeMeshes": 175,
+      "fps": 2.21,
+      "drawCalls": 5865,
+      "activeMeshes": 173,
       "animationGroups": [
         "hero.player:Idle",
         "hero.player:Walk",
@@ -1047,9 +1047,9 @@
           ]
         }
       },
-      "fps": 1.93,
-      "drawCalls": 5905,
-      "activeMeshes": 175,
+      "fps": 2.21,
+      "drawCalls": 5865,
+      "activeMeshes": 173,
       "animationGroups": [
         "hero.player:Idle",
         "hero.player:Walk",
@@ -1306,9 +1306,9 @@
           ]
         }
       },
-      "fps": 1.93,
-      "drawCalls": 6045,
-      "activeMeshes": 134,
+      "fps": 2.21,
+      "drawCalls": 6008,
+      "activeMeshes": 137,
       "animationGroups": [
         "hero.player:Idle",
         "hero.player:Walk",
@@ -1578,9 +1578,9 @@
           ]
         }
       },
-      "fps": 1.93,
-      "drawCalls": 6045,
-      "activeMeshes": 134,
+      "fps": 2.21,
+      "drawCalls": 6008,
+      "activeMeshes": 137,
       "animationGroups": [
         "hero.player:Idle",
         "hero.player:Walk",

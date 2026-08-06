@@ -34,7 +34,7 @@ from common import (  # noqa: E402
     collision_box, empty, export_glb, material, orient_for_babylon,
     reset_scene, save_source, collection,
 )
-from authoring import MeshBuilder, section  # noqa: E402
+from authoring import MeshBuilder, arc, section  # noqa: E402
 
 SURFACES = {"coat": (0, 0), "trim": (0, 1), "accent": (0, 2),
             "leather": (1, 0), "glove": (1, 1),
@@ -141,12 +141,26 @@ def add_body(level):
 
     # Cape hanging off the back: pure silhouette, and the clearest read that
     # this is the player and not another trooper.
+    #
+    # This was a flat extruded plate 0.72 wide, 1.12 tall and 0.05 thick, in
+    # `trim` -- the brightest cloth value in the palette. From behind it read
+    # as a white signboard bolted to the shoulders, and it was the single most
+    # wrong-looking thing on the Hero at close range. It is now an open band
+    # wrapped around the back on an arc, widening and pulling further from the
+    # body as it falls, with the shoulders held tight. Cloth reads through the
+    # curve of its hem, not through its outline.
     if level <= 1:
-        b.prism([
-            (-SHOULDER * 0.92, 1.34 * H), (SHOULDER * 0.92, 1.34 * H),
-            (SHOULDER * 1.02, 0.86 * H), (SHOULDER * 0.78, 0.40 * H),
-            (-SHOULDER * 0.78, 0.40 * H), (-SHOULDER * 1.02, 0.86 * H),
-        ], -CHEST_D * 1.18, 0.05, "trim", blend("chest", "spine", 0.30))
+        n_cape = (13, 9)[level]
+        cape = []
+        for y, out_w, out_d, in_w, in_d, span in (
+            (1.34 * H, SHOULDER * 0.86, CHEST_D * 1.16, SHOULDER * 0.74, CHEST_D * 1.02, 1.92),
+            (1.06 * H, SHOULDER * 1.02, CHEST_D * 1.34, SHOULDER * 0.90, CHEST_D * 1.20, 2.10),
+            (0.74 * H, SHOULDER * 1.14, CHEST_D * 1.50, SHOULDER * 1.02, CHEST_D * 1.36, 2.24),
+            (0.44 * H, SHOULDER * 1.10, CHEST_D * 1.62, SHOULDER * 0.98, CHEST_D * 1.48, 2.30),
+        ):
+            lo, hi = math.pi - span, math.pi + span
+            cape.append((y, arc(n_cape, out_w, out_d, lo, hi), arc(n_cape, in_w, in_d, lo, hi)))
+        b.band(cape, "coat", lambda y: blend("chest", "spine", 0.30))
 
     # Neck and head.
     b.sweep([

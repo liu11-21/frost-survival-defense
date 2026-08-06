@@ -424,11 +424,29 @@ def add_weapon(level, a, cfg):
                 "metal", lambda y: w)
     elif kind == "shield":
         # Held out from the body: the broad face is the whole silhouette.
-        b.sweep([(hy - 0.34 * h, section(n, sh * 0.30, lb * 0.5, lb * 0.5, 2.6, centre_x=hx * 1.10, centre_z=0.14)),
-                 (hy + 0.02 * h, section(n, sh * 0.86, lb * 0.7, lb * 0.7, 3.2, centre_x=hx * 1.10, centre_z=0.14)),
-                 (hy + 0.40 * h, section(n, sh * 0.72, lb * 0.6, lb * 0.6, 3.0, centre_x=hx * 1.10, centre_z=0.14))],
-                "metal", lambda y: w)
-        b.box((hx * 1.10, hy + 0.02 * h, 0.24), (sh * 0.30, sh * 0.30, 0.05), "accent", w, taper=0.6)
+        #
+        # This was one slab with a flat plate stuck on the front, and it read
+        # as a sheet of paper -- not because it was thin (it is not) but
+        # because a flat face under even lighting has nothing on it. A shield
+        # reads through its edge: the rim catches light all the way round and
+        # separates the disc from whatever is behind it. So the backing plate
+        # is built proud of the face on every side in `edge`, the brightest
+        # steel in the palette, and the face is inset and pushed forward. The
+        # boss is two stepped blocks rather than a decal.
+        sx = hx * 1.10
+
+        def disc(scale, z, depth, surface):
+            b.sweep([
+                (hy - 0.34 * h, section(n, sh * 0.30 * scale, depth, depth * 0.78, 2.8, centre_x=sx, centre_z=z)),
+                (hy - 0.06 * h, section(n, sh * 0.80 * scale, depth, depth * 0.78, 3.2, centre_x=sx, centre_z=z)),
+                (hy + 0.14 * h, section(n, sh * 0.86 * scale, depth, depth * 0.78, 3.2, centre_x=sx, centre_z=z)),
+                (hy + 0.42 * h, section(n, sh * 0.68 * scale, depth, depth * 0.78, 2.8, centre_x=sx, centre_z=z)),
+            ], surface, lambda y: w)
+
+        disc(1.00, 0.140, lb * 0.62, "edge")
+        disc(0.88, 0.156, lb * 0.58, "metal")
+        b.box((sx, hy + 0.06 * h, 0.212), (sh * 0.38, sh * 0.32, lb * 0.44), "edge", w, taper=0.86)
+        b.box((sx, hy + 0.06 * h, 0.246), (sh * 0.24, sh * 0.19, lb * 0.40), "accent", w, taper=0.68)
     return b
 
 

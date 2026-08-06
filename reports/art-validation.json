@@ -1,12 +1,12 @@
 {
-  "generatedAt": "2026-08-06T05:10:00.954Z",
+  "generatedAt": "2026-08-06T05:46:49.270Z",
   "blenderRequired": true,
   "assets": [
     {
       "key": "hero",
       "status": "ok",
       "path": "public/assets/models/characters/hero.glb",
-      "sizeBytes": 1313864,
+      "sizeBytes": 1329008,
       "nodes": 31,
       "meshes": 6,
       "materials": 3,
@@ -58,10 +58,10 @@
         "Hit": 54,
         "Death": 54
       },
-      "triangles": 4512,
+      "triangles": 4816,
       "lodTriangles": {
-        "LOD0": 2420,
-        "LOD1": 1372,
+        "LOD0": 2604,
+        "LOD1": 1492,
         "LOD2": 720
       },
       "surfaceAttributes": {
@@ -290,7 +290,7 @@
       "key": "shield",
       "status": "ok",
       "path": "public/assets/models/characters/shield.glb",
-      "sizeBytes": 557656,
+      "sizeBytes": 570100,
       "nodes": 30,
       "meshes": 6,
       "materials": 3,
@@ -340,11 +340,11 @@
         "Hit": 54,
         "Death": 54
       },
-      "triangles": 3724,
+      "triangles": 3940,
       "lodTriangles": {
-        "LOD0": 1868,
-        "LOD1": 1112,
-        "LOD2": 744
+        "LOD0": 1960,
+        "LOD1": 1184,
+        "LOD2": 796
       },
       "surfaceAttributes": {
         "TEXCOORD_0": true,
@@ -1226,7 +1226,7 @@
       "key": "juggernaut",
       "status": "ok",
       "path": "public/assets/models/characters/juggernaut.glb",
-      "sizeBytes": 549716,
+      "sizeBytes": 562160,
       "nodes": 30,
       "meshes": 6,
       "materials": 3,
@@ -1276,11 +1276,11 @@
         "Hit": 54,
         "Death": 54
       },
-      "triangles": 3724,
+      "triangles": 3940,
       "lodTriangles": {
-        "LOD0": 1868,
-        "LOD1": 1112,
-        "LOD2": 744
+        "LOD0": 1960,
+        "LOD1": 1184,
+        "LOD2": 796
       },
       "surfaceAttributes": {
         "TEXCOORD_0": true,
@@ -1514,7 +1514,7 @@
       "key": "icearmor",
       "status": "ok",
       "path": "public/assets/models/characters/icearmor.glb",
-      "sizeBytes": 561056,
+      "sizeBytes": 573504,
       "nodes": 30,
       "meshes": 6,
       "materials": 3,
@@ -1564,11 +1564,11 @@
         "Hit": 54,
         "Death": 54
       },
-      "triangles": 3688,
+      "triangles": 3904,
       "lodTriangles": {
-        "LOD0": 1840,
-        "LOD1": 1102,
-        "LOD2": 746
+        "LOD0": 1932,
+        "LOD1": 1174,
+        "LOD2": 798
       },
       "surfaceAttributes": {
         "TEXCOORD_0": true,
@@ -1946,7 +1946,7 @@
       "key": "flyingColossus",
       "status": "ok",
       "path": "public/assets/models/characters/flyingColossus.glb",
-      "sizeBytes": 554340,
+      "sizeBytes": 566780,
       "nodes": 30,
       "meshes": 6,
       "materials": 3,
@@ -1977,7 +1977,7 @@
         "max": [
           0.979200005531311,
           1.6447999477386475,
-          0.26500001549720764
+          0.2608000338077545
         ]
       },
       "animations": [
@@ -1996,11 +1996,11 @@
         "Hit": 54,
         "Death": 54
       },
-      "triangles": 3724,
+      "triangles": 3940,
       "lodTriangles": {
-        "LOD0": 1824,
-        "LOD1": 1122,
-        "LOD2": 778
+        "LOD0": 1916,
+        "LOD1": 1194,
+        "LOD2": 830
       },
       "surfaceAttributes": {
         "TEXCOORD_0": true,
