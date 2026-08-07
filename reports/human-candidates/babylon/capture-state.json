@@ -1,5 +1,5 @@
 {
-  "capturedAt": "2026-08-07T06:32:32.145Z",
+  "capturedAt": "2026-08-07T07:28:52.127Z",
   "captured": [
     {
       "file": "hero_male-front.png",
@@ -257,24 +257,24 @@
         ],
         "boundingBox": {
           "min": [
-            -0.4928,
-            -0.0114,
-            -0.1319
+            -0.5313,
+            -0.0128,
+            -0.1407
           ],
           "max": [
-            0.4928,
-            1.6081,
-            0.3331
+            0.5313,
+            1.7375,
+            0.3624
           ],
-          "height": 1.6195
+          "height": 1.7502
         },
         "camera": "front",
         "cameraSolved": {
-          "radius": 2.0302,
+          "radius": 2.194,
           "alpha": 1.5708,
-          "beta": 1.4617,
-          "targetY": 0.8307,
-          "clearanceFromBounds": 1.5374,
+          "beta": 1.4893,
+          "targetY": 0.8973,
+          "clearanceFromBounds": 1.6627,
           "insideBounds": false
         },
         "error": null,

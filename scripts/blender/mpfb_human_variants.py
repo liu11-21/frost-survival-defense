@@ -50,7 +50,7 @@ VARIANTS = {
         "age": 0.50,
         "muscle": 0.50,
         "weight": 0.48,
-        "height": 0.50,
+        "height": 0.603,
         "proportions": 0.55,
         # Deliberately low and unremarkable. A combat character in a coat, and
         # nothing about the brief calls for more than that.
