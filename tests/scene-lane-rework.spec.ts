@@ -97,20 +97,24 @@ test("runtime keeps melee on-lane, permits ranged fallback, and then pre-empts i
   expect(await call(page, "deploySquadForTest", "archer", 0, 0, 8)).toBe(true);
 
   // Lane-1 melee can see lane-0 allies geometrically but may not select them.
-  await call(page, "spawnEnemy", "grunt", 4, 2, 1);
+  const gruntSpawn = await call(page, "spawnEnemyOnLaneForTest", "grunt", 4, 2, 1);
+  expect(gruntSpawn.ok).toBe(true);
   await step(page, 0.05, 10);
   let enemies = (await call(page, "enemyStatus")) as Array<any>;
-  const grunt = enemies.find((enemy) => enemy.id === "grunt");
+  const grunt = enemies.find((enemy) => enemy.squadId === gruntSpawn.squadId);
   expect(grunt).toBeTruthy();
+  expect(grunt.laneIndex).toBe(1);
   expect(grunt.targetLane).not.toBe(0);
 
   // Ranged fallback is legal only because there is no same-lane defender and
-  // the lane-0 archer is inside the Slinger’s actual 8-unit attack range.
-  await call(page, "spawnEnemy", "slinger", 4, 2, 1);
+  // the lane-0 archer is inside the Slinger’s actual attack range.
+  const slingerSpawn = await call(page, "spawnEnemyOnLaneForTest", "slinger", 4, 2, 1);
+  expect(slingerSpawn.ok).toBe(true);
   await step(page, 0.05, 10);
   enemies = (await call(page, "enemyStatus")) as Array<any>;
-  let slinger = enemies.find((enemy) => enemy.id === "slinger");
+  let slinger = enemies.find((enemy) => enemy.squadId === slingerSpawn.squadId);
   expect(slinger).toBeTruthy();
+  expect(slinger.laneIndex).toBe(1);
   expect(slinger.targetLane).toBe(0);
 
   // A legal same-lane defender immediately outranks the cross-lane fallback.
@@ -118,7 +122,7 @@ test("runtime keeps melee on-lane, permits ranged fallback, and then pre-empts i
   expect(await call(page, "deploySquadForTest", "warrior", 1, 8, 0)).toBe(true);
   await step(page, 0.05, 12);
   enemies = (await call(page, "enemyStatus")) as Array<any>;
-  slinger = enemies.find((enemy) => enemy.id === "slinger");
+  slinger = enemies.find((enemy) => enemy.squadId === slingerSpawn.squadId);
   expect(slinger.targetLane).toBe(1);
 
   await page.screenshot({ path: testInfo.outputPath("lane-targeting-runtime.png"), fullPage: true });
@@ -135,15 +139,20 @@ test("ordinary low-tier enemies march past optional facilities and speed moves t
   await call(page, "build", "northFar", "tower");
   await step(page, 0.016, 500);
 
-  await call(page, "spawnEnemy", "grunt", -10, 45, 0);
+  const spawn = await call(page, "spawnEnemyOnLaneForTest", "grunt", -10, 45, 0);
+  expect(spawn.ok).toBe(true);
   await step(page, 0.05, 2);
-  const before = ((await call(page, "enemyStatus")) as Array<any>).find((enemy) => enemy.id === "grunt");
+  const before = ((await call(page, "enemyStatus")) as Array<any>).find((enemy) => enemy.squadId === spawn.squadId);
   expect(before).toBeTruthy();
+  expect(before.laneIndex).toBe(0);
   expect(before.moveSpeed).toBeGreaterThan(0);
+  expect(before.effectiveMoveSpeed).toBeGreaterThan(0);
+  expect(before.stunned).toBe(false);
   expect(before.targetId).not.toBe("tower");
 
   await step(page, 0.05, 20);
-  const after = ((await call(page, "enemyStatus")) as Array<any>).find((enemy) => enemy.id === "grunt");
+  const after = ((await call(page, "enemyStatus")) as Array<any>).find((enemy) => enemy.squadId === spawn.squadId);
+  expect(after).toBeTruthy();
   expect(Math.hypot(after.x - before.x, after.z - before.z)).toBeGreaterThan(0.5);
   expect(after.targetId).not.toBe("tower");
 });
