@@ -1,4 +1,5 @@
 import { expect, test, type Page } from "@playwright/test";
+import { SLOT_BY_ID, UNIVERSAL_MAX_VISUAL_RADIUS } from "../src/data/BuildSlotDefinitions";
 
 async function call(page: Page, name: string, ...args: unknown[]): Promise<any> {
   return page.evaluate(
@@ -56,6 +57,38 @@ test("mouse-clicking a remote visible slot opens the canonical build panel", asy
   expect(pointer.finalHandler).toBe("slotClick");
   expect(pointer.hitWorldSlot).toBe("coreNE");
   expect(await call(page, "nearbySlotId")).toBe("coreNE");
+  await expect(page.locator("#buildPanel")).toHaveClass(/show/);
+});
+
+test("scaled facility visuals still leave a generous real pointer placement target", async ({ page }) => {
+  await boot(page);
+  await call(page, "startStage", "stage-3");
+  await call(page, "grant", 999, 999, 999);
+  await call(page, "setFurnaceLevel", 30);
+  await call(page, "teleport", 0, 0);
+
+  // Instantiate a real non-wall facility and read its actual root scale. The
+  // target slot stays empty; the click lands near the largest scaled visual
+  // footprint rather than at the easy centre point.
+  expect((await call(page, "build", "coreNW", "warehouse")).ok).toBe(true);
+  await step(page, 0.016, 2);
+  const contract = await call(page, "facilityRuntimeContract", "coreNW");
+  expect(contract).toBeTruthy();
+  expect(contract.visualScale.x).toBeCloseTo(0.82, 5);
+
+  const target = SLOT_BY_ID.get("coreNE")!;
+  const visibleEdgeOffset = UNIVERSAL_MAX_VISUAL_RADIUS * contract.visualScale.x * 0.95;
+  const projected = await call(page, "projectWorldPoint", target.x + visibleEdgeOffset, target.z, 0.08);
+  expect(projected).toBeTruthy();
+  const point = await canvasClientPoint(page, projected);
+  await page.mouse.click(point.x, point.y);
+  await step(page, 0.016, 2);
+
+  const pointer = await call(page, "pointerDebug");
+  expect(pointer.finalHandler).toBe("slotClick");
+  expect(pointer.hitWorldSlot).toBe("coreNE");
+  expect(await call(page, "nearbySlotId")).toBe("coreNE");
+  expect((await call(page, "canBuild", "coreNE", "tower")).ok).toBe(true);
   await expect(page.locator("#buildPanel")).toHaveClass(/show/);
 });
 
