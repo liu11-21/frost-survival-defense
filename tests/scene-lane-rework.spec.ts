@@ -73,9 +73,6 @@ test("waypoint look-ahead crosses a bend instead of targeting the point already 
   const lane = LANES[0];
   const start = lane.path[0];
   const bend = lane.path[1];
-  // 80% along the first segment is inside the motor's normal approach zone.
-  // Returning path[1] here creates a stable deadlock: the motor brakes before
-  // the bend and every navigation refresh chooses that same bend again.
   const x = start.x + (bend.x - start.x) * 0.8;
   const z = start.z + (bend.z - start.z) * 0.8;
   expect(nextLaneWaypoint(lane.index, x, z, "inbound")).toEqual(lane.path[2]);
@@ -104,8 +101,15 @@ test("facility visual scale stays presentation-only at runtime", async ({ page }
   await page.evaluate(() => (window as any).frostbound.stopLoop());
 
   await call(page, "startStage", "stage-3");
-  await call(page, "grant", 999, 999, 999);
   await call(page, "setFurnaceLevel", 30);
+  await call(page, "grant", 100, 100, 100);
+
+  // Respect the real pre-warehouse 100-resource cap instead of bypassing the
+  // economy in a presentation test. Completing one warehouse raises the cap,
+  // after which the test can legitimately fund both a tower and a 440-stone wall.
+  expect((await call(page, "build", "coreSW", "warehouse")).ok).toBe(true);
+  await step(page, 0.016, 220);
+  await call(page, "grant", 999, 999, 999);
 
   expect((await call(page, "build", "coreNE", "tower")).ok).toBe(true);
   expect((await call(page, "build", "wallNorth", "wall")).ok).toBe(true);
@@ -121,8 +125,6 @@ test("facility visual scale stays presentation-only at runtime", async ({ page }
   expect(tower.attackRange).toBe(towerDef.attackRange);
   expect(tower.cost).toEqual(buildCostForSurface(towerDef, "ground"));
 
-  // Use the live CollisionWorld rather than a copied formula. Inside the
-  // authored gameplay radius must still collide; just outside it must not.
   const core = GROUND_SLOTS.find((slot) => slot.id === "coreNE")!;
   const inside = await call(page, "collisionProbe", core.x + towerDef.radius * 0.5, core.z, 0);
   const outside = await call(page, "collisionProbe", core.x + towerDef.radius + 0.25, core.z, 0);
@@ -192,8 +194,6 @@ test("cross-lane taunt cannot drag melee, while same-lane shield remains a valid
   await call(page, "build", "coreNE", "recruitHall");
   await step(page, 0.016, 500);
 
-  // The two roads are close near the furnace. This puts a lane-0 shield inside
-  // the grunt's geometric taunt radius without making it a legal same-lane target.
   expect(await call(page, "recruit", "shield")).toBeNull();
   expect(await call(page, "deploySquadForTest", "shield", 0, 0, 3)).toBe(true);
   const spawn = await call(page, "spawnEnemyOnLaneForTest", "grunt", 3, 0, 1);
@@ -204,8 +204,6 @@ test("cross-lane taunt cannot drag melee, while same-lane shield remains a valid
   expect(enemy).toBeTruthy();
   expect(enemy.targetLane).not.toBe(0);
 
-  // A shield deployed to the enemy's own lane is still a legal high-priority
-  // defender and must be targetable; the lane filter only blocks cross-lane taunt.
   expect(await call(page, "recruit", "shield")).toBeNull();
   expect(await call(page, "deploySquadForTest", "shield", 1, 3, 0)).toBe(true);
   await step(page, 0.05, 8);
