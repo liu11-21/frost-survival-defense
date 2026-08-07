@@ -3,10 +3,7 @@ import { WORLD } from "../game/GameConfig";
 import { HeatSource } from "./HeatSource";
 import { MAX_HEAT_SOURCES, createSnowMaterial } from "./SnowMaterial";
 
-/**
- * Owns the ground mesh + its snow shader and keeps the shader's heat uniforms
- * in sync with the live heat sources.
- */
+/** Owns the ground mesh + snow shader and keeps heat uniforms in sync. */
 export class HeatSystem {
   readonly ground: Mesh;
   private readonly material: ShaderMaterial;
@@ -28,7 +25,11 @@ export class HeatSystem {
       scene,
     );
     this.ground.material = this.material;
-    this.ground.isPickable = false;
+    // The ground remains non-colliding, but must be pickable so an HTML roster
+    // drag can be converted into a world-space lane deployment point. SlotPicker
+    // supplies its own predicate, so this does not steal construction clicks.
+    this.ground.isPickable = true;
+    this.ground.checkCollisions = false;
     this.ground.receiveShadows = false;
     this.ground.alwaysSelectAsActiveMesh = true;
     this.uploadHeat();
@@ -43,23 +44,17 @@ export class HeatSystem {
     return source;
   }
 
-  markDirty(): void {
-    this.dirty = true;
-  }
+  markDirty(): void { this.dirty = true; }
 
   /** Combined coverage used by gameplay code (1 = deep snow, 0 = bare ground). */
   snowAt(x: number, z: number): number {
     let heat = 0;
     for (const s of this.sources) heat = Math.max(heat, s.influenceAt(x, z));
-    // Slightly ahead of the shader threshold: surface snow props should give
-    // way just before the ground itself finishes thawing.
     const t = Math.max(0, Math.min(1, (heat - 0.18) / 0.34));
     return 1 - t * t * (3 - 2 * t);
   }
 
-  setSunDirection(dir: Vector3): void {
-    this.material.setVector3("uSunDir", dir);
-  }
+  setSunDirection(dir: Vector3): void { this.material.setVector3("uSunDir", dir); }
 
   update(dt: number, cameraPosition: Vector3): void {
     this.time += dt;
@@ -71,10 +66,7 @@ export class HeatSystem {
     }
   }
 
-  /** Radius of the largest source — used to aim the expansion camera and VFX. */
-  get primaryRadius(): number {
-    return this.sources.length > 0 ? this.sources[0].radius : 0;
-  }
+  get primaryRadius(): number { return this.sources.length > 0 ? this.sources[0].radius : 0; }
 
   private uploadHeat(): void {
     for (let i = 0; i < MAX_HEAT_SOURCES; i++) {
