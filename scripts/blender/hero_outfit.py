@@ -141,7 +141,8 @@ def bone_frame(armature, bone_name):
     return start, end, tangent, side, front
 
 
-def limb_profile(body, bone_name, armature, slices=5, percentile=0.90):
+def limb_profile(body, bone_name, armature, slices=5, percentile=0.90,
+                 extra_bones=(), axis_bone=None):
     """Per-slice girth AND centre, both measured off the body mesh.
 
     The bone supplies orientation only. Using `bone.head`/`bone.tail` as the
@@ -159,10 +160,20 @@ def limb_profile(body, bone_name, armature, slices=5, percentile=0.90):
     the S/F frame `sweep_axis` will build, so a forearm comes out wider than
     it is deep rather than as a round tube.
     """
-    bone = armature.data.bones.get(bone_name)
+    # `extra_bones` widens the vertex set without changing the axis. A glove
+    # has to cover the fingers, which live on their own bones, and a hand bone
+    # is 45 mm long -- profiling it alone produced a cuff floating at the
+    # wrist with a bare hand sticking out of it. `axis_bone` lets the
+    # orientation come from a longer bone than the parts being covered.
+    bone = armature.data.bones.get(axis_bone or bone_name)
     group = body.vertex_groups.get(bone_name)
     if bone is None or group is None:
         return None
+    group_ids = {group.index}
+    for name in extra_bones:
+        extra = body.vertex_groups.get(name)
+        if extra is not None:
+            group_ids.add(extra.index)
 
     # Orientation only. The axis is used for T/S/F and for deciding which
     # slice a vertex belongs to -- never for absolute placement.
@@ -182,7 +193,7 @@ def limb_profile(body, bone_name, armature, slices=5, percentile=0.90):
 
     owned = []
     for vertex in body.data.vertices:
-        weight = next((g.weight for g in vertex.groups if g.group == group.index), 0.0)
+        weight = sum(g.weight for g in vertex.groups if g.group in group_ids)
         if weight >= 0.55:
             owned.append(body.matrix_world @ vertex.co)
     if len(owned) < 12:
@@ -372,49 +383,79 @@ def build_outfit(body, armature, variant):
     # down and outward; stacking rings by world height shears every one of
     # them, which is what turned the first sleeves into flat panels.
     for side in ("l", "r"):
-        for bone_name, surface, pad, tail_pad, exp in (
-            (f"upperarm_{side}", "coat", 1.22, 1.15, 2.8),
-            (f"lowerarm_{side}", "coat", 1.17, 1.10, 2.8),
-            (f"hand_{side}", "leather", 1.20, 1.12, 3.0),
-            (f"thigh_{side}", "coat", 1.15, 1.10, 2.8),
-            (f"calf_{side}", "coat", 1.13, 1.18, 2.8),
-            (f"foot_{side}", "leather", 1.26, 1.34, 3.2),
+        digits = tuple(f"{d}_{j:02d}_{side}" for d in
+                       ("thumb", "index", "middle", "ring", "pinky")
+                       for j in (1, 2, 3))
+        for bone_name, surface, pad, tail_pad, exp, extra, axis_bone in (
+            (f"upperarm_{side}", "coat", 1.22, 1.15, 2.8, (), None),
+            (f"lowerarm_{side}", "coat", 1.17, 1.10, 2.8, (), None),
+            # Glove: hand plus every finger, oriented along the forearm so a
+            # 45 mm hand bone does not set the sweep direction.
+            (f"hand_{side}", "leather", 1.18, 1.22, 3.0, digits, f"lowerarm_{side}"),
+            (f"thigh_{side}", "coat", 1.15, 1.10, 2.8, (), None),
+            (f"calf_{side}", "coat", 1.13, 1.18, 2.8, (), None),
+            # Boot: foot plus the ball, oriented along the shin so the shaft
+            # runs up the ankle instead of along the toes.
+            (f"foot_{side}", "leather", 1.20, 1.30, 3.2, (f"ball_{side}",), f"calf_{side}"),
         ):
-            data = limb_profile(body, bone_name, armature)
+            data = limb_profile(body, bone_name, armature,
+                                extra_bones=extra, axis_bone=axis_bone)
             if data is None:
                 continue
+            # Gloves and boots are closed at the far end. Left open, the
+            # fingertips and toes simply protrude through the hole -- which is
+            # exactly what "bare hands and bare toes" looked like.
+            closed = bone_name.startswith(("hand_", "foot_"))
             b.sweep_axis(limb_rings(data, n_limb, pad, tail_pad, exp),
                          surface, lambda t: {}, data["start"], data["end"],
-                         cap_start=False, cap_end=False)
+                         cap_start=False, cap_end=closed)
 
     # --- helmet: open face --------------------------------------------
-    head = armature.pose.bones.get("head")
+    # Built from the head's own vertices like every other piece. The previous
+    # version stacked rings up world Y from a pose-bone position and a guessed
+    # skull radius, and did not read at all.
+    head = limb_profile(body, "head", armature, slices=6)
     if head is not None:
-        origin = armature.matrix_world @ head.head
-        crown = top
-        skull = max(m["collar"]["halfWidth"], 0.09)
-        for i, (frac, grow) in enumerate(((0.16, 1.14), (0.42, 1.16), (0.70, 1.06), (0.92, 0.72))):
-            pass
-        rings = []
-        for frac, grow in ((0.14, 1.16), (0.42, 1.18), (0.70, 1.08), (0.94, 0.66)):
-            y = origin.y + (crown - origin.y) * frac
-            rings.append((y, section(n, skull * grow, skull * grow * 1.02, skull * grow, 2.9,
-                                     centre_x=origin.x, centre_z=origin.z)))
-        b.sweep(rings, "metal", lambda y: {}, cap_bottom=False)
-        brim = rings[0][0]
-        b.sweep([
-            (brim, section(n, skull * 1.16, skull * 1.18, skull * 1.16, 2.9, centre_x=origin.x, centre_z=origin.z)),
-            (brim - (crown - origin.y) * 0.05, section(n, skull * 1.26, skull * 1.28, skull * 1.26, 3.0, centre_x=origin.x, centre_z=origin.z)),
-            (brim - (crown - origin.y) * 0.09, section(n, skull * 1.10, skull * 1.12, skull * 1.10, 2.9, centre_x=origin.x, centre_z=origin.z)),
-        ], "edge", lambda y: {}, cap_bottom=False, cap_top=False)
-        # Cheek guards, framing the face rather than covering it.
-        for sign in (-1, 1):
-            b.prism([
-                (origin.x + sign * skull * 0.92, brim),
-                (origin.x + sign * skull * 1.24, brim - (crown - origin.y) * 0.06),
-                (origin.x + sign * skull * 1.16, brim - (crown - origin.y) * 0.44),
-                (origin.x + sign * skull * 0.84, brim - (crown - origin.y) * 0.38),
-            ], origin.z + skull * 0.20, skull * 0.62, "metal", {})
+        start, end = head["start"], head["end"]
+        slices = head["slices"]
+        # The brow sits a little above the middle of the head; everything from
+        # there up is shell, and the face below it stays open.
+        brow = max(1, int(len(slices) * 0.42))
+        shell = []
+        for entry in slices[brow:]:
+            t = entry["t"]
+            taper = 1.0 if t < 0.85 else max(0.35, 1.0 - (t - 0.85) * 4.0)
+            shell.append((t, section(
+                n, entry["halfWidth"] * 1.14 * taper, entry["front"] * 1.14 * taper,
+                entry["back"] * 1.16 * taper, 2.9,
+                centre_x=(entry["centre"] - (start + (end - start) * t)).dot(head["side"]),
+                centre_z=(entry["centre"] - (start + (end - start) * t)).dot(head["front"]))))
+        if len(shell) >= 2:
+            b.sweep_axis(shell, "metal", lambda t: {}, start, end, cap_start=False)
+            # Rolled brim: out, then tucked back under, so the edge has an
+            # underside and the helmet does not read as a smooth cap.
+            rim = slices[brow]
+            offset_s = (rim["centre"] - (start + (end - start) * rim["t"])).dot(head["side"])
+            offset_f = (rim["centre"] - (start + (end - start) * rim["t"])).dot(head["front"])
+            b.sweep_axis([
+                (rim["t"], section(n, rim["halfWidth"] * 1.14, rim["front"] * 1.14,
+                                   rim["back"] * 1.16, 2.9, centre_x=offset_s, centre_z=offset_f)),
+                (rim["t"] - 0.045, section(n, rim["halfWidth"] * 1.26, rim["front"] * 1.26,
+                                           rim["back"] * 1.28, 3.0, centre_x=offset_s, centre_z=offset_f)),
+                (rim["t"] - 0.085, section(n, rim["halfWidth"] * 1.08, rim["front"] * 1.08,
+                                           rim["back"] * 1.10, 2.9, centre_x=offset_s, centre_z=offset_f)),
+            ], "edge", lambda t: {}, start, end, cap_start=False, cap_end=False)
+            # Cheek guards: two plates framing the face, leaving it open.
+            for sign in (-1, 1):
+                lo = slices[max(0, brow - 2)]
+                hi = slices[brow]
+                for frac in (0.0,):
+                    b.prism([
+                        (hi["centre"].x + sign * hi["halfWidth"] * 0.96, hi["centre"].y),
+                        (hi["centre"].x + sign * hi["halfWidth"] * 1.30, hi["centre"].y - (hi["centre"].y - lo["centre"].y) * 0.25),
+                        (lo["centre"].x + sign * lo["halfWidth"] * 1.16, lo["centre"].y),
+                        (lo["centre"].x + sign * lo["halfWidth"] * 0.86, lo["centre"].y + (hi["centre"].y - lo["centre"].y) * 0.18),
+                    ], hi["centre"].z + hi["front"] * 0.10, hi["front"] * 0.90, "metal", {})
 
     return b, m, floor, top, height
 

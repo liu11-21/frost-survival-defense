@@ -62,12 +62,12 @@ interface Framing {
 }
 
 const FRAMINGS: Record<string, Framing> = {
-  front: { yaw: 0, pitch: 0.06, targetHeight: 0.52, coverage: 1.06 },
-  "three-quarter": { yaw: -0.72, pitch: 0.08, targetHeight: 0.52, coverage: 1.06 },
-  side: { yaw: -Math.PI / 2, pitch: 0.06, targetHeight: 0.52, coverage: 1.06 },
-  head: { yaw: -0.20, pitch: 0.04, targetHeight: 0.93, coverage: 0.20 },
-  hand: { yaw: -0.55, pitch: -0.02, targetHeight: 0.50, coverage: 0.22 },
-  gameplay: { yaw: -0.45, pitch: 0.55, targetHeight: 0.45, coverage: 1.8 },
+  front: { yaw: 0, pitch: 0.06, targetHeight: 0.52, coverage: 1.18 },
+  "three-quarter": { yaw: -0.72, pitch: 0.08, targetHeight: 0.52, coverage: 1.18 },
+  side: { yaw: -Math.PI / 2, pitch: 0.06, targetHeight: 0.52, coverage: 1.18 },
+  head: { yaw: -0.20, pitch: 0.04, targetHeight: 0.90, coverage: 0.42 },
+  hand: { yaw: -0.55, pitch: -0.02, targetHeight: 0.52, coverage: 0.46 },
+  gameplay: { yaw: -0.45, pitch: 0.55, targetHeight: 0.50, coverage: 1.35 },
 };
 
 export class HumanCandidateReview {
