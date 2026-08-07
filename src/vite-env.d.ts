@@ -78,6 +78,19 @@ declare global {
   }
 
   interface Window {
+  __humanCandidateReview?: {
+    ready: boolean; variant: string; assetKey: string | null; loaded: boolean;
+    meshCount: number; triangleCount: number; boneCount: number;
+    animations: string[]; currentAnimation: string; materialNames: string[];
+    boundingBox: { min: number[]; max: number[]; height: number };
+    camera: string; error: string | null; materialNote: string;
+  };
+  frostboundHumanCandidate?: {
+    setVariant(variant: string): Promise<void>;
+    setCamera(name: string): void;
+    play(name: string, normalized?: number): void;
+    render(): void;
+  };
     /**
      * Development and heroReview-only handle used by the headless test
      * harness. It is intentionally exposed in production only for the

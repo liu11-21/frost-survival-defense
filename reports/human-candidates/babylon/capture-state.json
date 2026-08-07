@@ -1,0 +1,268 @@
+{
+  "capturedAt": "2026-08-07T06:16:05.849Z",
+  "captured": [
+    {
+      "file": "hero_male-front.png",
+      "variant": "male",
+      "camera": "front",
+      "label": "front",
+      "boneCount": 53,
+      "triangles": 26756
+    },
+    {
+      "file": "hero_male-three-quarter.png",
+      "variant": "male",
+      "camera": "three-quarter",
+      "label": "three-quarter",
+      "boneCount": 53,
+      "triangles": 26756
+    },
+    {
+      "file": "hero_male-side.png",
+      "variant": "male",
+      "camera": "side",
+      "label": "side",
+      "boneCount": 53,
+      "triangles": 26756
+    },
+    {
+      "file": "hero_male-head.png",
+      "variant": "male",
+      "camera": "head",
+      "label": "head",
+      "boneCount": 53,
+      "triangles": 26756
+    },
+    {
+      "file": "hero_male-hand-open.png",
+      "variant": "male",
+      "camera": "hand",
+      "label": "hand-open",
+      "boneCount": 53,
+      "triangles": 26756
+    },
+    {
+      "file": "hero_male-grip.png",
+      "variant": "male",
+      "camera": "hand",
+      "animation": "MeleeAttack",
+      "phase": 0.25,
+      "label": "grip",
+      "boneCount": 53,
+      "triangles": 26756
+    },
+    {
+      "file": "hero_male-melee-windup.png",
+      "variant": "male",
+      "camera": "three-quarter",
+      "animation": "MeleeAttack",
+      "phase": 0.25,
+      "label": "melee-windup",
+      "boneCount": 53,
+      "triangles": 26756
+    },
+    {
+      "file": "hero_male-melee-impact.png",
+      "variant": "male",
+      "camera": "three-quarter",
+      "animation": "MeleeAttack",
+      "phase": 0.6,
+      "label": "melee-impact",
+      "boneCount": 53,
+      "triangles": 26756
+    },
+    {
+      "file": "hero_male-ranged.png",
+      "variant": "male",
+      "camera": "three-quarter",
+      "animation": "RangedAttack",
+      "phase": 0.5,
+      "label": "ranged",
+      "boneCount": 53,
+      "triangles": 26756
+    },
+    {
+      "file": "hero_male-walk.png",
+      "variant": "male",
+      "camera": "front",
+      "animation": "Walk",
+      "phase": 0.3,
+      "label": "walk",
+      "boneCount": 53,
+      "triangles": 26756
+    },
+    {
+      "variant": "male",
+      "state": {
+        "ready": true,
+        "variant": "male",
+        "assetKey": "hero_male",
+        "loaded": true,
+        "meshCount": 1,
+        "triangleCount": 26756,
+        "boneCount": 53,
+        "animations": [
+          "Death",
+          "Hit",
+          "Idle",
+          "MeleeAttack",
+          "RangedAttack",
+          "Run",
+          "Walk"
+        ],
+        "currentAnimation": "none",
+        "materialNames": [
+          "HumanSkinFallback"
+        ],
+        "boundingBox": {
+          "min": [
+            -0.4963,
+            -0.0109,
+            -0.1437
+          ],
+          "max": [
+            0.4963,
+            1.6744,
+            0.3541
+          ],
+          "height": 1.6853
+        },
+        "camera": "front",
+        "error": null,
+        "materialNote": "TEMPORARY FLAT FALLBACK MATERIAL — official CC0 skin not yet installed"
+      }
+    },
+    {
+      "file": "hero_female-front.png",
+      "variant": "female",
+      "camera": "front",
+      "label": "front",
+      "boneCount": 53,
+      "triangles": 26756
+    },
+    {
+      "file": "hero_female-three-quarter.png",
+      "variant": "female",
+      "camera": "three-quarter",
+      "label": "three-quarter",
+      "boneCount": 53,
+      "triangles": 26756
+    },
+    {
+      "file": "hero_female-side.png",
+      "variant": "female",
+      "camera": "side",
+      "label": "side",
+      "boneCount": 53,
+      "triangles": 26756
+    },
+    {
+      "file": "hero_female-head.png",
+      "variant": "female",
+      "camera": "head",
+      "label": "head",
+      "boneCount": 53,
+      "triangles": 26756
+    },
+    {
+      "file": "hero_female-hand-open.png",
+      "variant": "female",
+      "camera": "hand",
+      "label": "hand-open",
+      "boneCount": 53,
+      "triangles": 26756
+    },
+    {
+      "file": "hero_female-grip.png",
+      "variant": "female",
+      "camera": "hand",
+      "animation": "MeleeAttack",
+      "phase": 0.25,
+      "label": "grip",
+      "boneCount": 53,
+      "triangles": 26756
+    },
+    {
+      "file": "hero_female-melee-windup.png",
+      "variant": "female",
+      "camera": "three-quarter",
+      "animation": "MeleeAttack",
+      "phase": 0.25,
+      "label": "melee-windup",
+      "boneCount": 53,
+      "triangles": 26756
+    },
+    {
+      "file": "hero_female-melee-impact.png",
+      "variant": "female",
+      "camera": "three-quarter",
+      "animation": "MeleeAttack",
+      "phase": 0.6,
+      "label": "melee-impact",
+      "boneCount": 53,
+      "triangles": 26756
+    },
+    {
+      "file": "hero_female-ranged.png",
+      "variant": "female",
+      "camera": "three-quarter",
+      "animation": "RangedAttack",
+      "phase": 0.5,
+      "label": "ranged",
+      "boneCount": 53,
+      "triangles": 26756
+    },
+    {
+      "file": "hero_female-walk.png",
+      "variant": "female",
+      "camera": "front",
+      "animation": "Walk",
+      "phase": 0.3,
+      "label": "walk",
+      "boneCount": 53,
+      "triangles": 26756
+    },
+    {
+      "variant": "female",
+      "state": {
+        "ready": true,
+        "variant": "female",
+        "assetKey": "hero_female",
+        "loaded": true,
+        "meshCount": 1,
+        "triangleCount": 26756,
+        "boneCount": 53,
+        "animations": [
+          "Death",
+          "Hit",
+          "Idle",
+          "MeleeAttack",
+          "RangedAttack",
+          "Run",
+          "Walk"
+        ],
+        "currentAnimation": "none",
+        "materialNames": [
+          "HumanSkinFallback"
+        ],
+        "boundingBox": {
+          "min": [
+            -0.4963,
+            -0.0117,
+            -0.1437
+          ],
+          "max": [
+            0.4963,
+            1.6735,
+            0.3541
+          ],
+          "height": 1.6853
+        },
+        "camera": "front",
+        "error": null,
+        "materialNote": "TEMPORARY FLAT FALLBACK MATERIAL — official CC0 skin not yet installed"
+      }
+    }
+  ],
+  "pageErrors": []
+}

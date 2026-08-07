@@ -7,6 +7,7 @@ import {
   hasAppearanceVariants,
   pickAppearance,
   resolveHumanAsset,
+  resolveHumanCandidateAsset,
 } from "../src/character/HumanAppearance";
 
 /**
@@ -52,13 +53,18 @@ function sourceFiles(dir: string): string[] {
 
 test("appearance variants resolve to different assets for the same role", () => {
   expect(HUMAN_APPEARANCE_VARIANTS).toEqual(["male", "female"]);
-  expect(hasAppearanceVariants("hero")).toBe(true);
 
+  // Candidates exist and are reachable ONLY through the review path.
+  expect(resolveHumanCandidateAsset("hero", "male")).toBe("hero_male");
+  expect(resolveHumanCandidateAsset("hero", "female")).toBe("hero_female");
+
+  // Nothing is approved yet, so gameplay still resolves to the legacy asset.
+  // This is the gate that keeps an unreviewed bare body out of the build.
+  expect(hasAppearanceVariants("hero")).toBe(false);
   const male = resolveHumanAsset("hero", "male");
   const female = resolveHumanAsset("hero", "female");
-  expect(male).toBe("hero_male");
-  expect(female).toBe("hero_female");
-  expect(male).not.toBe(female);
+  expect(male).toBe("hero");
+  expect(female).toBe("hero");
 
   // A role without variant assets keeps its legacy key, so the asset layer can
   // call this unconditionally while the migration is part-way through.

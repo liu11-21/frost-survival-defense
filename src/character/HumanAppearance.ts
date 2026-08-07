@@ -21,11 +21,21 @@ export type HumanAppearanceVariant = "male" | "female";
 export const HUMAN_APPEARANCE_VARIANTS: readonly HumanAppearanceVariant[] = ["male", "female"];
 
 /**
- * Roles that currently ship per-variant assets. Anything absent here resolves
- * to its legacy single-appearance asset, which is what keeps the existing
- * roster loading while the human rebuild is only part-way through.
+ * Two separate states, because they mean different things.
+ *
+ * CANDIDATE: per-variant assets exist and can be loaded in an isolated review
+ * path. They are not production art and must not reach normal gameplay --
+ * right now they are bare MPFB bodies with a placeholder material.
+ *
+ * READY: a human has looked at the variants and approved them. Only then does
+ * the gameplay asset resolver start returning them, and only then does the
+ * legacy single-appearance asset stop being what players see.
+ *
+ * Collapsing these into one set is how an unreviewed nude base ends up in the
+ * shipping build, so the promotion is deliberately a separate edit.
  */
-export const VARIANT_READY_ROLES: ReadonlySet<string> = new Set(["hero"]);
+export const VARIANT_CANDIDATE_ROLES: ReadonlySet<string> = new Set(["hero"]);
+export const VARIANT_READY_ROLES: ReadonlySet<string> = new Set<string>();
 
 export interface HumanAppearance {
   readonly role: string;
@@ -41,6 +51,18 @@ export interface HumanAppearance {
  */
 export function resolveHumanAsset(role: string, variant: HumanAppearanceVariant): string {
   return VARIANT_READY_ROLES.has(role) ? `${role}_${variant}` : role;
+}
+
+/**
+ * Asset key for the isolated review path. Returns null when the role has no
+ * candidate, so a review screen can say so rather than silently showing the
+ * production asset and implying the candidate was fine.
+ */
+export function resolveHumanCandidateAsset(
+  role: string,
+  variant: HumanAppearanceVariant,
+): string | null {
+  return VARIANT_CANDIDATE_ROLES.has(role) ? `${role}_${variant}` : null;
 }
 
 /** True when the role has a distinct asset per appearance variant. */
