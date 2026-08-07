@@ -491,37 +491,45 @@ def build_sword(body, armature, height):
     return b, "hand_r"
 
 
-def build_glove(body, armature, side, thickness_ratio=0.16):
-    """A glove made from the hand's own surface, offset along its normals.
+def build_glove(body, armature, side, thickness_ratio=0.16, diagnostic=False):
+    """A glove made from the hand's own surface, offset along body normals.
 
-    A swept tube cannot have five fingers. Every previous attempt profiled the
-    hand as a cylinder and produced either a mitten or a cuff with bare
-    fingers poking out of the open end -- the hand bone is 45 mm long, so
-    there is nothing there to sweep along.
+    A swept tube cannot have five fingers, and the hand bone is 45 mm long so
+    there is nothing to sweep along. The glove is therefore the hand: the
+    faces the hand and finger bones dominate, duplicated and pushed out.
 
-    So the glove is the hand: the faces the hand and finger bones dominate are
-    duplicated, pushed out along their vertex normals by a fraction of the
-    hand's own width, and skinned with the weights they already had. The five
-    fingers stay five fingers, and each one follows its own bone chain because
-    the weights came from the vertices underneath it.
+    Two things the first version got wrong, and both are the reason it did not
+    cover anything:
+
+    - It offset along `vert.normal` read from the bmesh *after* deleting
+      faces. Deleting changes which faces meet at a vertex, so the recomputed
+      normal on a boundary is not the body's surface normal there; along the
+      cut edge it can point almost anywhere, including inward.
+    - It kept `source_of[vert.index] = vert.index`, which is not a mapping at
+      all: bmesh reindexes after a delete, so the value stops meaning what it
+      says the moment it matters.
+
+    The original body index is now carried across the delete in a bmesh int
+    layer, and every glove vertex is placed from the *body's* own co and
+    normal. `sign_check` in the returned record measures the result rather
+    than trusting it.
     """
     digits = [f"{d}_{j:02d}_{side}" for d in
               ("thumb", "index", "middle", "ring", "pinky") for j in (1, 2, 3)]
     wanted = [f"hand_{side}"] + digits
     ids = {g.index for g in body.vertex_groups if g.name in wanted}
     if not ids:
-        return None
+        return None, {"reason": "no hand or finger vertex groups"}
 
     owned = set()
     for vertex in body.data.vertices:
         if sum(g.weight for g in vertex.groups if g.group in ids) >= 0.5:
             owned.add(vertex.index)
     if len(owned) < 40:
-        return None
+        return None, {"reason": "hand region has %d vertices" % len(owned)}
 
-    # Scale the shell thickness to the hand, so a smaller female hand gets a
-    # proportionally thinner glove rather than a fixed padding.
-    points = [body.matrix_world @ body.data.vertices[i].co for i in owned]
+    body.data.calc_normals_split() if hasattr(body.data, "calc_normals_split") else None
+    points = [body.data.vertices[i].co for i in owned]
     extent = max(
         max(p.x for p in points) - min(p.x for p in points),
         max(p.y for p in points) - min(p.y for p in points),
@@ -531,20 +539,25 @@ def build_glove(body, armature, side, thickness_ratio=0.16):
     mesh = bmesh.new()
     mesh.from_mesh(body.data)
     mesh.verts.ensure_lookup_table()
+    # Carry the ORIGINAL index across the delete. bmesh reindexes afterwards,
+    # so anything derived from vert.index later is a different number.
+    layer = mesh.verts.layers.int.new("body_index")
+    for vert in mesh.verts:
+        vert[layer] = vert.index
+
     doomed = [f for f in mesh.faces if not all(v.index in owned for v in f.verts)]
     bmesh.ops.delete(mesh, geom=doomed, context="FACES")
     bmesh.ops.delete(mesh, geom=[v for v in mesh.verts if not v.link_faces], context="VERTS")
     if not mesh.faces:
         mesh.free()
-        return None
-    mesh.normal_update()
-    # Remember which body vertex each shell vertex came from, so the weights
-    # can be carried across exactly rather than guessed by proximity.
-    source_of = {}
+        return None, {"reason": "no faces survived the hand selection"}
+
+    signed = []
     for vert in mesh.verts:
-        source_of[vert.index] = vert.index
-    for vert in mesh.verts:
-        vert.co = vert.co + vert.normal * thickness
+        source = body.data.vertices[vert[layer]]
+        target = source.co + source.normal * thickness
+        signed.append((target - source.co).dot(source.normal))
+        vert.co = target
 
     data = bpy.data.meshes.new(f"HeroGlove_{side}")
     mesh.to_mesh(data)
@@ -552,10 +565,44 @@ def build_glove(body, armature, side, thickness_ratio=0.16):
     for polygon in data.polygons:
         polygon.use_smooth = True
 
+    # The shell is copied from the body, so it inherits the body's material
+    # SLOTS and every polygon still points at slot 0 -- the skin. Appending a
+    # leather material merely added an unused slot 1, and the glove rendered
+    # as a bare hand while being geometrically present. The magenta diagnostic
+    # is what separated "not there" from "there, wearing skin".
+    data.materials.clear()
+    for polygon in data.polygons:
+        polygon.material_index = 0
+
     obj = bpy.data.objects.new(f"HeroGlove_{side}", data)
     bpy.context.collection.objects.link(obj)
     obj.matrix_world = body.matrix_world.copy()
-    return obj
+
+    signed.sort()
+    median = signed[len(signed) // 2] if signed else 0.0
+    record = {
+        "side": side,
+        "sourceVertices": len(owned),
+        "shellVertices": len(data.vertices),
+        "thickness": round(thickness, 5),
+        "medianSignedOffset": round(median, 5),
+        # Outward and about one thickness is the whole claim; anything else
+        # means the shell is inside the hand and the render would be a lie
+        # either way.
+        "outward": median > 0,
+        "matchesThickness": abs(median - thickness) < thickness * 0.05,
+    }
+    if diagnostic:
+        material = bpy.data.materials.new(f"GLOVE_DIAGNOSTIC_{side}")
+        material.use_nodes = True
+        bsdf = material.node_tree.nodes.get("Principled BSDF")
+        if bsdf:
+            bsdf.inputs["Base Color"].default_value = (1.0, 0.0, 0.85, 1.0)
+            if "Emission Color" in bsdf.inputs:
+                bsdf.inputs["Emission Color"].default_value = (1.0, 0.0, 0.85, 1.0)
+                bsdf.inputs["Emission Strength"].default_value = 3.0
+        data.materials.append(material)
+    return obj, record
 
 
 def to_object(builder, name, materials):
@@ -711,7 +758,7 @@ def main():
     materials = {}
     for name, base, rough, metal in (
         ("cloth", (0.243, 0.271, 0.325), 0.92, 0.0),
-        ("leather", (0.372, 0.263, 0.171), 0.62, 0.04),
+        ("leather", (0.243, 0.166, 0.106), 0.58, 0.04),
         ("metal", (0.430, 0.455, 0.492), 0.34, 0.85),
     ):
         mat = bpy.data.materials.new("Hero_" + name)
@@ -729,14 +776,23 @@ def main():
     transfer_weights(outfit, body, armature)
 
     gloves = []
+    glove_checks = []
+    diagnostic = os.environ.get("HERO_GLOVE_DIAGNOSTIC") == "1"
     for side in ("l", "r"):
-        glove = build_glove(body, armature, side)
+        glove, check = build_glove(body, armature, side, diagnostic=diagnostic)
+        glove_checks.append(check)
         if glove is not None:
             # `to_object` is not used: this is a duplicated surface, not a
             # lofted builder, so it already carries its own topology.
-            glove.data.materials.append(materials["leather"])
+            if not diagnostic:
+                glove.data.materials.append(materials["leather"])
             transfer_weights(glove, body, armature)
             gloves.append(glove)
+    # Hiding the body isolates the shell, so "the glove is invisible" and "the
+    # glove is inside the hand" stop looking identical.
+    if diagnostic and os.environ.get("HERO_GLOVE_ONLY") == "1":
+        body.hide_render = True
+        body.hide_viewport = True
 
     sword_builder, sword_bone = build_sword(body, armature, height)
     sword = None
@@ -783,6 +839,7 @@ def main():
                           + (triangles(sword) if sword else 0)),
         },
         "materials": sorted(materials),
+        "gloveChecks": glove_checks,
         "swordBone": sword_bone,
     }
     with open(os.path.join(OUT, "%s.json" % args.name), "w", encoding="utf-8") as handle:
