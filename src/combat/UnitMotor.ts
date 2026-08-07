@@ -72,8 +72,9 @@ const TAUNT_CHECK_INTERVAL = 0.4;
  * Re-evaluates an active taunt.
  *
  * A taunt is dropped the instant its source stops being a legal target, which
- * is what stops units from chasing a dead shield trooper forever. Returns the
- * next check timer.
+ * is what stops units from chasing a dead shield trooper forever. Ordinary
+ * enemies pass their lane into the query, so a taunter on another road cannot
+ * bypass the lane-first target selector. Ally-side taunts stay lane-neutral.
  */
 export function refreshTaunt(unit: CombatUnit, ctx: CombatContext, dt: number, timer: number): number {
   if (unit.tauntSourceRef && validateTarget(unit, unit.tauntSourceRef) !== "ok") {
@@ -82,7 +83,13 @@ export function refreshTaunt(unit: CombatUnit, ctx: CombatContext, dt: number, t
   const next = timer - dt;
   if (next > 0) return next;
 
-  const taunter = ctx.world.tauntSourceFor(unit.faction, unit.position.x, unit.position.z, false);
+  const taunter = ctx.world.tauntSourceFor(
+    unit.faction,
+    unit.position.x,
+    unit.position.z,
+    false,
+    unit.faction === "enemy" ? unit.laneIndex : undefined,
+  );
   if (taunter !== unit.tauntSourceRef) unit.applyTaunt(taunter);
   return TAUNT_CHECK_INTERVAL;
 }
