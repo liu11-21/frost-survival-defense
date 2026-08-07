@@ -1,5 +1,5 @@
 import { validateTarget } from "../ai/TargetValidator";
-import { laneAdvancePoint } from "../data/BuildSlotDefinitions";
+import { nextLaneWaypoint } from "../data/LaneNavigation";
 import type { CombatUnit } from "./CombatUnit";
 import {
   enemyTargetPriority,
@@ -41,9 +41,6 @@ export function updateEnemyBrain(unit: CombatUnit, dt: number, reachTimer: numbe
     const preferred = unit.findHostileTarget();
     const preferredCross = isCrossLaneUnitTarget(unit, preferred);
 
-    // A same-lane target immediately pre-empts a cross-lane fallback regardless
-    // of the legacy kind priority. Otherwise preserve a legal target inside its
-    // tier to avoid 0.2-second nearest-target oscillation.
     const shouldRestorePrevious =
       !preferred ||
       (previousCross && preferredCross && enemyTargetPriority(preferred) >= enemyTargetPriority(previous)) ||
@@ -53,7 +50,7 @@ export function updateEnemyBrain(unit: CombatUnit, dt: number, reachTimer: numbe
 
   const target = unit.currentTarget;
   if (!target) {
-    const advance = unit.navPoint ?? laneAdvancePoint(unit.laneIndex, unit.position.x, unit.position.z, "inbound");
+    const advance = unit.navPoint ?? nextLaneWaypoint(unit.laneIndex, unit.position.x, unit.position.z, "inbound");
     unit.moveMotor(advance.x, advance.z, dt, null);
     return nextTimer;
   }
@@ -62,10 +59,8 @@ export function updateEnemyBrain(unit: CombatUnit, dt: number, reachTimer: numbe
   if (crossLaneFallback) {
     const distance = unit.distanceTo(target.position.x, target.position.z);
     if (distance > unit.attackReach(target)) {
-      // Never pursue across lanes. The next retarget either finds a same-lane
-      // defender or returns the furnace so normal route marching continues.
       unit.setTarget(null);
-      const advance = unit.navPoint ?? laneAdvancePoint(unit.laneIndex, unit.position.x, unit.position.z, "inbound");
+      const advance = unit.navPoint ?? nextLaneWaypoint(unit.laneIndex, unit.position.x, unit.position.z, "inbound");
       unit.moveMotor(advance.x, advance.z, dt, null);
       return nextTimer;
     }
@@ -75,10 +70,7 @@ export function updateEnemyBrain(unit: CombatUnit, dt: number, reachTimer: numbe
       unit.brakeMotor(dt);
       unit.beginStrike();
     } else {
-      // One firing cycle, one forward movement phase. We intentionally do not
-      // move toward the cross-lane target; the next shot is only legal if it is
-      // still in range after this progress step.
-      const advance = unit.navPoint ?? laneAdvancePoint(unit.laneIndex, unit.position.x, unit.position.z, "inbound");
+      const advance = unit.navPoint ?? nextLaneWaypoint(unit.laneIndex, unit.position.x, unit.position.z, "inbound");
       unit.moveMotor(advance.x, advance.z, dt, null);
     }
     return nextTimer;
@@ -99,6 +91,9 @@ export function updateEnemyBrain(unit: CombatUnit, dt: number, reachTimer: numbe
   if (dist > stopAt) {
     unit.moveMotor(goalX, goalZ, dt, null);
   } else if (shouldFollowRoad) {
+    // EnemyNavigator refreshes this waypoint every 0.35s. The look-ahead
+    // contract in nextLaneWaypoint guarantees the refreshed point is beyond
+    // the bend instead of the endpoint we have just reached.
     unit.brakeMotor(dt);
   } else {
     unit.brakeMotor(dt);
