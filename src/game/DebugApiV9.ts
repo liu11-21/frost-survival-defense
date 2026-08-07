@@ -1,3 +1,4 @@
+import { Vector3 } from "@babylonjs/core";
 import type { HeroSkillId } from "../hero/HeroSkillDefinitions";
 import { structureRepairFixedBurst } from "../combat/StructureSelfRepair";
 import { LANES, nearestPointOnLane } from "../data/BuildSlotDefinitions";
@@ -147,6 +148,35 @@ export function createV9DebugApi(s: GameSystems): Record<string, unknown> {
         member.aiBrain?.forceReacquire("debugLaneDeploy");
       }
       return true;
+    },
+    /**
+     * Presentation/gameplay separation probe. The scale comes from the actual
+     * instantiated root; combat radius/range/cost come from the live Building.
+     * If a future visual-density pass leaks into gameplay, this contract moves.
+     */
+    facilityRuntimeContract: (slotId: string) => {
+      const building = s.buildings.slot(slotId)?.building;
+      return building
+        ? {
+            type: building.type,
+            visualScale: {
+              x: building.root.scaling.x,
+              y: building.root.scaling.y,
+              z: building.root.scaling.z,
+            },
+            hitRadius: building.hitRadius,
+            attackRange: building.def.attackRange ?? null,
+            cost: { ...building.constructionCost },
+          }
+        : null;
+    },
+    /** Runs the same CollisionWorld solver used by the hero and combat units on
+     * a disposable point, so tests can verify a visual scale change did not
+     * silently shrink or enlarge gameplay collision. */
+    collisionProbe: (x: number, z: number, agentRadius = 0) => {
+      const point = new Vector3(x, 0, z);
+      const touched = s.collision.resolve(point, Math.max(0, agentRadius));
+      return { touched, x: point.x, z: point.z };
     },
     healthLabelFacing: () =>
       s.scene.meshes
