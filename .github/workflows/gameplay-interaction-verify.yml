@@ -48,13 +48,16 @@ jobs:
           cat "$RUNNER_TEMP/gameplay-interaction-preview.log"
           exit 1
       - name: Pointer and recruit drag regression
-        run: npx playwright test tests/scene-interaction-rework.spec.ts
+        run: |
+          mkdir -p .runtime/g1-evidence
+          npx playwright test tests/scene-interaction-rework.spec.ts
       - name: Upload runtime evidence
         if: always()
         uses: actions/upload-artifact@v4
         with:
           name: gameplay-interaction-verification-${{ github.run_id }}
           path: |
+            .runtime/g1-evidence/
             test-results/
             ${{ runner.temp }}/gameplay-interaction-preview.log
           if-no-files-found: warn
