@@ -84,7 +84,7 @@ test("mouse-clicking a remote visible slot opens the canonical build panel", asy
   await expect(page.locator("#ui-build-panel")).toHaveClass(/show/);
 });
 
-test("scaled facility visuals still leave a generous real pointer placement target", async ({ page }, testInfo) => {
+test("scaled facility visuals still leave a generous real pointer placement target", async ({ page }) => {
   await boot(page);
   await call(page, "startStage", "stage-3");
   await call(page, "grant", 999, 999, 999);
@@ -117,7 +117,7 @@ test("scaled facility visuals still leave a generous real pointer placement targ
   expect(await call(page, "nearbySlotId")).toBe("coreNE");
   expect((await call(page, "canBuild", "coreNE", "tower")).ok).toBe(true);
   await expect(page.locator("#ui-build-panel")).toHaveClass(/show/);
-  await page.screenshot({ path: testInfo.outputPath("g1-building-placement.png"), fullPage: true });
+  await page.screenshot({ path: ".runtime/g1-evidence/g1-building-placement.png", fullPage: true });
 });
 
 test("a real draggable recruit icon spends only after a legal lane drop", async ({ page }) => {
