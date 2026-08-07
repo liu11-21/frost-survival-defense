@@ -389,9 +389,6 @@ def build_outfit(body, armature, variant):
         for bone_name, surface, pad, tail_pad, exp, extra, axis_bone in (
             (f"upperarm_{side}", "coat", 1.22, 1.15, 2.8, (), None),
             (f"lowerarm_{side}", "coat", 1.17, 1.10, 2.8, (), None),
-            # Glove: hand plus every finger, oriented along the forearm so a
-            # 45 mm hand bone does not set the sweep direction.
-            (f"hand_{side}", "leather", 1.18, 1.22, 3.0, digits, f"lowerarm_{side}"),
             (f"thigh_{side}", "coat", 1.15, 1.10, 2.8, (), None),
             (f"calf_{side}", "coat", 1.13, 1.18, 2.8, (), None),
             # Boot: foot plus the ball, oriented along the shin so the shaft
@@ -492,6 +489,73 @@ def build_sword(body, armature, height):
                   (1.00, section(10, 0.004, 0.003, 0.003, 2.4))],
                  "edge", lambda t: {}, start, end)
     return b, "hand_r"
+
+
+def build_glove(body, armature, side, thickness_ratio=0.16):
+    """A glove made from the hand's own surface, offset along its normals.
+
+    A swept tube cannot have five fingers. Every previous attempt profiled the
+    hand as a cylinder and produced either a mitten or a cuff with bare
+    fingers poking out of the open end -- the hand bone is 45 mm long, so
+    there is nothing there to sweep along.
+
+    So the glove is the hand: the faces the hand and finger bones dominate are
+    duplicated, pushed out along their vertex normals by a fraction of the
+    hand's own width, and skinned with the weights they already had. The five
+    fingers stay five fingers, and each one follows its own bone chain because
+    the weights came from the vertices underneath it.
+    """
+    digits = [f"{d}_{j:02d}_{side}" for d in
+              ("thumb", "index", "middle", "ring", "pinky") for j in (1, 2, 3)]
+    wanted = [f"hand_{side}"] + digits
+    ids = {g.index for g in body.vertex_groups if g.name in wanted}
+    if not ids:
+        return None
+
+    owned = set()
+    for vertex in body.data.vertices:
+        if sum(g.weight for g in vertex.groups if g.group in ids) >= 0.5:
+            owned.add(vertex.index)
+    if len(owned) < 40:
+        return None
+
+    # Scale the shell thickness to the hand, so a smaller female hand gets a
+    # proportionally thinner glove rather than a fixed padding.
+    points = [body.matrix_world @ body.data.vertices[i].co for i in owned]
+    extent = max(
+        max(p.x for p in points) - min(p.x for p in points),
+        max(p.y for p in points) - min(p.y for p in points),
+        max(p.z for p in points) - min(p.z for p in points))
+    thickness = max(0.004, extent * thickness_ratio * 0.25)
+
+    mesh = bmesh.new()
+    mesh.from_mesh(body.data)
+    mesh.verts.ensure_lookup_table()
+    doomed = [f for f in mesh.faces if not all(v.index in owned for v in f.verts)]
+    bmesh.ops.delete(mesh, geom=doomed, context="FACES")
+    bmesh.ops.delete(mesh, geom=[v for v in mesh.verts if not v.link_faces], context="VERTS")
+    if not mesh.faces:
+        mesh.free()
+        return None
+    mesh.normal_update()
+    # Remember which body vertex each shell vertex came from, so the weights
+    # can be carried across exactly rather than guessed by proximity.
+    source_of = {}
+    for vert in mesh.verts:
+        source_of[vert.index] = vert.index
+    for vert in mesh.verts:
+        vert.co = vert.co + vert.normal * thickness
+
+    data = bpy.data.meshes.new(f"HeroGlove_{side}")
+    mesh.to_mesh(data)
+    mesh.free()
+    for polygon in data.polygons:
+        polygon.use_smooth = True
+
+    obj = bpy.data.objects.new(f"HeroGlove_{side}", data)
+    bpy.context.collection.objects.link(obj)
+    obj.matrix_world = body.matrix_world.copy()
+    return obj
 
 
 def to_object(builder, name, materials):
@@ -664,6 +728,16 @@ def main():
     outfit = to_object(builder, "HeroOutfit", materials)
     transfer_weights(outfit, body, armature)
 
+    gloves = []
+    for side in ("l", "r"):
+        glove = build_glove(body, armature, side)
+        if glove is not None:
+            # `to_object` is not used: this is a duplicated surface, not a
+            # lofted builder, so it already carries its own topology.
+            glove.data.materials.append(materials["leather"])
+            transfer_weights(glove, body, armature)
+            gloves.append(glove)
+
     sword_builder, sword_bone = build_sword(body, armature, height)
     sword = None
     if sword_builder is not None:
@@ -675,7 +749,7 @@ def main():
     # cull then deletes it, which hides the very error being looked for.
     culled = 0
     if os.environ.get("HERO_OUTFIT_CULL") == "1":
-        culled = cull_hidden_body(body, [outfit], margin=height * 0.075)
+        culled = cull_hidden_body(body, [outfit] + gloves, margin=height * 0.075)
     bpy.context.view_layer.update()
 
     # Back to Blender's Z-up so the exporter's conversion lands correctly.
@@ -702,8 +776,11 @@ def main():
             "bodyVisible": triangles(body),
             "bodyFacesCulled": culled,
             "outfit": triangles(outfit),
+            "gloves": sum(triangles(g) for g in gloves),
             "sword": triangles(sword) if sword else 0,
-            "totalLod0": triangles(body) + triangles(outfit) + (triangles(sword) if sword else 0),
+            "totalLod0": (triangles(body) + triangles(outfit)
+                          + sum(triangles(g) for g in gloves)
+                          + (triangles(sword) if sword else 0)),
         },
         "materials": sorted(materials),
         "swordBone": sword_bone,
