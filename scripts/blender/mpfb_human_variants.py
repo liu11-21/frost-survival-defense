@@ -69,7 +69,9 @@ def sha256(path):
 
 
 def strip_helper_geometry(basemesh):
-    """Delete MakeHuman's helper cage instead of merely masking it.
+    """DIAGNOSTIC ONLY -- superseded by ExportService. Kept as reference.
+
+    Delete MakeHuman's helper cage instead of merely masking it.
 
     MPFB builds the base mesh with helper geometry -- the loose panels used to
     fit clothes, hair and proxies -- and `mask_helpers=True` hides it behind a
@@ -172,6 +174,7 @@ def main():
     args = parser.parse_args(argv)
     name = args.name or ("%s_base" % args.variant)
 
+    from bl_ext.blender_org.mpfb.services.exportservice import ExportService
     from bl_ext.blender_org.mpfb.services.humanservice import HumanService
     from bl_ext.blender_org.mpfb.services.targetservice import TargetService
 
@@ -190,7 +193,41 @@ def main():
         raise SystemExit("no armature produced for %s" % args.variant)
 
     skin = apply_skin(basemesh)
+
+    # Bake the macro into the geometry, then remove the helper cage.
+    #
+    # This is the fix for a real defect, not tidiness. MPFB applies the macro
+    # targets -- the things that make this body male or female -- as SHAPE
+    # KEYS. Any downstream step that clears shape keys throws the character
+    # away and leaves the neutral base, and the adapter does exactly that
+    # before decimating, because Decimate refuses to run on a mesh that has
+    # them. The result rendered as a female body under a male asset name with
+    # every structural check green.
+    #
+    # MPFB's own `ExportService.bake_modifiers_remove_helpers` is the intended
+    # route and is preferred, but it drives `bpy.ops.mesh.*`, whose poll fails
+    # under `--background` where there is no screen or area to run in. So the
+    # bake is done through the data API instead: collapse the current mix into
+    # a new basis and drop every key, after which the shape keys are no longer
+    # load-bearing and anything downstream may clear them harmlessly.
+    baked = {"method": "shape-key mix baked to basis (data API)"}
+    if basemesh.data.shape_keys:
+        baked["keysBefore"] = len(basemesh.data.shape_keys.key_blocks)
+        mixed = basemesh.shape_key_add(name="__baked__", from_mix=True)
+        # Write the mixed result into the mesh itself, then drop every key in
+        # one call. Removing them one by one re-evaluates the remaining stack
+        # after each removal and raises "ShapeKey not found" partway through.
+        for vertex, point in zip(basemesh.data.vertices, mixed.data):
+            vertex.co = point.co
+        basemesh.shape_key_clear()
+        baked["keysAfter"] = 0 if basemesh.data.shape_keys is None else len(
+            basemesh.data.shape_keys.key_blocks)
+    else:
+        baked["keysBefore"] = 0
+        baked["keysAfter"] = 0
+
     helpers = strip_helper_geometry(basemesh)
+    helpers["bake"] = baked
     bpy.context.view_layer.update()
 
     os.makedirs(OUT, exist_ok=True)

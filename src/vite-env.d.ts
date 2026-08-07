@@ -79,7 +79,7 @@ declare global {
 
   interface Window {
   __humanCandidateReview?: {
-    ready: boolean; variant: string; assetKey: string | null; loaded: boolean;
+    sceneReady: boolean; candidateLoaded: boolean; variant: string; assetKey: string | null; loaded: boolean;
     meshCount: number; triangleCount: number; boneCount: number;
     animations: string[]; currentAnimation: string; materialNames: string[];
     boundingBox: { min: number[]; max: number[]; height: number };

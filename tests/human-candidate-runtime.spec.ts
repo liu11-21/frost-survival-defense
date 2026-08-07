@@ -13,11 +13,12 @@ const OUT = resolve(process.cwd(), "reports/human-candidates/babylon");
 
 interface ReviewWindow extends Window {
   __humanCandidateReview?: {
-    ready: boolean; variant: string; assetKey: string | null; loaded: boolean;
+    sceneReady: boolean; candidateLoaded: boolean; variant: string; assetKey: string | null; loaded: boolean;
     meshCount: number; triangleCount: number; boneCount: number;
     animations: string[]; currentAnimation: string; materialNames: string[];
     boundingBox: { min: number[]; max: number[]; height: number };
-    camera: string; error: string | null; materialNote: string;
+    camera: string; cameraSolved: { radius: number; clearanceFromBounds: number; insideBounds: boolean } | null;
+    error: string | null; materialNote: string;
   };
   frostboundHumanCandidate?: {
     setVariant(variant: string): Promise<void>;
@@ -48,7 +49,7 @@ test("captures Babylon runtime evidence for both human candidates", async ({ pag
 
   await page.setViewportSize({ width: 900, height: 1200 });
   await page.goto("http://127.0.0.1:4173/?humanCandidateReview=1", { waitUntil: "domcontentloaded", timeout: 90_000 });
-  await page.waitForFunction(() => (window as ReviewWindow).__humanCandidateReview?.ready === true, { timeout: 90_000 });
+  await page.waitForFunction(() => (window as ReviewWindow).__humanCandidateReview?.sceneReady === true, { timeout: 90_000 });
 
   const captured: Array<Record<string, unknown>> = [];
   for (const variant of ["male", "female"]) {
@@ -94,6 +95,14 @@ test("captures Babylon runtime evidence for both human candidates", async ({ pag
         el.textContent = `hero_${s.variant} (CANDIDATE) — Babylon runtime — ${s.camera} — ${s.currentAnimation} — ${label}\n${s.materialNote}`;
         if (!el.isConnected) document.body.appendChild(el);
       }, shot.label);
+      // The camera must be outside the model. The first version put the head
+      // preset inside the mesh and rendered a flat gradient that a passing
+      // test happily saved as evidence.
+      const solved = await page.evaluate(() => (window as ReviewWindow).__humanCandidateReview!.cameraSolved);
+      expect(solved, `${shot.label}: camera must be solved from bounds`).not.toBeNull();
+      expect(solved!.insideBounds, `${shot.label}: camera is inside the model`).toBe(false);
+      expect(solved!.clearanceFromBounds, `${shot.label}: camera too close to the mesh`).toBeGreaterThan(0.05);
+
       const file = `hero_${variant}-${shot.label}.png`;
       await page.screenshot({ path: resolve(OUT, file) });
       captured.push({ file, variant, ...shot, boneCount: state.boneCount, triangles: state.triangleCount });

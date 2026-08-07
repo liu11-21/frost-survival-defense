@@ -15,7 +15,10 @@ import { HUMAN_APPEARANCE_VARIANTS, resolveHumanCandidateAsset, type HumanAppear
  * Reached with `?humanCandidateReview=1`.
  */
 export interface HumanCandidateReviewState {
-  ready: boolean;
+  /** Scene is up and a candidate is loaded. NOT production acceptance --
+   *  that is VARIANT_READY_ROLES and only a human sets it. */
+  sceneReady: boolean;
+  candidateLoaded: boolean;
   variant: HumanAppearanceVariant;
   assetKey: string | null;
   loaded: boolean;
@@ -27,16 +30,44 @@ export interface HumanCandidateReviewState {
   materialNames: string[];
   boundingBox: { min: number[]; max: number[]; height: number };
   camera: string;
+  cameraSolved: {
+    radius: number; alpha: number; beta: number; targetY: number;
+    clearanceFromBounds: number; insideBounds: boolean;
+  } | null;
   error: string | null;
   materialNote: string;
 }
 
-const CAMERAS: Record<string, { alpha: number; beta: number; radius: number; targetY: number }> = {
-  front: { alpha: -Math.PI / 2, beta: Math.PI / 2.15, radius: 3.4, targetY: 0.95 },
-  "three-quarter": { alpha: -Math.PI / 2 + 0.72, beta: Math.PI / 2.2, radius: 3.4, targetY: 0.95 },
-  side: { alpha: 0, beta: Math.PI / 2.15, radius: 3.4, targetY: 0.95 },
-  head: { alpha: -Math.PI / 2 + 0.22, beta: Math.PI / 2.15, radius: 0.62, targetY: 1.66 },
-  hand: { alpha: -Math.PI / 2 + 0.55, beta: Math.PI / 2.0, radius: 0.62, targetY: 0.86 },
+/**
+ * Camera framing is DERIVED, never guessed.
+ *
+ * The first version hard-coded alpha/beta/radius and got all three wrong:
+ * "front" showed the character's back, the framing sat too far out, and the
+ * head preset put the near plane inside the mesh. Distances that are typed in
+ * are distances that stop being true the moment a model changes height.
+ *
+ * Each preset instead says what it wants to see -- a fraction of the body,
+ * centred at a fraction of its height -- and the radius is solved from the
+ * bounding box and the field of view.
+ */
+interface Framing {
+  /** Rotation about the model's up axis, 0 = dead in front of the character. */
+  yaw: number;
+  /** Elevation above the horizon, radians. */
+  pitch: number;
+  /** Height to look at, as a fraction of the body's height. */
+  targetHeight: number;
+  /** Vertical extent to fill the frame with, as a fraction of body height. */
+  coverage: number;
+}
+
+const FRAMINGS: Record<string, Framing> = {
+  front: { yaw: 0, pitch: 0.06, targetHeight: 0.52, coverage: 1.06 },
+  "three-quarter": { yaw: -0.72, pitch: 0.08, targetHeight: 0.52, coverage: 1.06 },
+  side: { yaw: -Math.PI / 2, pitch: 0.06, targetHeight: 0.52, coverage: 1.06 },
+  head: { yaw: -0.20, pitch: 0.04, targetHeight: 0.93, coverage: 0.20 },
+  hand: { yaw: -0.55, pitch: -0.02, targetHeight: 0.50, coverage: 0.22 },
+  gameplay: { yaw: -0.45, pitch: 0.55, targetHeight: 0.45, coverage: 1.8 },
 };
 
 export class HumanCandidateReview {
@@ -74,9 +105,10 @@ export class HumanCandidateReview {
     rim.diffuse = new Color3(0.62, 0.74, 0.98);
 
     this.state = {
-      ready: false, variant: this.variant, assetKey: null, loaded: false,
+      sceneReady: false, candidateLoaded: false, variant: this.variant, assetKey: null, loaded: false,
       meshCount: 0, triangleCount: 0, boneCount: 0, animations: [], currentAnimation: "none",
       materialNames: [], boundingBox: { min: [], max: [], height: 0 }, camera: this.cameraName,
+      cameraSolved: null,
       error: null,
       materialNote: "TEMPORARY FLAT FALLBACK MATERIAL — official CC0 skin not yet installed",
     };
@@ -144,18 +176,47 @@ export class HumanCandidateReview {
       this.state.loaded = false;
       this.state.error = String(error).slice(0, 220);
     }
-    this.state.ready = this.state.loaded;
+    this.state.sceneReady = true;
+    this.state.candidateLoaded = this.state.loaded;
     this.publish();
   }
 
   setCamera(name: string): void {
-    const preset = CAMERAS[name] ?? CAMERAS.front;
-    this.cameraName = name in CAMERAS ? name : "front";
-    this.camera.alpha = preset.alpha;
-    this.camera.beta = preset.beta;
-    this.camera.radius = preset.radius;
-    this.camera.setTarget(new Vector3(0, preset.targetY, 0));
+    const framing = FRAMINGS[name] ?? FRAMINGS.front;
+    this.cameraName = name in FRAMINGS ? name : "front";
+
+    const box = this.state.boundingBox;
+    const height = box.height > 0.01 ? box.height : 1.8;
+    const centreX = box.min.length ? (box.min[0] + box.max[0]) / 2 : 0;
+    const centreZ = box.min.length ? (box.min[2] + box.max[2]) / 2 : 0;
+    const floor = box.min.length ? box.min[1] : 0;
+
+    // Solve the distance that makes `coverage` fill the vertical field of
+    // view, then keep it outside the body and outside the near plane.
+    const wanted = height * framing.coverage;
+    const halfWidth = box.min.length ? Math.max(
+      Math.abs(box.max[0] - box.min[0]), Math.abs(box.max[2] - box.min[2])) / 2 : 0.3;
+    const solved = (wanted * 0.5) / Math.tan(this.camera.fov * 0.5);
+    const radius = Math.max(solved, halfWidth + this.camera.minZ * 4 + 0.12);
+
+    // alpha is measured from +X in Babylon; the character faces +Z, so facing
+    // the front means looking from +Z back toward the origin.
+    this.camera.alpha = Math.PI / 2 + framing.yaw;
+    this.camera.beta = Math.PI / 2 - framing.pitch;
+    this.camera.radius = radius;
+    this.camera.setTarget(new Vector3(centreX, floor + height * framing.targetHeight, centreZ));
+
     this.state.camera = this.cameraName;
+    this.state.cameraSolved = {
+      radius: Number(radius.toFixed(4)),
+      alpha: Number(this.camera.alpha.toFixed(4)),
+      beta: Number(this.camera.beta.toFixed(4)),
+      targetY: Number((floor + height * framing.targetHeight).toFixed(4)),
+      // Distance from the camera to the nearest point of the bounding box, so
+      // a test can prove the near plane is not inside the model.
+      clearanceFromBounds: Number((radius - halfWidth).toFixed(4)),
+      insideBounds: radius <= halfWidth,
+    };
     this.publish();
   }
 
