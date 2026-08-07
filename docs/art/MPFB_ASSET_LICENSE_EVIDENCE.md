@@ -74,3 +74,51 @@ repository's `LICENSE.ASSETS.md` was needed.
 The MPFB extension directory, its cache, the downloaded archive, the system
 asset directories and Blender user preferences are all excluded. Only the
 licence texts above are versioned, under `third-party-notices/mpfb/`.
+
+---
+
+## Correction, 2026-08-07: system assets are NOT bundled
+
+An earlier version of this document stated that the MPFB extension bundles
+the official MakeHuman core assets and that no separate asset pack was needed.
+**That was wrong**, and it was wrong because it inferred from directory names
+rather than asking MPFB.
+
+MPFB's own check, run against the installation:
+
+```
+AssetService.check_if_modern_makehuman_system_assets_installed()  ->  (False, False)
+AssetService.get_asset_roots()                                    ->  []
+get_asset_list: skins 0 · eyes 0 · teeth 0 · proxymeshes 0 · clothes 0
+```
+
+What the 43 MB extension actually ships is **system data**, not the asset
+pack: `3dobjs` (base mesh), `targets` (1445 morphs), `rigs` (18 definitions),
+`node_trees`, `textures`, `uv_layers`, `mesh_metadata`, `poses`, `expressions`,
+`settings`.
+
+That is enough to build and rig a body. It is **not** enough to skin one.
+
+### Consequence for the material question
+
+`materialCount = 0` on the MPFB output is **not** a GLB round-trip loss — an
+earlier report claimed that and the claim was unfounded. Measured at stage A,
+immediately after `create_human` + `add_builtin_rig` and before any export:
+
+```
+STAGE_A_MATERIALS  0  []
+```
+
+The mesh has no material because no skin was ever applied, and no skin was
+applied because none is installed. `HumanService.set_character_skin` takes an
+`.mhmat` file path, and there are no `.mhmat` files on this machine.
+
+### What this needs
+
+The official **MakeHuman system assets** pack, from the MakeHuman Community
+asset page, under the same rules as the extension: official source only,
+recorded URL / bytes / SHA-256, no third-party contributed packs.
+
+`MaterialService.create_v2_skin_material` can build a procedural skin without
+the pack, but that is not the official core skin that was asked for, so it is
+noted as an option rather than taken.
