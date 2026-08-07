@@ -94,7 +94,8 @@ export class PointerRouter {
       return;
     }
 
-    const slotId = this.picker.pick(this.scene, this.scene.pointerX, this.scene.pointerY);
+    const point = this.renderPoint(e.clientX, e.clientY);
+    const slotId = this.picker.pick(this.scene, point.x, point.y);
     this.debug.hitWorldSlot = slotId;
     this.debug.blocked = false;
     this.debug.finalHandler = slotId ? "slotClick" : "ground";
@@ -116,15 +117,25 @@ export class PointerRouter {
     event.preventDefault();
     if (!this.callbacks.canActOnWorld()) return;
 
+    const point = this.renderPoint(event.clientX, event.clientY);
+    const pick = this.scene.pick(point.x, point.y, (mesh) => mesh.name === "ground");
+    const worldPoint = pick?.pickedPoint;
+    if (!pick?.hit || !worldPoint) return;
+    this.callbacks.onRecruitDrop?.(defId, worldPoint.x, worldPoint.z);
+  };
+
+  /** Convert DOM client coordinates into Babylon render-buffer coordinates.
+   * Click picking and recruit drop must use the same conversion; relying on
+   * Scene.pointerX/Y makes slot selection dependent on Babylon's last pointer
+   * observable update and breaks under CSS/device scaling or synthetic input. */
+  private renderPoint(clientX: number, clientY: number): { x: number; y: number } {
     const rect = this.canvas.getBoundingClientRect();
     const engine = this.scene.getEngine();
-    const x = (event.clientX - rect.left) * (engine.getRenderWidth() / Math.max(1, rect.width));
-    const y = (event.clientY - rect.top) * (engine.getRenderHeight() / Math.max(1, rect.height));
-    const pick = this.scene.pick(x, y, (mesh) => mesh.name === "ground");
-    const point = pick?.pickedPoint;
-    if (!pick?.hit || !point) return;
-    this.callbacks.onRecruitDrop?.(defId, point.x, point.z);
-  };
+    return {
+      x: (clientX - rect.left) * (engine.getRenderWidth() / Math.max(1, rect.width)),
+      y: (clientY - rect.top) * (engine.getRenderHeight() / Math.max(1, rect.height)),
+    };
+  }
 
   dispose(): void {
     this.canvas.removeEventListener("pointerdown", this.onPointerDown);
