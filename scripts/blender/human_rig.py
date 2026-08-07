@@ -458,9 +458,13 @@ def pose_tests(armature):
         pb = armature.pose.bones.get(name)
         if pb is not None:
             pb.rotation_quaternion = Quaternion((1, 0, 0, 0))
+    # `wristTwist` used to live here as "rotate the forearm, measure how far
+    # hand.R's head moved". That is the wrong quantity -- pronation turns the
+    # hand about the forearm axis with the wrist centre barely translating, so
+    # a correct rig scored near zero. Forearm rotation is judged by
+    # orientation and skin deformation in mpfb_rig_comparison.forearm_test.
     checks = (
         ("shoulderRaise", "upper_arm.R", "hand.R", (0, 0, 1), -55.0, 0.10),
-        ("wristTwist", "lower_arm.R", "hand.R", (0, 1, 0), 70.0, 0.004),
         ("hipSwing", "thigh.R", "foot.R", (1, 0, 0), 40.0, 0.12),
         ("kneeBend", "shin.R", "foot.R", (1, 0, 0), -60.0, 0.10),
         ("footRoll", "foot.R", "toe.R", (1, 0, 0), 25.0, 0.02),

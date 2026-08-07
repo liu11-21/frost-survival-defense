@@ -33,15 +33,16 @@ DIGITS = ("thumb", "index", "middle", "ring", "pinky", "little", "finger")
 # Joints driven for the deformation review. Each is a thing that a rig without
 # the right bone gets visibly wrong while still passing every structural check.
 POSES = (
-    ("armOut90", ("upper_arm", "arm", "shoulder"), "R", (0, 0, 1), -90.0),
-    ("armUp", ("upper_arm", "arm", "shoulder"), "R", (0, 0, 1), -150.0),
-    ("forearmPronate", ("lower_arm", "forearm"), "R", (0, 1, 0), 80.0),
-    ("forearmSupinate", ("lower_arm", "forearm"), "R", (0, 1, 0), -80.0),
+    ("armOut90", ("upperarm", "upper_arm", "arm"), "R", (0, 0, 1), -90.0),
+    ("armUp", ("upperarm", "upper_arm", "arm"), "R", (0, 0, 1), -150.0),
+    ("forearmPronate", ("lowerarm", "lower_arm", "forearm"), "R", (0, 1, 0), 80.0),
+    ("forearmSupinate", ("lowerarm", "lower_arm", "forearm"), "R", (0, 1, 0), -80.0),
     ("wristIn", ("hand", "wrist"), "R", (0, 0, 1), 35.0),
     ("wristOut", ("hand", "wrist"), "R", (0, 0, 1), -35.0),
     ("kneeLift", ("thigh", "upleg", "upperleg"), "R", (1, 0, 0), 55.0),
+    ("heelRollBall", ("ball", "toe"), "R", (1, 0, 0), 35.0),
     ("heelRoll", ("foot",), "R", (1, 0, 0), 30.0),
-    ("meleeWindup", ("upper_arm", "arm", "shoulder"), "R", (1, 0, 0), -70.0),
+    ("meleeWindup", ("upperarm", "upper_arm", "arm"), "R", (1, 0, 0), -70.0),
 )
 
 
@@ -209,6 +210,109 @@ def deformation(basemesh, armature, rig_name):
     return results
 
 
+def forearm_test(basemesh, armature):
+    """Judge forearm rotation by orientation and skin, not by hand travel.
+
+    The old gate rotated the forearm and measured how far `hand.R`'s head
+    moved. That is the wrong quantity: real pronation and supination turn the
+    hand about the forearm axis with the wrist centre barely translating at
+    all, so a correct rig scored near zero and "failed".
+
+    What matters is whether the hand actually *reorients*, whether the
+    elbow-to-wrist centreline stays put while it does, and whether the skin
+    between them twists smoothly or collapses into a candy wrapper.
+    """
+    lower = find_bone(armature, ("lowerarm", "lower_arm", "forearm"), "R")
+    hand = find_bone(armature, ("hand", "wrist"), "R")
+    if lower is None or hand is None:
+        return {"ran": False, "reason": "missing forearm (%s) or hand (%s)" % (lower, hand)}
+
+    depsgraph = bpy.context.evaluated_depsgraph_get()
+    lower_bone = armature.pose.bones[lower]
+    hand_bone = armature.pose.bones[hand]
+
+    def hand_frame():
+        m = armature.matrix_world @ hand_bone.matrix
+        return m.to_quaternion(), m.col[0].to_3d().normalized(), \
+            m.col[1].to_3d().normalized(), m.col[2].to_3d().normalized()
+
+    def forearm_surface():
+        """Vertices lying between elbow and wrist, in forearm-local space."""
+        evaluated = basemesh.evaluated_get(depsgraph)
+        mesh = evaluated.to_mesh()
+        origin = armature.matrix_world @ lower_bone.head
+        tip = armature.matrix_world @ hand_bone.head
+        axis = (tip - origin)
+        length = axis.length
+        axis = axis.normalized()
+        points = []
+        for vertex in mesh.vertices:
+            world = basemesh.matrix_world @ vertex.co
+            along = (world - origin).dot(axis)
+            if 0.15 * length < along < 0.9 * length:
+                radial = (world - origin) - axis * along
+                points.append((along, radial.length, world.copy()))
+        evaluated.to_mesh_clear()
+        return points, origin.copy(), tip.copy()
+
+    for pose_bone in armature.pose.bones:
+        pose_bone.rotation_mode = "QUATERNION"
+        pose_bone.rotation_quaternion = Quaternion((1, 0, 0, 0))
+    bpy.context.view_layer.update()
+    rest_quat, rest_x, rest_y, rest_z = hand_frame()
+    rest_points, rest_origin, rest_tip = forearm_surface()
+
+    results = {"ran": True, "forearmBone": lower, "handBone": hand,
+               "sampledForearmVertices": len(rest_points)}
+    for label, degrees in (("pronate", 80.0), ("supinate", -80.0)):
+        lower_bone.rotation_quaternion = Quaternion((0, 1, 0), math.radians(degrees))
+        bpy.context.view_layer.update()
+        quat, x_axis, y_axis, z_axis = hand_frame()
+        points, origin, tip = forearm_surface()
+
+        orientation_delta = math.degrees(quat.rotation_difference(rest_quat).angle)
+        axis_delta = max(
+            math.degrees(rest_x.angle(x_axis)),
+            math.degrees(rest_y.angle(y_axis)),
+            math.degrees(rest_z.angle(z_axis)))
+        centreline = max((origin - rest_origin).length, (tip - rest_tip).length)
+
+        n = min(len(rest_points), len(points))
+        surface = [(points[i][2] - rest_points[i][2]).length for i in range(n)]
+        radial = [abs(points[i][1] - rest_points[i][1]) for i in range(n)]
+        rest_radii = [rest_points[i][1] for i in range(n)]
+        mean_radius = (sum(rest_radii) / n) if n else 1.0
+        # Candy wrapper: the radius collapses toward the axis somewhere along
+        # the forearm while the surface elsewhere still moves.
+        collapse = (min(points[i][1] for i in range(n)) / mean_radius) if n and mean_radius else 1.0
+
+        results[label] = {
+            "degrees": degrees,
+            "handOrientationDeltaDeg": round(orientation_delta, 2),
+            "palmAxisDeltaDeg": round(axis_delta, 2),
+            "centrelineDisplacement": round(centreline, 5),
+            "surfaceMaxDisplacement": round(max(surface) if surface else 0.0, 5),
+            "surfaceMeanDisplacement": round(sum(surface) / n, 5) if n else 0.0,
+            "radialDistortionMax": round(max(radial) if radial else 0.0, 5),
+            "minRadiusRatio": round(collapse, 4),
+            "orientationPassed": orientation_delta > 45.0,
+            "centrelineStable": centreline < 0.02,
+            "surfaceDeformationPassed": bool(surface) and max(surface) > 0.002,
+            "candyWrapperRisk": collapse < 0.55,
+        }
+        lower_bone.rotation_quaternion = Quaternion((1, 0, 0, 0))
+        bpy.context.view_layer.update()
+
+    both = [results[k] for k in ("pronate", "supinate") if k in results]
+    results["orientationPassed"] = all(b["orientationPassed"] for b in both)
+    results["centrelineStable"] = all(b["centrelineStable"] for b in both)
+    results["surfaceDeformationPassed"] = all(b["surfaceDeformationPassed"] for b in both)
+    results["candyWrapperRisk"] = any(b["candyWrapperRisk"] for b in both)
+    # Absence of a twist bone is NOT a hard failure. It is a visual gate.
+    results["hasTwistBone"] = bool([b for b in armature.data.bones if "twist" in b.name.lower()])
+    return results
+
+
 def main():
     os.makedirs(OUT, exist_ok=True)
     summary = []
@@ -216,6 +320,7 @@ def main():
         basemesh, armature = build(rig_name)
         record = measure(basemesh, armature, rig_name)
         record["deformation"] = deformation(basemesh, armature, rig_name)
+        record["forearmTest"] = forearm_test(basemesh, armature)
         glb = os.path.join(OUT, "%s.glb" % rig_name)
         bpy.ops.export_scene.gltf(filepath=glb, export_format="GLB",
                                   export_skins=True, export_yup=True)
@@ -237,8 +342,13 @@ def main():
             "unweighted": record["verticesLackingWeights"],
             "triangles": record["triangles"],
             "glbBytes": record["glbBytes"],
-            "deformPassed": sum(1 for v in record["deformation"].values() if v.get("deforms")),
-            "deformRan": sum(1 for v in record["deformation"].values() if v.get("ran")),
+            "posesDefined": len(POSES),
+            "posesRan": sum(1 for v in record["deformation"].values() if v.get("ran")),
+            "posesPassed": sum(1 for v in record["deformation"].values() if v.get("deforms")),
+            "posesSkipped": sorted(k for k, v in record["deformation"].items() if not v.get("ran")),
+            "skipReasons": {k: v.get("reason") for k, v in record["deformation"].items()
+                            if not v.get("ran")},
+            "forearm": record.get("forearmTest", {}),
         })
         print("RIG %s" % json.dumps(summary[-1]))
 
