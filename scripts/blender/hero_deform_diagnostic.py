@@ -262,6 +262,14 @@ def main():
     with open(path, "w", encoding="utf-8") as handle:
         json.dump(report, handle, indent=2)
 
+    def growth(entry):
+        """Metres, not a ratio. The two were printed under one label and I
+        quoted `maxRatio` as if it were a distance for several rounds."""
+        results = entry.get("result", [])
+        values = [r.get("maxGrowthMetres") for r in results
+                  if r.get("maxGrowthMetres") is not None]
+        return max(values) if values else None
+
     def peak(entry):
         results = entry.get("result", [])
         values = [r["maxRatio"] for r in results if r.get("maxRatio")]
@@ -270,11 +278,12 @@ def main():
     print("DEFORM_REST %s" % json.dumps(
         {r["mesh"]: r["maxRatio"] for r in baseline}))
     for bone_name, entry in report["manual"].items():
-        print("DEFORM_MANUAL %s peak=%s" % (bone_name, peak(entry)))
+        print("DEFORM_MANUAL %s maxRatio=%s maxGrowth_m=%s"
+              % (bone_name, peak(entry), growth(entry)))
     for label, entry in report["clip"].items() if isinstance(report["clip"], dict) else []:
         if isinstance(entry, dict) and "result" in entry:
-            print("DEFORM_CLIP %s peak=%s per=%s" % (
-                label, peak(entry),
+            print("DEFORM_CLIP %s maxRatio=%s maxGrowth_m=%s per=%s" % (
+                label, peak(entry), growth(entry),
                 json.dumps({r["mesh"]: r["maxRatio"] for r in entry["result"]})))
     absolute = os.path.abspath(os.path.join(ROOT, args.input))
     digest = hashlib.sha256(open(absolute, "rb").read()).hexdigest()
