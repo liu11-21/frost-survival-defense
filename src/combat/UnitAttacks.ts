@@ -24,7 +24,6 @@ export function tierBonusMultiplier(
   return 1;
 }
 
-/** Applies an on-hit slow to a unit target, halved (per its own config) against the boss tier. */
 function applyOnHitSlow(unit: CombatUnit, target: Damageable): void {
   const slow = unit.def.slowOnHit;
   if (!slow) return;
@@ -34,7 +33,6 @@ function applyOnHitSlow(unit: CombatUnit, target: Damageable): void {
   applicable.applySlowStack(isBoss ? slow.bossAmount : slow.amount, slow.duration, slow.maxStacks);
 }
 
-/** Frost Sorcerer's AoE slow, refreshing rather than stacking, reduced against the boss. */
 function applyAoeSlow(unit: CombatUnit, target: Damageable): void {
   const slow = unit.def.aoeSlow;
   if (!slow) return;
@@ -44,13 +42,20 @@ function applyAoeSlow(unit: CombatUnit, target: Damageable): void {
   applicable.applySlowRefresh(isBoss ? slow.bossAmount : slow.amount, isBoss ? slow.bossDuration : slow.duration);
 }
 
+/** Ordinary Lv.1-5 enemies cannot damage optional facilities, even by splash.
+ * Explicit siege/self-destruct specialists and the Lv.6 boss are exceptions. */
+function mayDamageFacilities(unit: CombatUnit): boolean {
+  if (unit.faction === "ally") return true;
+  return unit.level >= BOSS_TIER_LEVEL || unit.def.siegeFocus === true || unit.def.selfDestruct !== undefined;
+}
+
 export function resolveUnitAttack(unit: CombatUnit, target: Damageable, ctx: CombatContext): void {
   if (unit.faction === "ally" && target.kind === "unit" && (target as CombatUnit).isFlying &&
       unit.def.attackType !== "rangedSingle" && unit.def.attackType !== "rangedArea") return;
-  // Higher enemy tiers hit fortifications harder than they hit people.
   const siege = STRUCTURE_KINDS.has(target.kind) ? unit.siegeMultiplier : 1;
   const power = unit.attackPower * siege * tierBonusMultiplier(unit.def, target.level);
   const def = unit.def;
+  const includeFacilities = mayDamageFacilities(unit);
 
   switch (def.attackType) {
     case "meleeSingle":
@@ -69,6 +74,7 @@ export function resolveUnitAttack(unit: CombatUnit, target: Damageable, ctx: Com
         (def.maxAreaTargets ?? 5) - 1,
         undefined,
         "melee",
+        includeFacilities,
       );
       ctx.vfx.meleeHit(target.position.x, target.position.z);
       break;
@@ -105,8 +111,16 @@ export function resolveUnitAttack(unit: CombatUnit, target: Damageable, ctx: Com
         meteor ? target.position.z : unit.position.z,
         target,
         (hx, hz) => {
-          ctx.areaDamage(unit.faction, hx, hz, radius, power, def.maxAreaTargets ?? 6, (hit) =>
-            applyAoeSlow(unit, hit), "ranged",
+          ctx.areaDamage(
+            unit.faction,
+            hx,
+            hz,
+            radius,
+            power,
+            def.maxAreaTargets ?? 6,
+            (hit) => applyAoeSlow(unit, hit),
+            "ranged",
+            includeFacilities,
           );
           if (meteor) ctx.vfx.burstAt("arcaneImpact", hx, hz, 54);
           else if (frost) {
