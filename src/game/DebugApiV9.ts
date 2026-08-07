@@ -1,8 +1,9 @@
 import type { HeroSkillId } from "../hero/HeroSkillDefinitions";
 import { structureRepairFixedBurst } from "../combat/StructureSelfRepair";
+import { LANES, nearestPointOnLane } from "../data/BuildSlotDefinitions";
 import type { GameSystems } from "./GameSystems";
 
-/** Hero-skill (1/2/3 plus automatic 4) inspection and control for the test harness. */
+/** Hero-skill plus scene/lane inspection and control for the permanent harness. */
 export function createV9DebugApi(s: GameSystems): Record<string, unknown> {
   return {
     heroSkillState: () => s.heroSkills.states(),
@@ -64,9 +65,75 @@ export function createV9DebugApi(s: GameSystems): Record<string, unknown> {
           x: enemy.position.x,
           z: enemy.position.z,
           target: enemy.currentTarget?.kind ?? null,
+          targetId:
+            (enemy.currentTarget as { def?: { id?: string } } | null)?.def?.id ??
+            enemy.currentTarget?.kind ??
+            null,
+          targetLane:
+            enemy.currentTarget?.kind === "unit"
+              ? (enemy.currentTarget as { laneIndex?: number }).laneIndex ?? null
+              : null,
+          laneIndex: enemy.laneIndex,
+          moveSpeed: enemy.def.moveSpeed,
+          navPoint: enemy.navPoint ? { x: enemy.navPoint.x, z: enemy.navPoint.z } : null,
           vulnerability: enemy.vulnerabilityFactor,
           vulnerabilityRemaining: enemy.vulnerabilityRemaining,
         })),
+
+    // ------------------------------------------------------- G1 lane probes
+    laneDefinitions: () =>
+      LANES.map((lane) => ({
+        index: lane.index,
+        name: lane.name,
+        side: lane.side,
+        path: lane.path.map((point) => ({ ...point })),
+        pathLength: Number(
+          lane.path
+            .slice(0, -1)
+            .reduce((sum, point, index) => {
+              const next = lane.path[index + 1];
+              return sum + Math.hypot(next.x - point.x, next.z - point.z);
+            }, 0)
+            .toFixed(3),
+        ),
+      })),
+    allyLaneStatus: () =>
+      s.squads.allySquads.flatMap((squad) =>
+        squad.members
+          .filter((member) => member.alive)
+          .map((member) => ({
+            id: member.def.id,
+            squadId: squad.id,
+            laneIndex: member.laneIndex,
+            x: member.position.x,
+            z: member.position.z,
+            home: member.home ? { x: member.home.x, z: member.home.z } : null,
+            targetLane:
+              member.currentTarget?.kind === "unit"
+                ? (member.currentTarget as { laneIndex?: number }).laneIndex ?? null
+                : null,
+          })),
+      ),
+    /** Test-only deterministic deployment; production uses the real drag/drop
+     * path in Game.handleRecruitDrop. */
+    deploySquadForTest: (defId: string, laneIndex: number, x: number, z: number) => {
+      const squad = [...s.squads.allySquads]
+        .reverse()
+        .find((candidate) => candidate.alive && candidate.def.id === defId);
+      const lane = LANES[((laneIndex % LANES.length) + LANES.length) % LANES.length];
+      if (!squad || !lane) return false;
+      const snap = nearestPointOnLane(x, z, lane);
+      for (let i = 0; i < squad.members.length; i++) {
+        const member = squad.members[i];
+        if (!member.alive) continue;
+        const offset = (i - (squad.members.length - 1) * 0.5) * 0.7;
+        member.laneIndex = lane.index;
+        member.setPosition(snap.x + offset, snap.z);
+        member.home = member.position.clone();
+        member.aiBrain?.forceReacquire("debugLaneDeploy");
+      }
+      return true;
+    },
     healthLabelFacing: () =>
       s.scene.meshes
         .filter((mesh) => mesh.name.startsWith("hpLabelPlane") && mesh.isEnabled())
