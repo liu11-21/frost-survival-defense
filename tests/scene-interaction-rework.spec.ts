@@ -95,7 +95,11 @@ test("scaled facility visuals still leave a generous real pointer placement targ
   // target slot stays empty; the click lands near the largest scaled visual
   // footprint rather than at the easy centre point.
   expect((await call(page, "build", "coreNW", "warehouse")).ok).toBe(true);
-  await step(page, 0.016, 2);
+  // Before a warehouse completes, the real store caps every resource at 100.
+  // Let this one finish, then replenish normally so `canBuild` below tests
+  // placement legality instead of failing because the setup spent its wood.
+  await step(page, 0.016, 220);
+  await call(page, "grant", 999, 999, 999);
   const contract = await call(page, "facilityRuntimeContract", "coreNW");
   expect(contract).toBeTruthy();
   expect(contract.visualScale.x).toBeCloseTo(0.82, 5);
