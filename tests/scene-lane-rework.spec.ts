@@ -7,6 +7,7 @@ import {
   isInsideBase,
   nearestPointOnLane,
 } from "../src/data/BuildSlotDefinitions";
+import { BUILDING_BY_ID, buildCostForSurface } from "../src/data/BuildingDefinitions";
 import { nextLaneWaypoint } from "../src/data/LaneNavigation";
 import { DEFENSE_BUILDINGS } from "../src/data/DefenseBuildingDefinitions";
 import { ENDLESS_SCALING, endlessLaneCount } from "../src/data/GameModeRules";
@@ -95,6 +96,44 @@ test("defence ranges, movement stats and codex data use the real authored values
   expect(gruntCodex?.fields.some((field) => field.label === "移動速度" && field.value.includes("/ 秒"))).toBe(true);
   expect(archerCodex?.fields.some((field) => field.label === "移動速度" && field.value.includes("/ 秒"))).toBe(true);
   expect(gruntCodex?.fields.find((field) => field.label === "設施鎖定")?.value).toContain("不主動鎖定一般設施");
+});
+
+test("facility visual scale stays presentation-only at runtime", async ({ page }) => {
+  await page.goto("http://127.0.0.1:4173/?uiVerification=1", { waitUntil: "networkidle" });
+  await page.waitForFunction(() => Boolean((window as any).frostbound), null, { timeout: 60_000 });
+  await page.evaluate(() => (window as any).frostbound.stopLoop());
+
+  await call(page, "startStage", "stage-3");
+  await call(page, "grant", 999, 999, 999);
+  await call(page, "setFurnaceLevel", 30);
+
+  expect((await call(page, "build", "coreNE", "tower")).ok).toBe(true);
+  expect((await call(page, "build", "wallNorth", "wall")).ok).toBe(true);
+  await step(page, 0.016, 2);
+
+  const towerDef = BUILDING_BY_ID.get("tower")!;
+  const tower = await call(page, "facilityRuntimeContract", "coreNE");
+  expect(tower).toBeTruthy();
+  expect(tower.visualScale.x).toBeCloseTo(0.82, 5);
+  expect(tower.visualScale.y).toBeCloseTo(0.82, 5);
+  expect(tower.visualScale.z).toBeCloseTo(0.82, 5);
+  expect(tower.hitRadius).toBe(towerDef.radius);
+  expect(tower.attackRange).toBe(towerDef.attackRange);
+  expect(tower.cost).toEqual(buildCostForSurface(towerDef, "ground"));
+
+  // Use the live CollisionWorld rather than a copied formula. Inside the
+  // authored gameplay radius must still collide; just outside it must not.
+  const core = GROUND_SLOTS.find((slot) => slot.id === "coreNE")!;
+  const inside = await call(page, "collisionProbe", core.x + towerDef.radius * 0.5, core.z, 0);
+  const outside = await call(page, "collisionProbe", core.x + towerDef.radius + 0.25, core.z, 0);
+  expect(inside.touched).toBe(true);
+  expect(outside.touched).toBe(false);
+
+  const wall = await call(page, "facilityRuntimeContract", "wallNorth");
+  expect(wall).toBeTruthy();
+  expect(wall.visualScale.x).toBeCloseTo(1, 5);
+  expect(wall.visualScale.y).toBeCloseTo(1, 5);
+  expect(wall.visualScale.z).toBeCloseTo(1, 5);
 });
 
 test("runtime keeps melee on-lane, permits ranged fallback, and then pre-empts it", async ({ page }, testInfo) => {
