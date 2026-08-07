@@ -1,9 +1,7 @@
 import type { Scene } from "@babylonjs/core";
 import type { SlotPicker } from "../ui/SlotPicker";
+import { RECRUIT_DRAG_MIME } from "./RecruitDrag";
 
-/** CSS-pixel movement under this is a click; at or above it, a drag. Small
- * enough that a 1-2px hand tremor never cancels a click, per the click-vs-drag
- * spec this router implements. */
 const DRAG_THRESHOLD_CSS_PX = 6;
 
 export type PointerClassification = "click" | "drag" | "none";
@@ -22,19 +20,13 @@ export interface PointerDebugState {
 }
 
 export interface PointerRouterCallbacks {
-  /** False while a modal/panel/map/pause layer should swallow world clicks. */
   canActOnWorld(): boolean;
   onSlotClick(slotId: string): void;
+  /** A recruit icon was dropped onto a real world-space ground point. */
+  onRecruitDrop?(defId: string, x: number, z: number): void;
 }
 
-/**
- * Canvas-level click/drag classification plus world hit-testing. DOM buttons
- * and panels never reach this: they sit in front on their own `pointer-events:
- * auto` layer and take the event first, which is what already implements most
- * of "modal > panels > HUD" priority — this router only owns what's left,
- * the canvas itself: world objects, then ground, then (if it ever exists)
- * camera drag.
- */
+/** Canvas click classification, slot hit-testing and roster drag/drop. */
 export class PointerRouter {
   readonly debug: PointerDebugState = {
     downX: 0,
@@ -61,6 +53,8 @@ export class PointerRouter {
   ) {
     canvas.addEventListener("pointerdown", this.onPointerDown);
     canvas.addEventListener("pointerup", this.onPointerUp);
+    canvas.addEventListener("dragover", this.onDragOver);
+    canvas.addEventListener("drop", this.onDrop);
   }
 
   private readonly onPointerDown = (e: PointerEvent): void => {
@@ -73,11 +67,6 @@ export class PointerRouter {
     if (!this.downActive) return;
     this.downActive = false;
     const t0 = performance.now();
-
-    // clientX/Y are CSS pixels on both ends, so this comparison is already
-    // correct under browser zoom and high-DPI without any manual scaling —
-    // the bug class that needs scaling is mixing these with canvas backing-
-    // store pixels, which never happens here.
     const dx = e.clientX - this.downX;
     const dy = e.clientY - this.downY;
     const displacement = Math.hypot(dx, dy);
@@ -105,10 +94,6 @@ export class PointerRouter {
       return;
     }
 
-    // Babylon already tracks its own pointer position in render-target space
-    // from the same canvas events, correctly accounting for devicePixelRatio —
-    // reusing it here avoids re-deriving (and possibly mismatching) that
-    // conversion ourselves.
     const slotId = this.picker.pick(this.scene, this.scene.pointerX, this.scene.pointerY);
     this.debug.hitWorldSlot = slotId;
     this.debug.blocked = false;
@@ -117,8 +102,34 @@ export class PointerRouter {
     this.debug.processingMs = Number((performance.now() - t0).toFixed(2));
   };
 
+  private readonly onDragOver = (event: DragEvent): void => {
+    if (!event.dataTransfer?.types.includes(RECRUIT_DRAG_MIME)) return;
+    event.preventDefault();
+    event.dataTransfer.dropEffect = this.callbacks.canActOnWorld() ? "copy" : "none";
+  };
+
+  private readonly onDrop = (event: DragEvent): void => {
+    const transfer = event.dataTransfer;
+    if (!transfer) return;
+    const defId = transfer.getData(RECRUIT_DRAG_MIME);
+    if (!defId) return;
+    event.preventDefault();
+    if (!this.callbacks.canActOnWorld()) return;
+
+    const rect = this.canvas.getBoundingClientRect();
+    const engine = this.scene.getEngine();
+    const x = (event.clientX - rect.left) * (engine.getRenderWidth() / Math.max(1, rect.width));
+    const y = (event.clientY - rect.top) * (engine.getRenderHeight() / Math.max(1, rect.height));
+    const pick = this.scene.pick(x, y, (mesh) => mesh.name === "ground");
+    const point = pick?.pickedPoint;
+    if (!pick?.hit || !point) return;
+    this.callbacks.onRecruitDrop?.(defId, point.x, point.z);
+  };
+
   dispose(): void {
     this.canvas.removeEventListener("pointerdown", this.onPointerDown);
     this.canvas.removeEventListener("pointerup", this.onPointerUp);
+    this.canvas.removeEventListener("dragover", this.onDragOver);
+    this.canvas.removeEventListener("drop", this.onDrop);
   }
 }
