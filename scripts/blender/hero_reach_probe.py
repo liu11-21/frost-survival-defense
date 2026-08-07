@@ -69,6 +69,39 @@ def main():
               "(shoulder-to-hand %.4f m)"
               % (label, rest, worst[0], worst[1], worst[2]))
 
+        # Reach only asks whether the arm is STRETCHED. It stayed at 0.998,
+        # which cleared over-extension and nothing else -- a rigid arm placed
+        # two metres from the shoulder socket passes it perfectly. So also ask
+        # where each joint actually ends up relative to its own rest position,
+        # and how far the shoulder drifts from the chest it is attached to.
+        anchor = next((n for n in ("spine_03", "chest", "spine_02", "spine")
+                       if n in bones), None)
+        drift = {}
+        for name in (shoulder, elbow, hand):
+            worst_move = 0.0
+            worst_frame = None
+            for frame in range(int(start), int(end) + 1):
+                bpy.context.scene.frame_set(frame)
+                bpy.context.view_layer.update()
+                moved = (armature.pose.bones[name].head
+                         - bones[name].head_local).length
+                if moved > worst_move:
+                    worst_move, worst_frame = moved, frame
+            drift[name] = (round(worst_move, 4), worst_frame)
+        socket = None
+        if anchor:
+            rest_gap = (bones[shoulder].head_local - bones[anchor].head_local).length
+            worst_gap = 0.0
+            for frame in range(int(start), int(end) + 1):
+                bpy.context.scene.frame_set(frame)
+                bpy.context.view_layer.update()
+                gap = (armature.pose.bones[shoulder].head
+                       - armature.pose.bones[anchor].head).length
+                worst_gap = max(worst_gap, abs(gap - rest_gap))
+            socket = round(worst_gap, 4)
+        print("DRIFT %-6s %s  shoulderToTorsoChange=%s m (anchor %s)"
+              % (label, drift, socket, anchor))
+
 
 if __name__ == "__main__":
     main()
