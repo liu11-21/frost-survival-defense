@@ -291,7 +291,7 @@ def probe_stage(stage, basemesh, armature):
         growth.get("lowerarm_r", {}).get("maxGrowthMetres")))
 
 
-def smooth_body_weights(basemesh, armature, passes=3, floor=1e-3, max_influences=4):
+def smooth_body_weights(basemesh, armature, passes=6, floor=1e-3, max_influences=4):
     """Remove the weight discontinuities MPFB's builtin rig leaves on the body.
 
     Measured, not assumed. The stage probe puts the body at 0.117 m / 0.212 m
@@ -437,8 +437,27 @@ def main():
 
     os.makedirs(OUT, exist_ok=True)
     glb = os.path.join(OUT, "%s.glb" % name)
+    # Delete the target first, then record what was actually written.
+    #
+    # `--variant male` with no `--name` writes male_base.glb, not
+    # hero_male_base.glb. A whole round was spent concluding that weight
+    # smoothing "did not survive export" because the smoothed run wrote one
+    # file and the measurement read another, five hours stale, sitting right
+    # beside it. A stale read is indistinguishable from a broken write unless
+    # the writer proves the bytes are new.
+    if os.path.exists(glb):
+        os.remove(glb)
     bpy.ops.export_scene.gltf(filepath=glb, export_format="GLB",
                               export_skins=True, export_yup=True)
+    if not os.path.exists(glb):
+        raise SystemExit("export wrote nothing to %s" % glb)
+    written = {
+        "path": os.path.relpath(glb, ROOT).replace("\\", "/"),
+        "bytes": os.path.getsize(glb),
+        "mtime": os.path.getmtime(glb),
+        "sha256": sha256(glb),
+    }
+    print("EXPORT_WROTE %s" % json.dumps(written))
 
     bones = [b.name for b in armature.data.bones]
     lo = [1e9] * 3

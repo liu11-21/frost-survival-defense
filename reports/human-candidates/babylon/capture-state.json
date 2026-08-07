@@ -1,5 +1,5 @@
 {
-  "capturedAt": "2026-08-07T12:41:36.006Z",
+  "capturedAt": "2026-08-07T13:48:49.575Z",
   "captured": [
     {
       "file": "hero_male-front.png",
@@ -7,7 +7,7 @@
       "camera": "front",
       "label": "front",
       "boneCount": 53,
-      "triangles": 35824
+      "triangles": 35838
     },
     {
       "file": "hero_male-three-quarter.png",
@@ -15,7 +15,7 @@
       "camera": "three-quarter",
       "label": "three-quarter",
       "boneCount": 53,
-      "triangles": 35824
+      "triangles": 35838
     },
     {
       "file": "hero_male-side.png",
@@ -23,7 +23,7 @@
       "camera": "side",
       "label": "side",
       "boneCount": 53,
-      "triangles": 35824
+      "triangles": 35838
     },
     {
       "file": "hero_male-head.png",
@@ -31,7 +31,7 @@
       "camera": "head",
       "label": "head",
       "boneCount": 53,
-      "triangles": 35824
+      "triangles": 35838
     },
     {
       "file": "hero_male-hand-open.png",
@@ -39,7 +39,7 @@
       "camera": "hand",
       "label": "hand-open",
       "boneCount": 53,
-      "triangles": 35824
+      "triangles": 35838
     },
     {
       "file": "hero_male-grip.png",
@@ -49,7 +49,7 @@
       "phase": 0.25,
       "label": "grip",
       "boneCount": 53,
-      "triangles": 35824
+      "triangles": 35838
     },
     {
       "file": "hero_male-melee-windup.png",
@@ -59,7 +59,7 @@
       "phase": 0.25,
       "label": "melee-windup",
       "boneCount": 53,
-      "triangles": 35824
+      "triangles": 35838
     },
     {
       "file": "hero_male-melee-impact.png",
@@ -69,7 +69,7 @@
       "phase": 0.6,
       "label": "melee-impact",
       "boneCount": 53,
-      "triangles": 35824
+      "triangles": 35838
     },
     {
       "file": "hero_male-ranged.png",
@@ -79,7 +79,7 @@
       "phase": 0.5,
       "label": "ranged",
       "boneCount": 53,
-      "triangles": 35824
+      "triangles": 35838
     },
     {
       "file": "hero_male-walk.png",
@@ -89,7 +89,7 @@
       "phase": 0.3,
       "label": "walk",
       "boneCount": 53,
-      "triangles": 35824
+      "triangles": 35838
     },
     {
       "variant": "male",
@@ -100,7 +100,7 @@
         "assetKey": "hero_male",
         "loaded": true,
         "meshCount": 8,
-        "triangleCount": 35824,
+        "triangleCount": 35838,
         "boneCount": 53,
         "animations": [
           "Death",
@@ -122,23 +122,23 @@
         "boundingBox": {
           "min": [
             -0.6017,
-            -0.1718,
-            -0.2194
+            -0.1717,
+            -0.2219
           ],
           "max": [
-            0.7869,
+            0.7856,
             1.8549,
-            0.8636
+            0.8638
           ],
-          "height": 2.0267
+          "height": 2.0266
         },
         "camera": "front",
         "cameraSolved": {
-          "radius": 2.8282,
+          "radius": 2.8281,
           "alpha": 1.5708,
           "beta": 1.5108,
           "targetY": 0.8821,
-          "clearanceFromBounds": 2.1339,
+          "clearanceFromBounds": 2.1344,
           "insideBounds": false
         },
         "error": null,
@@ -151,7 +151,7 @@
       "camera": "front",
       "label": "front",
       "boneCount": 53,
-      "triangles": 35824
+      "triangles": 35838
     },
     {
       "file": "hero_female-three-quarter.png",
@@ -159,7 +159,7 @@
       "camera": "three-quarter",
       "label": "three-quarter",
       "boneCount": 53,
-      "triangles": 35824
+      "triangles": 35838
     },
     {
       "file": "hero_female-side.png",
@@ -167,7 +167,7 @@
       "camera": "side",
       "label": "side",
       "boneCount": 53,
-      "triangles": 35824
+      "triangles": 35838
     },
     {
       "file": "hero_female-head.png",
@@ -175,7 +175,7 @@
       "camera": "head",
       "label": "head",
       "boneCount": 53,
-      "triangles": 35824
+      "triangles": 35838
     },
     {
       "file": "hero_female-hand-open.png",
@@ -183,7 +183,7 @@
       "camera": "hand",
       "label": "hand-open",
       "boneCount": 53,
-      "triangles": 35824
+      "triangles": 35838
     },
     {
       "file": "hero_female-grip.png",
@@ -193,7 +193,7 @@
       "phase": 0.25,
       "label": "grip",
       "boneCount": 53,
-      "triangles": 35824
+      "triangles": 35838
     },
     {
       "file": "hero_female-melee-windup.png",
@@ -203,7 +203,7 @@
       "phase": 0.25,
       "label": "melee-windup",
       "boneCount": 53,
-      "triangles": 35824
+      "triangles": 35838
     },
     {
       "file": "hero_female-melee-impact.png",
@@ -213,7 +213,7 @@
       "phase": 0.6,
       "label": "melee-impact",
       "boneCount": 53,
-      "triangles": 35824
+      "triangles": 35838
     },
     {
       "file": "hero_female-ranged.png",
@@ -223,7 +223,7 @@
       "phase": 0.5,
       "label": "ranged",
       "boneCount": 53,
-      "triangles": 35824
+      "triangles": 35838
     },
     {
       "file": "hero_female-walk.png",
@@ -233,7 +233,7 @@
       "phase": 0.3,
       "label": "walk",
       "boneCount": 53,
-      "triangles": 35824
+      "triangles": 35838
     },
     {
       "variant": "female",
@@ -244,7 +244,7 @@
         "assetKey": "hero_female",
         "loaded": true,
         "meshCount": 8,
-        "triangleCount": 35824,
+        "triangleCount": 35838,
         "boneCount": 53,
         "animations": [
           "Death",
@@ -266,23 +266,23 @@
         "boundingBox": {
           "min": [
             -0.5375,
-            -0.1393,
-            -0.2127
+            -0.16,
+            -0.2125
           ],
           "max": [
-            0.7176,
-            1.7488,
-            0.7852
+            0.7161,
+            1.7489,
+            0.7854
           ],
-          "height": 1.8881
+          "height": 1.9089
         },
         "camera": "front",
         "cameraSolved": {
-          "radius": 2.6348,
+          "radius": 2.6638,
           "alpha": 1.5699,
-          "beta": 1.4978,
-          "targetY": 0.8425,
-          "clearanceFromBounds": 2.0073,
+          "beta": 1.4943,
+          "targetY": 0.8326,
+          "clearanceFromBounds": 2.037,
           "insideBounds": false
         },
         "error": null,
