@@ -19,7 +19,7 @@ import { isCrossLaneUnitTarget } from "../combat/UnitTargeting";
 const MAX_EVENTS = 20;
 
 /**
- * Explicit friendly state machine.  G1 adds a lane invariant on top of the
+ * Explicit friendly state machine. G1 adds a lane invariant on top of the
  * existing anti-stall rules: ordinary squads chase on their assigned road,
  * melee never receives a cross-lane target, and ranged cross-lane fallback
  * shots are followed by progress on the squad's own lane rather than sideways
@@ -38,7 +38,6 @@ export class FriendlyBrain {
   private pendingToken = -1;
   private windupBudget = 0;
   private sideStepSign = 1;
-  /** Rally point written by the squad each frame. */
   readonly rally = new Vector3();
   hasRally = false;
   private readonly heartbeat = new AIHeartbeat();
@@ -158,8 +157,6 @@ export class FriendlyBrain {
       if (this.isCombatState()) this.transition(this.replanState, "targetInvalid");
     }
 
-    // A ranged cross-lane target is only a fallback. Re-query on the normal
-    // timer so a newly arrived same-lane enemy immediately takes precedence.
     if (
       this.target &&
       isCrossLaneUnitTarget(this.unit, this.target) &&
@@ -240,8 +237,6 @@ export class FriendlyBrain {
     );
   }
 
-  // ------------------------------------------------------------- combat ----
-
   private tickAcquire(dt: number): void {
     this.unit.brakeMotor(dt);
     this.stuck.markIdle(this.clock);
@@ -292,19 +287,15 @@ export class FriendlyBrain {
         this.unit.brakeMotor(dt);
         this.beginAttack("attackWindup");
       } else if (crossLaneFallback) {
-        // The previous shot is cooling down: advance on our own road rather
-        // than parking to turret another lane or walking toward that target.
         const next = laneAdvancePoint(this.unit.laneIndex, this.unit.position.x, this.unit.position.z, "outbound");
         this.unit.moveMotor(next.x, next.z, dt, this.deps.formation);
-        this.checkStuck(dt, "crossLaneAdvance");
+        this.checkStuck(dt, "moveToTarget");
       } else {
         this.unit.brakeMotor(dt);
       }
       return;
     }
 
-    // Same-lane pursuit follows the road instead of cutting a chord across a
-    // bend. Determine whether the target lies toward spawn or toward furnace.
     if (target.kind === "unit") {
       const lane = LANES[((this.unit.laneIndex % LANES.length) + LANES.length) % LANES.length];
       const here = nearestPointOnLane(this.unit.position.x, this.unit.position.z, lane);
@@ -315,7 +306,7 @@ export class FriendlyBrain {
         : "inbound";
       const next = laneAdvancePoint(this.unit.laneIndex, this.unit.position.x, this.unit.position.z, direction);
       this.unit.moveMotor(next.x, next.z, dt, this.deps.formation);
-      this.checkStuck(dt, "lanePursuit");
+      this.checkStuck(dt, "moveToTarget");
       return;
     }
 
@@ -358,8 +349,6 @@ export class FriendlyBrain {
     this.transition(this._state === "healWindup" ? "healRecover" : "attackRecover", "hitLanded");
     return true;
   }
-
-  // ------------------------------------------------------------- stuck -----
 
   private checkStuck(dt: number, from: AllyState): void {
     if (this.unit.movementSpeed > 0.2) {
