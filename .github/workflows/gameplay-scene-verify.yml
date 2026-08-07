@@ -49,13 +49,16 @@ jobs:
           cat "$RUNNER_TEMP/gameplay-preview.log"
           exit 1
       - name: Scene lane and G1 closure regression
-        run: npx playwright test tests/scene-lane-rework.spec.ts tests/g1-closure.spec.ts
+        run: |
+          mkdir -p .runtime/g1-evidence
+          npx playwright test tests/scene-lane-rework.spec.ts tests/g1-closure.spec.ts
       - name: Upload runtime evidence
         if: always()
         uses: actions/upload-artifact@v4
         with:
           name: gameplay-scene-verification-${{ github.run_id }}
           path: |
+            .runtime/g1-evidence/
             test-results/
             ${{ runner.temp }}/gameplay-preview.log
           if-no-files-found: warn
