@@ -1,21 +1,24 @@
 import { validateTarget } from "../ai/TargetValidator";
+import { laneAdvancePoint } from "../data/BuildSlotDefinitions";
 import type { CombatUnit } from "./CombatUnit";
-import { enemyTargetPriority, targetOutOfLeash } from "./UnitTargeting";
+import {
+  enemyTargetPriority,
+  isCrossLaneUnitTarget,
+  targetOutOfLeash,
+} from "./UnitTargeting";
 
-/** How often an enemy re-asks whether a higher-priority target has appeared. */
+/** How often an enemy re-asks whether a higher-priority / same-lane target appeared. */
 const REACH_INTERVAL = 0.2;
 
 /**
- * The compact enemy loop.
+ * Compact enemy loop with one extra lane invariant:
  *
- * Allies get the full state machine; enemies only ever need to answer three
- * questions — is my target still legal, can I still get to it, and am I close
- * enough to swing. The reachability re-check is on a timer because a wall can
- * go up between an enemy and its target part way through the approach, and a
- * unit that only re-planned when its target *died* would walk into the new
- * stonework and grind against it.
- *
- * Returns the next value for the caller's reach timer.
+ * - normal same-lane defenders can interrupt waypoint marching;
+ * - a permitted cross-lane fallback is never chased. It fires only while the
+ *   target is in real attack range, then movement resumes along this unit's own
+ *   lane during the cooldown;
+ * - the furnace remains the nominal target while no defender is locally legal,
+ *   so EnemyNavigator can keep advancing the winding route.
  */
 export function updateEnemyBrain(unit: CombatUnit, dt: number, reachTimer: number): number {
   let nextTimer = reachTimer - dt;
@@ -33,34 +36,69 @@ export function updateEnemyBrain(unit: CombatUnit, dt: number, reachTimer: numbe
   if (currentInvalid) {
     unit.setTarget(unit.findHostileTarget());
   } else if (staleReach && !unit.def.siegeFocus && !unit.def.selfDestruct) {
-    // `findHostileTarget` writes its result onto the unit. Keep a legal target
-    // within its own tier to avoid nearest-target oscillation, but retain the
-    // new result whenever it belongs to an earlier tier. This is what makes a
-    // rebuilt wall or newly arrived shield immediately reclaim attention.
     const previous = current;
+    const previousCross = isCrossLaneUnitTarget(unit, previous);
     const preferred = unit.findHostileTarget();
-    if (!preferred || enemyTargetPriority(preferred) >= enemyTargetPriority(previous)) {
-      unit.setTarget(previous);
-    }
+    const preferredCross = isCrossLaneUnitTarget(unit, preferred);
+
+    // A same-lane target immediately pre-empts a cross-lane fallback regardless
+    // of the legacy kind priority. Otherwise preserve a legal target inside its
+    // tier to avoid 0.2-second nearest-target oscillation.
+    const shouldRestorePrevious =
+      !preferred ||
+      (previousCross && preferredCross && enemyTargetPriority(preferred) >= enemyTargetPriority(previous)) ||
+      (!previousCross && enemyTargetPriority(preferred) >= enemyTargetPriority(previous));
+    if (shouldRestorePrevious) unit.setTarget(previous);
   }
 
   const target = unit.currentTarget;
   if (!target) {
-    unit.brakeMotor(dt);
+    const advance = unit.navPoint ?? laneAdvancePoint(unit.laneIndex, unit.position.x, unit.position.z, "inbound");
+    unit.moveMotor(advance.x, advance.z, dt, null);
     return nextTimer;
   }
 
-  // While navigation is steering this unit toward a gap it follows the
-  // waypoint, whatever it happens to be nominally targeting.
-  const marching = unit.navPoint !== null && unit.breachTarget === null;
-  const goalX = marching && unit.navPoint ? unit.navPoint.x : target.position.x;
-  const goalZ = marching && unit.navPoint ? unit.navPoint.z : target.position.z;
+  const crossLaneFallback = isCrossLaneUnitTarget(unit, target);
+  if (crossLaneFallback) {
+    const distance = unit.distanceTo(target.position.x, target.position.z);
+    if (distance > unit.attackReach(target)) {
+      // Never pursue across lanes. The next retarget either finds a same-lane
+      // defender or returns the furnace so normal route marching continues.
+      unit.setTarget(null);
+      const advance = unit.navPoint ?? laneAdvancePoint(unit.laneIndex, unit.position.x, unit.position.z, "inbound");
+      unit.moveMotor(advance.x, advance.z, dt, null);
+      return nextTimer;
+    }
+
+    unit.faceMotor(target.position.x, target.position.z, dt);
+    if (unit.canStartAttack()) {
+      unit.brakeMotor(dt);
+      unit.beginStrike();
+    } else {
+      // One firing cycle, one forward movement phase. We intentionally do not
+      // move toward the cross-lane target; the next shot is only legal if it is
+      // still in range after this progress step.
+      const advance = unit.navPoint ?? laneAdvancePoint(unit.laneIndex, unit.position.x, unit.position.z, "inbound");
+      unit.moveMotor(advance.x, advance.z, dt, null);
+    }
+    return nextTimer;
+  }
+
+  const targetIsSameLaneUnit = target.kind === "unit";
+  const targetDistance = unit.distanceTo(target.position.x, target.position.z);
+  const shouldFollowRoad =
+    unit.navPoint !== null &&
+    unit.breachTarget === null &&
+    (target.kind === "furnace" || (targetIsSameLaneUnit && targetDistance > unit.attackReach(target)));
+
+  const goalX = shouldFollowRoad && unit.navPoint ? unit.navPoint.x : target.position.x;
+  const goalZ = shouldFollowRoad && unit.navPoint ? unit.navPoint.z : target.position.z;
   const dist = unit.distanceTo(goalX, goalZ);
-  const stopAt = marching ? 0.9 : unit.attackReach(target);
+  const stopAt = shouldFollowRoad ? 0.9 : unit.attackReach(target);
 
   if (dist > stopAt) {
     unit.moveMotor(goalX, goalZ, dt, null);
-  } else if (marching) {
+  } else if (shouldFollowRoad) {
     unit.brakeMotor(dt);
   } else {
     unit.brakeMotor(dt);
