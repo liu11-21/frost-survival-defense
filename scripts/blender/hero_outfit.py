@@ -721,6 +721,84 @@ def implausible_weights(obj, side=None, limit=12):
     return bad
 
 
+def rebind_in_spread_pose(garments, body, armature, angle=48.0):
+    """Transfer the weights again, with the limbs held away from the body.
+
+    This is the actual fix for the coat hem binding to the forearm, and it is
+    a fix rather than a workaround because it removes the condition that made
+    the question unanswerable instead of enumerating exceptions to it.
+
+    MPFB stands in an A-pose. The wrist rests against the skirt, so "which
+    body surface is this garment vertex nearest to" has no correct answer --
+    the forearm genuinely is the nearest surface, genuinely is touching, and
+    neither ray direction nor a distance threshold can separate the arm a
+    sleeve covers from the arm merely standing beside a hem. Nobody skins in
+    that pose; the reason production rigs are bound in a spread pose is
+    exactly this.
+
+    So: the first pass in the A-pose is only good enough to skin the garment.
+    Once it is skinned, the armature can move both the body and the garment
+    apart, and the second pass asks the same proximity question in a pose
+    where it has an unambiguous answer -- the forearm is now a foot from the
+    hem instead of touching it.
+
+    Geometry is taken from the posed meshes; the WEIGHTS are still read from
+    the body's own rest-pose vertex groups, which the pose does not alter.
+    Topology is unchanged by an armature modifier, so vertex indices still
+    line up between the posed copy and the original.
+    """
+    from mathutils import Matrix
+
+    lifted = []
+    for name, axis, sign in (("upperarm_l", 2, 1.0), ("upperarm_r", 2, -1.0),
+                             ("thigh_l", 2, -1.0), ("thigh_r", 2, 1.0)):
+        bone = armature.pose.bones.get(name)
+        if bone is None:
+            continue
+        bone.rotation_mode = "XYZ"
+        euler = [0.0, 0.0, 0.0]
+        # Legs need far less than the arms: they are not touching anything,
+        # they only need the inner thighs apart.
+        euler[axis] = math.radians(angle * (1.0 if "upperarm" in name else 0.45)) * sign
+        bone.rotation_euler = euler
+        lifted.append(name)
+    if not lifted:
+        return {"posed": [], "rebound": []}
+    bpy.context.view_layer.update()
+
+    depsgraph = bpy.context.evaluated_depsgraph_get()
+
+    def posed_copy(obj):
+        evaluated = obj.evaluated_get(depsgraph)
+        mesh = bpy.data.meshes.new_from_object(evaluated)
+        copy = bpy.data.objects.new(obj.name + "__posed", mesh)
+        copy.matrix_world = obj.matrix_world.copy()
+        bpy.context.collection.objects.link(copy)
+        return copy
+
+    posed_body = posed_copy(body)
+    rebound = []
+    try:
+        for garment, families in garments:
+            evaluated = garment.evaluated_get(depsgraph)
+            mesh = evaluated.to_mesh()
+            points = [garment.matrix_world @ v.co.copy() for v in mesh.vertices]
+            evaluated.to_mesh_clear()
+            if len(points) != len(garment.data.vertices):
+                # A modifier changed the topology; indices would not line up
+                # and a silent mismatch here is worse than skipping.
+                continue
+            transfer_weights(garment, body, armature, families=families,
+                             sample_body=posed_body, sample_points=points)
+            rebound.append(garment.name)
+    finally:
+        bpy.data.objects.remove(posed_body, do_unlink=True)
+        for name in lifted:
+            armature.pose.bones[name].matrix_basis = Matrix.Identity(4)
+        bpy.context.view_layer.update()
+    return {"posed": lifted, "angleDeg": angle, "rebound": rebound}
+
+
 def region_violations(obj, families, threshold=0.02):
     """Bones a garment region must never carry, checked after the merge.
 
@@ -751,7 +829,7 @@ def region_violations(obj, families, threshold=0.02):
 
 def transfer_weights(garment, body, armature, max_influences=4,
                      smooth_passes=4, smooth_strength=0.35,
-                     families=None):
+                     families=None, sample_body=None, sample_points=None):
     """Copy weights from the nearest body SURFACE, interpolated across the face.
 
     The first version snapped each garment vertex to the single nearest body
@@ -774,20 +852,28 @@ def transfer_weights(garment, body, armature, max_influences=4,
 
     groups = {g.index: g.name for g in body.vertex_groups}
     for name in sorted(set(groups.values())):
-        garment.vertex_groups.new(name=name)
+        if name not in garment.vertex_groups:
+            garment.vertex_groups.new(name=name)
 
-    to_body = body.matrix_world.inverted()
-    polygons = body.data.polygons
+    # Geometry may come from a posed copy while the WEIGHTS always come from
+    # the body's rest-pose vertex groups. An armature modifier does not change
+    # topology, so a corner index found on the posed surface addresses the same
+    # vertex, and the same weights, on the original.
+    surface = sample_body if sample_body is not None else body
+    to_body = surface.matrix_world.inverted()
+    polygons = surface.data.polygons
+    geometry = surface.data.vertices
     vertices = body.data.vertices
 
     sampled = []
-    for vertex in garment.data.vertices:
-        world = garment.matrix_world @ vertex.co
-        hit, location, _normal, face_index = body.closest_point_on_mesh(to_body @ world)
+    for index, vertex in enumerate(garment.data.vertices):
+        world = (sample_points[index] if sample_points is not None
+                 else garment.matrix_world @ vertex.co)
+        hit, location, _normal, face_index = surface.closest_point_on_mesh(to_body @ world)
         blended = {}
         if hit and face_index >= 0:
             corners = list(polygons[face_index].vertices)
-            shares = poly_3d_calc([vertices[i].co for i in corners], location)
+            shares = poly_3d_calc([geometry[i].co for i in corners], location)
             for corner, share in zip(corners, shares):
                 if share <= 1e-6:
                     continue
@@ -996,14 +1082,28 @@ def main():
     outfit = to_object(builder, "HeroOutfit", materials)
     # Expand the recorded ranges into a per-vertex family. `to_object` builds
     # the mesh straight from the builder's vertex list, so indices line up.
-    families = [None] * len(outfit.data.vertices)
+    #
+    # Unmarked defaults to "torso", never to "unrestricted". Leaving the
+    # default open meant that forgetting one piece silently reinstated the
+    # original defect, which is exactly what happened: five pieces were tagged,
+    # six were not, the gate went green and the hem stayed bound to the
+    # forearm. It also breaks the second pass, because a vertex wrongly bound
+    # to the arm rises with the arm when the pose spreads and is still beside
+    # it -- the error re-derives itself. Every remaining piece (collar, belt,
+    # cuirass, fauld, shoulder lames, helmet) is torso or head anyway.
+    families = ["torso"] * len(outfit.data.vertices)
     for family, start, end in regions:
         for index in range(start, min(end, len(families))):
             families[index] = family
+    # Pass 1 binds in the A-pose. It is wrong at the hem -- the wrist is
+    # touching the skirt -- but it is enough to skin the coat, which is all
+    # pass 2 needs from it.
     transfer_weights(outfit, body, armature, families=families)
+    rebind = rebind_in_spread_pose([(outfit, families)], body, armature)
     outfit_gate = region_violations(outfit, families)
     if outfit_gate:
         raise SystemExit("HeroOutfit region binding violated: %s" % outfit_gate[:6])
+    print("REBIND %s" % json.dumps(rebind))
 
     gloves = []
     glove_checks = []
