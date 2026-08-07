@@ -48,9 +48,8 @@ jobs:
           done
           cat "$RUNNER_TEMP/gameplay-preview.log"
           exit 1
-      - name: Scene lane regression
-        if: ${{ hashFiles('tests/scene-lane-rework.spec.ts') != '' }}
-        run: npx playwright test tests/scene-lane-rework.spec.ts
+      - name: Scene lane and G1 closure regression
+        run: npx playwright test tests/scene-lane-rework.spec.ts tests/g1-closure.spec.ts
       - name: Upload runtime evidence
         if: always()
         uses: actions/upload-artifact@v4
