@@ -22,6 +22,14 @@ async function step(page: Page, dt: number, frames: number): Promise<void> {
 async function boot(page: Page): Promise<void> {
   await page.goto("http://127.0.0.1:4173/?uiVerification=1", { waitUntil: "networkidle" });
   await page.waitForFunction(() => Boolean((window as any).frostbound), null, { timeout: 60_000 });
+  // `window.frostbound` is exposed immediately after Game construction, while
+  // Game.start() is still awaiting scene/assets and the production loading
+  // overlay legitimately owns pointer input. Wait for the real boot contract
+  // instead of deleting/hiding the overlay in the test.
+  await page.waitForFunction(() => {
+    const loading = document.getElementById("loadingScreen");
+    return !loading || loading.classList.contains("hidden");
+  }, null, { timeout: 15_000 });
   await page.evaluate(() => (window as any).frostbound.stopLoop());
 }
 
