@@ -49,6 +49,33 @@ async function teleportAndSettle(page: Page, x: number, z: number): Promise<any>
   return state;
 }
 
+/** Walks the Hero past the south side of a facility using the production D-key
+ * movement path. A too-large invisible gameplay shell shows up as lateral
+ * displacement, excess minimum distance, or failure to clear the far side. */
+async function passHeroBeside(
+  page: Page,
+  centreX: number,
+  centreZ: number,
+  clearance: number,
+): Promise<{ start: any; end: any; minDistance: number; maxLateralDrift: number }> {
+  const laneZ = centreZ - clearance;
+  const start = await teleportAndSettle(page, centreX - 4.2, laneZ);
+  let minDistance = Infinity;
+  let maxLateralDrift = 0;
+
+  await page.keyboard.down("d");
+  for (let sample = 0; sample < 18; sample++) {
+    await step(page, 0.016, 10);
+    const state = await call(page, "heroMovementStatus");
+    minDistance = Math.min(minDistance, Math.hypot(state.x - centreX, state.z - centreZ));
+    maxLateralDrift = Math.max(maxLateralDrift, Math.abs(state.z - laneZ));
+  }
+  await page.keyboard.up("d");
+  await step(page, 0.016, 16);
+  const end = await call(page, "heroMovementStatus");
+  return { start, end, minDistance, maxLateralDrift };
+}
+
 function centroid(units: Array<{ x: number; z: number }>): { x: number; z: number } {
   const n = Math.max(1, units.length);
   return {
@@ -87,45 +114,45 @@ test("G1 closure: facility visuals do not create obvious invisible movement coll
   expect(warehouse.visualScale.x).toBeCloseTo(0.82, 5);
   expect(tower.visualScale.x).toBeCloseTo(0.82, 5);
 
-  // Hero physically walks into the warehouse using real WASD. The remaining
-  // centre-to-centre clearance beyond visible facility + hero body must stay
-  // tiny; this catches an obvious invisible shell without changing balance.
-  const warehouseStart = await teleportAndSettle(page, warehouseSlot.x, warehouseSlot.z - 4.8);
-  await moveHero(page, "w", 180);
-  const warehouseStop = await call(page, "heroMovementStatus");
-  const warehouseDistance = Math.hypot(
-    warehouseStop.x - warehouseSlot.x,
-    warehouseStop.z - warehouseSlot.z,
-  );
+  const heroProbe = await teleportAndSettle(page, warehouseSlot.x - 4.2, warehouseSlot.z - 4.2);
+  const heroBodyRadius = heroProbe.hitRadius;
   const warehouseVisualRadius = warehouseDef.visualBoundsRadius * warehouse.visualScale.x;
-  const warehouseInvisibleGap = warehouseDistance - warehouseVisualRadius - warehouseStop.hitRadius;
-  expect(Math.hypot(warehouseStop.x - warehouseStart.x, warehouseStop.z - warehouseStart.z)).toBeGreaterThan(2);
-  expect(warehouseDistance).toBeGreaterThan(warehouse.hitRadius + 0.3);
-  expect(warehouseDistance).toBeLessThan(warehouse.hitRadius + warehouseStop.hitRadius + 0.2);
-  expect(warehouseInvisibleGap).toBeLessThan(0.2);
-
-  // Repeat against a tower because its compact gameplay radius is smaller and
-  // its scaled visual bounds are slightly larger than collision. Run long
-  // enough that this measures the actual blocking boundary, not travel time.
-  const towerStart = await teleportAndSettle(page, towerSlot.x - 4.2, towerSlot.z);
-  await moveHero(page, "d", 180);
-  const towerStop = await call(page, "heroMovementStatus");
-  const towerDistance = Math.hypot(towerStop.x - towerSlot.x, towerStop.z - towerSlot.z);
   const towerVisualRadius = towerDef.visualBoundsRadius * tower.visualScale.x;
-  expect(Math.hypot(towerStop.x - towerStart.x, towerStop.z - towerStart.z)).toBeGreaterThan(1.5);
-  expect(towerDistance).toBeGreaterThan(tower.hitRadius + 0.3);
-  expect(towerDistance).toBeLessThan(tower.hitRadius + towerStop.hitRadius + 0.2);
-  expect(towerDistance - towerVisualRadius - towerStop.hitRadius).toBeLessThan(0.2);
+
+  // Explicit presentation/gameplay footprint spec: the collision footprint can
+  // remain balance-authored, but it must stay visually close to the scaled root.
+  expect(Math.abs(warehouse.hitRadius - warehouseVisualRadius)).toBeLessThan(0.2);
+  expect(Math.abs(tower.hitRadius - towerVisualRadius)).toBeLessThan(0.2);
+
+  // Real close-pass movement. Only 0.08 world units of visible body clearance is
+  // left between Hero and facility; an obvious invisible shell would push the
+  // Hero sideways or prevent clearing the far side.
+  const warehouseClearance = warehouseVisualRadius + heroBodyRadius + 0.08;
+  const warehousePass = await passHeroBeside(
+    page,
+    warehouseSlot.x,
+    warehouseSlot.z,
+    warehouseClearance,
+  );
+  expect(warehousePass.end.x).toBeGreaterThan(warehouseSlot.x + 3);
+  expect(warehousePass.minDistance).toBeLessThan(warehouseClearance + 0.15);
+  expect(warehousePass.maxLateralDrift).toBeLessThan(0.2);
+
+  const towerClearance = towerVisualRadius + heroBodyRadius + 0.08;
+  const towerPass = await passHeroBeside(page, towerSlot.x, towerSlot.z, towerClearance);
+  expect(towerPass.end.x).toBeGreaterThan(towerSlot.x + 3);
+  expect(towerPass.minDistance).toBeLessThan(towerClearance + 0.15);
+  expect(towerPass.maxLateralDrift).toBeLessThan(0.2);
 
   // Two visible warehouse silhouettes leave almost exactly the same corridor
   // as their gameplay footprints. Then walk the Hero through that corridor.
   const ne = SLOT_BY_ID.get("coreNE")!;
   const se = SLOT_BY_ID.get("coreSE")!;
   const centreGap = Math.hypot(ne.x - se.x, ne.z - se.z);
-  const visualGap = centreGap - warehouseDef.visualBoundsRadius * warehouse.visualScale.x * 2;
+  const visualGap = centreGap - warehouseVisualRadius * 2;
   const gameplayGap = centreGap - warehouseDef.radius * 2;
-  expect(visualGap - gameplayGap).toBeLessThan(0.15);
-  expect(gameplayGap).toBeGreaterThan(warehouseStop.hitRadius * 2 + 1);
+  expect(Math.abs(visualGap - gameplayGap)).toBeLessThan(0.15);
+  expect(gameplayGap).toBeGreaterThan(heroBodyRadius * 2 + 1);
 
   await teleportAndSettle(page, 2.8, 0);
   await moveHero(page, "d", 180);
