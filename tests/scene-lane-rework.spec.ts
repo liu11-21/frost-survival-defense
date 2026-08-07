@@ -11,6 +11,7 @@ import { nextLaneWaypoint } from "../src/data/LaneNavigation";
 import { DEFENSE_BUILDINGS } from "../src/data/DefenseBuildingDefinitions";
 import { ENDLESS_SCALING, endlessLaneCount } from "../src/data/GameModeRules";
 import { ENEMY_UNITS } from "../src/data/EnemyDefinitions";
+import { CODEX_ENTRIES } from "../src/data/CodexData";
 
 function pathLength(path: readonly { x: number; z: number }[]): number {
   return path.slice(0, -1).reduce((sum, point, index) => {
@@ -79,7 +80,7 @@ test("waypoint look-ahead crosses a bend instead of targeting the point already 
   expect(nextLaneWaypoint(lane.index, x, z, "inbound")).toEqual(lane.path[2]);
 });
 
-test("defence ranges are compact and enemy movement speed is a real authored stat", () => {
+test("defence ranges, movement stats and codex data use the real authored values", () => {
   const attacks = DEFENSE_BUILDINGS.filter((building) => building.attackKind);
   expect(attacks.length).toBeGreaterThan(0);
   expect(Math.max(...attacks.map((building) => building.attackRange ?? 0))).toBeLessThanOrEqual(11.5);
@@ -88,6 +89,12 @@ test("defence ranges are compact and enemy movement speed is a real authored sta
   const speeds = ENEMY_UNITS.map((enemy) => enemy.moveSpeed);
   expect(speeds.every((speed) => Number.isFinite(speed) && speed > 0)).toBe(true);
   expect(new Set(speeds).size).toBeGreaterThan(4);
+
+  const gruntCodex = CODEX_ENTRIES.find((entry) => entry.id === "enemy.grunt");
+  const archerCodex = CODEX_ENTRIES.find((entry) => entry.id === "ally.archer");
+  expect(gruntCodex?.fields.some((field) => field.label === "移動速度" && field.value.includes("/ 秒"))).toBe(true);
+  expect(archerCodex?.fields.some((field) => field.label === "移動速度" && field.value.includes("/ 秒"))).toBe(true);
+  expect(gruntCodex?.fields.find((field) => field.label === "設施鎖定")?.value).toContain("不主動鎖定一般設施");
 });
 
 test("runtime keeps melee on-lane, permits ranged fallback, and then pre-empts it", async ({ page }, testInfo) => {
@@ -102,8 +109,6 @@ test("runtime keeps melee on-lane, permits ranged fallback, and then pre-empts i
   await call(page, "build", "coreNE", "recruitHall");
   await step(page, 0.016, 500);
 
-  // Use support squads as test defenders so the enemy cannot disappear simply
-  // because the sample itself shoots back during the targeting observation.
   expect(await call(page, "recruit", "medic")).toBeNull();
   expect(await call(page, "deploySquadForTest", "medic", 0, 0, 8)).toBe(true);
 
@@ -116,8 +121,6 @@ test("runtime keeps melee on-lane, permits ranged fallback, and then pre-empts i
   expect(grunt.laneIndex).toBe(1);
   expect(grunt.targetLane).not.toBe(0);
 
-  // Ranged fallback is legal only because there is no same-lane defender and
-  // the lane-0 medic is inside the Slinger’s actual attack range.
   const slingerSpawn = await call(page, "spawnEnemyOnLaneForTest", "slinger", 4, 2, 1);
   expect(slingerSpawn.ok).toBe(true);
   await step(page, 0.05, 10);
@@ -127,9 +130,6 @@ test("runtime keeps melee on-lane, permits ranged fallback, and then pre-empts i
   expect(slinger.laneIndex).toBe(1);
   expect(slinger.targetLane).toBe(0);
 
-  // A non-attacking flagbearer is still a valid same-lane defender. Its
-  // appearance must immediately pre-empt the cross-lane fallback without
-  // killing the Slinger before we can observe the new target.
   expect(await call(page, "recruit", "flagbearer")).toBeNull();
   expect(await call(page, "deploySquadForTest", "flagbearer", 1, 8, 0)).toBe(true);
   await step(page, 0.05, 12);
@@ -139,6 +139,40 @@ test("runtime keeps melee on-lane, permits ranged fallback, and then pre-empts i
   expect(slinger.targetLane).toBe(1);
 
   await page.screenshot({ path: testInfo.outputPath("lane-targeting-runtime.png"), fullPage: true });
+});
+
+test("cross-lane taunt cannot drag melee, while same-lane shield remains a valid target", async ({ page }) => {
+  await page.goto("http://127.0.0.1:4173/?uiVerification=1", { waitUntil: "networkidle" });
+  await page.waitForFunction(() => Boolean((window as any).frostbound), null, { timeout: 60_000 });
+  await page.evaluate(() => (window as any).frostbound.stopLoop());
+
+  await call(page, "startStage", "stage-3");
+  await call(page, "teleport", 30, 30);
+  await call(page, "grant", 999, 999, 999);
+  await call(page, "setFurnaceLevel", 30);
+  await call(page, "build", "coreNE", "recruitHall");
+  await step(page, 0.016, 500);
+
+  // The two roads are close near the furnace. This puts a lane-0 shield inside
+  // the grunt's geometric taunt radius without making it a legal same-lane target.
+  expect(await call(page, "recruit", "shield")).toBeNull();
+  expect(await call(page, "deploySquadForTest", "shield", 0, 0, 3)).toBe(true);
+  const spawn = await call(page, "spawnEnemyOnLaneForTest", "grunt", 3, 0, 1);
+  expect(spawn.ok).toBe(true);
+  await step(page, 0.05, 8);
+
+  let enemy = ((await call(page, "enemyStatus")) as Array<any>).find((candidate) => candidate.squadId === spawn.squadId);
+  expect(enemy).toBeTruthy();
+  expect(enemy.targetLane).not.toBe(0);
+
+  // A shield deployed to the enemy's own lane is still a legal high-priority
+  // defender and must be targetable; the lane filter only blocks cross-lane taunt.
+  expect(await call(page, "recruit", "shield")).toBeNull();
+  expect(await call(page, "deploySquadForTest", "shield", 1, 3, 0)).toBe(true);
+  await step(page, 0.05, 8);
+  enemy = ((await call(page, "enemyStatus")) as Array<any>).find((candidate) => candidate.squadId === spawn.squadId);
+  expect(enemy).toBeTruthy();
+  expect(enemy.targetLane).toBe(1);
 });
 
 test("ordinary low-tier enemies march past optional facilities and speed moves them", async ({ page }) => {
@@ -183,8 +217,6 @@ test("ground enemy crosses multiple winding segments without stalling at a bend"
   const spawn = await call(page, "spawnEnemyOnLaneForTest", "icearmor", spawnPoint.x, spawnPoint.z, lane.index);
   expect(spawn.ok).toBe(true);
 
-  // 14 simulated seconds at the authored 2 u/s is long enough to traverse the
-  // first two bends but still well inside stage-3's 36-second prep window.
   await step(page, 0.05, 280);
   const enemy = ((await call(page, "enemyStatus")) as Array<any>).find((candidate) => candidate.squadId === spawn.squadId);
   expect(enemy).toBeTruthy();
