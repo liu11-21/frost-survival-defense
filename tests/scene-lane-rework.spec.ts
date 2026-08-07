@@ -7,6 +7,7 @@ import {
   isInsideBase,
   nearestPointOnLane,
 } from "../src/data/BuildSlotDefinitions";
+import { nextLaneWaypoint } from "../src/data/LaneNavigation";
 import { DEFENSE_BUILDINGS } from "../src/data/DefenseBuildingDefinitions";
 import { ENDLESS_SCALING, endlessLaneCount } from "../src/data/GameModeRules";
 import { ENEMY_UNITS } from "../src/data/EnemyDefinitions";
@@ -64,6 +65,18 @@ test("scene contract has exactly four long winding roads and dispersed construct
     (lane) => nearestPointOnLane(core.x, core.z, lane).distance <= (basicTower.attackRange ?? 0),
   );
   expect(covered.length).toBeGreaterThanOrEqual(2);
+});
+
+test("waypoint look-ahead crosses a bend instead of targeting the point already reached", () => {
+  const lane = LANES[0];
+  const start = lane.path[0];
+  const bend = lane.path[1];
+  // 80% along the first segment is inside the motor's normal approach zone.
+  // Returning path[1] here creates a stable deadlock: the motor brakes before
+  // the bend and every navigation refresh chooses that same bend again.
+  const x = start.x + (bend.x - start.x) * 0.8;
+  const z = start.z + (bend.z - start.z) * 0.8;
+  expect(nextLaneWaypoint(lane.index, x, z, "inbound")).toEqual(lane.path[2]);
 });
 
 test("defence ranges are compact and enemy movement speed is a real authored stat", () => {
@@ -155,4 +168,29 @@ test("ordinary low-tier enemies march past optional facilities and speed moves t
   expect(after).toBeTruthy();
   expect(Math.hypot(after.x - before.x, after.z - before.z)).toBeGreaterThan(0.5);
   expect(after.targetId).not.toBe("tower");
+});
+
+test("ground enemy crosses multiple winding segments without stalling at a bend", async ({ page }) => {
+  await page.goto("http://127.0.0.1:4173/?uiVerification=1", { waitUntil: "networkidle" });
+  await page.waitForFunction(() => Boolean((window as any).frostbound), null, { timeout: 60_000 });
+  await page.evaluate(() => (window as any).frostbound.stopLoop());
+
+  await call(page, "startStage", "stage-3");
+  await call(page, "teleport", 30, 30);
+
+  const lane = LANES[0];
+  const spawnPoint = lane.path[0];
+  const spawn = await call(page, "spawnEnemyOnLaneForTest", "icearmor", spawnPoint.x, spawnPoint.z, lane.index);
+  expect(spawn.ok).toBe(true);
+
+  // 14 simulated seconds at the authored 2 u/s is long enough to traverse the
+  // first two bends but still well inside stage-3's 36-second prep window.
+  await step(page, 0.05, 280);
+  const enemy = ((await call(page, "enemyStatus")) as Array<any>).find((candidate) => candidate.squadId === spawn.squadId);
+  expect(enemy).toBeTruthy();
+  expect(enemy.laneIndex).toBe(0);
+  expect(Math.hypot(enemy.x - spawnPoint.x, enemy.z - spawnPoint.z)).toBeGreaterThan(18);
+  const projection = nearestPointOnLane(enemy.x, enemy.z, lane);
+  expect(projection.segmentIndex).toBeGreaterThanOrEqual(2);
+  expect(enemy.navStuck).toBeLessThan(1.5);
 });
