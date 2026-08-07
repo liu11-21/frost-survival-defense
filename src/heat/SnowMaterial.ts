@@ -2,7 +2,9 @@ import { Effect, Scene, ShaderMaterial, Vector3 } from "@babylonjs/core";
 import { COLORS, FOG_DENSITY, ROADS, ROAD_WIDTH } from "../game/GameConfig";
 
 export const MAX_HEAT_SOURCES = 4;
-export const MAX_ROADS = 6;
+/** Four lanes x eight segments. Keep this equal to the authored G1 road
+ * contract so the shader cannot silently truncate the path list. */
+export const MAX_ROADS = 32;
 
 /**
  * Shared GLSL used by both stages: the snow coverage is evaluated in the vertex
