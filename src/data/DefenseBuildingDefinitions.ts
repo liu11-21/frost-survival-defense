@@ -1,15 +1,17 @@
 import type { BuildingDefinition } from "./BuildingDefinitions";
 
 /**
- * The five attack buildings plus the wall — split out from the economy
- * buildings in `BuildingDefinitions.ts` purely to keep that file's own line
- * count sane; `BUILDINGS` there concatenates this array back in.
+ * Ground emplacements are intentionally compact and short-ranged in the G1
+ * roadside layout.  A player should build overlapping fields of fire along a
+ * winding lane instead of dropping one giant-radius tower beside the furnace.
+ * Sky platforms keep their existing runtime range multiplier in TowerCombat /
+ * BuildingCombat, so elevation remains the late-game range premium.
  */
 export const DEFENSE_BUILDINGS: BuildingDefinition[] = [
   {
     id: "tower",
     name: "砲塔",
-    description: "範圍轟擊，單次最多命中 6 名敵人，射程覆蓋自家城牆外側",
+    description: "中距離範圍轟擊，適合與相鄰路段火力重疊",
     role: "防禦 · 中價範圍攻擊",
     maxHealth: 2000,
     attackPower: 100,
@@ -21,23 +23,20 @@ export const DEFENSE_BUILDINGS: BuildingDefinition[] = [
     buildTime: 2.5,
     attackKind: "areaShell",
     attackInterval: 1.5,
-    // Reaches past the wall ring: a defence that cannot shoot the besiegers of
-    // its own wall turns a sealed base into a stalemate.
-    attackRange: 12,
+    attackRange: 8.5,
     areaRadius: 2.5,
     maxAreaTargets: 6,
-    radius: 1.2,
-    visualBoundsRadius: 1.5,
-    interactionRadius: 3.0,
+    radius: 0.95,
+    visualBoundsRadius: 1.2,
+    interactionRadius: 2.7,
   },
   {
     id: "crossbowTower",
     name: "弩箭塔",
-    description: "低成本快速單體防禦，適合前期處理低階敵人",
+    description: "低成本快速單體防禦，負責一小段路線",
     role: "防禦 · 低價快速單體",
     maxHealth: 1200,
     attackPower: 18,
-    // Fast wooden emplacement: intentionally wood-forward.
     cost: { wood: 95, stone: 25, gold: 5 },
     slotCategory: "universal",
     canBeAttacked: true,
@@ -46,16 +45,16 @@ export const DEFENSE_BUILDINGS: BuildingDefinition[] = [
     buildTime: 2.0,
     attackKind: "singleBolt",
     attackInterval: 0.65,
-    attackRange: 9,
+    attackRange: 7,
     requiresLineOfSight: true,
-    radius: 1.1,
-    visualBoundsRadius: 1.4,
-    interactionRadius: 2.9,
+    radius: 0.85,
+    visualBoundsRadius: 1.1,
+    interactionRadius: 2.6,
   },
   {
     id: "frostTower",
     name: "冰霜塔",
-    description: "命中敵人使其減速，適合搭配其他輸出設施",
+    description: "短中距離減速，適合放在兩座輸出塔的重疊區",
     role: "防禦 · 中低價減速控制",
     maxHealth: 1400,
     attackPower: 10,
@@ -67,18 +66,18 @@ export const DEFENSE_BUILDINGS: BuildingDefinition[] = [
     buildTime: 3.0,
     attackKind: "slowBolt",
     attackInterval: 1.2,
-    attackRange: 8,
+    attackRange: 6.5,
     areaRadius: 2,
     requiresLineOfSight: true,
     slowEffect: { amount: 0.2, duration: 2, bossAmount: 0.08, bossDuration: 1 },
-    radius: 1.3,
-    visualBoundsRadius: 1.6,
-    interactionRadius: 3.0,
+    radius: 0.95,
+    visualBoundsRadius: 1.2,
+    interactionRadius: 2.7,
   },
   {
     id: "sniperTower",
     name: "狙擊塔",
-    description: "超遠距離高傷害，優先攻擊 Boss 與高階敵人",
+    description: "最長地面射程的高傷害單體塔，仍需合理佈點",
     role: "防禦 · 中高價遠程高傷害",
     maxHealth: 1600,
     attackPower: 120,
@@ -90,19 +89,19 @@ export const DEFENSE_BUILDINGS: BuildingDefinition[] = [
     buildTime: 5.0,
     attackKind: "snipe",
     attackInterval: 2.4,
-    attackRange: 16,
+    attackRange: 11.5,
     requiresLineOfSight: true,
     bonusVsBossFactor: 0.1,
     telegraph: 0.5,
     avoidOverkill: true,
-    radius: 1.5,
-    visualBoundsRadius: 1.9,
-    interactionRadius: 3.2,
+    radius: 1.05,
+    visualBoundsRadius: 1.35,
+    interactionRadius: 2.8,
   },
   {
     id: "mortar",
     name: "火焰迫擊砲",
-    description: "高成本大範圍防禦，能在地面留下持續燃燒區域",
+    description: "重型範圍火力，覆蓋相鄰路段但保留近距離死角",
     role: "防禦 · 高價重型範圍火力",
     maxHealth: 2400,
     attackPower: 80,
@@ -114,24 +113,22 @@ export const DEFENSE_BUILDINGS: BuildingDefinition[] = [
     buildTime: 7.0,
     attackKind: "burstMortar",
     attackInterval: 3,
-    attackRange: 14,
-    minAttackRange: 4,
+    attackRange: 10.5,
+    minAttackRange: 3.2,
     areaRadius: 4,
     maxAreaTargets: 8,
     burnEffect: { duration: 4, dps: 15, maxZones: 3, bossFactor: 0.5 },
-    radius: 1.6,
-    visualBoundsRadius: 2.0,
-    interactionRadius: 3.3,
+    radius: 1.15,
+    visualBoundsRadius: 1.45,
+    interactionRadius: 2.9,
   },
   {
     id: "wall",
     name: "城牆",
-    description: "一整面的基地防線，中央設有我方專用門",
+    description: "包住火爐與四個核心點位的固定防線，中央設我方門",
     role: "防線",
     maxHealth: 12000,
     attackPower: 0,
-    // The deliberately stone-forward structural choice, but no longer a
-    // several-times-larger stone burden than every other resource.
     cost: { wood: 220, stone: 440, gold: 50 },
     slotCategory: "wall",
     canBeAttacked: true,
