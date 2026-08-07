@@ -117,6 +117,12 @@ test("scaled facility visuals still leave a generous real pointer placement targ
   expect(await call(page, "nearbySlotId")).toBe("coreNE");
   expect((await call(page, "canBuild", "coreNE", "tower")).ok).toBe(true);
   await expect(page.locator("#ui-build-panel")).toHaveClass(/show/);
+
+  // uiVerification exposes the permanent diagnostic panel. The regression has
+  // already asserted its state; close only that overlay before the evidence
+  // frame so the screenshot shows the real build panel and placement context.
+  await page.keyboard.press("F6");
+  await step(page, 0.016, 1);
   await page.screenshot({ path: ".runtime/g1-evidence/g1-building-placement.png", fullPage: true });
 });
 
