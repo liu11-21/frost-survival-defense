@@ -108,7 +108,9 @@ export const ENDLESS_SCALING = {
   attackPerWave: 0.05,
   countPerWave: 0.06,
   startingLanes: 2,
-  maxLanes: 6,
+  /** G1 has exactly four authored/navigation lanes. Endless may unlock all of
+   * them, but it must never synthesize a fifth/sixth radial lane. */
+  maxLanes: 4,
   /** A new lane and a boss every this many waves. */
   lanesEveryWaves: 10,
   prepTime: 55,
