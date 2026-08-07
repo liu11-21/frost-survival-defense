@@ -13,7 +13,8 @@ import { tickRecover, tickWindup } from "./BrainAttackStates";
 import { StuckDetector } from "./StuckDetector";
 import { validateTarget } from "./TargetValidator";
 import { AIHeartbeat, type AIHeartbeatSnapshot } from "./AIHeartbeat";
-import { LANES, laneAdvancePoint, nearestPointOnLane } from "../data/BuildSlotDefinitions";
+import { LANES, nearestPointOnLane } from "../data/BuildSlotDefinitions";
+import { nextLaneWaypoint } from "../data/LaneNavigation";
 import { isCrossLaneUnitTarget } from "../combat/UnitTargeting";
 
 const MAX_EVENTS = 20;
@@ -287,7 +288,7 @@ export class FriendlyBrain {
         this.unit.brakeMotor(dt);
         this.beginAttack("attackWindup");
       } else if (crossLaneFallback) {
-        const next = laneAdvancePoint(this.unit.laneIndex, this.unit.position.x, this.unit.position.z, "outbound");
+        const next = nextLaneWaypoint(this.unit.laneIndex, this.unit.position.x, this.unit.position.z, "outbound");
         this.unit.moveMotor(next.x, next.z, dt, this.deps.formation);
         this.checkStuck(dt, "moveToTarget");
       } else {
@@ -304,7 +305,7 @@ export class FriendlyBrain {
         (there.segmentIndex === here.segmentIndex && there.t < here.t)
         ? "outbound"
         : "inbound";
-      const next = laneAdvancePoint(this.unit.laneIndex, this.unit.position.x, this.unit.position.z, direction);
+      const next = nextLaneWaypoint(this.unit.laneIndex, this.unit.position.x, this.unit.position.z, direction);
       this.unit.moveMotor(next.x, next.z, dt, this.deps.formation);
       this.checkStuck(dt, "moveToTarget");
       return;
