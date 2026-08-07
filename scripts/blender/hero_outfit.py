@@ -794,6 +794,11 @@ def main():
         body.hide_render = True
         body.hide_viewport = True
 
+    for g in gloves:
+        print("STAGE_A %s slots=%s indices=%s" % (
+            g.name, [m.name if m else None for m in g.data.materials],
+            sorted({p.material_index for p in g.data.polygons})))
+
     sword_builder, sword_bone = build_sword(body, armature, height)
     sword = None
     if sword_builder is not None:
