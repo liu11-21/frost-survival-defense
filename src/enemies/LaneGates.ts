@@ -5,8 +5,6 @@ import { LANES, WALL_SIDES, nearestSide, type LaneDefinition, type WallSide } fr
 
 export type GateState = "open" | "partial" | "sealed";
 
-/** Kept for every existing consumer (HUD, debug hooks) — now derived from the
- * one wall side a lane leads to, rather than owning independent state. */
 export interface LaneGate {
   laneId: string;
   laneIndex: number;
@@ -21,11 +19,9 @@ export interface LaneGate {
 }
 
 /**
- * The perimeter is four fixed sides now, not sixteen (nor even eight)
- * independent slots — a lane no longer owns its own gate, it simply leads to
- * whichever of the four sides its bearing is nearest. "Lanes" survive purely
- * as spawn-direction flavour; every reachability and siege question is
- * answered from the four sides directly.
+ * One logical gate per approach lane.  The wall perimeter is still four fixed
+ * sides, but unlike the previous "nearest open side" implementation a lane can
+ * no longer migrate to a neighbour just because that neighbour has a breach.
  */
 export class LaneGateManager {
   private readonly gates: LaneGate[] = [];
@@ -40,7 +36,6 @@ export class LaneGateManager {
     return this.gates;
   }
 
-  /** Only the lanes the current level actually spawns on. */
   get live(): LaneGate[] {
     return this.gates.filter((g) => g.laneIndex < this.liveLanes);
   }
@@ -50,16 +45,14 @@ export class LaneGateManager {
   }
 
   gate(laneIndex: number): LaneGate {
-    return this.gates[laneIndex % this.gates.length];
+    return this.gates[((laneIndex % this.gates.length) + this.gates.length) % this.gates.length];
   }
 
-  /** The lane whose bearing is closest to this position. */
   nearestGate(x: number, z: number): LaneGate {
     const side = nearestSide(x, z);
     return this.gates.find((g) => g.side === side.side) ?? this.gates[0];
   }
 
-  /** True when every side is standing, so there is no way in anywhere. */
   get fullySealed(): boolean {
     return WALL_SIDES.every((w) => this.buildingFor(w.side)?.isComplete === true);
   }
@@ -71,7 +64,6 @@ export class LaneGateManager {
     return b?.alive ? b : undefined;
   }
 
-  /** Recomputes each lane's state from what is standing right now. */
   refresh(): void {
     for (const gate of this.gates) {
       const building = this.buildingFor(gate.side);
@@ -79,31 +71,22 @@ export class LaneGateManager {
       if (building) gate.blockers.push(building);
       gate.state = building ? (building.isComplete ? "sealed" : "partial") : "open";
       gate.breachTarget = building ?? null;
-      // The gate is an authored visual concern; collision/pathing remains the
-      // existing deterministic wall logic above.
       building?.setGateOpen(gate.state !== "sealed");
     }
   }
 
   /**
-   * The wall a unit must destroy before it can advance. A side is either
-   * standing or it is not — there is no "nearest sealed lane" search to fall
-   * back through any more, because every lane on this side already means the
-   * same wall.
+   * The only wall this lane is allowed to breach.  The former fallback to
+   * `nearestSide(x,z)` is intentionally gone: it was the pathing equivalent of
+   * A-lane enemies deciding to become B-lane enemies when B happened to open.
    */
-  breachTargetFor(x: number, z: number, laneIndex: number): Damageable | null {
-    const lane = this.gates[laneIndex % this.gates.length];
-    const own = this.buildingFor(lane.side);
-    if (own) return own;
-    const nearest = nearestSide(x, z);
-    return this.buildingFor(nearest.side) ?? null;
+  breachTargetFor(_x: number, _z: number, laneIndex: number): Damageable | null {
+    const lane = this.gate(laneIndex);
+    return this.buildingFor(lane.side) ?? null;
   }
 
-  /**
-   * Where a unit should walk to get inside, or null when nothing is open.
-   * With only four sides, "open" simply means the nearest side has no wall
-   * standing on it — there is no ring to orbit looking for a distant gap.
-   */
+  /** Legacy helper retained for callers outside enemy navigation.  It returns
+   * the nearest open side but EnemyNavigator no longer uses it. */
   openApproach(x: number, z: number): { angle: number; innerX: number; innerZ: number } | null {
     let best: (typeof WALL_SIDES)[number] | null = null;
     let bestDist = Infinity;
