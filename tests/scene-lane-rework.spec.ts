@@ -46,8 +46,6 @@ test("scene contract has exactly four long winding roads and dispersed construct
     expect(pathLength(lane.path)).toBeGreaterThan(60);
     expect(Math.hypot(lane.path[0].x, lane.path[0].z)).toBeGreaterThan(40);
     expect(lane.path.at(-1)).toEqual({ x: 0, z: 0 });
-    // The middle of the path must deviate materially from the old straight
-    // radial bearing, proving this is not a renamed cross-shaped lane.
     const middle = lane.path[Math.floor(lane.path.length / 2)];
     const spawn = lane.path[0];
     const cross = Math.abs(spawn.x * middle.z - spawn.z * middle.x);
@@ -60,8 +58,6 @@ test("scene contract has exactly four long winding roads and dispersed construct
   expect(inside.map((slot) => slot.id).sort()).toEqual(["coreNE", "coreNW", "coreSE", "coreSW"]);
   expect(inside.every((slot) => slot.lanes.length >= 2)).toBe(true);
 
-  // At least one compact central position must genuinely overlap two road
-  // corridors with the new short tower range; metadata alone is not enough.
   const basicTower = DEFENSE_BUILDINGS.find((building) => building.id === "tower")!;
   const core = inside[0];
   const covered = LANES.filter(
@@ -87,16 +83,17 @@ test("runtime keeps melee on-lane, permits ranged fallback, and then pre-empts i
   await page.evaluate(() => (window as any).frostbound.stopLoop());
 
   await call(page, "startStage", "stage-3");
-  await call(page, "teleport", 30, 30); // Hero is lane-neutral but kept away for this targeting probe.
+  await call(page, "teleport", 30, 30);
   await call(page, "grant", 999, 999, 999);
   await call(page, "setFurnaceLevel", 30);
   await call(page, "build", "coreNE", "recruitHall");
   await step(page, 0.016, 500);
 
-  expect(await call(page, "recruit", "archer")).toBeNull();
-  expect(await call(page, "deploySquadForTest", "archer", 0, 0, 8)).toBe(true);
+  // Use support squads as test defenders so the enemy cannot disappear simply
+  // because the sample itself shoots back during the targeting observation.
+  expect(await call(page, "recruit", "medic")).toBeNull();
+  expect(await call(page, "deploySquadForTest", "medic", 0, 0, 8)).toBe(true);
 
-  // Lane-1 melee can see lane-0 allies geometrically but may not select them.
   const gruntSpawn = await call(page, "spawnEnemyOnLaneForTest", "grunt", 4, 2, 1);
   expect(gruntSpawn.ok).toBe(true);
   await step(page, 0.05, 10);
@@ -107,7 +104,7 @@ test("runtime keeps melee on-lane, permits ranged fallback, and then pre-empts i
   expect(grunt.targetLane).not.toBe(0);
 
   // Ranged fallback is legal only because there is no same-lane defender and
-  // the lane-0 archer is inside the Slinger’s actual attack range.
+  // the lane-0 medic is inside the Slinger’s actual attack range.
   const slingerSpawn = await call(page, "spawnEnemyOnLaneForTest", "slinger", 4, 2, 1);
   expect(slingerSpawn.ok).toBe(true);
   await step(page, 0.05, 10);
@@ -117,12 +114,15 @@ test("runtime keeps melee on-lane, permits ranged fallback, and then pre-empts i
   expect(slinger.laneIndex).toBe(1);
   expect(slinger.targetLane).toBe(0);
 
-  // A legal same-lane defender immediately outranks the cross-lane fallback.
-  expect(await call(page, "recruit", "warrior")).toBeNull();
-  expect(await call(page, "deploySquadForTest", "warrior", 1, 8, 0)).toBe(true);
+  // A non-attacking flagbearer is still a valid same-lane defender. Its
+  // appearance must immediately pre-empt the cross-lane fallback without
+  // killing the Slinger before we can observe the new target.
+  expect(await call(page, "recruit", "flagbearer")).toBeNull();
+  expect(await call(page, "deploySquadForTest", "flagbearer", 1, 8, 0)).toBe(true);
   await step(page, 0.05, 12);
   enemies = (await call(page, "enemyStatus")) as Array<any>;
   slinger = enemies.find((enemy) => enemy.squadId === slingerSpawn.squadId);
+  expect(slinger).toBeTruthy();
   expect(slinger.targetLane).toBe(1);
 
   await page.screenshot({ path: testInfo.outputPath("lane-targeting-runtime.png"), fullPage: true });
