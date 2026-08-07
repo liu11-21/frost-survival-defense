@@ -142,51 +142,62 @@ def bone_frame(armature, bone_name):
 
 
 def limb_profile(body, bone_name, armature, slices=5, percentile=0.90):
-    """Half-width, front depth and back depth along a bone, in ITS frame.
+    """Per-slice girth AND centre, both measured off the body mesh.
 
-    A scalar radius makes every sleeve and trouser leg a round tube. A real
-    forearm is wider than it is deep and a boot is deeper than it is wide, so
-    the profile is measured separately on the side and front axes of the same
-    frame `sweep_axis` will build in.
+    The bone supplies orientation only. Using `bone.head`/`bone.tail` as the
+    garment's absolute centreline is what put every sleeve and trouser leg
+    about half a metre below the limb it belonged to: an object matrix that
+    differs from the mesh's is perfectly legal, and the garment simply must
+    not depend on which one it was read through.
 
-    Only vertices the bone dominates are counted: sampling everything near the
-    upper-arm axis picks up the ribcage in an A-pose, which is what made the
-    shoulder lames loft as half-metre discs.
+    So each slice reports where the limb's own vertices actually are -- a
+    median centre, which ignores the stray vertex a mean would chase -- and
+    the caller lofts through those points. What comes back is in WORLD space,
+    the same space the torso garments are built in.
+
+    Half-width, front depth and back depth are measured about that centre in
+    the S/F frame `sweep_axis` will build, so a forearm comes out wider than
+    it is deep rather than as a round tube.
     """
-    frame = bone_frame(armature, bone_name)
+    bone = armature.data.bones.get(bone_name)
     group = body.vertex_groups.get(bone_name)
-    if frame is None or group is None:
+    if bone is None or group is None:
         return None
-    start, end, tangent, side, front = frame
-    length = (end - start).length
 
-    # Bone positions come through the ARMATURE's matrix and vertices through
-    # the BODY's. Those are not the same transform here, and the mismatch is a
-    # constant offset -- which showed up as a front depth of 0.68 on a 0.24 m
-    # upper arm, identical at every slice. Both are put in the body's space.
-    to_body = body.matrix_world.inverted()
-    start_local = to_body @ start
-    tangent_local = (to_body @ end - start_local)
-    length_local = tangent_local.length or 1.0
-    tangent_local = tangent_local / length_local
-    ref = Vector((0.0, 0.0, 1.0))
-    front_local = ref - tangent_local * ref.dot(tangent_local)
-    if front_local.length < 1e-6:
-        ref = Vector((1.0, 0.0, 0.0))
-        front_local = ref - tangent_local * ref.dot(tangent_local)
-    front_local.normalize()
-    side_local = tangent_local.cross(front_local).normalized()
+    # Orientation only. The axis is used for T/S/F and for deciding which
+    # slice a vertex belongs to -- never for absolute placement.
+    start_ref = armature.matrix_world @ bone.head_local
+    end_ref = armature.matrix_world @ bone.tail_local
+    axis = end_ref - start_ref
+    if axis.length < 1e-9:
+        return None
+    tangent = axis.normalized()
+    reference = Vector((0.0, 0.0, 1.0))
+    front = reference - tangent * reference.dot(tangent)
+    if front.length < 1e-6:
+        reference = Vector((1.0, 0.0, 0.0))
+        front = reference - tangent * reference.dot(tangent)
+    front.normalize()
+    side = tangent.cross(front).normalized()
 
     owned = []
     for vertex in body.data.vertices:
         weight = next((g.weight for g in vertex.groups if g.group == group.index), 0.0)
-        if weight < 0.55:
-            continue
-        local = vertex.co - start_local
-        owned.append((local.dot(tangent_local) / length_local,
-                      local.dot(side_local), local.dot(front_local)))
+        if weight >= 0.55:
+            owned.append(body.matrix_world @ vertex.co)
     if len(owned) < 12:
         return None
+
+    # Where the limb actually runs, in world space, from its own vertices.
+    spans = [v.dot(tangent) for v in owned]
+    lo, hi = min(spans), max(spans)
+    length = max(hi - lo, 1e-6)
+
+    def median(values, fallback):
+        if not values:
+            return fallback
+        values.sort()
+        return values[len(values) // 2]
 
     def pick(values, fallback):
         if not values:
@@ -194,17 +205,64 @@ def limb_profile(body, bone_name, armature, slices=5, percentile=0.90):
         values.sort()
         return values[min(len(values) - 1, int(len(values) * percentile))]
 
-    profile = []
+    slices_out = []
     for i in range(slices + 1):
         t = i / slices
-        band = [o for o in owned if abs(o[0] - t) < 0.5 / slices + 0.08]
+        target = lo + length * t
+        band = [v for v in owned if abs(v.dot(tangent) - target) < length * (0.5 / slices + 0.10)]
         if len(band) < 6:
-            band = sorted(owned, key=lambda o: abs(o[0] - t))[:24]
-        half = pick([abs(o[1]) for o in band], 0.05)
-        fwd = pick([o[2] for o in band if o[2] > 0], half)
-        bwd = pick([-o[2] for o in band if o[2] < 0], half)
-        profile.append((t, max(half, 0.012), max(fwd, 0.012), max(bwd, 0.012)))
-    return {"start": start, "end": end, "profile": profile}
+            band = sorted(owned, key=lambda v: abs(v.dot(tangent) - target))[:24]
+        centre = Vector((
+            median([v.x for v in band], 0.0),
+            median([v.y for v in band], 0.0),
+            median([v.z for v in band], 0.0),
+        ))
+        # Re-seat the centre exactly on this slice so the centreline advances
+        # monotonically even where the median drifts along the axis.
+        centre = centre + tangent * (target - centre.dot(tangent))
+        half = pick([abs((v - centre).dot(side)) for v in band], 0.05)
+        fwd = pick([d for d in ((v - centre).dot(front) for v in band) if d > 0], half)
+        bwd = pick([-d for d in ((v - centre).dot(front) for v in band) if d < 0], half)
+        slices_out.append({
+            "t": t,
+            "centre": centre,
+            "halfWidth": max(half, 0.012),
+            "front": max(fwd, 0.012),
+            "back": max(bwd, 0.012),
+        })
+
+    return {
+        "start": slices_out[0]["centre"],
+        "end": slices_out[-1]["centre"],
+        "tangent": tangent,
+        "side": side,
+        "front": front,
+        "slices": slices_out,
+    }
+
+
+def limb_rings(data, n, pad_head, pad_tail, exp):
+    """Rings for sweep_axis, offset onto the measured centreline.
+
+    sweep_axis places ring t on the straight line from start to end. The limb
+    is not straight, so each ring carries the offset from that line to the
+    slice's own measured centre, projected onto the S/F axes.
+    """
+    start, end = data["start"], data["end"]
+    axis = end - start
+    length = max(axis.length, 1e-6)
+    tangent = axis / length
+    side, front = data["side"], data["front"]
+    rings = []
+    for entry in data["slices"]:
+        t = entry["t"]
+        on_line = start + tangent * (length * t)
+        offset = entry["centre"] - on_line
+        grow = pad_head + (pad_tail - pad_head) * t
+        rings.append((t, section(
+            n, entry["halfWidth"] * grow, entry["front"] * grow, entry["back"] * grow, exp,
+            centre_x=offset.dot(side), centre_z=offset.dot(front))))
+    return rings
 
 
 def build_outfit(body, armature, variant):
@@ -295,10 +353,11 @@ def build_outfit(body, armature, variant):
         if data is None:
             continue
         start, end = data["start"], data["end"]
-        _t, half, fwd, bwd = data["profile"][0]
+        first = data["slices"][0]
+        half, fwd, bwd = first["halfWidth"], first["front"], first["back"]
         for lame in range(lames):
             base = 0.02 + 0.19 * lame
-            grow = 1.24 + 0.16 * lame
+            grow = 1.26 + 0.16 * lame
             b.sweep_axis([
                 (base, section(n_limb, half * grow, fwd * grow, bwd * grow, 3.0)),
                 (base + 0.20, section(n_limb, half * (grow + 0.12), fwd * (grow + 0.12), bwd * (grow + 0.10), 3.0)),
@@ -324,11 +383,8 @@ def build_outfit(body, armature, variant):
             data = limb_profile(body, bone_name, armature)
             if data is None:
                 continue
-            rings = []
-            for t, half, fwd, bwd in data["profile"]:
-                grow = pad + (tail_pad - pad) * t
-                rings.append((t, section(n_limb, half * grow, fwd * grow, bwd * grow, exp)))
-            b.sweep_axis(rings, surface, lambda t: {}, data["start"], data["end"],
+            b.sweep_axis(limb_rings(data, n_limb, pad, tail_pad, exp),
+                         surface, lambda t: {}, data["start"], data["end"],
                          cap_start=False, cap_end=False)
 
     # --- helmet: open face --------------------------------------------
@@ -363,40 +419,36 @@ def build_outfit(body, armature, variant):
     return b, m, floor, top, height
 
 
-def build_sword(armature, height):
-    """A sword lofted along the hand's own axis, rigid to hand_r.
+def build_sword(body, armature, height):
+    """A sword lofted along the hand's axis, seated at the palm.
 
-    The previous version computed the hand axis and then called the Y-axis
-    `sweep()` anyway, so the blade was built vertically wherever the hand
-    happened to be pointing. Every ring now sits in the hand's frame.
+    Still rigid to hand_r. The grip's starting point comes from the palm's own
+    vertices rather than from the bone head, for the same reason the sleeves
+    do: bind-space offsets should not decide where a weapon sits.
     """
-    frame = bone_frame(armature, "hand_r")
-    if frame is None:
+    data = limb_profile(body, "hand_r", armature, slices=2)
+    if data is None:
         return None, None
-    start, end, tangent, _side, _front = frame
+    palm = data["slices"][len(data["slices"]) // 2]["centre"]
+    tangent = data["tangent"]
     b = MeshBuilder(0)
-    length = (end - start).length or 0.1
-    scale = height * 0.55
-    # t is expressed in bone lengths, so the grip sits inside the closed fist
-    # and the blade runs forward out of the knuckles.
-    span = scale / length
+    reach = height * 0.55
+    start = palm - tangent * (reach * 0.28)
+    end = palm + tangent * (reach * 0.72)
 
-    def at(t):
-        return t * span
-
-    b.sweep_axis([(at(-0.20), section(10, 0.016, 0.016, 0.016, 2.4)),
-                  (at(-0.02), section(10, 0.015, 0.015, 0.015, 2.4))],
+    b.sweep_axis([(0.20, section(10, 0.016, 0.016, 0.016, 2.4)),
+                  (0.31, section(10, 0.015, 0.015, 0.015, 2.4))],
                  "leather", lambda t: {}, start, end)
-    b.sweep_axis([(at(-0.26), section(10, 0.026, 0.026, 0.026, 2.2)),
-                  (at(-0.20), section(10, 0.018, 0.018, 0.018, 2.4))],
+    b.sweep_axis([(0.14, section(10, 0.026, 0.026, 0.026, 2.2)),
+                  (0.20, section(10, 0.018, 0.018, 0.018, 2.4))],
                  "metal", lambda t: {}, start, end)
-    b.sweep_axis([(at(0.00), section(10, 0.055, 0.020, 0.020, 3.0)),
-                  (at(0.05), section(10, 0.040, 0.016, 0.016, 3.0))],
+    b.sweep_axis([(0.32, section(10, 0.055, 0.020, 0.020, 3.0)),
+                  (0.36, section(10, 0.040, 0.016, 0.016, 3.0))],
                  "metal", lambda t: {}, start, end)
-    b.sweep_axis([(at(0.06), section(10, 0.026, 0.010, 0.010, 3.2)),
-                  (at(0.48), section(10, 0.024, 0.009, 0.009, 3.2)),
-                  (at(0.92), section(10, 0.019, 0.007, 0.007, 3.0)),
-                  (at(1.06), section(10, 0.004, 0.003, 0.003, 2.4))],
+    b.sweep_axis([(0.37, section(10, 0.026, 0.010, 0.010, 3.2)),
+                  (0.62, section(10, 0.024, 0.009, 0.009, 3.2)),
+                  (0.90, section(10, 0.019, 0.007, 0.007, 3.0)),
+                  (1.00, section(10, 0.004, 0.003, 0.003, 2.4))],
                  "edge", lambda t: {}, start, end)
     return b, "hand_r"
 
@@ -571,7 +623,7 @@ def main():
     outfit = to_object(builder, "HeroOutfit", materials)
     transfer_weights(outfit, body, armature)
 
-    sword_builder, sword_bone = build_sword(armature, height)
+    sword_builder, sword_bone = build_sword(body, armature, height)
     sword = None
     if sword_builder is not None:
         sword = to_object(sword_builder, "HeroSword", materials)
