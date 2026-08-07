@@ -61,6 +61,7 @@ export function createV9DebugApi(s: GameSystems): Record<string, unknown> {
         .filter((enemy) => enemy.alive)
         .map((enemy) => ({
           id: enemy.def.id,
+          squadId: enemy.squadId,
           hp: enemy.health,
           x: enemy.position.x,
           z: enemy.position.z,
@@ -75,7 +76,11 @@ export function createV9DebugApi(s: GameSystems): Record<string, unknown> {
               : null,
           laneIndex: enemy.laneIndex,
           moveSpeed: enemy.def.moveSpeed,
+          effectiveMoveSpeed: enemy.effectiveMoveSpeed,
+          motorSpeed: enemy.movementSpeed,
+          stunned: enemy.isStunned,
           navPoint: enemy.navPoint ? { x: enemy.navPoint.x, z: enemy.navPoint.z } : null,
+          navStuck: enemy.navStuck,
           vulnerability: enemy.vulnerabilityFactor,
           vulnerabilityRemaining: enemy.vulnerabilityRemaining,
         })),
@@ -114,6 +119,15 @@ export function createV9DebugApi(s: GameSystems): Record<string, unknown> {
                 : null,
           })),
       ),
+    /** A serializable alternative to the legacy DebugApi.spawnEnemy(), whose
+     * return value is the live Squad object and therefore cannot cross a
+     * Playwright page boundary. This also accepts the lane explicitly. */
+    spawnEnemyOnLaneForTest: (defId: string, x: number, z: number, laneIndex: number) => {
+      const squad = s.squads.spawnEnemy(defId, x, z, laneIndex);
+      return squad
+        ? { ok: true, squadId: squad.id, members: squad.members.length, laneIndex }
+        : { ok: false, squadId: null, members: 0, laneIndex };
+    },
     /** Test-only deterministic deployment; production uses the real drag/drop
      * path in Game.handleRecruitDrop. */
     deploySquadForTest: (defId: string, laneIndex: number, x: number, z: number) => {
