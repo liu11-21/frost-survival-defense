@@ -57,7 +57,7 @@ test("mouse-clicking a remote visible slot opens the canonical build panel", asy
   expect(pointer.finalHandler).toBe("slotClick");
   expect(pointer.hitWorldSlot).toBe("coreNE");
   expect(await call(page, "nearbySlotId")).toBe("coreNE");
-  await expect(page.locator("#buildPanel")).toHaveClass(/show/);
+  await expect(page.locator("#ui-build-panel")).toHaveClass(/show/);
 });
 
 test("scaled facility visuals still leave a generous real pointer placement target", async ({ page }) => {
@@ -89,7 +89,7 @@ test("scaled facility visuals still leave a generous real pointer placement targ
   expect(pointer.hitWorldSlot).toBe("coreNE");
   expect(await call(page, "nearbySlotId")).toBe("coreNE");
   expect((await call(page, "canBuild", "coreNE", "tower")).ok).toBe(true);
-  await expect(page.locator("#buildPanel")).toHaveClass(/show/);
+  await expect(page.locator("#ui-build-panel")).toHaveClass(/show/);
 });
 
 test("a real draggable recruit icon spends only after a legal lane drop", async ({ page }) => {
@@ -108,7 +108,7 @@ test("a real draggable recruit icon spends only after a legal lane drop", async 
   // Production binding is G. Use the real keyboard route to open the panel.
   await page.keyboard.press("g");
   await step(page, 0.016, 2);
-  await expect(page.locator("#recruitPanel")).toHaveClass(/show/);
+  await expect(page.locator("#ui-recruit-panel")).toHaveClass(/show/);
 
   const card = page.locator('.recruit-icon-card[data-recruit="warrior"]');
   await expect(card).toBeVisible();
