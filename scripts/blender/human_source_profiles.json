@@ -468,6 +468,213 @@
         "pinky",
         "little"
       ]
+    },
+    "mpfb2-game-engine": {
+      "label": "MPFB 2.0.17 official core base mesh on the standard `game_engine` rig (Unreal-style names). Verified 2026-08-07 by scripts/blender/mpfb_rig_comparison.py.",
+      "extension": [
+        ".glb",
+        ".gltf",
+        ".fbx"
+      ],
+      "up_axis": "Y",
+      "forward_axis": "+Z",
+      "unit_scale": 1.0,
+      "synthesise_root": false,
+      "drop_nodes": [
+        "^Camera",
+        "^Light",
+        "^Lamp",
+        "_IK$",
+        "^CTRL_",
+        "^helper_",
+        "^COL_",
+        "^Icosphere",
+        "^UCX_",
+        "_collision$"
+      ],
+      "keep_bone_chains": [
+        "thumb",
+        "index",
+        "middle",
+        "ring",
+        "pinky"
+      ],
+      "bones": {
+        "root": [
+          "Root"
+        ],
+        "pelvis": [
+          "pelvis"
+        ],
+        "spine": [
+          "spine_01"
+        ],
+        "chest": [
+          "spine_03",
+          "spine_02"
+        ],
+        "neck": [
+          "neck_01",
+          "neck"
+        ],
+        "head": [
+          "head"
+        ],
+        "upper_arm.L": [
+          "upperarm_l"
+        ],
+        "lower_arm.L": [
+          "lowerarm_l"
+        ],
+        "hand.L": [
+          "hand_l"
+        ],
+        "upper_arm.R": [
+          "upperarm_r"
+        ],
+        "lower_arm.R": [
+          "lowerarm_r"
+        ],
+        "hand.R": [
+          "hand_r"
+        ],
+        "thigh.L": [
+          "thigh_l"
+        ],
+        "shin.L": [
+          "calf_l"
+        ],
+        "foot.L": [
+          "foot_l"
+        ],
+        "thigh.R": [
+          "thigh_r"
+        ],
+        "shin.R": [
+          "calf_r"
+        ],
+        "foot.R": [
+          "foot_r"
+        ]
+      },
+      "optional_bones": {
+        "clavicle.L": [
+          "clavicle_l"
+        ],
+        "clavicle.R": [
+          "clavicle_r"
+        ],
+        "toe.L": [
+          "ball_l"
+        ],
+        "toe.R": [
+          "ball_r"
+        ],
+        "forearm_twist.L": [
+          "lowerarm_twist_01_l",
+          "forearm_twist.L"
+        ],
+        "forearm_twist.R": [
+          "lowerarm_twist_01_r",
+          "forearm_twist.R"
+        ],
+        "thumb_01.L": [
+          "thumb_01_l"
+        ],
+        "thumb_02.L": [
+          "thumb_02_l"
+        ],
+        "thumb_03.L": [
+          "thumb_03_l"
+        ],
+        "thumb_01.R": [
+          "thumb_01_r"
+        ],
+        "thumb_02.R": [
+          "thumb_02_r"
+        ],
+        "thumb_03.R": [
+          "thumb_03_r"
+        ],
+        "index_01.L": [
+          "index_01_l"
+        ],
+        "index_02.L": [
+          "index_02_l"
+        ],
+        "index_03.L": [
+          "index_03_l"
+        ],
+        "index_01.R": [
+          "index_01_r"
+        ],
+        "index_02.R": [
+          "index_02_r"
+        ],
+        "index_03.R": [
+          "index_03_r"
+        ],
+        "middle_01.L": [
+          "middle_01_l"
+        ],
+        "middle_02.L": [
+          "middle_02_l"
+        ],
+        "middle_03.L": [
+          "middle_03_l"
+        ],
+        "middle_01.R": [
+          "middle_01_r"
+        ],
+        "middle_02.R": [
+          "middle_02_r"
+        ],
+        "middle_03.R": [
+          "middle_03_r"
+        ],
+        "ring_01.L": [
+          "ring_01_l"
+        ],
+        "ring_02.L": [
+          "ring_02_l"
+        ],
+        "ring_03.L": [
+          "ring_03_l"
+        ],
+        "ring_01.R": [
+          "ring_01_r"
+        ],
+        "ring_02.R": [
+          "ring_02_r"
+        ],
+        "ring_03.R": [
+          "ring_03_r"
+        ],
+        "pinky_01.L": [
+          "pinky_01_l"
+        ],
+        "pinky_02.L": [
+          "pinky_02_l"
+        ],
+        "pinky_03.L": [
+          "pinky_03_l"
+        ],
+        "pinky_01.R": [
+          "pinky_01_r"
+        ],
+        "pinky_02.R": [
+          "pinky_02_r"
+        ],
+        "pinky_03.R": [
+          "pinky_03_r"
+        ]
+      },
+      "notes": {
+        "rigSelected": "game_engine over default (163 bones) and mixamo",
+        "forearmTwist": "absent in all three MPFB standard rigs; tracked as a final quality gate",
+        "maxVertexInfluences": 7,
+        "weightLimitRequired": "glTF JOINTS_0 carries 4; weights must be limited to 4 before export"
+      }
     }
   }
 }

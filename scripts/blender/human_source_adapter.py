@@ -443,6 +443,13 @@ def build_lods(meshes, armature, name):
             copy.data = source.data.copy()
             copy.name = "LOD%d_PROD_%s_%d" % (level, name, index)
             holder.objects.link(copy)
+            # A mature base arrives with its macro morph targets still present
+            # as shape keys, and Decimate refuses to apply to a mesh that has
+            # them. The macro values are already baked into the vertex
+            # positions -- the keys are authoring history, not runtime data --
+            # so they are dropped rather than kept as dead weight in the GLB.
+            if copy.data.shape_keys:
+                copy.shape_key_clear()
             if ratio < 1.0:
                 mod = copy.modifiers.new("lod", "DECIMATE")
                 mod.ratio = ratio
