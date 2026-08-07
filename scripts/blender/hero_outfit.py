@@ -51,52 +51,107 @@ MATERIAL_OF = {
 }
 
 
-def measure(body, heights, samples=64):
-    """Half-width, front depth and back depth of the body at each height.
+# Bones whose vertices ARE the torso. Everything else -- arms, hands, legs,
+# feet -- is excluded from torso measurement.
+TORSO_BONES = ("pelvis", "spine_01", "spine_02", "spine_03", "neck_01", "neck", "head")
+LIMB_TOKENS = ("upperarm", "lowerarm", "hand", "thumb", "index", "middle",
+               "ring", "pinky", "thigh", "calf", "foot", "ball", "clavicle")
 
-    Reads the real mesh, so a broader male ribcage and a narrower female one
-    produce different garments from identical code.
+
+def torso_vertices(body):
+    """World positions of the vertices that belong to the torso.
+
+    The first version took `max(abs(x))` over a horizontal slab. MPFB stands
+    in an A-pose with the arms down at the sides, so at waist height that slab
+    contains the hands -- and the "waist half-width" it returned was the arm
+    span. The coat lofted as metre-wide discs.
+
+    Filtering by weight makes that impossible: a vertex counts only if the
+    torso bones own more of it than the limb bones do.
     """
-    verts = [body.matrix_world @ v.co for v in body.data.vertices]
-    lo = min(v.y for v in verts)
-    hi = max(v.y for v in verts)
+    groups = {g.index: g.name for g in body.vertex_groups}
+    torso_ids = {i for i, n in groups.items() if n in TORSO_BONES}
+    limb_ids = {i for i, n in groups.items()
+                if any(token in n.lower() for token in LIMB_TOKENS)}
+    if not torso_ids:
+        return None
+
+    kept = []
+    for vertex in body.data.vertices:
+        torso = sum(g.weight for g in vertex.groups if g.group in torso_ids)
+        limb = sum(g.weight for g in vertex.groups if g.group in limb_ids)
+        if torso > 0.5 and torso > limb:
+            kept.append(body.matrix_world @ vertex.co)
+    return kept or None
+
+
+def measure(body, heights):
+    """Half-width, front depth and back depth of the TORSO at each height."""
+    torso = torso_vertices(body)
+    everything = [body.matrix_world @ v.co for v in body.data.vertices]
+    lo = min(v.y for v in everything)
+    hi = max(v.y for v in everything)
     height = hi - lo
+    # The overall figure sets the height scale; the torso sets the girths.
+    source = torso if torso else everything
     out = {}
     for key, fraction in heights.items():
         y = lo + height * fraction
-        band = [v for v in verts if abs(v.y - y) < height * 0.018]
-        if not band:
-            band = sorted(verts, key=lambda v: abs(v.y - y))[:40]
+        band = [v for v in source if abs(v.y - y) < height * 0.022]
+        if len(band) < 8:
+            band = sorted(source, key=lambda v: abs(v.y - y))[:60]
+        widths = sorted(abs(v.x) for v in band)
+        fronts = sorted(v.z for v in band)
+        backs = sorted(-v.z for v in band)
+        # 92nd percentile rather than max: a single stray vertex on a seam
+        # should not set the size of a coat.
+        def pick(values):
+            return values[min(len(values) - 1, int(len(values) * 0.92))]
         out[key] = {
             "y": y,
-            "halfWidth": max(abs(v.x) for v in band),
-            "front": max(v.z for v in band),
-            "back": -min(v.z for v in band),
+            "halfWidth": pick(widths),
+            "front": pick(fronts),
+            "back": pick(backs),
         }
     return out, lo, hi, height
 
 
-def limb_measure(body, bone_head, bone_tail, armature, samples=5):
-    """Radius of the limb around a bone, sampled along it."""
-    to_world = armature.matrix_world
-    a = to_world @ bone_head
-    b = to_world @ bone_tail
+def limb_measure(body, bone_name, armature, samples=5):
+    """Radius of the limb, from vertices that bone actually owns.
+
+    Same contamination as the torso had: sampling everything near the bone
+    axis picks up the ribcage around an upper arm in an A-pose, so the radius
+    came back as a torso half-width and the shoulder lames lofted as
+    half-metre discs. Only vertices this bone dominates are counted.
+    """
+    bone = armature.pose.bones.get(bone_name)
+    if bone is None:
+        return 0.06
+    group = body.vertex_groups.get(bone_name)
+    if group is None:
+        return 0.06
+    a = armature.matrix_world @ bone.head
+    b = armature.matrix_world @ bone.tail
     axis = (b - a)
     length = axis.length
     if length < 1e-6:
         return 0.06
     axis = axis.normalized()
-    verts = [body.matrix_world @ v.co for v in body.data.vertices]
+
     radii = []
-    for i in range(1, samples):
-        t = i / samples
-        point = a + axis * (length * t)
-        near = [((v - point) - axis * ((v - point).dot(axis))).length
-                for v in verts if abs((v - point).dot(axis)) < length * 0.12]
-        if near:
-            near.sort()
-            radii.append(near[int(len(near) * 0.92)])
-    return sum(radii) / len(radii) if radii else 0.06
+    for vertex in body.data.vertices:
+        weight = next((g.weight for g in vertex.groups if g.group == group.index), 0.0)
+        if weight < 0.55:
+            continue
+        world = body.matrix_world @ vertex.co
+        along = (world - a).dot(axis)
+        if not (0.0 <= along <= length):
+            continue
+        radii.append(((world - a) - axis * along).length)
+    if not radii:
+        return 0.06
+    radii.sort()
+    return radii[min(len(radii) - 1, int(len(radii) * 0.90))]
 
 
 def build_outfit(body, armature, variant):
@@ -187,7 +242,7 @@ def build_outfit(body, armature, variant):
         if bone is None:
             continue
         origin = armature.matrix_world @ bone.head
-        radius = limb_measure(body, bone.head, bone.tail, armature)
+        radius = limb_measure(body, f"upperarm_{side.lower()}", armature)
         for lame in range(lames):
             drop = height * 0.030 * lame
             grow = 1.0 + 0.13 * lame
@@ -217,7 +272,7 @@ def build_outfit(body, armature, variant):
                 continue
             a = armature.matrix_world @ bone.head
             c = armature.matrix_world @ bone.tail
-            radius = max(0.03, limb_measure(body, bone.head, bone.tail, armature))
+            radius = max(0.03, limb_measure(body, bone_name, armature))
             steps = 4
             rings = []
             for i in range(steps + 1):
@@ -348,6 +403,12 @@ def transfer_weights(garment, body, armature):
     modifier = garment.modifiers.new("skin", "ARMATURE")
     modifier.object = armature
     garment.parent = armature
+    # Setting `.parent` does NOT preserve world transform. The garment is
+    # built in world space inside a pivot that is rotated into Y-up, so
+    # parenting it to the armature applied that rotation a second time and the
+    # coat ended up lying on the floor beside the character. The inverse
+    # cancels the parent's current transform.
+    garment.matrix_parent_inverse = armature.matrix_world.inverted()
 
 
 def rigid_weights(obj, armature, bone_name):
@@ -356,6 +417,7 @@ def rigid_weights(obj, armature, bone_name):
     modifier = obj.modifiers.new("skin", "ARMATURE")
     modifier.object = armature
     obj.parent = armature
+    obj.matrix_parent_inverse = armature.matrix_world.inverted()
 
 
 def cull_hidden_body(body, garments, margin):
@@ -466,7 +528,11 @@ def main():
         rigid_weights(sword, armature, sword_bone)
 
     body_before = triangles(body)
-    culled = cull_hidden_body(body, [outfit], margin=height * 0.075)
+    # Cull is OFF during fitting. A wrong garment swallows the torso and the
+    # cull then deletes it, which hides the very error being looked for.
+    culled = 0
+    if os.environ.get("HERO_OUTFIT_CULL") == "1":
+        culled = cull_hidden_body(body, [outfit], margin=height * 0.075)
     bpy.context.view_layer.update()
 
     # Back to Blender's Z-up so the exporter's conversion lands correctly.
