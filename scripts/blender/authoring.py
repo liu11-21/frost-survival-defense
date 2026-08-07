@@ -140,6 +140,104 @@ class MeshBuilder:
                 quad = (centre, built[end][i], built[end][j])
                 self.face(quad if not forward else (centre, built[end][j], built[end][i]), surface)
 
+    def sweep_axis(self, rings, surface, weight_fn, start, end,
+                   cap_start=True, cap_end=True):
+        """Loft cross-sections along an ARBITRARY axis.
+
+        `sweep` stacks along +Y and `sweep_z` along +Z, which covers a torso
+        and a foot and nothing else. A limb in an A-pose points down and
+        outward, so lofting it along the world vertical shears every ring --
+        sleeves and trousers came out as flat sheared panels rather than
+        garments.
+
+        The frame is built once from the bone:
+
+            T = normalize(end - start)
+            F = normalize(globalZ - T * dot(globalZ, T))   (globalX if degenerate)
+            S = normalize(T cross F)
+            P = start + T*distance + S*u + F*v
+
+        `rings` is ``(t, [(u, v), ...])`` with t in 0..1 along the bone, so a
+        caller passes head-to-tail and never sorts by a world coordinate.
+
+        At T = +Y this reduces to exactly `sweep`: F becomes +Z, S becomes +X,
+        and P = (u, distance, v) -- the same points `sweep` produces from a
+        `section()` result.
+        """
+        # Plain tuples, no mathutils: this module is shared and is imported by
+        # tests that run outside Blender.
+        def sub(a, b):
+            return (a[0] - b[0], a[1] - b[1], a[2] - b[2])
+
+        def dot(a, b):
+            return a[0] * b[0] + a[1] * b[1] + a[2] * b[2]
+
+        def scale(a, k):
+            return (a[0] * k, a[1] * k, a[2] * k)
+
+        def add(*vs):
+            return tuple(sum(v[i] for v in vs) for i in range(3))
+
+        def norm(a):
+            length = math.sqrt(dot(a, a))
+            if length < 1e-12:
+                raise ValueError("sweep_axis() got a degenerate direction")
+            return scale(a, 1.0 / length)
+
+        def cross(a, b):
+            return (a[1] * b[2] - a[2] * b[1],
+                    a[2] * b[0] - a[0] * b[2],
+                    a[0] * b[1] - a[1] * b[0])
+
+        start = tuple(float(v) for v in start)
+        end = tuple(float(v) for v in end)
+        axis = sub(end, start)
+        length = math.sqrt(dot(axis, axis))
+        if length < 1e-9:
+            raise ValueError("sweep_axis() needs a non-degenerate axis")
+        tangent = scale(axis, 1.0 / length)
+
+        reference = (0.0, 0.0, 1.0)
+        front = sub(reference, scale(tangent, dot(reference, tangent)))
+        if math.sqrt(dot(front, front)) < 1e-6:
+            reference = (1.0, 0.0, 0.0)
+            front = sub(reference, scale(tangent, dot(reference, tangent)))
+        front = norm(front)
+        side = norm(cross(tangent, front))
+
+        counts = {len(points) for _t, points in rings}
+        if len(counts) != 1:
+            raise ValueError(
+                f"sweep_axis() requires every ring to have the same point count, got {sorted(counts)}."
+            )
+
+        built = []
+        for t, points in rings:
+            base = add(start, scale(tangent, length * t))
+            built.append([
+                self.vertex(add(base, scale(side, u), scale(front, v)), weight_fn(t))
+                for u, v in points
+            ])
+        count = len(built[0])
+        for lower, upper in zip(built, built[1:]):
+            for i in range(count):
+                j = (i + 1) % count
+                self.face((lower[i], lower[j], upper[j], upper[i]), surface)
+        for index, (t, points), do_cap, forward in (
+            (0, rings[0], cap_start, False), (-1, rings[-1], cap_end, True),
+        ):
+            if not do_cap:
+                continue
+            base = add(start, scale(tangent, length * t))
+            cu = sum(p[0] for p in points) / count
+            cv = sum(p[1] for p in points) / count
+            centre = self.vertex(add(base, scale(side, cu), scale(front, cv)), weight_fn(t))
+            for i in range(count):
+                j = (i + 1) % count
+                ring = built[index]
+                self.face((centre, ring[j], ring[i]) if not forward
+                          else (centre, ring[i], ring[j]), surface)
+
     def band(self, rings, surface, weight_fn):
         """An open shell swept over an arc, used for the shawl collar.
 

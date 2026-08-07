@@ -116,42 +116,95 @@ def measure(body, heights):
     return out, lo, hi, height
 
 
-def limb_measure(body, bone_name, armature, samples=5):
-    """Radius of the limb, from vertices that bone actually owns.
-
-    Same contamination as the torso had: sampling everything near the bone
-    axis picks up the ribcage around an upper arm in an A-pose, so the radius
-    came back as a torso half-width and the shoulder lames lofted as
-    half-metre discs. Only vertices this bone dominates are counted.
-    """
-    bone = armature.pose.bones.get(bone_name)
+def bone_frame(armature, bone_name):
+    """(start, end, tangent, side, front) for a bone, matching sweep_axis."""
+    # REST positions, not posed ones. The imported GLB carries animation, so
+    # `pose.bones[].head` is wherever frame 1 of some clip put the bone, while
+    # the mesh vertices are still at rest -- sleeves built from the posed
+    # skeleton landed at hip height on a body whose arms were at the sides.
+    bone = armature.data.bones.get(bone_name)
     if bone is None:
-        return 0.06
-    group = body.vertex_groups.get(bone_name)
-    if group is None:
-        return 0.06
-    a = armature.matrix_world @ bone.head
-    b = armature.matrix_world @ bone.tail
-    axis = (b - a)
-    length = axis.length
-    if length < 1e-6:
-        return 0.06
-    axis = axis.normalized()
+        return None
+    start = armature.matrix_world @ bone.head_local
+    end = armature.matrix_world @ bone.tail_local
+    axis = end - start
+    if axis.length < 1e-9:
+        return None
+    tangent = axis.normalized()
+    reference = Vector((0.0, 0.0, 1.0))
+    front = reference - tangent * reference.dot(tangent)
+    if front.length < 1e-6:
+        reference = Vector((1.0, 0.0, 0.0))
+        front = reference - tangent * reference.dot(tangent)
+    front.normalize()
+    side = tangent.cross(front).normalized()
+    return start, end, tangent, side, front
 
-    radii = []
+
+def limb_profile(body, bone_name, armature, slices=5, percentile=0.90):
+    """Half-width, front depth and back depth along a bone, in ITS frame.
+
+    A scalar radius makes every sleeve and trouser leg a round tube. A real
+    forearm is wider than it is deep and a boot is deeper than it is wide, so
+    the profile is measured separately on the side and front axes of the same
+    frame `sweep_axis` will build in.
+
+    Only vertices the bone dominates are counted: sampling everything near the
+    upper-arm axis picks up the ribcage in an A-pose, which is what made the
+    shoulder lames loft as half-metre discs.
+    """
+    frame = bone_frame(armature, bone_name)
+    group = body.vertex_groups.get(bone_name)
+    if frame is None or group is None:
+        return None
+    start, end, tangent, side, front = frame
+    length = (end - start).length
+
+    # Bone positions come through the ARMATURE's matrix and vertices through
+    # the BODY's. Those are not the same transform here, and the mismatch is a
+    # constant offset -- which showed up as a front depth of 0.68 on a 0.24 m
+    # upper arm, identical at every slice. Both are put in the body's space.
+    to_body = body.matrix_world.inverted()
+    start_local = to_body @ start
+    tangent_local = (to_body @ end - start_local)
+    length_local = tangent_local.length or 1.0
+    tangent_local = tangent_local / length_local
+    ref = Vector((0.0, 0.0, 1.0))
+    front_local = ref - tangent_local * ref.dot(tangent_local)
+    if front_local.length < 1e-6:
+        ref = Vector((1.0, 0.0, 0.0))
+        front_local = ref - tangent_local * ref.dot(tangent_local)
+    front_local.normalize()
+    side_local = tangent_local.cross(front_local).normalized()
+
+    owned = []
     for vertex in body.data.vertices:
         weight = next((g.weight for g in vertex.groups if g.group == group.index), 0.0)
         if weight < 0.55:
             continue
-        world = body.matrix_world @ vertex.co
-        along = (world - a).dot(axis)
-        if not (0.0 <= along <= length):
-            continue
-        radii.append(((world - a) - axis * along).length)
-    if not radii:
-        return 0.06
-    radii.sort()
-    return radii[min(len(radii) - 1, int(len(radii) * 0.90))]
+        local = vertex.co - start_local
+        owned.append((local.dot(tangent_local) / length_local,
+                      local.dot(side_local), local.dot(front_local)))
+    if len(owned) < 12:
+        return None
+
+    def pick(values, fallback):
+        if not values:
+            return fallback
+        values.sort()
+        return values[min(len(values) - 1, int(len(values) * percentile))]
+
+    profile = []
+    for i in range(slices + 1):
+        t = i / slices
+        band = [o for o in owned if abs(o[0] - t) < 0.5 / slices + 0.08]
+        if len(band) < 6:
+            band = sorted(owned, key=lambda o: abs(o[0] - t))[:24]
+        half = pick([abs(o[1]) for o in band], 0.05)
+        fwd = pick([o[2] for o in band if o[2] > 0], half)
+        bwd = pick([-o[2] for o in band if o[2] < 0], half)
+        profile.append((t, max(half, 0.012), max(fwd, 0.012), max(bwd, 0.012)))
+    return {"start": start, "end": end, "profile": profile}
 
 
 def build_outfit(body, armature, variant):
@@ -238,51 +291,45 @@ def build_outfit(body, armature, variant):
 
     # --- shoulders: asymmetric, heavy on the left ----------------------
     for side, sign, lames in (("L", -1, 3), ("R", 1, 1)):
-        bone = armature.pose.bones.get(f"upperarm_{side.lower()}")
-        if bone is None:
+        data = limb_profile(body, f"upperarm_{side.lower()}", armature)
+        if data is None:
             continue
-        origin = armature.matrix_world @ bone.head
-        radius = limb_measure(body, f"upperarm_{side.lower()}", armature)
+        start, end = data["start"], data["end"]
+        _t, half, fwd, bwd = data["profile"][0]
         for lame in range(lames):
-            drop = height * 0.030 * lame
-            grow = 1.0 + 0.13 * lame
-            b.sweep([
-                (origin.y - drop, section(n_limb, radius * 1.30 * grow, radius * 1.30 * grow,
-                                          radius * 1.24 * grow, 3.0, centre_x=origin.x, centre_z=origin.z)),
-                (origin.y - drop - height * 0.034, section(n_limb, radius * 1.42 * grow, radius * 1.40 * grow,
-                                                           radius * 1.34 * grow, 3.0, centre_x=origin.x * 1.04, centre_z=origin.z)),
-            ], "metal", lambda y: {}, cap_bottom=False, cap_top=False)
-            b.sweep([
-                (origin.y - drop - height * 0.034, section(n_limb, radius * 1.42 * grow, radius * 1.40 * grow, radius * 1.34 * grow, 3.0, centre_x=origin.x * 1.04, centre_z=origin.z)),
-                (origin.y - drop - height * 0.042, section(n_limb, radius * 1.33 * grow, radius * 1.31 * grow, radius * 1.26 * grow, 3.0, centre_x=origin.x * 1.04, centre_z=origin.z)),
-            ], "edge", lambda y: {}, cap_bottom=False, cap_top=False)
+            base = 0.02 + 0.19 * lame
+            grow = 1.24 + 0.16 * lame
+            b.sweep_axis([
+                (base, section(n_limb, half * grow, fwd * grow, bwd * grow, 3.0)),
+                (base + 0.20, section(n_limb, half * (grow + 0.12), fwd * (grow + 0.12), bwd * (grow + 0.10), 3.0)),
+            ], "metal", lambda t: {}, start, end, cap_start=False, cap_end=False)
+            b.sweep_axis([
+                (base + 0.20, section(n_limb, half * (grow + 0.12), fwd * (grow + 0.12), bwd * (grow + 0.10), 3.0)),
+                (base + 0.235, section(n_limb, half * (grow + 0.03), fwd * (grow + 0.03), bwd * (grow + 0.02), 3.0)),
+            ], "edge", lambda t: {}, start, end, cap_start=False, cap_end=False)
 
     # --- sleeves, gloves, trousers, boots ------------------------------
+    # All lofted along the BONE, not along world up. An A-pose limb points
+    # down and outward; stacking rings by world height shears every one of
+    # them, which is what turned the first sleeves into flat panels.
     for side in ("l", "r"):
-        for bone_name, surface, pad, tail_pad in (
-            (f"upperarm_{side}", "coat", 1.22, 1.16),
-            (f"lowerarm_{side}", "coat", 1.16, 1.10),
-            (f"hand_{side}", "leather", 1.16, 1.10),
-            (f"thigh_{side}", "coat", 1.14, 1.10),
-            (f"calf_{side}", "coat", 1.12, 1.16),
-            (f"foot_{side}", "leather", 1.22, 1.30),
+        for bone_name, surface, pad, tail_pad, exp in (
+            (f"upperarm_{side}", "coat", 1.22, 1.15, 2.8),
+            (f"lowerarm_{side}", "coat", 1.17, 1.10, 2.8),
+            (f"hand_{side}", "leather", 1.20, 1.12, 3.0),
+            (f"thigh_{side}", "coat", 1.15, 1.10, 2.8),
+            (f"calf_{side}", "coat", 1.13, 1.18, 2.8),
+            (f"foot_{side}", "leather", 1.26, 1.34, 3.2),
         ):
-            bone = armature.pose.bones.get(bone_name)
-            if bone is None:
+            data = limb_profile(body, bone_name, armature)
+            if data is None:
                 continue
-            a = armature.matrix_world @ bone.head
-            c = armature.matrix_world @ bone.tail
-            radius = max(0.03, limb_measure(body, bone_name, armature))
-            steps = 4
             rings = []
-            for i in range(steps + 1):
-                t = i / steps
-                point = a.lerp(c, t)
+            for t, half, fwd, bwd in data["profile"]:
                 grow = pad + (tail_pad - pad) * t
-                rings.append((point.y, section(n_limb, radius * grow, radius * grow,
-                                               radius * grow, 2.8, centre_x=point.x, centre_z=point.z)))
-            rings.sort(key=lambda r: r[0])
-            b.sweep(rings, surface, lambda y: {}, cap_bottom=False, cap_top=False)
+                rings.append((t, section(n_limb, half * grow, fwd * grow, bwd * grow, exp)))
+            b.sweep_axis(rings, surface, lambda t: {}, data["start"], data["end"],
+                         cap_start=False, cap_end=False)
 
     # --- helmet: open face --------------------------------------------
     head = armature.pose.bones.get("head")
@@ -317,37 +364,40 @@ def build_outfit(body, armature, variant):
 
 
 def build_sword(armature, height):
-    """A sword the hand actually holds, rigid to hand_r.
+    """A sword lofted along the hand's own axis, rigid to hand_r.
 
-    Built along the hand bone's own axis and weighted 100% to it, which is the
-    only construction where the blade cannot drift away from the fingers.
+    The previous version computed the hand axis and then called the Y-axis
+    `sweep()` anyway, so the blade was built vertically wherever the hand
+    happened to be pointing. Every ring now sits in the hand's frame.
     """
-    bone = armature.pose.bones.get("hand_r")
-    if bone is None:
+    frame = bone_frame(armature, "hand_r")
+    if frame is None:
         return None, None
+    start, end, tangent, _side, _front = frame
     b = MeshBuilder(0)
-    origin = armature.matrix_world @ bone.head
-    direction = ((armature.matrix_world @ bone.tail) - origin)
-    forward = direction.normalized() if direction.length > 1e-6 else Vector((0, -1, 0))
+    length = (end - start).length or 0.1
     scale = height * 0.55
+    # t is expressed in bone lengths, so the grip sits inside the closed fist
+    # and the blade runs forward out of the knuckles.
+    span = scale / length
 
     def at(t):
-        return origin + forward * (scale * t)
+        return t * span
 
-    def ring(t, half, depth, expo=2.4):
-        point = at(t)
-        return (point.y, section(10, half, depth, depth, expo,
-                                 centre_x=point.x, centre_z=point.z))
-
-    # The grip runs back through the closed fist, the guard sits at the
-    # knuckles, and the blade goes forward from there.
-    b.sweep([ring(-0.20, 0.016, 0.016), ring(-0.02, 0.015, 0.015)], "leather", lambda y: {})
-    b.sweep([ring(-0.25, 0.026, 0.026, 2.2), ring(-0.20, 0.018, 0.018)], "metal", lambda y: {})
-    b.sweep([ring(0.00, 0.052, 0.020, 3.0), ring(0.05, 0.040, 0.016, 3.0)], "metal", lambda y: {})
-    b.sweep([
-        ring(0.06, 0.026, 0.010, 3.2), ring(0.45, 0.024, 0.009, 3.2),
-        ring(0.88, 0.019, 0.007, 3.0), ring(1.02, 0.004, 0.003, 2.4),
-    ], "edge", lambda y: {})
+    b.sweep_axis([(at(-0.20), section(10, 0.016, 0.016, 0.016, 2.4)),
+                  (at(-0.02), section(10, 0.015, 0.015, 0.015, 2.4))],
+                 "leather", lambda t: {}, start, end)
+    b.sweep_axis([(at(-0.26), section(10, 0.026, 0.026, 0.026, 2.2)),
+                  (at(-0.20), section(10, 0.018, 0.018, 0.018, 2.4))],
+                 "metal", lambda t: {}, start, end)
+    b.sweep_axis([(at(0.00), section(10, 0.055, 0.020, 0.020, 3.0)),
+                  (at(0.05), section(10, 0.040, 0.016, 0.016, 3.0))],
+                 "metal", lambda t: {}, start, end)
+    b.sweep_axis([(at(0.06), section(10, 0.026, 0.010, 0.010, 3.2)),
+                  (at(0.48), section(10, 0.024, 0.009, 0.009, 3.2)),
+                  (at(0.92), section(10, 0.019, 0.007, 0.007, 3.0)),
+                  (at(1.06), section(10, 0.004, 0.003, 0.003, 2.4))],
+                 "edge", lambda t: {}, start, end)
     return b, "hand_r"
 
 
