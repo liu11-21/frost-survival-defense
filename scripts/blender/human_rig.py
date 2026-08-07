@@ -414,10 +414,30 @@ def build_retargeted_actions(armature, clips, reference_rest_rel, height_ratio=1
             skipped.append(clip_name)
             bpy.data.actions.remove(action)
 
+    # Each action gets its own NLA track, which is how this project's own
+    # builders emit clips and what Blender's glTF exporter walks to produce
+    # separate glTF animations.
+    #
+    # Without this the retarget reported 7 actions created and the exported
+    # GLB contained ZERO animations: the actions existed in bpy.data with a
+    # fake user, were never bound to anything, and the exporter had nothing to
+    # find. "Seven actions were created" and "seven clips shipped" are
+    # different claims and only the second one matters.
+    armature.animation_data.action = None
+    for existing in list(armature.animation_data.nla_tracks):
+        armature.animation_data.nla_tracks.remove(existing)
+    for name in built:
+        action = bpy.data.actions.get(name)
+        if action is None:
+            continue
+        track = armature.animation_data.nla_tracks.new()
+        track.name = name
+        start = int(action.frame_range[0])
+        track.strips.new(name, start, action)
+
     for pose_bone in armature.pose.bones:
         pose_bone.rotation_quaternion = Quaternion((1, 0, 0, 0))
         pose_bone.location = Vector((0, 0, 0))
-    armature.animation_data.action = None
     bpy.context.view_layer.update()
 
     return {
