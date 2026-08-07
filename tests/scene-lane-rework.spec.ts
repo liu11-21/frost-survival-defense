@@ -1,0 +1,149 @@
+import { expect, test } from "@playwright/test";
+
+import {
+  GROUND_SLOTS,
+  LANES,
+  SKY_SLOTS,
+  isInsideBase,
+  nearestPointOnLane,
+} from "../src/data/BuildSlotDefinitions";
+import { DEFENSE_BUILDINGS } from "../src/data/DefenseBuildingDefinitions";
+import { ENDLESS_SCALING, endlessLaneCount } from "../src/data/GameModeRules";
+import { ENEMY_UNITS } from "../src/data/EnemyDefinitions";
+
+function pathLength(path: readonly { x: number; z: number }[]): number {
+  return path.slice(0, -1).reduce((sum, point, index) => {
+    const next = path[index + 1];
+    return sum + Math.hypot(next.x - point.x, next.z - point.z);
+  }, 0);
+}
+
+async function call(page: import("@playwright/test").Page, name: string, ...args: unknown[]): Promise<any> {
+  return page.evaluate(
+    ({ name, args }) => {
+      const api = (window as any).frostbound?.api?.();
+      const fn = api?.[name];
+      return typeof fn === "function" ? fn(...args) : null;
+    },
+    { name, args },
+  );
+}
+
+async function step(page: import("@playwright/test").Page, dt: number, frames: number): Promise<void> {
+  await page.evaluate(
+    ({ dt, frames }) => (window as any).frostbound?.step?.(dt, frames, false),
+    { dt, frames },
+  );
+}
+
+test("scene contract has exactly four long winding roads and dispersed construction", () => {
+  expect(LANES).toHaveLength(4);
+  expect(ENDLESS_SCALING.maxLanes).toBe(4);
+  expect(endlessLaneCount(999)).toBe(4);
+
+  for (const lane of LANES) {
+    expect(lane.path.length).toBeGreaterThanOrEqual(8);
+    expect(pathLength(lane.path)).toBeGreaterThan(60);
+    expect(Math.hypot(lane.path[0].x, lane.path[0].z)).toBeGreaterThan(40);
+    expect(lane.path.at(-1)).toEqual({ x: 0, z: 0 });
+    // The middle of the path must deviate materially from the old straight
+    // radial bearing, proving this is not a renamed cross-shaped lane.
+    const middle = lane.path[Math.floor(lane.path.length / 2)];
+    const spawn = lane.path[0];
+    const cross = Math.abs(spawn.x * middle.z - spawn.z * middle.x);
+    expect(cross).toBeGreaterThan(100);
+  }
+
+  expect(GROUND_SLOTS).toHaveLength(20);
+  expect(SKY_SLOTS).toHaveLength(5);
+  const inside = GROUND_SLOTS.filter((slot) => isInsideBase(slot.x, slot.z, 0.5));
+  expect(inside.map((slot) => slot.id).sort()).toEqual(["coreNE", "coreNW", "coreSE", "coreSW"]);
+  expect(inside.every((slot) => slot.lanes.length >= 2)).toBe(true);
+
+  // At least one compact central position must genuinely overlap two road
+  // corridors with the new short tower range; metadata alone is not enough.
+  const basicTower = DEFENSE_BUILDINGS.find((building) => building.id === "tower")!;
+  const core = inside[0];
+  const covered = LANES.filter(
+    (lane) => nearestPointOnLane(core.x, core.z, lane).distance <= (basicTower.attackRange ?? 0),
+  );
+  expect(covered.length).toBeGreaterThanOrEqual(2);
+});
+
+test("defence ranges are compact and enemy movement speed is a real authored stat", () => {
+  const attacks = DEFENSE_BUILDINGS.filter((building) => building.attackKind);
+  expect(attacks.length).toBeGreaterThan(0);
+  expect(Math.max(...attacks.map((building) => building.attackRange ?? 0))).toBeLessThanOrEqual(11.5);
+  expect(Math.min(...attacks.map((building) => building.attackRange ?? 0))).toBeGreaterThan(0);
+
+  const speeds = ENEMY_UNITS.map((enemy) => enemy.moveSpeed);
+  expect(speeds.every((speed) => Number.isFinite(speed) && speed > 0)).toBe(true);
+  expect(new Set(speeds).size).toBeGreaterThan(4);
+});
+
+test("runtime keeps melee on-lane, permits ranged fallback, and then pre-empts it", async ({ page }, testInfo) => {
+  await page.goto("http://127.0.0.1:4173/?uiVerification=1", { waitUntil: "networkidle" });
+  await page.waitForFunction(() => Boolean((window as any).frostbound), null, { timeout: 60_000 });
+  await page.evaluate(() => (window as any).frostbound.stopLoop());
+
+  await call(page, "startStage", "stage-3");
+  await call(page, "teleport", 30, 30); // Hero is lane-neutral but kept away for this targeting probe.
+  await call(page, "grant", 999, 999, 999);
+  await call(page, "setFurnaceLevel", 30);
+  await call(page, "build", "coreNE", "recruitHall");
+  await step(page, 0.016, 500);
+
+  expect(await call(page, "recruit", "archer")).toBeNull();
+  expect(await call(page, "deploySquadForTest", "archer", 0, 0, 8)).toBe(true);
+
+  // Lane-1 melee can see lane-0 allies geometrically but may not select them.
+  await call(page, "spawnEnemy", "grunt", 4, 2, 1);
+  await step(page, 0.05, 10);
+  let enemies = (await call(page, "enemyStatus")) as Array<any>;
+  const grunt = enemies.find((enemy) => enemy.id === "grunt");
+  expect(grunt).toBeTruthy();
+  expect(grunt.targetLane).not.toBe(0);
+
+  // Ranged fallback is legal only because there is no same-lane defender and
+  // the lane-0 archer is inside the Slinger’s actual 8-unit attack range.
+  await call(page, "spawnEnemy", "slinger", 4, 2, 1);
+  await step(page, 0.05, 10);
+  enemies = (await call(page, "enemyStatus")) as Array<any>;
+  let slinger = enemies.find((enemy) => enemy.id === "slinger");
+  expect(slinger).toBeTruthy();
+  expect(slinger.targetLane).toBe(0);
+
+  // A legal same-lane defender immediately outranks the cross-lane fallback.
+  expect(await call(page, "recruit", "warrior")).toBeNull();
+  expect(await call(page, "deploySquadForTest", "warrior", 1, 8, 0)).toBe(true);
+  await step(page, 0.05, 12);
+  enemies = (await call(page, "enemyStatus")) as Array<any>;
+  slinger = enemies.find((enemy) => enemy.id === "slinger");
+  expect(slinger.targetLane).toBe(1);
+
+  await page.screenshot({ path: testInfo.outputPath("lane-targeting-runtime.png"), fullPage: true });
+});
+
+test("ordinary low-tier enemies march past optional facilities and speed moves them", async ({ page }) => {
+  await page.goto("http://127.0.0.1:4173/?uiVerification=1", { waitUntil: "networkidle" });
+  await page.waitForFunction(() => Boolean((window as any).frostbound), null, { timeout: 60_000 });
+  await page.evaluate(() => (window as any).frostbound.stopLoop());
+
+  await call(page, "startStage", "stage-3");
+  await call(page, "teleport", 30, 30);
+  await call(page, "grant", 999, 999, 999);
+  await call(page, "build", "northFar", "tower");
+  await step(page, 0.016, 500);
+
+  await call(page, "spawnEnemy", "grunt", -10, 45, 0);
+  await step(page, 0.05, 2);
+  const before = ((await call(page, "enemyStatus")) as Array<any>).find((enemy) => enemy.id === "grunt");
+  expect(before).toBeTruthy();
+  expect(before.moveSpeed).toBeGreaterThan(0);
+  expect(before.targetId).not.toBe("tower");
+
+  await step(page, 0.05, 20);
+  const after = ((await call(page, "enemyStatus")) as Array<any>).find((enemy) => enemy.id === "grunt");
+  expect(Math.hypot(after.x - before.x, after.z - before.z)).toBeGreaterThan(0.5);
+  expect(after.targetId).not.toBe("tower");
+});
