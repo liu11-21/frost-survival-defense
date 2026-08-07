@@ -1,0 +1,62 @@
+name: Gameplay Scene Verification
+
+on:
+  pull_request:
+    branches:
+      - art/warrior-production-w1
+    paths:
+      - "src/**"
+      - "tests/**"
+      - "tools/**"
+      - "package.json"
+      - "package-lock.json"
+      - "playwright.config.ts"
+      - ".github/workflows/gameplay-scene-verify.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  gameplay-scene:
+    name: Typecheck build and lane regression
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Use repository Node version
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - name: Install dependencies
+        run: npm ci
+      - name: TypeScript check
+        run: npm run typecheck
+      - name: Production build
+        run: npm run build
+      - name: Install Chromium
+        run: npx playwright install --with-deps chromium
+      - name: Start production preview
+        shell: bash
+        run: |
+          npm run preview -- --host 127.0.0.1 --port 4173 > "$RUNNER_TEMP/gameplay-preview.log" 2>&1 &
+          echo $! > "$RUNNER_TEMP/gameplay-preview.pid"
+          for attempt in $(seq 1 60); do
+            if curl --fail --silent http://127.0.0.1:4173/ >/dev/null; then exit 0; fi
+            sleep 1
+          done
+          cat "$RUNNER_TEMP/gameplay-preview.log"
+          exit 1
+      - name: Scene lane regression
+        if: ${{ hashFiles('tests/scene-lane-rework.spec.ts') != '' }}
+        run: npx playwright test tests/scene-lane-rework.spec.ts
+      - name: Upload runtime evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: gameplay-scene-verification-${{ github.run_id }}
+          path: |
+            test-results/
+            ${{ runner.temp }}/gameplay-preview.log
+          if-no-files-found: warn
