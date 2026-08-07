@@ -105,3 +105,14 @@
   filter: grayscale(0.65);
   opacity: 0.62;
 }
+
+/* The bottom-centre HUD can have a very wide min-content size once squad rows
+ * are visible. Keeping the minimap in HUD grid column 3 allowed that column to
+ * be pushed beyond the viewport. Pin the existing 176px map to the tactical
+ * corner instead; data, size and interaction remain unchanged. The id+class
+ * specificity intentionally wins over the later generic `.minimap` grid rule. */
+#ui-minimap.minimap {
+  position: absolute;
+  top: 128px;
+  right: 14px;
+}
