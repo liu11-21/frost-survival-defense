@@ -91,7 +91,7 @@ test("G1 closure: facility visuals do not create obvious invisible movement coll
   // centre-to-centre clearance beyond visible facility + hero body must stay
   // tiny; this catches an obvious invisible shell without changing balance.
   const warehouseStart = await teleportAndSettle(page, warehouseSlot.x, warehouseSlot.z - 4.8);
-  await moveHero(page, "w", 95);
+  await moveHero(page, "w", 180);
   const warehouseStop = await call(page, "heroMovementStatus");
   const warehouseDistance = Math.hypot(
     warehouseStop.x - warehouseSlot.x,
@@ -105,13 +105,16 @@ test("G1 closure: facility visuals do not create obvious invisible movement coll
   expect(warehouseInvisibleGap).toBeLessThan(0.2);
 
   // Repeat against a tower because its compact gameplay radius is smaller and
-  // its scaled visual bounds are slightly larger than collision.
+  // its scaled visual bounds are slightly larger than collision. Run long
+  // enough that this measures the actual blocking boundary, not travel time.
   const towerStart = await teleportAndSettle(page, towerSlot.x - 4.2, towerSlot.z);
-  await moveHero(page, "d", 90);
+  await moveHero(page, "d", 180);
   const towerStop = await call(page, "heroMovementStatus");
   const towerDistance = Math.hypot(towerStop.x - towerSlot.x, towerStop.z - towerSlot.z);
   const towerVisualRadius = towerDef.visualBoundsRadius * tower.visualScale.x;
   expect(Math.hypot(towerStop.x - towerStart.x, towerStop.z - towerStart.z)).toBeGreaterThan(1.5);
+  expect(towerDistance).toBeGreaterThan(tower.hitRadius + 0.3);
+  expect(towerDistance).toBeLessThan(tower.hitRadius + towerStop.hitRadius + 0.2);
   expect(towerDistance - towerVisualRadius - towerStop.hitRadius).toBeLessThan(0.2);
 
   // Two visible warehouse silhouettes leave almost exactly the same corridor
@@ -125,7 +128,7 @@ test("G1 closure: facility visuals do not create obvious invisible movement coll
   expect(gameplayGap).toBeGreaterThan(warehouseStop.hitRadius * 2 + 1);
 
   await teleportAndSettle(page, 2.8, 0);
-  await moveHero(page, "d", 90);
+  await moveHero(page, "d", 180);
   const corridorExit = await call(page, "heroMovementStatus");
   expect(corridorExit.x).toBeGreaterThan(7);
   expect(Math.abs(corridorExit.z)).toBeLessThan(0.5);
