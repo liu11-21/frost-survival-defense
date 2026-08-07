@@ -5,9 +5,9 @@ import {
   LANES,
   clampOutside,
   isInsideBase,
-  laneAdvancePoint,
   nearestPointOnLane,
 } from "../data/BuildSlotDefinitions";
+import { nextLaneWaypoint } from "../data/LaneNavigation";
 import type { LaneGateManager } from "./LaneGates";
 
 const REFRESH_INTERVAL = 0.35;
@@ -16,7 +16,7 @@ const GATE_COMMIT_SEGMENTS = 1;
 
 /**
  * Enemy navigation now follows the same winding polyline the ground shader and
- * range previews use.  A unit owns one lane for its whole life: it progresses
+ * range previews use. A unit owns one lane for its whole life: it progresses
  * waypoint-by-waypoint, reaches only that lane's gate, breaks only that lane's
  * wall, then enters the compact furnace enclosure.
  */
@@ -63,7 +63,7 @@ export class EnemyNavigator {
     unit.navStuck = moved < 0.25 ? unit.navStuck + REFRESH_INTERVAL : 0;
 
     // Fully sealed means any unit found inside got there by a physics/teleport
-    // edge case.  Put it back outside its OWN wall and let normal breaching
+    // edge case. Put it back outside its OWN wall and let normal breaching
     // resume rather than leaving an impossible attacker behind the defence.
     if (sealed && isInsideBase(x, z)) {
       const fix = clampOutside(x, z, 0.8);
@@ -80,17 +80,13 @@ export class EnemyNavigator {
       projection.segmentIndex >= Math.max(0, lane.gatePointIndex - GATE_COMMIT_SEGMENTS);
     const ownWall = this.gates.breachTargetFor(x, z, unit.laneIndex);
 
-    // The wall only becomes a combat target at the final approach.  The old
+    // The wall only becomes a combat target at the final approach. The old
     // implementation assigned it globally from spawn, which made every enemy
     // cut a straight line through the winding-road design.
     if (closeEnoughToGate && ownWall?.alive) {
-      const wasBreaching = unit.breachTarget !== null;
       unit.navPoint = null;
       unit.breachTarget = ownWall;
       unit.navStuck = 0;
-      if (unit.def.siegeFocus && wasBreaching && !ownWall.alive) {
-        unit.applyStun(unit.def.postBreachStun ?? 0, 0);
-      }
       return;
     }
 
@@ -107,7 +103,7 @@ export class EnemyNavigator {
     }
 
     unit.breachTarget = null;
-    const next = laneAdvancePoint(unit.laneIndex, x, z, "inbound");
+    const next = nextLaneWaypoint(unit.laneIndex, x, z, "inbound");
     if (!unit.navPoint) unit.navPoint = new Vector3();
     unit.navPoint.set(next.x, 0, next.z);
   }
