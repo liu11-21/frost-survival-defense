@@ -559,6 +559,21 @@ def build_glove(body, armature, side, thickness_ratio=0.16, diagnostic=False):
         signed.append((target - source.co).dot(source.normal))
         vert.co = target
 
+    # `from_mesh(body.data)` copies the deform layer along with the geometry,
+    # so every glove vertex arrives carrying the BODY's weights keyed by the
+    # BODY's vertex-group indices. The new glove object has no groups yet;
+    # `transfer_weights` then creates its own set in sorted-name order, and
+    # those stale numeric indices now address entirely different bones. That is
+    # the source of the paired weights the diagnostic found -- one correct
+    # entry written by name, one inherited entry pointing at whatever bone
+    # happens to sit at that index, both at the same value. A right middle
+    # finger paired with a left thumb, a foot paired with a hand.
+    #
+    # The glove must be weighted exactly once, by `transfer_weights`.
+    deform = mesh.verts.layers.deform.active
+    if deform is not None:
+        mesh.verts.layers.deform.remove(deform)
+
     data = bpy.data.meshes.new(f"HeroGlove_{side}")
     mesh.to_mesh(data)
     mesh.free()
@@ -627,33 +642,127 @@ def to_object(builder, name, materials):
     return obj
 
 
-def transfer_weights(garment, body, armature):
-    """Copy each garment vertex's weights from the nearest body vertex.
+def implausible_weights(obj, side=None, limit=12):
+    """Bones that cannot legitimately drive this mesh.
 
-    A coat has to follow the shoulder underneath it, and nearest-point
-    transfer is what makes that true for a shape nobody hand-weighted.
+    A glove is on one hand. Anything weighted to the other hand, to a leg or a
+    foot, or to the head is not a near miss in the transfer -- it is a wrong
+    index, and it is what tore the mesh. Reported as data so the caller can
+    refuse to write rather than discovering it in a render.
     """
-    from mathutils.kdtree import KDTree
+    LOWER = ("thigh", "calf", "foot", "ball", "toe", "pelvis")
+    HEAD = ("head", "neck", "face", "eye", "jaw")
+    other = {"l": "_r", "r": "_l"}.get(side)
+    bad = []
+    names = {g.index: g.name for g in obj.vertex_groups}
+    for vertex in obj.data.vertices:
+        for group in vertex.groups:
+            name = (names.get(group.group) or "").lower()
+            if group.weight <= 1e-3 or not name:
+                continue
+            wrong_side = bool(other) and (name.endswith(other) or name.endswith(other.replace("_", ".")))
+            if wrong_side or any(t in name for t in LOWER) or any(t in name for t in HEAD):
+                bad.append({"vertex": vertex.index, "bone": names[group.group],
+                            "weight": round(group.weight, 4)})
+                if len(bad) >= limit:
+                    return bad
+    return bad
+
+
+def transfer_weights(garment, body, armature, max_influences=4, smooth_passes=4):
+    """Copy weights from the nearest body SURFACE, interpolated across the face.
+
+    The first version snapped each garment vertex to the single nearest body
+    vertex. At a shoulder seam the body's own weights change fast, so two
+    neighbouring coat vertices could land on body vertices weighted 86% spine
+    and 99% upper arm -- individually sane, wildly discontinuous, and the coat
+    tore between them the moment the arm moved.
+
+    `closest_point_on_mesh` gives the nearest point on the nearest face, and
+    `poly_3d_calc` gives that point's barycentric coordinates within it. The
+    weights are blended by those coordinates, so the transfer is as continuous
+    as the body's own weighting is: neighbouring garment vertices that project
+    to neighbouring points get neighbouring weights.
+
+    Influences are capped and renormalised here rather than left to the glTF
+    exporter, which keeps only four and renormalises silently -- so what is
+    authored is what ships.
+    """
+    from mathutils.interpolate import poly_3d_calc
 
     groups = {g.index: g.name for g in body.vertex_groups}
     for name in sorted(set(groups.values())):
         garment.vertex_groups.new(name=name)
 
-    points = [body.matrix_world @ v.co for v in body.data.vertices]
-    kd = KDTree(len(points))
-    for index, point in enumerate(points):
-        kd.insert(point, index)
-    kd.balance()
+    to_body = body.matrix_world.inverted()
+    polygons = body.data.polygons
+    vertices = body.data.vertices
 
-    for index, vertex in enumerate(garment.data.vertices):
+    sampled = []
+    for vertex in garment.data.vertices:
         world = garment.matrix_world @ vertex.co
-        _co, nearest, _dist = kd.find(world)
-        source = body.data.vertices[nearest]
-        usable = [(groups.get(g.group), g.weight) for g in source.groups
-                  if groups.get(g.group) and g.weight > 1e-4]
-        total = sum(w for _n, w in usable) or 1.0
-        for name, weight in usable:
+        hit, location, _normal, face_index = body.closest_point_on_mesh(to_body @ world)
+        blended = {}
+        if hit and face_index >= 0:
+            corners = list(polygons[face_index].vertices)
+            shares = poly_3d_calc([vertices[i].co for i in corners], location)
+            for corner, share in zip(corners, shares):
+                if share <= 1e-6:
+                    continue
+                for group in vertices[corner].groups:
+                    name = groups.get(group.group)
+                    if name:
+                        blended[name] = blended.get(name, 0.0) + group.weight * share
+        sampled.append(blended)
+
+    # Smooth the weight field over the GARMENT's own topology.
+    #
+    # Projection alone is not enough, and the numbers said so: after switching
+    # to face interpolation the coat still had a vertex at upper_arm.R 0.97
+    # next to one at chest 0.88, across a 4 cm edge. Both samples were correct
+    # -- the two vertices simply project to opposite sides of the armpit gap,
+    # which any purely spatial lookup will do wherever a garment bridges a
+    # crease. The coat is one surface there, so its weights have to be
+    # continuous there, and the only structure that knows the coat is one
+    # surface is the coat's own edges.
+    adjacency = [[] for _ in garment.data.vertices]
+    for edge in garment.data.edges:
+        a, b = edge.vertices
+        adjacency[a].append(b)
+        adjacency[b].append(a)
+    for _pass in range(smooth_passes):
+        updated = []
+        for index, blended in enumerate(sampled):
+            merged = dict(blended)
+            neighbours = adjacency[index]
+            if neighbours:
+                share = 1.0 / (len(neighbours) + 1.0)
+                merged = {n: w * share for n, w in blended.items()}
+                for other in neighbours:
+                    for name, weight in sampled[other].items():
+                        merged[name] = merged.get(name, 0.0) + weight * share
+            updated.append(merged)
+        sampled = updated
+
+    for index, blended in enumerate(sampled):
+        if not blended:
+            continue
+        # Drop trace influences. MPFB's own body carries sub-1-per-mille
+        # weights to bones on the far side of the body; interpolation
+        # faithfully reproduces them, and they then read as "a left middle
+        # finger drives the right glove". At 0.0006 they move a vertex by six
+        # hundredths of a percent and sit below what glTF's normalised byte
+        # weights can even represent -- they are noise, not influence. The
+        # gate below still fails the build for anything above this floor.
+        ranked = [(n, w) for n, w in
+                  sorted(blended.items(), key=lambda item: -item[1])[:max_influences]
+                  if w > 1e-3]
+        total = sum(w for _n, w in ranked)
+        if total <= 1e-6:
+            continue
+        for name, weight in ranked:
             garment.vertex_groups[name].add([index], weight / total, "REPLACE")
+
     modifier = garment.modifiers.new("skin", "ARMATURE")
     modifier.object = armature
     garment.parent = armature
@@ -786,7 +895,14 @@ def main():
             # lofted builder, so it already carries its own topology.
             if not diagnostic:
                 glove.data.materials.append(materials["leather"])
-            transfer_weights(glove, body, armature)
+            transfer_weights(glove, body, armature, smooth_passes=0)
+            # Prove it, rather than trusting the fix. An impossible bone on a
+            # glove is a build failure, not a note in a report.
+            wrong = implausible_weights(glove, side=side)
+            check["implausibleBones"] = wrong
+            if wrong:
+                raise SystemExit(
+                    "HeroGlove_%s is weighted to impossible bones: %s" % (side, wrong[:4]))
             gloves.append(glove)
     # Hiding the body isolates the shell, so "the glove is invisible" and "the
     # glove is inside the hand" stop looking identical.
