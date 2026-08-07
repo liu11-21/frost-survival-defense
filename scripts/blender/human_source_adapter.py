@@ -564,11 +564,31 @@ def load_reference_rig(path):
     bpy.ops.import_scene.gltf(filepath=path)
     added = [o for o in bpy.data.objects if o not in before]
     armature = next((o for o in added if o.type == "ARMATURE"), None)
-    reference = human_rig.rest_pose(armature) if armature else None
+    if armature is None:
+        for obj in added:
+            bpy.data.objects.remove(obj, do_unlink=True)
+        return None
+    # Everything the retarget needs has to leave this function as DATA. The
+    # scene -- and bpy.data.actions with it -- is torn down immediately after.
     clips = sorted({a.name.split(":")[-1] for a in bpy.data.actions})
+    wanted = sorted(set(human_rig.LEGACY_BONES) | {b.name for b in armature.data.bones})
+    captured = human_rig.serialise_clips(armature, clips, wanted)
+    reference = {
+        "restPose": human_rig.rest_pose(armature),
+        "restRelative": human_rig.parent_relative_rest(armature),
+        "clips": clips,
+        "captured": captured,
+        # Largest component across all three axes, not `.y`. This armature is
+        # freshly imported and therefore still in Blender's Z-up space, so
+        # reading `.y` measured depth and returned ~1.0 -- which then scaled
+        # root and pelvis translation by 1.86x.
+        "height": max(
+            max(abs(v) for v in (armature.matrix_world @ b.head_local))
+            for b in armature.data.bones) if armature.data.bones else 1.0,
+    }
     for obj in added:
         bpy.data.objects.remove(obj, do_unlink=True)
-    return {"restPose": reference, "clips": clips} if reference else None
+    return reference
 
 
 def main():
@@ -623,7 +643,6 @@ def main():
     deltas, retarget = {}, {"retargeted": [], "absent": []}
     if reference:
         deltas = human_rig.align_rest_pose(armature, record["mapping"], reference["restPose"])
-        retarget = human_rig.retarget_actions(armature, deltas, reference["clips"])
     else:
         human_rig.align_rest_pose(armature, record["mapping"], {})
 
@@ -633,6 +652,11 @@ def main():
         raise human_rig.RigError(
             "normalisation failed its own checks: %s. Nothing was written."
             % json.dumps({k: v for k, v in placement.items() if k != "allPassed"}))
+
+    if reference and reference.get("captured"):
+        retarget = human_rig.build_retargeted_actions(
+            armature, reference["captured"], reference["restRelative"],
+            height_ratio=args.height / max(1e-6, reference.get("height") or 1.0))
 
     materials = convert_materials(meshes, args.material_budget, enforce=True)
     poses = human_rig.pose_tests(armature) if armature else {"allPassed": False}
@@ -665,7 +689,7 @@ def main():
     save_source(blend_path)
     export_glb(glb_path)
 
-    joints = human_rig.verify_joint_order(glb_path, human_rig.LEGACY_BONES)
+    joints = human_rig.verify_skin_contract(glb_path, human_rig.LEGACY_BONES)
 
     report = {
         "input": os.path.abspath(args.input),
@@ -709,7 +733,7 @@ def main():
         "placement": placement["allPassed"],
         "lodChecks": lods["allPassed"],
         "poseTests": poses.get("allPassed"),
-        "jointOrder": joints.get("orderMatchesPrefix"),
+        "skinContract": joints.get("ok"),
         "materials": materials["materialCount"],
         "fingers": record["fingerBoneCount"],
         "retargeted": len(retarget["retargeted"]),

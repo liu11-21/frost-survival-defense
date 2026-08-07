@@ -276,6 +276,159 @@ def retarget_actions(armature, deltas, clip_names):
     return {"retargeted": done, "absent": skipped, "bonesTouched": touched}
 
 
+# --- 3b. reference clip capture and matrix retargeting ---------------------
+# The previous pipeline called load_reference_rig(), kept the rest pose and a
+# list of clip NAMES, then called reset_scene() -- which deletes
+# bpy.data.actions along with everything else -- and only afterwards went
+# looking for those actions to retarget. There was nothing left to find, so
+# every run reported `retargeted: 0` while every other check passed.
+#
+# The fix is not a better name lookup. Reference animation has to leave the
+# scene as *data*, sampled before anything is torn down, and new actions have
+# to be built from that data on the destination rig.
+
+
+def parent_relative_rest(armature):
+    """Each bone's rest matrix in its parent's space.
+
+    This, not a bone-axis vector, is what carries roll. Two rigs can agree
+    perfectly on where a forearm points and still disagree by 90 degrees about
+    which way is "up" along it, and an axis-difference quaternion cannot see
+    that -- which is why the first retarget was wrong even where it ran.
+    """
+    out = {}
+    for bone in armature.data.bones:
+        local = bone.matrix_local
+        out[bone.name] = (bone.parent.matrix_local.inverted() @ local) if bone.parent else local.copy()
+    return out
+
+
+def serialise_clips(armature, clip_names, wanted_bones):
+    """Sample clips into plain Python data that survives reset_scene().
+
+    Samples every integer frame rather than trying to preserve key placement:
+    the destination rig has different rest orientations, so a retargeted curve
+    is not the same curve, and resampling is both simpler and exact at every
+    frame the game will ever evaluate.
+    """
+    scene = bpy.context.scene
+    captured = {}
+    previous = armature.animation_data.action if armature.animation_data else None
+    if armature.animation_data is None:
+        armature.animation_data_create()
+
+    for name in clip_names:
+        action = next((a for a in bpy.data.actions
+                       if a.name == name or a.name.endswith(":" + name)), None)
+        if action is None:
+            continue
+        armature.animation_data.action = action
+        start, end = (int(round(v)) for v in action.frame_range)
+        frames = []
+        for frame in range(start, end + 1):
+            scene.frame_set(frame)
+            bpy.context.view_layer.update()
+            pose = {}
+            for bone_name in wanted_bones:
+                pose_bone = armature.pose.bones.get(bone_name)
+                if pose_bone is None:
+                    continue
+                basis = pose_bone.matrix_basis
+                loc, rot, scale = basis.decompose()
+                pose[bone_name] = {
+                    "loc": tuple(loc), "rot": tuple(rot), "scale": tuple(scale),
+                }
+            frames.append({"frame": frame, "pose": pose})
+        captured[name] = {
+            "fps": scene.render.fps,
+            "frameStart": start,
+            "frameEnd": end,
+            "frameCount": len(frames),
+            "frames": frames,
+        }
+    if previous is not None and armature.animation_data:
+        armature.animation_data.action = previous
+    scene.frame_set(scene.frame_start)
+    return captured
+
+
+def build_retargeted_actions(armature, clips, reference_rest_rel, height_ratio=1.0):
+    """Create new actions on the destination rig from serialised reference data.
+
+    The conversion is a full parent-relative basis change, not an axis
+    difference:
+
+        C   = Rsrc_rel^-1 @ Rref_rel        (rotation part)
+        A_s = C @ A_r @ C^-1
+
+    Conjugation rather than substitution, so the destination keeps *its own*
+    rest pose and receives the reference's motion. Substituting outright
+    (A_s = C @ A_r) would snap an A-pose base into the reference's T-pose on
+    frame one and deform the mesh accordingly.
+
+    Root and pelvis keep their translation, scaled by the height ratio, since
+    those two carry locomotion. Every other bone is rotation-only: a limb that
+    inherits a translation authored for different bone lengths pulls apart.
+    """
+    source_rest_rel = parent_relative_rest(armature)
+    if armature.animation_data is None:
+        armature.animation_data_create()
+
+    conversions = {}
+    for name, source_matrix in source_rest_rel.items():
+        reference_matrix = reference_rest_rel.get(name)
+        if reference_matrix is None:
+            continue
+        change = (source_matrix.to_3x3().inverted() @ reference_matrix.to_3x3())
+        conversions[name] = change.to_quaternion().normalized()
+
+    translating = {"root", "pelvis"}
+    built, skipped = [], []
+    for clip_name, clip in clips.items():
+        action = bpy.data.actions.new(clip_name)
+        action.use_fake_user = True
+        armature.animation_data.action = action
+        for pose_bone in armature.pose.bones:
+            pose_bone.rotation_mode = "QUATERNION"
+
+        wrote = 0
+        for entry in clip["frames"]:
+            frame = entry["frame"]
+            for bone_name, channel in entry["pose"].items():
+                pose_bone = armature.pose.bones.get(bone_name)
+                conversion = conversions.get(bone_name)
+                if pose_bone is None or conversion is None:
+                    continue
+                reference_rotation = Quaternion(channel["rot"])
+                rotation = conversion @ reference_rotation @ conversion.inverted()
+                pose_bone.rotation_quaternion = rotation.normalized()
+                pose_bone.keyframe_insert("rotation_quaternion", frame=frame)
+                if bone_name in translating:
+                    location = Vector(channel["loc"]) * height_ratio
+                    pose_bone.location = location
+                    pose_bone.keyframe_insert("location", frame=frame)
+                wrote += 1
+        if wrote:
+            built.append(clip_name)
+        else:
+            skipped.append(clip_name)
+            bpy.data.actions.remove(action)
+
+    for pose_bone in armature.pose.bones:
+        pose_bone.rotation_quaternion = Quaternion((1, 0, 0, 0))
+        pose_bone.location = Vector((0, 0, 0))
+    armature.animation_data.action = None
+    bpy.context.view_layer.update()
+
+    return {
+        "retargeted": sorted(built),
+        "absent": sorted(skipped),
+        "bonesConverted": len(conversions),
+        "heightRatio": round(height_ratio, 4),
+        "method": "parent-relative rest basis conjugation (C = Rsrc^-1 Rref, A_s = C A_r C^-1)",
+    }
+
+
 # --- 4. pose tests ---------------------------------------------------------
 def pose_tests(armature):
     """Drive real joints and measure where the geometry actually goes.
@@ -335,47 +488,165 @@ def pose_tests(armature):
     return results
 
 
-# --- 5. glTF joint contract ------------------------------------------------
-def verify_joint_order(glb_path, expected_prefix):
-    """Check the exported skin, not the Blender scene.
+# --- 5. glTF skin contract -------------------------------------------------
+# `verify_joint_order` used to assert `skin.joints[:18] == LEGACY_BONES`, and
+# that contract was simply wrong. A glTF `JOINTS_n` value is an index into
+# *that skin's own* `joints` array. It is not a cross-file ABI, and two GLBs
+# that share no joint order are still both perfectly valid and both loadable.
+# Requiring a foreign 53-bone rig to reproduce our 18-bone ordering would have
+# meant fighting Blender's exporter for nothing, and it failed a candidate for
+# a reason that does not exist.
+#
+# What actually has to hold is internal consistency plus name resolution,
+# because CharacterFactory looks bones up *by name*. That is what is checked
+# here. The legacy ordering is still reported, as a diagnostic only.
+GLTF_COMPONENT_SIZE = {5120: 1, 5121: 1, 5122: 2, 5123: 2, 5125: 4, 5126: 4}
+GLTF_COMPONENT_COUNT = {"SCALAR": 1, "VEC2": 2, "VEC3": 3, "VEC4": 4, "MAT4": 16}
 
-    "Append-only is safe" is a claim about the exported file, so it has to be
-    checked there. Blender's exporter is free to order joints however it likes,
-    and if it reorders, every JOINTS_0 index in every previously shipped asset
-    means something different.
-    """
+
+def _read_glb(path):
     import json
     import struct
 
-    with open(glb_path, "rb") as handle:
+    with open(path, "rb") as handle:
         data = handle.read()
     if data[:4] != b"glTF":
-        raise RigError("not a GLB: %s" % glb_path)
-    offset, gltf = 12, None
+        raise RigError("not a GLB: %s" % path)
+    offset, gltf, binary = 12, None, b""
     while offset < len(data):
         length, kind = struct.unpack_from("<II", data, offset)
         chunk = data[offset + 8: offset + 8 + length]
         if kind == 0x4E4F534A:
             gltf = json.loads(chunk.decode("utf-8"))
-            break
+        elif kind == 0x004E4942:
+            binary = chunk
         offset += 8 + length + (-length % 4)
     if gltf is None:
-        raise RigError("GLB has no JSON chunk: %s" % glb_path)
+        raise RigError("GLB has no JSON chunk: %s" % path)
+    return gltf, binary
 
+
+def _accessor(gltf, binary, index):
+    """Decode one accessor into a flat list of Python numbers."""
+    import struct
+
+    accessor = gltf["accessors"][index]
+    count = accessor["count"]
+    components = GLTF_COMPONENT_COUNT[accessor["type"]]
+    ctype = accessor["componentType"]
+    size = GLTF_COMPONENT_SIZE[ctype]
+    fmt = {5120: "b", 5121: "B", 5122: "h", 5123: "H", 5125: "I", 5126: "f"}[ctype]
+    view = gltf["bufferViews"][accessor["bufferView"]]
+    base = view.get("byteOffset", 0) + accessor.get("byteOffset", 0)
+    stride = view.get("byteStride") or size * components
+    out = []
+    for i in range(count):
+        start = base + i * stride
+        out.extend(struct.unpack_from("<" + fmt * components, binary, start))
+    return out, count, components
+
+
+def verify_skin_contract(glb_path, required_names, weight_tolerance=0.02):
+    """Check the exported skin is internally valid and name-resolvable.
+
+    Ten checks, all of which are properties of this file alone:
+
+    1-2. a skin exists, with a non-empty array of unique joints
+    3-4. inverseBindMatrices exist and cover every joint
+    5.   every skinned primitive carries JOINTS_0 and WEIGHTS_0
+    6.   every JOINTS_n value indexes inside this skin's joints array
+    7.   JOINTS_n and WEIGHTS_n come in matching pairs
+    8.   weights are non-negative and sum to ~1 per vertex
+    9.   every runtime-required semantic bone is present by name
+    10.  (Babylon-side, asserted by the runtime test, not here)
+    """
+    gltf, binary = _read_glb(glb_path)
     nodes = gltf.get("nodes", [])
     skins = gltf.get("skins", [])
-    report = {"skins": len(skins), "joints": [], "orderMatchesPrefix": False, "hasInverseBindMatrices": False}
+    report = {"skinCount": len(skins), "checks": {}, "problems": []}
+    checks = report["checks"]
+
+    checks["hasSkin"] = bool(skins)
     if not skins:
+        report["problems"].append("no skin in the exported GLB")
+        report["ok"] = False
         return report
-    joints = [nodes[i].get("name", "<%d>" % i) for i in skins[0].get("joints", [])]
-    report["joints"] = joints
+
+    skin = skins[0]
+    joints = skin.get("joints", [])
+    names = [nodes[i].get("name", "<%d>" % i) for i in joints]
     report["jointCount"] = len(joints)
-    report["hasInverseBindMatrices"] = "inverseBindMatrices" in skins[0]
-    prefix = list(expected_prefix)
-    report["orderMatchesPrefix"] = joints[:len(prefix)] == prefix
-    if not report["orderMatchesPrefix"]:
-        report["firstDivergence"] = next(
-            (i for i, name in enumerate(prefix) if i >= len(joints) or joints[i] != name),
-            None,
-        )
+    report["jointNames"] = names
+
+    checks["jointsNonEmpty"] = bool(joints)
+    checks["jointsUnique"] = len(set(joints)) == len(joints)
+    checks["hasInverseBindMatrices"] = "inverseBindMatrices" in skin
+    if checks["hasInverseBindMatrices"]:
+        _values, ibm_count, _c = _accessor(gltf, binary, skin["inverseBindMatrices"])
+        report["inverseBindMatrixCount"] = ibm_count
+        checks["inverseBindMatricesCoverJoints"] = ibm_count >= len(joints)
+    else:
+        checks["inverseBindMatricesCoverJoints"] = False
+
+    # Per-primitive attribute and value checks.
+    joint_sets, weight_sets = [], []
+    out_of_range, bad_sum, negative = 0, 0, 0
+    skinned_primitives, missing_attributes = 0, []
+    worst_sum_error = 0.0
+    for mesh_index, mesh in enumerate(gltf.get("meshes", [])):
+        for prim_index, primitive in enumerate(mesh.get("primitives", [])):
+            attributes = primitive.get("attributes", {})
+            js = sorted(k for k in attributes if k.startswith("JOINTS_"))
+            ws = sorted(k for k in attributes if k.startswith("WEIGHTS_"))
+            if not js and not ws:
+                continue
+            skinned_primitives += 1
+            joint_sets.append(len(js))
+            weight_sets.append(len(ws))
+            label = "%s[%d]" % (mesh.get("name", "mesh%d" % mesh_index), prim_index)
+            if "JOINTS_0" not in attributes or "WEIGHTS_0" not in attributes:
+                missing_attributes.append(label)
+                continue
+            totals = None
+            for name in js:
+                values, count, comps = _accessor(gltf, binary, attributes[name])
+                if any(v >= len(joints) for v in values):
+                    out_of_range += 1
+            for name in ws:
+                values, count, comps = _accessor(gltf, binary, attributes[name])
+                if any(v < 0.0 for v in values):
+                    negative += 1
+                sums = [sum(values[i * comps:(i + 1) * comps]) for i in range(count)]
+                totals = sums if totals is None else [a + b for a, b in zip(totals, sums)]
+            if totals:
+                errors = [abs(t - 1.0) for t in totals]
+                worst_sum_error = max(worst_sum_error, max(errors))
+                bad_sum += sum(1 for e in errors if e > weight_tolerance)
+
+    checks["everySkinnedPrimitiveHasJoints0Weights0"] = not missing_attributes
+    checks["jointIndicesInRange"] = out_of_range == 0
+    checks["jointAndWeightSetsMatch"] = joint_sets == weight_sets
+    checks["weightsNonNegative"] = negative == 0
+    checks["weightsSumToOne"] = bad_sum == 0
+    report["skinnedPrimitives"] = skinned_primitives
+    report["missingAttributes"] = missing_attributes
+    report["verticesWithBadWeightSum"] = bad_sum
+    report["worstWeightSumError"] = round(worst_sum_error, 5)
+    report["influenceSets"] = max(joint_sets) if joint_sets else 0
+
+    present = set(names)
+    missing = [n for n in required_names if n not in present]
+    checks["allRequiredSemanticBonesPresent"] = not missing
+    report["missingSemanticBones"] = missing
+
+    # Diagnostic only. This is no longer a gate, and must never become one
+    # again: joint order is per-skin and carries no cross-asset meaning.
+    report["diagnostic"] = {
+        "legacyOrderPrefixMatches": names[:len(LEGACY_BONES)] == list(LEGACY_BONES),
+        "note": "informational; JOINTS_n indexes this skin's own joints array",
+    }
+
+    report["ok"] = all(checks.values())
+    if not report["ok"]:
+        report["problems"] = [k for k, v in checks.items() if not v]
     return report
