@@ -1,24 +1,24 @@
 import { Vector3 } from "@babylonjs/core";
 import type { CombatUnit } from "../combat/CombatUnit";
 import type { CombatWorld } from "../combat/CombatWorld";
-import { clampOutside, isInsideBase } from "../data/BuildSlotDefinitions";
+import {
+  LANES,
+  clampOutside,
+  isInsideBase,
+  laneAdvancePoint,
+  nearestPointOnLane,
+} from "../data/BuildSlotDefinitions";
 import type { LaneGateManager } from "./LaneGates";
 
-const REFRESH_INTERVAL = 0.5;
-const OUTSIDE_MARGIN = 1.2;
-/** Seconds of not moving before a unit gives up and smashes the wall in front. */
-const STUCK_LIMIT = 3;
+const REFRESH_INTERVAL = 0.35;
+const OUTSIDE_MARGIN = 1.0;
+const GATE_COMMIT_SEGMENTS = 1;
 
 /**
- * Routes enemies through the perimeter.
- *
- * Four sides instead of many independent segments collapses what used to be
- * "orbit the ring looking for a gap" into "walk straight at whichever of the
- * four sides is nearest and open" — there is no ring left to orbit. If every
- * side is sealed, or a unit stops making progress for any other reason, it
- * breaks the wall closing its own approach instead. Either way it never
- * stands still, and it never ends up inside except through an open gate or a
- * hole it made.
+ * Enemy navigation now follows the same winding polyline the ground shader and
+ * range previews use.  A unit owns one lane for its whole life: it progresses
+ * waypoint-by-waypoint, reaches only that lane's gate, breaks only that lane's
+ * wall, then enters the compact furnace enclosure.
  */
 export class EnemyNavigator {
   private timer = 0;
@@ -36,9 +36,10 @@ export class EnemyNavigator {
     this.gates.refresh();
     const sealed = this.gates.fullySealed;
 
-    for (let i = 0; i < this.world.enemies.length; i++) {
-      const unit = this.world.enemies[i];
+    for (const unit of this.world.enemies) {
       if (!unit.alive) continue;
+      // Flying bodies still ignore terrain/walls, but targeting remains lane-
+      // aware unless their own unit definition provides specialist behaviour.
       if (unit.isFlying) {
         unit.navPoint = null;
         unit.breachTarget = null;
@@ -51,19 +52,19 @@ export class EnemyNavigator {
   private route(unit: CombatUnit, sealed: boolean): void {
     const x = unit.position.x;
     const z = unit.position.z;
+    const lane = LANES[((unit.laneIndex % LANES.length) + LANES.length) % LANES.length];
+    const projection = nearestPointOnLane(x, z, lane);
 
-    // Progress watchdog: anything that stops moving starts breaking a wall.
     const moved = Math.hypot(x - unit.navLastX, z - unit.navLastZ);
     unit.navLastX = x;
     unit.navLastZ = z;
-    unit.navStuck = moved < 0.3 ? unit.navStuck + REFRESH_INTERVAL : 0;
+    // Keep telemetry meaningful for the existing watchdog, but do not turn a
+    // deliberate combat pause into permission to jump to another wall.
+    unit.navStuck = moved < 0.25 ? unit.navStuck + REFRESH_INTERVAL : 0;
 
-    // Anti-exploit: nothing should ever be inside a *fully sealed* perimeter.
-    // Knockback, a stray teleport-adjacent effect or a collision edge case
-    // are the only ways that could happen, so it is corrected immediately —
-    // pushed back out, its interior target dropped, redirected onto the wall
-    // — rather than left to fight from a position it could never have
-    // reached honestly. This never fires while any side is actually open.
+    // Fully sealed means any unit found inside got there by a physics/teleport
+    // edge case.  Put it back outside its OWN wall and let normal breaching
+    // resume rather than leaving an impossible attacker behind the defence.
     if (sealed && isInsideBase(x, z)) {
       const fix = clampOutside(x, z, 0.8);
       unit.position.x = fix.x;
@@ -75,65 +76,39 @@ export class EnemyNavigator {
       return;
     }
 
-    if (isInsideBase(x, z, -OUTSIDE_MARGIN)) {
-      // Legitimately inside — through an open gate or a breach. Ordinary
-      // combat targeting takes over completely.
-      unit.navPoint = null;
-      unit.breachTarget = null;
-      return;
-    }
+    const closeEnoughToGate =
+      projection.segmentIndex >= Math.max(0, lane.gatePointIndex - GATE_COMMIT_SEGMENTS);
+    const ownWall = this.gates.breachTargetFor(x, z, unit.laneIndex);
 
-    // Siege-focus units (the Breacher) never bother looking for a gap
-    // elsewhere — their own side's wall outranks every other priority,
-    // including a taunt from behind it, for as long as it stands.
-    if (unit.def.siegeFocus) {
+    // The wall only becomes a combat target at the final approach.  The old
+    // implementation assigned it globally from spawn, which made every enemy
+    // cut a straight line through the winding-road design.
+    if (closeEnoughToGate && ownWall?.alive) {
       const wasBreaching = unit.breachTarget !== null;
-      const ownWall = this.gates.breachTargetFor(x, z, unit.laneIndex);
-      if (ownWall) {
-        unit.navPoint = null;
-        unit.breachTarget = ownWall;
-        return;
-      }
-      if (wasBreaching) {
-        // The wall just came down — a short hard stun before it presses on.
+      unit.navPoint = null;
+      unit.breachTarget = ownWall;
+      unit.navStuck = 0;
+      if (unit.def.siegeFocus && wasBreaching && !ownWall.alive) {
         unit.applyStun(unit.def.postBreachStun ?? 0, 0);
       }
+      return;
     }
 
-    // General enemies now share the same top priority as the combat selector:
-    // if any lane wall is still relevant from outside the perimeter, attack
-    // it instead of walking around to a lower-priority open approach.
-    const priorityWall = this.gates.breachTargetFor(x, z, unit.laneIndex);
-    if (priorityWall) {
+    // Once through an open/broken gate the interior is intentionally simple:
+    // targeting can take over and move directly around the furnace enclosure.
+    if (isInsideBase(x, z, -OUTSIDE_MARGIN)) {
+      if (unit.def.siegeFocus && unit.breachTarget && !unit.breachTarget.alive) {
+        unit.applyStun(unit.def.postBreachStun ?? 0, 0);
+      }
       unit.navPoint = null;
-      unit.breachTarget = priorityWall;
+      unit.breachTarget = null;
       unit.navStuck = 0;
       return;
     }
 
-    if (sealed || unit.navStuck >= STUCK_LIMIT) {
-      unit.navPoint = null;
-      unit.breachTarget = this.gates.breachTargetFor(x, z, unit.laneIndex);
-      unit.navStuck = 0;
-      return;
-    }
-
-    const gate = this.gates.openApproach(x, z);
-    if (!gate) {
-      // No side anywhere is open: the wall in front of this lane is the only
-      // way in.
-      unit.navPoint = null;
-      unit.breachTarget = this.gates.breachTargetFor(x, z, unit.laneIndex);
-      return;
-    }
-
-    // An open side exists: walk straight for it. With only four monolithic
-    // sides there is no ring left to circle — `openApproach` already picked
-    // whichever open side is nearest, so a direct line is the natural route,
-    // with the same collision steering every other obstacle already uses to
-    // handle an incidental graze along the way.
     unit.breachTarget = null;
+    const next = laneAdvancePoint(unit.laneIndex, x, z, "inbound");
     if (!unit.navPoint) unit.navPoint = new Vector3();
-    unit.navPoint.set(gate.innerX, 0, gate.innerZ);
+    unit.navPoint.set(next.x, 0, next.z);
   }
 }
