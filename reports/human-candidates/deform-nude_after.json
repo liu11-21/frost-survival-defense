@@ -1,0 +1,2817 @@
+{
+  "input": ".runtime/mpfb/variants/hero_male_base.glb",
+  "label": "nude_after",
+  "mutedTracks": 0,
+  "meshes": [
+    {
+      "name": "Human",
+      "vertices": 14517,
+      "groups": 53
+    },
+    {
+      "name": "Icosphere",
+      "vertices": 42,
+      "groups": 0
+    }
+  ],
+  "restBaseline": [
+    {
+      "mesh": "Human",
+      "maxRatio": 1.0,
+      "maxGrowthMetres": 0.0,
+      "edges": 41267,
+      "worst": [
+        {
+          "ratio": 1.0,
+          "grewMetres": 0.0,
+          "restLength": 0.00098,
+          "posedLength": 0.00098,
+          "v0": 0,
+          "v1": 5283,
+          "v0Rest": [
+            -0.0352,
+            -0.1482,
+            1.7235
+          ],
+          "v0Posed": [
+            -0.0352,
+            -0.1482,
+            1.7235
+          ],
+          "v0Weights": [
+            [
+              "head",
+              1.0
+            ]
+          ],
+          "v1Weights": [
+            [
+              "head",
+              1.0
+            ]
+          ]
+        },
+        {
+          "ratio": 1.0,
+          "grewMetres": 0.0,
+          "restLength": 0.0039,
+          "posedLength": 0.0039,
+          "v0": 0,
+          "v1": 1,
+          "v0Rest": [
+            -0.0352,
+            -0.1482,
+            1.7235
+          ],
+          "v0Posed": [
+            -0.0352,
+            -0.1482,
+            1.7235
+          ],
+          "v0Weights": [
+            [
+              "head",
+              1.0
+            ]
+          ],
+          "v1Weights": [
+            [
+              "head",
+              1.0
+            ]
+          ]
+        },
+        {
+          "ratio": 1.0,
+          "grewMetres": 0.0,
+          "restLength": 0.00383,
+          "posedLength": 0.00383,
+          "v0": 8,
+          "v1": 10,
+          "v0Rest": [
+            -0.0391,
+            -0.1475,
+            1.7255
+          ],
+          "v0Posed": [
+            -0.0391,
+            -0.1475,
+            1.7255
+          ],
+          "v0Weights": [
+            [
+              "head",
+              1.0
+            ]
+          ],
+          "v1Weights": [
+            [
+              "head",
+              1.0
+            ]
+          ]
+        }
+      ]
+    },
+    {
+      "mesh": "Icosphere",
+      "maxRatio": 1.0,
+      "maxGrowthMetres": 0.0,
+      "edges": 120,
+      "worst": [
+        {
+          "ratio": 1.0,
+          "grewMetres": 0.0,
+          "restLength": 0.54653,
+          "posedLength": 0.54653,
+          "v0": 12,
+          "v1": 0,
+          "v0Rest": [
+            -0.1625,
+            -0.5,
+            -0.8507
+          ],
+          "v0Posed": [
+            -0.1625,
+            -0.5,
+            -0.8507
+          ],
+          "v0Weights": [],
+          "v1Weights": []
+        },
+        {
+          "ratio": 1.0,
+          "grewMetres": 0.0,
+          "restLength": 0.54653,
+          "posedLength": 0.54653,
+          "v0": 13,
+          "v1": 1,
+          "v0Rest": [
+            0.4253,
+            -0.309,
+            -0.8507
+          ],
+          "v0Posed": [
+            0.4253,
+            -0.309,
+            -0.8507
+          ],
+          "v0Weights": [],
+          "v1Weights": []
+        },
+        {
+          "ratio": 1.0,
+          "grewMetres": 0.0,
+          "restLength": 0.54653,
+          "posedLength": 0.54653,
+          "v0": 14,
+          "v1": 2,
+          "v0Rest": [
+            0.2629,
+            -0.809,
+            -0.5257
+          ],
+          "v0Posed": [
+            0.2629,
+            -0.809,
+            -0.5257
+          ],
+          "v0Weights": [],
+          "v1Weights": []
+        }
+      ]
+    }
+  ],
+  "manual": {
+    "upper_arm.R": {
+      "error": "bone not found",
+      "available": [
+        "Root",
+        "ball_l",
+        "ball_r",
+        "calf_l",
+        "calf_r",
+        "clavicle_l",
+        "clavicle_r",
+        "foot_l",
+        "foot_r",
+        "hand_l",
+        "hand_r",
+        "head",
+        "index_01_l",
+        "index_01_r",
+        "index_02_l",
+        "index_02_r",
+        "index_03_l",
+        "index_03_r",
+        "lowerarm_l",
+        "lowerarm_r",
+        "middle_01_l",
+        "middle_01_r",
+        "middle_02_l",
+        "middle_02_r",
+        "middle_03_l",
+        "middle_03_r",
+        "neck_01",
+        "pelvis",
+        "pinky_01_l",
+        "pinky_01_r",
+        "pinky_02_l",
+        "pinky_02_r",
+        "pinky_03_l",
+        "pinky_03_r",
+        "ring_01_l",
+        "ring_01_r",
+        "ring_02_l",
+        "ring_02_r",
+        "ring_03_l",
+        "ring_03_r",
+        "spine_01",
+        "spine_02",
+        "spine_03",
+        "thigh_l",
+        "thigh_r",
+        "thumb_01_l",
+        "thumb_01_r",
+        "thumb_02_l",
+        "thumb_02_r",
+        "thumb_03_l",
+        "thumb_03_r",
+        "upperarm_l",
+        "upperarm_r"
+      ]
+    },
+    "lower_arm.R": {
+      "error": "bone not found",
+      "available": [
+        "Root",
+        "ball_l",
+        "ball_r",
+        "calf_l",
+        "calf_r",
+        "clavicle_l",
+        "clavicle_r",
+        "foot_l",
+        "foot_r",
+        "hand_l",
+        "hand_r",
+        "head",
+        "index_01_l",
+        "index_01_r",
+        "index_02_l",
+        "index_02_r",
+        "index_03_l",
+        "index_03_r",
+        "lowerarm_l",
+        "lowerarm_r",
+        "middle_01_l",
+        "middle_01_r",
+        "middle_02_l",
+        "middle_02_r",
+        "middle_03_l",
+        "middle_03_r",
+        "neck_01",
+        "pelvis",
+        "pinky_01_l",
+        "pinky_01_r",
+        "pinky_02_l",
+        "pinky_02_r",
+        "pinky_03_l",
+        "pinky_03_r",
+        "ring_01_l",
+        "ring_01_r",
+        "ring_02_l",
+        "ring_02_r",
+        "ring_03_l",
+        "ring_03_r",
+        "spine_01",
+        "spine_02",
+        "spine_03",
+        "thigh_l",
+        "thigh_r",
+        "thumb_01_l",
+        "thumb_01_r",
+        "thumb_02_l",
+        "thumb_02_r",
+        "thumb_03_l",
+        "thumb_03_r",
+        "upperarm_l",
+        "upperarm_r"
+      ]
+    },
+    "upperarm_r": {
+      "angleDeg": 35.0,
+      "result": [
+        {
+          "mesh": "Human",
+          "maxRatio": 11.556,
+          "maxGrowthMetres": 0.12392,
+          "edges": 41267,
+          "worst": [
+            {
+              "ratio": 5.952,
+              "grewMetres": 0.12392,
+              "restLength": 0.02503,
+              "posedLength": 0.14895,
+              "v0": 1547,
+              "v1": 1765,
+              "v0Rest": [
+                -0.1809,
+                -0.0469,
+                1.3868
+              ],
+              "v0Posed": [
+                -0.2001,
+                0.1159,
+                1.3545
+              ],
+              "v0Weights": [
+                [
+                  "spine_03",
+                  0.5687
+                ],
+                [
+                  "upperarm_r",
+                  0.4242
+                ],
+                [
+                  "clavicle_r",
+                  0.0071
+                ]
+              ],
+              "v1Weights": [
+                [
+                  "upperarm_r",
+                  0.7474
+                ],
+                [
+                  "spine_03",
+                  0.2456
+                ],
+                [
+                  "clavicle_r",
+                  0.007
+                ]
+              ]
+            },
+            {
+              "ratio": 11.556,
+              "grewMetres": 0.11721,
+              "restLength": 0.0111,
+              "posedLength": 0.12831,
+              "v0": 1521,
+              "v1": 1765,
+              "v0Rest": [
+                -0.181,
+                -0.0268,
+                1.3841
+              ],
+              "v0Posed": [
+                -0.2036,
+                0.1354,
+                1.348
+              ],
+              "v0Weights": [
+                [
+                  "spine_03",
+                  0.5685
+                ],
+                [
+                  "upperarm_r",
+                  0.4281
+                ],
+                [
+                  "clavicle_r",
+                  0.0034
+                ]
+              ],
+              "v1Weights": [
+                [
+                  "upperarm_r",
+                  0.7474
+                ],
+                [
+                  "spine_03",
+                  0.2456
+                ],
+                [
+                  "clavicle_r",
+                  0.007
+                ]
+              ]
+            },
+            {
+              "ratio": 4.06,
+              "grewMetres": 0.11362,
+              "restLength": 0.03713,
+              "posedLength": 0.15075,
+              "v0": 1649,
+              "v1": 1662,
+              "v0Rest": [
+                -0.1436,
+                0.0232,
+                1.5413
+              ],
+              "v0Posed": [
+                -0.1643,
+                0.1327,
+                1.5109
+              ],
+              "v0Weights": [
+                [
+                  "clavicle_r",
+                  0.408
+                ],
+                [
+                  "spine_03",
+                  0.2532
+                ],
+                [
+                  "upperarm_r",
+                  0.2423
+                ],
+                [
+                  "neck_01",
+                  0.0965
+                ]
+              ],
+              "v1Weights": [
+                [
+                  "upperarm_r",
+                  0.5817
+                ],
+                [
+                  "clavicle_r",
+                  0.3608
+                ],
+                [
+                  "spine_03",
+                  0.0575
+                ]
+              ]
+            },
+            {
+              "ratio": 10.348,
+              "grewMetres": 0.11247,
+              "restLength": 0.01203,
+              "posedLength": 0.1245,
+              "v0": 1546,
+              "v1": 1547,
+              "v0Rest": [
+                -0.1881,
+                -0.0463,
+                1.3965
+              ],
+              "v0Posed": [
+                -0.2216,
+                0.2376,
+                1.3399
+              ],
+              "v0Weights": [
+                [
+                  "upperarm_r",
+                  0.7372
+                ],
+                [
+                  "spine_03",
+                  0.2485
+                ],
+                [
+                  "clavicle_r",
+                  0.0143
+                ]
+              ],
+              "v1Weights": [
+                [
+                  "spine_03",
+                  0.5687
+                ],
+                [
+                  "upperarm_r",
+                  0.4242
+                ],
+                [
+                  "clavicle_r",
+                  0.0071
+                ]
+              ]
+            },
+            {
+              "ratio": 4.578,
+              "grewMetres": 0.09712,
+              "restLength": 0.02714,
+              "posedLength": 0.12426,
+              "v0": 1732,
+              "v1": 1785,
+              "v0Rest": [
+                -0.1825,
+                0.0529,
+                1.4695
+              ],
+              "v0Posed": [
+                -0.2142,
+                0.1958,
+                1.4244
+              ],
+              "v0Weights": [
+                [
+                  "spine_03",
+                  0.4546
+                ],
+                [
+                  "upperarm_r",
+                  0.3565
+                ],
+                [
+                  "clavicle_r",
+                  0.1889
+                ]
+              ],
+              "v1Weights": [
+                [
+                  "upperarm_r",
+                  0.6673
+                ],
+                [
+                  "spine_03",
+                  0.1888
+                ],
+                [
+                  "clavicle_r",
+                  0.1439
+                ]
+              ]
+            },
+            {
+              "ratio": 3.333,
+              "grewMetres": 0.09561,
+              "restLength": 0.04097,
+              "posedLength": 0.13659,
+              "v0": 1661,
+              "v1": 1714,
+              "v0Rest": [
+                -0.1619,
+                0.0282,
+                1.5284
+              ],
+              "v0Posed": [
+                -0.1901,
+                0.1735,
+                1.4872
+              ],
+              "v0Weights": [
+                [
+                  "clavicle_r",
+                  0.4465
+                ],
+                [
+                  "upperarm_r",
+                  0.3313
+                ],
+                [
+                  "spine_03",
+                  0.2222
+                ]
+              ],
+              "v1Weights": [
+                [
+                  "upperarm_r",
+                  0.6559
+                ],
+                [
+                  "clavicle_r",
+                  0.3178
+                ],
+                [
+                  "spine_03",
+                  0.0263
+                ]
+              ]
+            },
+            {
+              "ratio": 8.579,
+              "grewMetres": 0.09516,
+              "restLength": 0.01255,
+              "posedLength": 0.10771,
+              "v0": 1776,
+              "v1": 1777,
+              "v0Rest": [
+                -0.1875,
+                -0.0061,
+                1.3896
+              ],
+              "v0Posed": [
+                -0.2307,
+                0.261,
+                1.3233
+              ],
+              "v0Weights": [
+                [
+                  "upperarm_r",
+                  0.7121
+                ],
+                [
+                  "spine_03",
+                  0.2606
+                ],
+                [
+                  "clavicle_r",
+                  0.0273
+                ]
+              ],
+              "v1Weights": [
+                [
+                  "spine_03",
+                  0.5409
+                ],
+                [
+                  "upperarm_r",
+                  0.4457
+                ],
+                [
+                  "clavicle_r",
+                  0.0134
+                ]
+              ]
+            },
+            {
+              "ratio": 3.598,
+              "grewMetres": 0.09249,
+              "restLength": 0.0356,
+              "posedLength": 0.12809,
+              "v0": 1581,
+              "v1": 1650,
+              "v0Rest": [
+                -0.1214,
+                0.0155,
+                1.5517
+              ],
+              "v0Posed": [
+                -0.1343,
+                0.0869,
+                1.5324
+              ],
+              "v0Weights": [
+                [
+                  "clavicle_r",
+                  0.3694
+                ],
+                [
+                  "spine_03",
+                  0.2843
+                ],
+                [
+                  "neck_01",
+                  0.1932
+                ],
+                [
+                  "upperarm_r",
+                  0.1531
+                ]
+              ],
+              "v1Weights": [
+                [
+                  "upperarm_r",
+                  0.419
+                ],
+                [
+                  "clavicle_r",
+                  0.3653
+                ],
+                [
+                  "spine_03",
+                  0.1179
+                ],
+                [
+                  "neck_01",
+                  0.0978
+                ]
+              ]
+            },
+            {
+              "ratio": 3.608,
+              "grewMetres": 0.08906,
+              "restLength": 0.03415,
+              "posedLength": 0.12321,
+              "v0": 1721,
+              "v1": 1727,
+              "v0Rest": [
+                -0.1811,
+                0.0488,
+                1.4906
+              ],
+              "v0Posed": [
+                -0.2116,
+                0.1897,
+                1.4471
+              ],
+              "v0Weights": [
+                [
+                  "spine_03",
+                  0.397
+                ],
+                [
+                  "upperarm_r",
+                  0.3426
+                ],
+                [
+                  "clavicle_r",
+                  0.2603
+                ]
+              ],
+              "v1Weights": [
+                [
+                  "upperarm_r",
+                  0.6474
+                ],
+                [
+                  "clavicle_r",
+                  0.251
+                ],
+                [
+                  "spine_03",
+                  0.1016
+                ]
+              ]
+            },
+            {
+              "ratio": 5.79,
+              "grewMetres": 0.08572,
+              "restLength": 0.01789,
+              "posedLength": 0.10362,
+              "v0": 1732,
+              "v1": 1779,
+              "v0Rest": [
+                -0.1825,
+                0.0529,
+                1.4695
+              ],
+              "v0Posed": [
+                -0.2142,
+                0.1958,
+                1.4244
+              ],
+              "v0Weights": [
+                [
+                  "spine_03",
+                  0.4546
+                ],
+                [
+                  "upperarm_r",
+                  0.3565
+                ],
+                [
+                  "clavicle_r",
+                  0.1889
+                ]
+              ],
+              "v1Weights": [
+                [
+                  "upperarm_r",
+                  0.6052
+                ],
+                [
+                  "spine_03",
+                  0.2473
+                ],
+                [
+                  "clavicle_r",
+                  0.1475
+                ]
+              ]
+            },
+            {
+              "ratio": 5.266,
+              "grewMetres": 0.0853,
+              "restLength": 0.01999,
+              "posedLength": 0.10529,
+              "v0": 1765,
+              "v1": 1777,
+              "v0Rest": [
+                -0.1886,
+                -0.0236,
+                1.3915
+              ],
+              "v0Posed": [
+                -0.2289,
+                0.2595,
+                1.3275
+              ],
+              "v0Weights": [
+                [
+                  "upperarm_r",
+                  0.7474
+                ],
+                [
+                  "spine_03",
+                  0.2456
+                ],
+                [
+                  "clavicle_r",
+                  0.007
+                ]
+              ],
+              "v1Weights": [
+                [
+                  "spine_03",
+                  0.5409
+                ],
+                [
+                  "upperarm_r",
+                  0.4457
+                ],
+                [
+                  "clavicle_r",
+                  0.0134
+                ]
+              ]
+            },
+            {
+              "ratio": 3.982,
+              "grewMetres": 0.08185,
+              "restLength": 0.02745,
+              "posedLength": 0.1093,
+              "v0": 1460,
+              "v1": 1470,
+              "v0Rest": [
+                -0.1707,
+                -0.0932,
+                1.4466
+              ],
+              "v0Posed": [
+                -0.1896,
+                0.1573,
+                1.4086
+              ],
+              "v0Weights": [
+                [
+                  "upperarm_r",
+                  0.5938
+                ],
+                [
+                  "clavicle_r",
+                  0.2885
+                ],
+                [
+                  "spine_03",
+                  0.1177
+                ]
+              ],
+              "v1Weights": [
+                [
+                  "clavicle_r",
+                  0.4633
+                ],
+                [
+                  "upperarm_r",
+                  0.3438
+                ],
+                [
+                  "spine_03",
+                  0.1929
+                ]
+              ]
+            },
+            {
+              "ratio": 5.467,
+              "grewMetres": 0.07856,
+              "restLength": 0.01758,
+              "posedLength": 0.09614,
+              "v0": 1723,
+              "v1": 1801,
+              "v0Rest": [
+                -0.1745,
+                0.0591,
+                1.4552
+              ],
+              "v0Posed": [
+                -0.2004,
+                0.1721,
+                1.4186
+              ],
+              "v0Weights": [
+                [
+                  "spine_03",
+                  0.5287
+                ],
+                [
+                  "upperarm_r",
+                  0.2849
+                ],
+                [
+                  "clavicle_r",
+                  0.1864
+                ]
+              ],
+              "v1Weights": [
+                [
+                  "upperarm_r",
+                  0.5217
+                ],
+                [
+                  "spine_03",
+                  0.3219
+                ],
+                [
+                  "clavicle_r",
+                  0.1564
+                ]
+              ]
+            },
+            {
+              "ratio": 7.853,
+              "grewMetres": 0.07637,
+              "restLength": 0.01114,
+              "posedLength": 0.08751,
+              "v0": 1510,
+              "v1": 1511,
+              "v0Rest": [
+                -0.1864,
+                -0.0687,
+                1.4041
+              ],
+              "v0Posed": [
+                -0.2132,
+                0.213,
+                1.3552
+              ],
+              "v0Weights": [
+                [
+                  "upperarm_r",
+                  0.7166
+                ],
+                [
+                  "spine_03",
+                  0.2724
+                ],
+                [
+                  "clavicle_r",
+                  0.011
+                ]
+              ],
+              "v1Weights": [
+                [
+                  "spine_03",
+                  0.4987
+                ],
+                [
+                  "upperarm_r",
+                  0.4957
+                ],
+                [
+                  "clavicle_r",
+                  0.0055
+                ]
+              ]
+            },
+            {
+              "ratio": 4.264,
+              "grewMetres": 0.07543,
+              "restLength": 0.02311,
+              "posedLength": 0.09854,
+              "v0": 1661,
+              "v1": 1662,
+              "v0Rest": [
+                -0.1619,
+                0.0282,
+                1.5284
+              ],
+              "v0Posed": [
+                -0.1901,
+                0.1735,
+                1.4872
+              ],
+              "v0Weights": [
+                [
+                  "clavicle_r",
+                  0.4465
+                ],
+                [
+                  "upperarm_r",
+                  0.3313
+                ],
+                [
+                  "spine_03",
+                  0.2222
+                ]
+              ],
+              "v1Weights": [
+                [
+                  "upperarm_r",
+                  0.5817
+                ],
+                [
+                  "clavicle_r",
+                  0.3608
+                ],
+                [
+                  "spine_03",
+                  0.0575
+                ]
+              ]
+            },
+            {
+              "ratio": 3.618,
+              "grewMetres": 0.07534,
+              "restLength": 0.02878,
+              "posedLength": 0.10412,
+              "v0": 1467,
+              "v1": 1477,
+              "v0Rest": [
+                -0.1995,
+                -0.0673,
+                1.4977
+              ],
+              "v0Posed": [
+                -0.2315,
+                0.2524,
+                1.4405
+              ],
+              "v0Weights": [
+                [
+                  "upperarm_r",
+                  0.7464
+                ],
+                [
+                  "clavicle_r",
+                  0.1837
+                ],
+                [
+                  "spine_03",
+                  0.0699
+                ]
+              ],
+              "v1Weights": [
+                [
+                  "upperarm_r",
+                  0.4979
+                ],
+                [
+                  "clavicle_r",
+                  0.4046
+                ],
+                [
+                  "spine_03",
+                  0.0974
+                ]
+              ]
+            },
+            {
+              "ratio": 3.648,
+              "grewMetres": 0.07187,
+              "restLength": 0.02714,
+              "posedLength": 0.09901,
+              "v0": 1459,
+              "v1": 1469,
+              "v0Rest": [
+                -0.1792,
+                -0.0895,
+                1.4568
+              ],
+              "v0Posed": [
+                -0.2017,
+                0.1965,
+                1.4124
+              ],
+              "v0Weights": [
+                [
+                  "upperarm_r",
+                  0.677
+                ],
+                [
+                  "clavicle_r",
+                  0.2361
+                ],
+                [
+                  "spine_03",
+                  0.0869
+                ]
+              ],
+              "v1Weights": [
+                [
+                  "upperarm_r",
+                  0.4428
+                ],
+                [
+                  "clavicle_r",
+                  0.4032
+                ],
+                [
+                  "spine_03",
+                  0.154
+                ]
+              ]
+            },
+            {
+              "ratio": 3.176,
+              "grewMetres": 0.0709,
+              "restLength": 0.03258,
+              "posedLength": 0.10347,
+              "v0": 1481,
+              "v1": 1491,
+              "v0Rest": [
+                -0.1127,
+                -0.1061,
+                1.4554
+              ],
+              "v0Posed": [
+                -0.1207,
+                0.0058,
+                1.439
+              ],
+              "v0Weights": [
+                [
+                  "spine_03",
+                  0.4366
+                ],
+                [
+                  "clavicle_r",
+                  0.3147
+                ],
+                [
+                  "upperarm_r",
+                  0.2487
+                ]
+              ],
+              "v1Weights": [
+                [
+                  "spine_03",
+                  0.6481
+                ],
+                [
+                  "clavicle_r",
+                  0.3232
+                ],
+                [
+                  "upperarm_r",
+                  0.0287
+                ]
+              ]
+            },
+            {
+              "ratio": 9.305,
+              "grewMetres": 0.07007,
+              "restLength": 0.00844,
+              "posedLength": 0.0785,
+              "v0": 1743,
+              "v1": 1753,
+              "v0Rest": [
+                -0.1831,
+                0.0278,
+                1.397
+              ],
+              "v0Posed": [
+                -0.234,
+                0.2824,
+                1.323
+              ],
+              "v0Weights": [
+                [
+                  "upperarm_r",
+                  0.681
+                ],
+                [
+                  "spine_03",
+                  0.2976
+                ],
+                [
+                  "clavicle_r",
+                  0.0214
+                ]
+              ],
+              "v1Weights": [
+                [
+                  "upperarm_r",
+                  0.8817
+                ],
+                [
+                  "spine_03",
+                  0.1073
+                ],
+                [
+                  "clavicle_r",
+                  0.011
+                ]
+              ]
+            },
+            {
+              "ratio": 3.457,
+              "grewMetres": 0.06963,
+              "restLength": 0.02834,
+              "posedLength": 0.09797,
+              "v0": 1510,
+              "v1": 1547,
+              "v0Rest": [
+                -0.1864,
+                -0.0687,
+                1.4041
+              ],
+              "v0Posed": [
+                -0.2132,
+                0.213,
+                1.3552
+              ],
+              "v0Weights": [
+                [
+                  "upperarm_r",
+                  0.7166
+                ],
+                [
+                  "spine_03",
+                  0.2724
+                ],
+                [
+                  "clavicle_r",
+                  0.011
+                ]
+              ],
+              "v1Weights": [
+                [
+                  "spine_03",
+                  0.5687
+                ],
+                [
+                  "upperarm_r",
+                  0.4242
+                ],
+                [
+                  "clavicle_r",
+                  0.0071
+                ]
+              ]
+            }
+          ]
+        },
+        {
+          "mesh": "Icosphere",
+          "maxRatio": 1.0,
+          "maxGrowthMetres": 0.0,
+          "edges": 120,
+          "worst": [
+            {
+              "ratio": 1.0,
+              "grewMetres": 0.0,
+              "restLength": 0.54653,
+              "posedLength": 0.54653,
+              "v0": 12,
+              "v1": 0,
+              "v0Rest": [
+                -0.1625,
+                -0.5,
+                -0.8507
+              ],
+              "v0Posed": [
+                -0.1625,
+                -0.5,
+                -0.8507
+              ],
+              "v0Weights": [],
+              "v1Weights": []
+            },
+            {
+              "ratio": 1.0,
+              "grewMetres": 0.0,
+              "restLength": 0.54653,
+              "posedLength": 0.54653,
+              "v0": 13,
+              "v1": 1,
+              "v0Rest": [
+                0.4253,
+                -0.309,
+                -0.8507
+              ],
+              "v0Posed": [
+                0.4253,
+                -0.309,
+                -0.8507
+              ],
+              "v0Weights": [],
+              "v1Weights": []
+            },
+            {
+              "ratio": 1.0,
+              "grewMetres": 0.0,
+              "restLength": 0.54653,
+              "posedLength": 0.54653,
+              "v0": 14,
+              "v1": 2,
+              "v0Rest": [
+                0.2629,
+                -0.809,
+                -0.5257
+              ],
+              "v0Posed": [
+                0.2629,
+                -0.809,
+                -0.5257
+              ],
+              "v0Weights": [],
+              "v1Weights": []
+            },
+            {
+              "ratio": 1.0,
+              "grewMetres": 0.0,
+              "restLength": 0.54653,
+              "posedLength": 0.54653,
+              "v0": 15,
+              "v1": 1,
+              "v0Rest": [
+                0.8506,
+                0.0,
+                -0.5257
+              ],
+              "v0Posed": [
+                0.8506,
+                0.0,
+                -0.5257
+              ],
+              "v0Weights": [],
+              "v1Weights": []
+            },
+            {
+              "ratio": 1.0,
+              "grewMetres": 0.0,
+              "restLength": 0.54653,
+              "posedLength": 0.54653,
+              "v0": 16,
+              "v1": 5,
+              "v0Rest": [
+                0.4253,
+                0.309,
+                -0.8507
+              ],
+              "v0Posed": [
+                0.4253,
+                0.309,
+                -0.8507
+              ],
+              "v0Weights": [],
+              "v1Weights": []
+            },
+            {
+              "ratio": 1.0,
+              "grewMetres": 0.0,
+              "restLength": 0.54653,
+              "posedLength": 0.54653,
+              "v0": 17,
+              "v1": 0,
+              "v0Rest": [
+                -0.5257,
+                0.0,
+                -0.8507
+              ],
+              "v0Posed": [
+                -0.5257,
+                0.0,
+                -0.8507
+              ],
+              "v0Weights": [],
+              "v1Weights": []
+            },
+            {
+              "ratio": 1.0,
+              "grewMetres": 0.0,
+              "restLength": 0.54653,
+              "posedLength": 0.54653,
+              "v0": 18,
+              "v1": 3,
+              "v0Rest": [
+                -0.6882,
+                -0.5,
+                -0.5257
+              ],
+              "v0Posed": [
+                -0.6882,
+                -0.5,
+                -0.5257
+              ],
+              "v0Weights": [],
+              "v1Weights": []
+            },
+            {
+              "ratio": 1.0,
+              "grewMetres": 0.0,
+              "restLength": 0.54653,
+              "posedLength": 0.54653,
+              "v0": 19,
+              "v1": 0,
+              "v0Rest": [
+                -0.1625,
+                0.5,
+                -0.8507
+              ],
+              "v0Posed": [
+                -0.1625,
+                0.5,
+                -0.8507
+              ],
+              "v0Weights": [],
+              "v1Weights": []
+            },
+            {
+              "ratio": 1.0,
+              "grewMetres": 0.0,
+              "restLength": 0.54654,
+              "posedLength": 0.54654,
+              "v0": 20,
+              "v1": 4,
+              "v0Rest": [
+                -0.6882,
+                0.5,
+                -0.5257
+              ],
+              "v0Posed": [
+                -0.6882,
+                0.5,
+                -0.5257
+              ],
+              "v0Weights": [],
+              "v1Weights": []
+            },
+            {
+              "ratio": 1.0,
+              "grewMetres": 0.0,
+              "restLength": 0.54653,
+              "posedLength": 0.54653,
+              "v0": 21,
+              "v1": 5,
+              "v0Rest": [
+                0.2629,
+                0.809,
+                -0.5257
+              ],
+              "v0Posed": [
+                0.2629,
+                0.809,
+                -0.5257
+              ],
+              "v0Weights": [],
+              "v1Weights": []
+            },
+            {
+              "ratio": 1.0,
+              "grewMetres": 0.0,
+              "restLength": 0.54654,
+              "posedLength": 0.54654,
+              "v0": 22,
+              "v1": 1,
+              "v0Rest": [
+                0.9511,
+                -0.309,
+                0.0
+              ],
+              "v0Posed": [
+                0.9511,
+                -0.309,
+                0.0
+              ],
+              "v0Weights": [],
+              "v1Weights": []
+            },
+            {
+              "ratio": 1.0,
+              "grewMetres": 0.0,
+              "restLength": 0.54653,
+              "posedLength": 0.54653,
+              "v0": 23,
+              "v1": 10,
+              "v0Rest": [
+                0.9511,
+                0.309,
+                0.0
+              ],
+              "v0Posed": [
+                0.9511,
+                0.309,
+                0.0
+              ],
+              "v0Weights": [],
+              "v1Weights": []
+            },
+            {
+              "ratio": 1.0,
+              "grewMetres": 0.0,
+              "restLength": 0.54654,
+              "posedLength": 0.54654,
+              "v0": 24,
+              "v1": 2,
+              "v0Rest": [
+                0.0,
+                -1.0,
+                0.0
+              ],
+              "v0Posed": [
+                0.0,
+                -1.0,
+                0.0
+              ],
+              "v0Weights": [],
+              "v1Weights": []
+            },
+            {
+              "ratio": 1.0,
+              "grewMetres": 0.0,
+              "restLength": 0.54654,
+              "posedLength": 0.54654,
+              "v0": 25,
+              "v1": 6,
+              "v0Rest": [
+                0.5878,
+                -0.809,
+                0.0
+              ],
+              "v0Posed": [
+                0.5878,
+                -0.809,
+                0.0
+              ],
+              "v0Weights": [],
+              "v1Weights": []
+            },
+            {
+              "ratio": 1.0,
+              "grewMetres": 0.0,
+              "restLength": 0.54653,
+              "posedLength": 0.54653,
+              "v0": 26,
+              "v1": 3,
+              "v0Rest": [
+                -0.9511,
+                -0.309,
+                0.0
+              ],
+              "v0Posed": [
+                -0.9511,
+                -0.309,
+                0.0
+              ],
+              "v0Weights": [],
+              "v1Weights": []
+            },
+            {
+              "ratio": 1.0,
+              "grewMetres": 0.0,
+              "restLength": 0.54654,
+              "posedLength": 0.54654,
+              "v0": 27,
+              "v1": 7,
+              "v0Rest": [
+                -0.5878,
+                -0.809,
+                0.0
+              ],
+              "v0Posed": [
+                -0.5878,
+                -0.809,
+                0.0
+              ],
+              "v0Weights": [],
+              "v1Weights": []
+            },
+            {
+              "ratio": 1.0,
+              "grewMetres": 0.0,
+              "restLength": 0.54654,
+              "posedLength": 0.54654,
+              "v0": 28,
+              "v1": 4,
+              "v0Rest": [
+                -0.5878,
+                0.809,
+                0.0
+              ],
+              "v0Posed": [
+                -0.5878,
+                0.809,
+                0.0
+              ],
+              "v0Weights": [],
+              "v1Weights": []
+            },
+            {
+              "ratio": 1.0,
+              "grewMetres": 0.0,
+              "restLength": 0.54654,
+              "posedLength": 0.54654,
+              "v0": 29,
+              "v1": 8,
+              "v0Rest": [
+                -0.9511,
+                0.309,
+                0.0
+              ],
+              "v0Posed": [
+                -0.9511,
+                0.309,
+                0.0
+              ],
+              "v0Weights": [],
+              "v1Weights": []
+            },
+            {
+              "ratio": 1.0,
+              "grewMetres": 0.0,
+              "restLength": 0.54654,
+              "posedLength": 0.54654,
+              "v0": 30,
+              "v1": 5,
+              "v0Rest": [
+                0.5878,
+                0.809,
+                0.0
+              ],
+              "v0Posed": [
+                0.5878,
+                0.809,
+                0.0
+              ],
+              "v0Weights": [],
+              "v1Weights": []
+            },
+            {
+              "ratio": 1.0,
+              "grewMetres": 0.0,
+              "restLength": 0.54654,
+              "posedLength": 0.54654,
+              "v0": 31,
+              "v1": 9,
+              "v0Rest": [
+                0.0,
+                1.0,
+                0.0
+              ],
+              "v0Posed": [
+                0.0,
+                1.0,
+                0.0
+              ],
+              "v0Weights": [],
+              "v1Weights": []
+            }
+          ]
+        }
+      ]
+    },
+    "lowerarm_r": {
+      "angleDeg": 35.0,
+      "result": [
+        {
+          "mesh": "Human",
+          "maxRatio": 13.331,
+          "maxGrowthMetres": 0.21213,
+          "edges": 41267,
+          "worst": [
+            {
+              "ratio": 11.56,
+              "grewMetres": 0.21213,
+              "restLength": 0.02009,
+              "posedLength": 0.23222,
+              "v0": 3689,
+              "v1": 3706,
+              "v0Rest": [
+                -0.3384,
+                -0.0246,
+                1.2425
+              ],
+              "v0Posed": [
+                -0.3604,
+                0.1277,
+                1.2081
+              ],
+              "v0Weights": [
+                [
+                  "upperarm_r",
+                  0.6141
+                ],
+                [
+                  "lowerarm_r",
+                  0.3859
+                ]
+              ],
+              "v1Weights": [
+                [
+                  "lowerarm_r",
+                  0.9935
+                ],
+                [
+                  "upperarm_r",
+                  0.0065
+                ]
+              ]
+            },
+            {
+              "ratio": 9.783,
+              "grewMetres": 0.19528,
+              "restLength": 0.02223,
+              "posedLength": 0.21752,
+              "v0": 3689,
+              "v1": 3705,
+              "v0Rest": [
+                -0.3384,
+                -0.0246,
+                1.2425
+              ],
+              "v0Posed": [
+                -0.3604,
+                0.1277,
+                1.2081
+              ],
+              "v0Weights": [
+                [
+                  "upperarm_r",
+                  0.6141
+                ],
+                [
+                  "lowerarm_r",
+                  0.3859
+                ]
+              ],
+              "v1Weights": [
+                [
+                  "lowerarm_r",
+                  0.9387
+                ],
+                [
+                  "upperarm_r",
+                  0.0613
+                ]
+              ]
+            },
+            {
+              "ratio": 8.821,
+              "grewMetres": 0.19311,
+              "restLength": 0.02469,
+              "posedLength": 0.2178,
+              "v0": 3688,
+              "v1": 3704,
+              "v0Rest": [
+                -0.3444,
+                -0.0138,
+                1.2415
+              ],
+              "v0Posed": [
+                -0.3698,
+                0.1496,
+                1.2026
+              ],
+              "v0Weights": [
+                [
+                  "upperarm_r",
+                  0.5811
+                ],
+                [
+                  "lowerarm_r",
+                  0.4189
+                ]
+              ],
+              "v1Weights": [
+                [
+                  "lowerarm_r",
+                  0.9907
+                ],
+                [
+                  "upperarm_r",
+                  0.0093
+                ]
+              ]
+            },
+            {
+              "ratio": 10.464,
+              "grewMetres": 0.1864,
+              "restLength": 0.0197,
+              "posedLength": 0.20609,
+              "v0": 3679,
+              "v1": 3706,
+              "v0Rest": [
+                -0.3363,
+                -0.0403,
+                1.2441
+              ],
+              "v0Posed": [
+                -0.3612,
+                0.1539,
+                1.2037
+              ],
+              "v0Weights": [
+                [
+                  "upperarm_r",
+                  0.5132
+                ],
+                [
+                  "lowerarm_r",
+                  0.4868
+                ]
+              ],
+              "v1Weights": [
+                [
+                  "lowerarm_r",
+                  0.9935
+                ],
+                [
+                  "upperarm_r",
+                  0.0065
+                ]
+              ]
+            },
+            {
+              "ratio": 7.887,
+              "grewMetres": 0.17629,
+              "restLength": 0.0256,
+              "posedLength": 0.20189,
+              "v0": 3687,
+              "v1": 4227,
+              "v0Rest": [
+                -0.3522,
+                -0.0065,
+                1.2415
+              ],
+              "v0Posed": [
+                -0.381,
+                0.17,
+                1.198
+              ],
+              "v0Weights": [
+                [
+                  "upperarm_r",
+                  0.5425
+                ],
+                [
+                  "lowerarm_r",
+                  0.4575
+                ]
+              ],
+              "v1Weights": [
+                [
+                  "lowerarm_r",
+                  1.0
+                ]
+              ]
+            },
+            {
+              "ratio": 9.024,
+              "grewMetres": 0.17212,
+              "restLength": 0.02145,
+              "posedLength": 0.19357,
+              "v0": 3688,
+              "v1": 3705,
+              "v0Rest": [
+                -0.3444,
+                -0.0138,
+                1.2415
+              ],
+              "v0Posed": [
+                -0.3698,
+                0.1496,
+                1.2026
+              ],
+              "v0Weights": [
+                [
+                  "upperarm_r",
+                  0.5811
+                ],
+                [
+                  "lowerarm_r",
+                  0.4189
+                ]
+              ],
+              "v1Weights": [
+                [
+                  "lowerarm_r",
+                  0.9387
+                ],
+                [
+                  "upperarm_r",
+                  0.0613
+                ]
+              ]
+            },
+            {
+              "ratio": 8.509,
+              "grewMetres": 0.17207,
+              "restLength": 0.02292,
+              "posedLength": 0.19499,
+              "v0": 3687,
+              "v1": 3704,
+              "v0Rest": [
+                -0.3522,
+                -0.0065,
+                1.2415
+              ],
+              "v0Posed": [
+                -0.381,
+                0.17,
+                1.198
+              ],
+              "v0Weights": [
+                [
+                  "upperarm_r",
+                  0.5425
+                ],
+                [
+                  "lowerarm_r",
+                  0.4575
+                ]
+              ],
+              "v1Weights": [
+                [
+                  "lowerarm_r",
+                  0.9907
+                ],
+                [
+                  "upperarm_r",
+                  0.0093
+                ]
+              ]
+            },
+            {
+              "ratio": 10.984,
+              "grewMetres": 0.17177,
+              "restLength": 0.0172,
+              "posedLength": 0.18898,
+              "v0": 3679,
+              "v1": 3696,
+              "v0Rest": [
+                -0.3363,
+                -0.0403,
+                1.2441
+              ],
+              "v0Posed": [
+                -0.3612,
+                0.1539,
+                1.2037
+              ],
+              "v0Weights": [
+                [
+                  "upperarm_r",
+                  0.5132
+                ],
+                [
+                  "lowerarm_r",
+                  0.4868
+                ]
+              ],
+              "v1Weights": [
+                [
+                  "lowerarm_r",
+                  0.9769
+                ],
+                [
+                  "upperarm_r",
+                  0.0231
+                ]
+              ]
+            },
+            {
+              "ratio": 9.104,
+              "grewMetres": 0.15566,
+              "restLength": 0.01921,
+              "posedLength": 0.17486,
+              "v0": 3654,
+              "v1": 3670,
+              "v0Rest": [
+                -0.3224,
+                -0.0032,
+                1.2613
+              ],
+              "v0Posed": [
+                -0.3339,
+                0.0652,
+                1.2441
+              ],
+              "v0Weights": [
+                [
+                  "upperarm_r",
+                  0.8313
+                ],
+                [
+                  "lowerarm_r",
+                  0.1687
+                ]
+              ],
+              "v1Weights": [
+                [
+                  "lowerarm_r",
+                  0.5695
+                ],
+                [
+                  "upperarm_r",
+                  0.4305
+                ]
+              ]
+            },
+            {
+              "ratio": 7.895,
+              "grewMetres": 0.15565,
+              "restLength": 0.02257,
+              "posedLength": 0.17822,
+              "v0": 4225,
+              "v1": 4227,
+              "v0Rest": [
+                -0.3604,
+                -0.0021,
+                1.2425
+              ],
+              "v0Posed": [
+                -0.3928,
+                0.1913,
+                1.1939
+              ],
+              "v0Weights": [
+                [
+                  "lowerarm_r",
+                  0.506
+                ],
+                [
+                  "upperarm_r",
+                  0.494
+                ]
+              ],
+              "v1Weights": [
+                [
+                  "lowerarm_r",
+                  1.0
+                ]
+              ]
+            },
+            {
+              "ratio": 7.895,
+              "grewMetres": 0.15565,
+              "restLength": 0.02257,
+              "posedLength": 0.17822,
+              "v0": 4226,
+              "v1": 4228,
+              "v0Rest": [
+                -0.3604,
+                -0.0021,
+                1.2425
+              ],
+              "v0Posed": [
+                -0.3928,
+                0.1913,
+                1.1939
+              ],
+              "v0Weights": [
+                [
+                  "lowerarm_r",
+                  0.506
+                ],
+                [
+                  "upperarm_r",
+                  0.494
+                ]
+              ],
+              "v1Weights": [
+                [
+                  "lowerarm_r",
+                  1.0
+                ]
+              ]
+            },
+            {
+              "ratio": 6.935,
+              "grewMetres": 0.15421,
+              "restLength": 0.02598,
+              "posedLength": 0.1802,
+              "v0": 4129,
+              "v1": 4226,
+              "v0Rest": [
+                -0.3817,
+                -0.0136,
+                1.2329
+              ],
+              "v0Posed": [
+                -0.4388,
+                0.3585,
+                1.1451
+              ],
+              "v0Weights": [
+                [
+                  "lowerarm_r",
+                  1.0
+                ]
+              ],
+              "v1Weights": [
+                [
+                  "lowerarm_r",
+                  0.506
+                ],
+                [
+                  "upperarm_r",
+                  0.494
+                ]
+              ]
+            },
+            {
+              "ratio": 6.939,
+              "grewMetres": 0.13721,
+              "restLength": 0.02311,
+              "posedLength": 0.16031,
+              "v0": 4128,
+              "v1": 4129,
+              "v0Rest": [
+                -0.3686,
+                0.001,
+                1.245
+              ],
+              "v0Posed": [
+                -0.404,
+                0.2092,
+                1.192
+              ],
+              "v0Weights": [
+                [
+                  "lowerarm_r",
+                  0.5483
+                ],
+                [
+                  "upperarm_r",
+                  0.4517
+                ]
+              ],
+              "v1Weights": [
+                [
+                  "lowerarm_r",
+                  1.0
+                ]
+              ]
+            },
+            {
+              "ratio": 5.72,
+              "grewMetres": 0.13194,
+              "restLength": 0.02795,
+              "posedLength": 0.15989,
+              "v0": 3707,
+              "v1": 4128,
+              "v0Rest": [
+                -0.3907,
+                -0.013,
+                1.2353
+              ],
+              "v0Posed": [
+                -0.4475,
+                0.3567,
+                1.148
+              ],
+              "v0Weights": [
+                [
+                  "lowerarm_r",
+                  1.0
+                ]
+              ],
+              "v1Weights": [
+                [
+                  "lowerarm_r",
+                  0.5483
+                ],
+                [
+                  "upperarm_r",
+                  0.4517
+                ]
+              ]
+            },
+            {
+              "ratio": 7.678,
+              "grewMetres": 0.12323,
+              "restLength": 0.01845,
+              "posedLength": 0.14169,
+              "v0": 3678,
+              "v1": 3696,
+              "v0Rest": [
+                -0.3408,
+                -0.054,
+                1.2493
+              ],
+              "v0Posed": [
+                -0.3698,
+                0.2013,
+                1.2002
+              ],
+              "v0Weights": [
+                [
+                  "lowerarm_r",
+                  0.6352
+                ],
+                [
+                  "upperarm_r",
+                  0.3648
+                ]
+              ],
+              "v1Weights": [
+                [
+                  "lowerarm_r",
+                  0.9769
+                ],
+                [
+                  "upperarm_r",
+                  0.0231
+                ]
+              ]
+            },
+            {
+              "ratio": 8.991,
+              "grewMetres": 0.11318,
+              "restLength": 0.01416,
+              "posedLength": 0.12734,
+              "v0": 3678,
+              "v1": 3695,
+              "v0Rest": [
+                -0.3408,
+                -0.054,
+                1.2493
+              ],
+              "v0Posed": [
+                -0.3698,
+                0.2013,
+                1.2002
+              ],
+              "v0Weights": [
+                [
+                  "lowerarm_r",
+                  0.6352
+                ],
+                [
+                  "upperarm_r",
+                  0.3648
+                ]
+              ],
+              "v1Weights": [
+                [
+                  "lowerarm_r",
+                  0.9709
+                ],
+                [
+                  "upperarm_r",
+                  0.0291
+                ]
+              ]
+            },
+            {
+              "ratio": 10.255,
+              "grewMetres": 0.11289,
+              "restLength": 0.0122,
+              "posedLength": 0.12508,
+              "v0": 3661,
+              "v1": 3678,
+              "v0Rest": [
+                -0.3329,
+                -0.0508,
+                1.258
+              ],
+              "v0Posed": [
+                -0.3486,
+                0.0822,
+                1.2318
+              ],
+              "v0Weights": [
+                [
+                  "upperarm_r",
+                  0.6743
+                ],
+                [
+                  "lowerarm_r",
+                  0.3257
+                ]
+              ],
+              "v1Weights": [
+                [
+                  "lowerarm_r",
+                  0.6352
+                ],
+                [
+                  "upperarm_r",
+                  0.3648
+                ]
+              ]
+            },
+            {
+              "ratio": 8.921,
+              "grewMetres": 0.11167,
+              "restLength": 0.0141,
+              "posedLength": 0.12577,
+              "v0": 3653,
+              "v1": 3670,
+              "v0Rest": [
+                -0.3287,
+                0.0057,
+                1.2628
+              ],
+              "v0Posed": [
+                -0.3474,
+                0.1118,
+                1.235
+              ],
+              "v0Weights": [
+                [
+                  "upperarm_r",
+                  0.7359
+                ],
+                [
+                  "lowerarm_r",
+                  0.2641
+                ]
+              ],
+              "v1Weights": [
+                [
+                  "lowerarm_r",
+                  0.5695
+                ],
+                [
+                  "upperarm_r",
+                  0.4305
+                ]
+              ]
+            },
+            {
+              "ratio": 5.905,
+              "grewMetres": 0.10871,
+              "restLength": 0.02216,
+              "posedLength": 0.13087,
+              "v0": 4126,
+              "v1": 4220,
+              "v0Rest": [
+                -0.3445,
+                0.0136,
+                1.2671
+              ],
+              "v0Posed": [
+                -0.3758,
+                0.1836,
+                1.2212
+              ],
+              "v0Weights": [
+                [
+                  "upperarm_r",
+                  0.5708
+                ],
+                [
+                  "lowerarm_r",
+                  0.4292
+                ]
+              ],
+              "v1Weights": [
+                [
+                  "upperarm_r",
+                  0.8705
+                ],
+                [
+                  "lowerarm_r",
+                  0.1295
+                ]
+              ]
+            },
+            {
+              "ratio": 6.225,
+              "grewMetres": 0.10606,
+              "restLength": 0.0203,
+              "posedLength": 0.12636,
+              "v0": 3653,
+              "v1": 4223,
+              "v0Rest": [
+                -0.3287,
+                0.0057,
+                1.2628
+              ],
+              "v0Posed": [
+                -0.3474,
+                0.1118,
+                1.235
+              ],
+              "v0Weights": [
+                [
+                  "upperarm_r",
+                  0.7359
+                ],
+                [
+                  "lowerarm_r",
+                  0.2641
+                ]
+              ],
+              "v1Weights": [
+                [
+                  "lowerarm_r",
+                  0.5599
+                ],
+                [
+                  "upperarm_r",
+                  0.4401
+                ]
+              ]
+            }
+          ]
+        },
+        {
+          "mesh": "Icosphere",
+          "maxRatio": 1.0,
+          "maxGrowthMetres": 0.0,
+          "edges": 120,
+          "worst": [
+            {
+              "ratio": 1.0,
+              "grewMetres": 0.0,
+              "restLength": 0.54653,
+              "posedLength": 0.54653,
+              "v0": 12,
+              "v1": 0,
+              "v0Rest": [
+                -0.1625,
+                -0.5,
+                -0.8507
+              ],
+              "v0Posed": [
+                -0.1625,
+                -0.5,
+                -0.8507
+              ],
+              "v0Weights": [],
+              "v1Weights": []
+            },
+            {
+              "ratio": 1.0,
+              "grewMetres": 0.0,
+              "restLength": 0.54653,
+              "posedLength": 0.54653,
+              "v0": 13,
+              "v1": 1,
+              "v0Rest": [
+                0.4253,
+                -0.309,
+                -0.8507
+              ],
+              "v0Posed": [
+                0.4253,
+                -0.309,
+                -0.8507
+              ],
+              "v0Weights": [],
+              "v1Weights": []
+            },
+            {
+              "ratio": 1.0,
+              "grewMetres": 0.0,
+              "restLength": 0.54653,
+              "posedLength": 0.54653,
+              "v0": 14,
+              "v1": 2,
+              "v0Rest": [
+                0.2629,
+                -0.809,
+                -0.5257
+              ],
+              "v0Posed": [
+                0.2629,
+                -0.809,
+                -0.5257
+              ],
+              "v0Weights": [],
+              "v1Weights": []
+            },
+            {
+              "ratio": 1.0,
+              "grewMetres": 0.0,
+              "restLength": 0.54653,
+              "posedLength": 0.54653,
+              "v0": 15,
+              "v1": 1,
+              "v0Rest": [
+                0.8506,
+                0.0,
+                -0.5257
+              ],
+              "v0Posed": [
+                0.8506,
+                0.0,
+                -0.5257
+              ],
+              "v0Weights": [],
+              "v1Weights": []
+            },
+            {
+              "ratio": 1.0,
+              "grewMetres": 0.0,
+              "restLength": 0.54653,
+              "posedLength": 0.54653,
+              "v0": 16,
+              "v1": 5,
+              "v0Rest": [
+                0.4253,
+                0.309,
+                -0.8507
+              ],
+              "v0Posed": [
+                0.4253,
+                0.309,
+                -0.8507
+              ],
+              "v0Weights": [],
+              "v1Weights": []
+            },
+            {
+              "ratio": 1.0,
+              "grewMetres": 0.0,
+              "restLength": 0.54653,
+              "posedLength": 0.54653,
+              "v0": 17,
+              "v1": 0,
+              "v0Rest": [
+                -0.5257,
+                0.0,
+                -0.8507
+              ],
+              "v0Posed": [
+                -0.5257,
+                0.0,
+                -0.8507
+              ],
+              "v0Weights": [],
+              "v1Weights": []
+            },
+            {
+              "ratio": 1.0,
+              "grewMetres": 0.0,
+              "restLength": 0.54653,
+              "posedLength": 0.54653,
+              "v0": 18,
+              "v1": 3,
+              "v0Rest": [
+                -0.6882,
+                -0.5,
+                -0.5257
+              ],
+              "v0Posed": [
+                -0.6882,
+                -0.5,
+                -0.5257
+              ],
+              "v0Weights": [],
+              "v1Weights": []
+            },
+            {
+              "ratio": 1.0,
+              "grewMetres": 0.0,
+              "restLength": 0.54653,
+              "posedLength": 0.54653,
+              "v0": 19,
+              "v1": 0,
+              "v0Rest": [
+                -0.1625,
+                0.5,
+                -0.8507
+              ],
+              "v0Posed": [
+                -0.1625,
+                0.5,
+                -0.8507
+              ],
+              "v0Weights": [],
+              "v1Weights": []
+            },
+            {
+              "ratio": 1.0,
+              "grewMetres": 0.0,
+              "restLength": 0.54654,
+              "posedLength": 0.54654,
+              "v0": 20,
+              "v1": 4,
+              "v0Rest": [
+                -0.6882,
+                0.5,
+                -0.5257
+              ],
+              "v0Posed": [
+                -0.6882,
+                0.5,
+                -0.5257
+              ],
+              "v0Weights": [],
+              "v1Weights": []
+            },
+            {
+              "ratio": 1.0,
+              "grewMetres": 0.0,
+              "restLength": 0.54653,
+              "posedLength": 0.54653,
+              "v0": 21,
+              "v1": 5,
+              "v0Rest": [
+                0.2629,
+                0.809,
+                -0.5257
+              ],
+              "v0Posed": [
+                0.2629,
+                0.809,
+                -0.5257
+              ],
+              "v0Weights": [],
+              "v1Weights": []
+            },
+            {
+              "ratio": 1.0,
+              "grewMetres": 0.0,
+              "restLength": 0.54654,
+              "posedLength": 0.54654,
+              "v0": 22,
+              "v1": 1,
+              "v0Rest": [
+                0.9511,
+                -0.309,
+                0.0
+              ],
+              "v0Posed": [
+                0.9511,
+                -0.309,
+                0.0
+              ],
+              "v0Weights": [],
+              "v1Weights": []
+            },
+            {
+              "ratio": 1.0,
+              "grewMetres": 0.0,
+              "restLength": 0.54653,
+              "posedLength": 0.54653,
+              "v0": 23,
+              "v1": 10,
+              "v0Rest": [
+                0.9511,
+                0.309,
+                0.0
+              ],
+              "v0Posed": [
+                0.9511,
+                0.309,
+                0.0
+              ],
+              "v0Weights": [],
+              "v1Weights": []
+            },
+            {
+              "ratio": 1.0,
+              "grewMetres": 0.0,
+              "restLength": 0.54654,
+              "posedLength": 0.54654,
+              "v0": 24,
+              "v1": 2,
+              "v0Rest": [
+                0.0,
+                -1.0,
+                0.0
+              ],
+              "v0Posed": [
+                0.0,
+                -1.0,
+                0.0
+              ],
+              "v0Weights": [],
+              "v1Weights": []
+            },
+            {
+              "ratio": 1.0,
+              "grewMetres": 0.0,
+              "restLength": 0.54654,
+              "posedLength": 0.54654,
+              "v0": 25,
+              "v1": 6,
+              "v0Rest": [
+                0.5878,
+                -0.809,
+                0.0
+              ],
+              "v0Posed": [
+                0.5878,
+                -0.809,
+                0.0
+              ],
+              "v0Weights": [],
+              "v1Weights": []
+            },
+            {
+              "ratio": 1.0,
+              "grewMetres": 0.0,
+              "restLength": 0.54653,
+              "posedLength": 0.54653,
+              "v0": 26,
+              "v1": 3,
+              "v0Rest": [
+                -0.9511,
+                -0.309,
+                0.0
+              ],
+              "v0Posed": [
+                -0.9511,
+                -0.309,
+                0.0
+              ],
+              "v0Weights": [],
+              "v1Weights": []
+            },
+            {
+              "ratio": 1.0,
+              "grewMetres": 0.0,
+              "restLength": 0.54654,
+              "posedLength": 0.54654,
+              "v0": 27,
+              "v1": 7,
+              "v0Rest": [
+                -0.5878,
+                -0.809,
+                0.0
+              ],
+              "v0Posed": [
+                -0.5878,
+                -0.809,
+                0.0
+              ],
+              "v0Weights": [],
+              "v1Weights": []
+            },
+            {
+              "ratio": 1.0,
+              "grewMetres": 0.0,
+              "restLength": 0.54654,
+              "posedLength": 0.54654,
+              "v0": 28,
+              "v1": 4,
+              "v0Rest": [
+                -0.5878,
+                0.809,
+                0.0
+              ],
+              "v0Posed": [
+                -0.5878,
+                0.809,
+                0.0
+              ],
+              "v0Weights": [],
+              "v1Weights": []
+            },
+            {
+              "ratio": 1.0,
+              "grewMetres": 0.0,
+              "restLength": 0.54654,
+              "posedLength": 0.54654,
+              "v0": 29,
+              "v1": 8,
+              "v0Rest": [
+                -0.9511,
+                0.309,
+                0.0
+              ],
+              "v0Posed": [
+                -0.9511,
+                0.309,
+                0.0
+              ],
+              "v0Weights": [],
+              "v1Weights": []
+            },
+            {
+              "ratio": 1.0,
+              "grewMetres": 0.0,
+              "restLength": 0.54654,
+              "posedLength": 0.54654,
+              "v0": 30,
+              "v1": 5,
+              "v0Rest": [
+                0.5878,
+                0.809,
+                0.0
+              ],
+              "v0Posed": [
+                0.5878,
+                0.809,
+                0.0
+              ],
+              "v0Weights": [],
+              "v1Weights": []
+            },
+            {
+              "ratio": 1.0,
+              "grewMetres": 0.0,
+              "restLength": 0.54654,
+              "posedLength": 0.54654,
+              "v0": 31,
+              "v1": 9,
+              "v0Rest": [
+                0.0,
+                1.0,
+                0.0
+              ],
+              "v0Posed": [
+                0.0,
+                1.0,
+                0.0
+              ],
+              "v0Weights": [],
+              "v1Weights": []
+            }
+          ]
+        }
+      ]
+    }
+  },
+  "clip": {
+    "error": "no MeleeAttack action",
+    "actions": []
+  }
+}

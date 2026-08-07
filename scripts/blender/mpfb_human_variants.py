@@ -164,6 +164,201 @@ def apply_skin(basemesh):
     return record
 
 
+
+STAGES = []
+
+
+def _worst_growth(basemesh, armature, bone_name, angle=35.0):
+    """Max edge growth under a single-bone rotation, plus the worst weights.
+
+    The same measurement `hero_deform_diagnostic.py` runs on the shipped GLB,
+    so a stage here is directly comparable to the finished file.
+    """
+    import math
+    from mathutils import Matrix
+
+    depsgraph = bpy.context.evaluated_depsgraph_get()
+
+    def evaluated():
+        obj = basemesh.evaluated_get(bpy.context.evaluated_depsgraph_get())
+        mesh = obj.to_mesh()
+        out = [v.co.copy() for v in mesh.vertices]
+        obj.to_mesh_clear()
+        return out
+
+    if armature is None:
+        return {"note": "no armature at this stage", "maxGrowthMetres": None}
+    bone = armature.pose.bones.get(bone_name)
+    if bone is None:
+        return {"note": "bone %s absent" % bone_name, "maxGrowthMetres": None}
+
+    for pose_bone in armature.pose.bones:
+        pose_bone.matrix_basis = Matrix.Identity(4)
+    bpy.context.view_layer.update()
+    rest = evaluated()
+
+    bone.rotation_mode = "XYZ"
+    bone.rotation_euler = (math.radians(angle), 0.0, 0.0)
+    bpy.context.view_layer.update()
+    posed = evaluated()
+    bone.matrix_basis = Matrix.Identity(4)
+    bpy.context.view_layer.update()
+
+    if len(posed) != len(rest):
+        return {"note": "topology changed under evaluation", "maxGrowthMetres": None}
+
+    names = {g.index: g.name for g in basemesh.vertex_groups}
+    best = (0.0, None, None)
+    for edge in basemesh.data.edges:
+        a, b = edge.vertices
+        if a >= len(rest) or b >= len(rest):
+            continue
+        base = (rest[a] - rest[b]).length
+        if base < 1e-6:
+            continue
+        grew = (posed[a] - posed[b]).length - base
+        if grew > best[0]:
+            best = (grew, a, b)
+
+    def weights(index):
+        if index is None or index >= len(basemesh.data.vertices):
+            return []
+        pairs = sorted(((names.get(g.group, "?"), round(g.weight, 4))
+                        for g in basemesh.data.vertices[index].groups),
+                       key=lambda item: -item[1])[:4]
+        return [list(pair) for pair in pairs]
+
+    return {
+        "bone": bone_name,
+        "maxGrowthMetres": round(best[0], 5),
+        "worstEdge": [best[1], best[2]],
+        "v0Weights": weights(best[1]),
+        "v1Weights": weights(best[2]),
+    }
+
+
+def probe_stage(stage, basemesh, armature):
+    """Record the body's skinning state at one point in the build."""
+    if os.environ.get("HERO_BODY_STAGES") != "1":
+        return
+    from mathutils import Vector
+
+    entry = {
+        "stage": stage,
+        "vertices": len(basemesh.data.vertices),
+        "shapeKeys": (len(basemesh.data.shape_keys.key_blocks)
+                      if basemesh.data.shape_keys else 0),
+        "bodyMatrixWorld": [round(v, 5) for row in basemesh.matrix_world for v in row],
+        "armatureModifier": next((m.object.name for m in basemesh.modifiers
+                                  if m.type == "ARMATURE" and m.object), None),
+    }
+    if armature is not None:
+        entry["armatureMatrixWorld"] = [round(v, 5) for row in armature.matrix_world
+                                        for v in row]
+        entry["bones"] = {}
+        for name in ("upperarm_r", "lowerarm_r"):
+            bone = armature.data.bones.get(name)
+            if bone is None:
+                continue
+            head = armature.matrix_world @ bone.head_local
+            tail = armature.matrix_world @ bone.tail_local
+            entry["bones"][name] = {
+                "head": [round(c, 5) for c in head],
+                "tail": [round(c, 5) for c in tail],
+            }
+            # Where the vertices this bone owns actually sit, against where the
+            # bone thinks it is. A rig fitted to a different shape than the one
+            # the vertices ended up in shows here as a growing distance.
+            group = basemesh.vertex_groups.get(name)
+            if group is not None:
+                owned = [basemesh.matrix_world @ v.co
+                         for v in basemesh.data.vertices
+                         if any(g.group == group.index and g.weight > 0.5
+                                for g in v.groups)]
+                if owned:
+                    centroid = sum(owned, Vector((0.0, 0.0, 0.0))) / len(owned)
+                    entry["bones"][name]["ownedVertices"] = len(owned)
+                    entry["bones"][name]["centroid"] = [round(c, 5) for c in centroid]
+                    entry["bones"][name]["centroidToHead"] = round(
+                        (centroid - head).length, 5)
+        entry["deformation"] = {name: _worst_growth(basemesh, armature, name)
+                                for name in ("upperarm_r", "lowerarm_r")}
+    STAGES.append(entry)
+    growth = entry.get("deformation", {})
+    print("BODYSTAGE %s verts=%d keys=%d armMod=%s upper=%s lower=%s" % (
+        stage, entry["vertices"], entry["shapeKeys"], entry["armatureModifier"],
+        growth.get("upperarm_r", {}).get("maxGrowthMetres"),
+        growth.get("lowerarm_r", {}).get("maxGrowthMetres")))
+
+
+def smooth_body_weights(basemesh, armature, passes=3, floor=1e-3, max_influences=4):
+    """Remove the weight discontinuities MPFB's builtin rig leaves on the body.
+
+    Measured, not assumed. The stage probe puts the body at 0.117 m / 0.212 m
+    of edge growth under a single 35 deg arm rotation the instant
+    `add_builtin_rig` runs, and every later stage -- bake, helper strip,
+    export, re-import -- reproduces that number exactly. So it is neither the
+    shape-key bake order nor the glTF skin: it is the weighting itself.
+
+    For scale, the project's own authored hero.glb scores 0.013 m and 0.026 m
+    on the identical test, with neighbouring vertices reading 0.84/0.16 and
+    0.74/0.26. The MPFB body has 0.6141/0.3859 sitting next to 0.9935/0.0065 --
+    adjacent vertices assigned almost entirely to different bones, which is a
+    tear waiting for the first pose.
+
+    This does not re-author the weights or invent new influences; it averages
+    each vertex's weight vector with its edge neighbours, which is the same
+    correction already proven on the coat (0.70 m -> 0.12 m). Run AFTER the
+    helper cage is stripped so the cage cannot drag the body's values around.
+    """
+    deform = {b.name for b in armature.data.bones if b.use_deform}
+    names = {g.index: g.name for g in basemesh.vertex_groups}
+    sampled = []
+    for vertex in basemesh.data.vertices:
+        sampled.append({names[g.group]: g.weight for g in vertex.groups
+                        if names.get(g.group) in deform and g.weight > 0.0})
+
+    adjacency = [[] for _ in basemesh.data.vertices]
+    for edge in basemesh.data.edges:
+        a, b = edge.vertices
+        adjacency[a].append(b)
+        adjacency[b].append(a)
+
+    for _pass in range(passes):
+        updated = []
+        for index, blended in enumerate(sampled):
+            neighbours = adjacency[index]
+            if not neighbours:
+                updated.append(dict(blended))
+                continue
+            share = 1.0 / (len(neighbours) + 1.0)
+            merged = {n: w * share for n, w in blended.items()}
+            for other in neighbours:
+                for name, weight in sampled[other].items():
+                    merged[name] = merged.get(name, 0.0) + weight * share
+            updated.append(merged)
+        sampled = updated
+
+    groups = {name: basemesh.vertex_groups[name] for name in deform
+              if name in basemesh.vertex_groups}
+    for index, blended in enumerate(sampled):
+        ranked = [(n, w) for n, w in
+                  sorted(blended.items(), key=lambda item: -item[1])[:max_influences]
+                  if w > floor]
+        total = sum(w for _n, w in ranked)
+        if total <= 1e-6:
+            continue
+        keep = {n for n, _w in ranked}
+        for name, group in groups.items():
+            if name not in keep:
+                group.remove([index])
+        for name, weight in ranked:
+            groups[name].add([index], weight / total, "REPLACE")
+    bpy.context.view_layer.update()
+    return {"passes": passes, "deformBones": len(deform),
+            "vertices": len(basemesh.data.vertices)}
+
+
 def main():
     argv = sys.argv[sys.argv.index("--") + 1:] if "--" in sys.argv else []
     while argv and argv[0] == "--":
@@ -186,11 +381,14 @@ def main():
     basemesh = HumanService.create_human(
         mask_helpers=True, detailed_helpers=False, extra_vertex_groups=True,
         feet_on_ground=True, scale=0.1, macro_detail_dict=macro)
+    probe_stage("A_create_human", basemesh, None)
     armature = HumanService.add_builtin_rig(basemesh, RIG_NAME)
     if armature is None:
         armature = next((o for o in bpy.data.objects if o.type == "ARMATURE"), None)
     if armature is None:
         raise SystemExit("no armature produced for %s" % args.variant)
+
+    probe_stage("B_after_rig", basemesh, armature)
 
     skin = apply_skin(basemesh)
 
@@ -226,9 +424,16 @@ def main():
         baked["keysBefore"] = 0
         baked["keysAfter"] = 0
 
+    probe_stage("C_after_bake", basemesh, armature)
+
     helpers = strip_helper_geometry(basemesh)
     helpers["bake"] = baked
     bpy.context.view_layer.update()
+
+    probe_stage("D_after_strip_helpers", basemesh, armature)
+    helpers["weightSmoothing"] = smooth_body_weights(basemesh, armature)
+    probe_stage("D2_after_weight_smoothing", basemesh, armature)
+    probe_stage("E_before_export", basemesh, armature)
 
     os.makedirs(OUT, exist_ok=True)
     glb = os.path.join(OUT, "%s.glb" % name)
