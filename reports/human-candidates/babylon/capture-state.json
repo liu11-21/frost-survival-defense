@@ -1,5 +1,5 @@
 {
-  "capturedAt": "2026-08-07T08:37:19.157Z",
+  "capturedAt": "2026-08-07T09:52:35.790Z",
   "captured": [
     {
       "file": "hero_male-front.png",
@@ -7,7 +7,7 @@
       "camera": "front",
       "label": "front",
       "boneCount": 53,
-      "triangles": 29756
+      "triangles": 35824
     },
     {
       "file": "hero_male-three-quarter.png",
@@ -15,7 +15,7 @@
       "camera": "three-quarter",
       "label": "three-quarter",
       "boneCount": 53,
-      "triangles": 29756
+      "triangles": 35824
     },
     {
       "file": "hero_male-side.png",
@@ -23,7 +23,7 @@
       "camera": "side",
       "label": "side",
       "boneCount": 53,
-      "triangles": 29756
+      "triangles": 35824
     },
     {
       "file": "hero_male-head.png",
@@ -31,7 +31,7 @@
       "camera": "head",
       "label": "head",
       "boneCount": 53,
-      "triangles": 29756
+      "triangles": 35824
     },
     {
       "file": "hero_male-hand-open.png",
@@ -39,7 +39,7 @@
       "camera": "hand",
       "label": "hand-open",
       "boneCount": 53,
-      "triangles": 29756
+      "triangles": 35824
     },
     {
       "file": "hero_male-grip.png",
@@ -49,7 +49,7 @@
       "phase": 0.25,
       "label": "grip",
       "boneCount": 53,
-      "triangles": 29756
+      "triangles": 35824
     },
     {
       "file": "hero_male-melee-windup.png",
@@ -59,7 +59,7 @@
       "phase": 0.25,
       "label": "melee-windup",
       "boneCount": 53,
-      "triangles": 29756
+      "triangles": 35824
     },
     {
       "file": "hero_male-melee-impact.png",
@@ -69,7 +69,7 @@
       "phase": 0.6,
       "label": "melee-impact",
       "boneCount": 53,
-      "triangles": 29756
+      "triangles": 35824
     },
     {
       "file": "hero_male-ranged.png",
@@ -79,7 +79,7 @@
       "phase": 0.5,
       "label": "ranged",
       "boneCount": 53,
-      "triangles": 29756
+      "triangles": 35824
     },
     {
       "file": "hero_male-walk.png",
@@ -89,7 +89,7 @@
       "phase": 0.3,
       "label": "walk",
       "boneCount": 53,
-      "triangles": 29756
+      "triangles": 35824
     },
     {
       "variant": "male",
@@ -99,8 +99,8 @@
         "variant": "male",
         "assetKey": "hero_male",
         "loaded": true,
-        "meshCount": 6,
-        "triangleCount": 29756,
+        "meshCount": 8,
+        "triangleCount": 35824,
         "boneCount": 53,
         "animations": [
           "Death",
@@ -113,15 +113,16 @@
         ],
         "currentAnimation": "none",
         "materialNames": [
-          "Hero_cloth",
           "Hero_leather",
+          "Hero_cloth",
+          "Hero_leather.001",
           "Hero_metal",
           "HumanSkinFallback"
         ],
         "boundingBox": {
           "min": [
-            -0.6085,
-            -0.1795,
+            -0.6017,
+            -0.1718,
             -0.2194
           ],
           "max": [
@@ -129,15 +130,15 @@
             1.8549,
             0.8636
           ],
-          "height": 2.0344
+          "height": 2.0267
         },
         "camera": "front",
         "cameraSolved": {
-          "radius": 2.839,
+          "radius": 2.8282,
           "alpha": 1.5708,
           "beta": 1.5108,
-          "targetY": 0.8784,
-          "clearanceFromBounds": 2.1413,
+          "targetY": 0.8821,
+          "clearanceFromBounds": 2.1339,
           "insideBounds": false
         },
         "error": null,
@@ -150,7 +151,7 @@
       "camera": "front",
       "label": "front",
       "boneCount": 53,
-      "triangles": 29756
+      "triangles": 35824
     },
     {
       "file": "hero_female-three-quarter.png",
@@ -158,7 +159,7 @@
       "camera": "three-quarter",
       "label": "three-quarter",
       "boneCount": 53,
-      "triangles": 29756
+      "triangles": 35824
     },
     {
       "file": "hero_female-side.png",
@@ -166,7 +167,7 @@
       "camera": "side",
       "label": "side",
       "boneCount": 53,
-      "triangles": 29756
+      "triangles": 35824
     },
     {
       "file": "hero_female-head.png",
@@ -174,7 +175,7 @@
       "camera": "head",
       "label": "head",
       "boneCount": 53,
-      "triangles": 29756
+      "triangles": 35824
     },
     {
       "file": "hero_female-hand-open.png",
@@ -182,7 +183,7 @@
       "camera": "hand",
       "label": "hand-open",
       "boneCount": 53,
-      "triangles": 29756
+      "triangles": 35824
     },
     {
       "file": "hero_female-grip.png",
@@ -192,7 +193,7 @@
       "phase": 0.25,
       "label": "grip",
       "boneCount": 53,
-      "triangles": 29756
+      "triangles": 35824
     },
     {
       "file": "hero_female-melee-windup.png",
@@ -202,7 +203,7 @@
       "phase": 0.25,
       "label": "melee-windup",
       "boneCount": 53,
-      "triangles": 29756
+      "triangles": 35824
     },
     {
       "file": "hero_female-melee-impact.png",
@@ -212,7 +213,7 @@
       "phase": 0.6,
       "label": "melee-impact",
       "boneCount": 53,
-      "triangles": 29756
+      "triangles": 35824
     },
     {
       "file": "hero_female-ranged.png",
@@ -222,7 +223,7 @@
       "phase": 0.5,
       "label": "ranged",
       "boneCount": 53,
-      "triangles": 29756
+      "triangles": 35824
     },
     {
       "file": "hero_female-walk.png",
@@ -232,7 +233,7 @@
       "phase": 0.3,
       "label": "walk",
       "boneCount": 53,
-      "triangles": 29756
+      "triangles": 35824
     },
     {
       "variant": "female",
@@ -242,8 +243,8 @@
         "variant": "female",
         "assetKey": "hero_female",
         "loaded": true,
-        "meshCount": 6,
-        "triangleCount": 29756,
+        "meshCount": 8,
+        "triangleCount": 35824,
         "boneCount": 53,
         "animations": [
           "Death",
@@ -256,15 +257,16 @@
         ],
         "currentAnimation": "none",
         "materialNames": [
-          "Hero_cloth",
           "Hero_leather",
+          "Hero_cloth",
+          "Hero_leather.001",
           "Hero_metal",
           "HumanSkinFallback"
         ],
         "boundingBox": {
           "min": [
-            -0.5433,
-            -0.1441,
+            -0.5375,
+            -0.1393,
             -0.2127
           ],
           "max": [
@@ -272,15 +274,15 @@
             1.7488,
             0.7852
           ],
-          "height": 1.8929
+          "height": 1.8881
         },
         "camera": "front",
         "cameraSolved": {
-          "radius": 2.6415,
-          "alpha": 1.5701,
-          "beta": 1.4983,
-          "targetY": 0.8402,
-          "clearanceFromBounds": 2.0111,
+          "radius": 2.6348,
+          "alpha": 1.5699,
+          "beta": 1.4978,
+          "targetY": 0.8425,
+          "clearanceFromBounds": 2.0073,
           "insideBounds": false
         },
         "error": null,

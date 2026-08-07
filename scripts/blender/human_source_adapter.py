@@ -458,8 +458,18 @@ def build_lods(meshes, armature, name):
             copy["lodLevel"] = level
             copy["authoredRole"] = "human_source_candidate"
             copy["weightedSkinning"] = bool(armature)
+            copy["sourceName"] = source.name
             made.append(copy)
+            print("LODTRACE tier=%d src=%s copy=%s tris=%d mats=%s groups=%d "
+                  "hideR=%s hideV=%s parent=%s colls=%s"
+                  % (level, source.name, copy.name,
+                     sum(max(0, len(pl.vertices) - 2) for pl in copy.data.polygons),
+                     [m.name if m else None for m in copy.data.materials],
+                     len(copy.vertex_groups), copy.hide_render, copy.hide_viewport,
+                     copy.parent.name if copy.parent else None,
+                     [c.name for c in copy.users_collection]))
         tiers.append(made)
+    print("LODTRACE_SOURCES %s" % sorted(m.name for m in meshes))
     return tiers
 
 
@@ -686,6 +696,17 @@ def main():
     blend_path = os.path.join(ROOT, "assets-source", "blender", "characters", "%s.blend" % args.name)
     os.makedirs(args.out_dir, exist_ok=True)
     glb_path = os.path.join(args.out_dir, out_name)
+    # Hard gate: every tier must carry every garment. A candidate missing a
+    # glove is not a candidate, and this has silently shipped twice.
+    REQUIRED = ("HeroOutfit", "HeroSword", "HeroGlove_l", "HeroGlove_r")
+    for level, made in enumerate(tiers):
+        present = {obj.get("sourceName", "") for obj in made}
+        print("LODTRACE_PRE_EXPORT tier=%d objects=%s" % (level, sorted(o.name for o in made)))
+        missing = [r for r in REQUIRED if r not in present]
+        if missing and os.environ.get("HERO_REQUIRE_GARMENTS") == "1":
+            raise human_rig.RigError(
+                "tier %d is missing %s; refusing to write a candidate" % (level, missing))
+
     save_source(blend_path)
     export_glb(glb_path)
 
