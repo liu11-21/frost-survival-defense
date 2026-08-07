@@ -13,17 +13,17 @@ import { tickRecover, tickWindup } from "./BrainAttackStates";
 import { StuckDetector } from "./StuckDetector";
 import { validateTarget } from "./TargetValidator";
 import { AIHeartbeat, type AIHeartbeatSnapshot } from "./AIHeartbeat";
+import { LANES, laneAdvancePoint, nearestPointOnLane } from "../data/BuildSlotDefinitions";
+import { isCrossLaneUnitTarget } from "../combat/UnitTargeting";
 
 const MAX_EVENTS = 20;
 
 /**
- * The explicit brain every friendly unit runs.
- *
- * Two rules make permanent stalls impossible by construction:
- *   1. Exactly one state is active, and every state has a hard timeout with a
- *      defined recovery — nothing can wait forever for an event that never came.
- *   2. Targets are re-validated every tick through the shared validator, so a
- *      pooled-and-reused corpse can never be held on to.
+ * Explicit friendly state machine.  G1 adds a lane invariant on top of the
+ * existing anti-stall rules: ordinary squads chase on their assigned road,
+ * melee never receives a cross-lane target, and ranged cross-lane fallback
+ * shots are followed by progress on the squad's own lane rather than sideways
+ * pursuit.
  */
 export class FriendlyBrain {
   private _state: AllyState = "spawn";
@@ -48,43 +48,22 @@ export class FriendlyBrain {
     private readonly deps: BrainDeps,
   ) {}
 
-  get state(): AllyState {
-    return this._state;
-  }
-  get currentTarget(): Damageable | null {
-    return this.target;
-  }
-  get timeInState(): number {
-    return this.stateTime;
-  }
-  get stuckInfo(): StuckDetector {
-    return this.stuck;
-  }
-  get recentEvents(): ReadonlyArray<AIEvent> {
-    return this.events;
-  }
-  get sinceLastAction(): number {
-    return this.clock - this.heartbeat.lastMeaningfulActionAt;
-  }
-  get aiHeartbeat(): AIHeartbeatSnapshot {
-    return this.heartbeat.snapshot();
-  }
+  get state(): AllyState { return this._state; }
+  get currentTarget(): Damageable | null { return this.target; }
+  get timeInState(): number { return this.stateTime; }
+  get stuckInfo(): StuckDetector { return this.stuck; }
+  get recentEvents(): ReadonlyArray<AIEvent> { return this.events; }
+  get sinceLastAction(): number { return this.clock - this.heartbeat.lastMeaningfulActionAt; }
+  get aiHeartbeat(): AIHeartbeatSnapshot { return this.heartbeat.snapshot(); }
 
-  private get isHealer(): boolean {
-    return this.unit.def.attackType === "heal";
-  }
-  private get isEngineer(): boolean {
-    return this.unit.def.canRepair === true;
-  }
-  private get isSupporter(): boolean {
-    return this.unit.def.attackType === "none" && !this.isEngineer;
-  }
+  private get isHealer(): boolean { return this.unit.def.attackType === "heal"; }
+  private get isEngineer(): boolean { return this.unit.def.canRepair === true; }
+  private get isSupporter(): boolean { return this.unit.def.attackType === "none" && !this.isEngineer; }
   private get isRanged(): boolean {
     const t = this.unit.def.attackType;
     return t === "rangedSingle" || t === "rangedArea";
   }
 
-  /** Narrow internal surface used by `BrainIdleStates`. */
   get internals(): BrainInternals {
     return {
       unit: this.unit,
@@ -99,12 +78,8 @@ export class FriendlyBrain {
       stateTime: this.stateTime,
       clock: this.clock,
       retargetReady: this.retargetTimer <= 0,
-      setRetarget: (seconds) => {
-        this.retargetTimer = seconds;
-      },
-      markActive: () => {
-        this.heartbeat.markMeaningfulAction(this.clock);
-      },
+      setRetarget: (seconds) => { this.retargetTimer = seconds; },
+      markActive: () => { this.heartbeat.markMeaningfulAction(this.clock); },
       setTarget: (t) => {
         this.target = t;
         this.unit.setTarget(t);
@@ -131,11 +106,9 @@ export class FriendlyBrain {
     this._state = to;
     this.stateTime = 0;
     this.heartbeat.markStateChange(this.clock);
-    // Leaving a swing invalidates its pending hit, so a late event cannot land.
     if (to !== "attackWindup" && to !== "healWindup" && to !== "repairWindup") this.pendingToken = -1;
   }
 
-  /** The re-plan entry state, given this unit's role. */
   private get replanState(): AllyState {
     if (this.isHealer) return "acquireHealTarget";
     if (this.isEngineer) return "acquireRepairTarget";
@@ -143,7 +116,6 @@ export class FriendlyBrain {
     return "acquireTarget";
   }
 
-  /** Forced re-plan used by the watchdog and by wave transitions. */
   forceReacquire(reason: string): void {
     this.target = null;
     this.unit.setTarget(null);
@@ -160,7 +132,6 @@ export class FriendlyBrain {
     this.transition("dead", "died");
   }
 
-  /** Called on wave boundaries so nothing survives holding last wave's state. */
   onWaveBoundary(): void {
     if (this._state === "dead") return;
     this.target = null;
@@ -181,20 +152,35 @@ export class FriendlyBrain {
     }
     if (this.retargetTimer > 0) this.retargetTimer -= dt;
 
-    // Any held target is re-validated before the state runs — this is the
-    // single check that used to be scattered and inconsistent.
     if (this.target && validateTarget(this.unit, this.target) !== "ok") {
       this.target = null;
       this.unit.setTarget(null);
-      if (this.isCombatState()) {
-        this.transition(this.replanState, "targetInvalid");
+      if (this.isCombatState()) this.transition(this.replanState, "targetInvalid");
+    }
+
+    // A ranged cross-lane target is only a fallback. Re-query on the normal
+    // timer so a newly arrived same-lane enemy immediately takes precedence.
+    if (
+      this.target &&
+      isCrossLaneUnitTarget(this.unit, this.target) &&
+      this.retargetTimer <= 0 &&
+      !this.isHealer &&
+      !this.isEngineer &&
+      !this.isSupporter
+    ) {
+      const previous = this.target;
+      const preferred = this.unit.findHostileTarget();
+      this.retargetTimer = this.isRanged ? RETARGET_INTERVAL.ranged : RETARGET_INTERVAL.melee;
+      if (preferred && !isCrossLaneUnitTarget(this.unit, preferred)) {
+        this.target = preferred;
+        this.stuck.reset(this.unit.position.x, this.unit.position.z, this.clock);
+        if (this._state !== "attackWindup") this.transition("moveToTarget", "sameLanePreemptedFallback");
+      } else {
+        this.target = previous;
+        this.unit.setTarget(previous);
       }
     }
 
-    // A normal combat unit with living enemies must never spend a frame parked
-    // in formation/hold with no target. This immediate safety net sits above
-    // the slower state timers, so a kill or pooled-corpse cleanup cannot leave
-    // the survivor visibly idle while another valid enemy is still present.
     if (
       !this.isHealer &&
       !this.isEngineer &&
@@ -218,44 +204,27 @@ export class FriendlyBrain {
     this.dispatch(dt);
   }
 
-  /** Runs exactly one state. Anything unrecognised falls back to re-planning. */
   private dispatch(dt: number): void {
     switch (this._state) {
-      case "spawn":
-        this.transition(this.replanState, "spawned");
-        return;
-      case "acquireTarget":
-        return this.tickAcquire(dt);
-      case "moveToTarget":
-        return this.tickMoveToTarget(dt);
+      case "spawn": this.transition(this.replanState, "spawned"); return;
+      case "acquireTarget": return this.tickAcquire(dt);
+      case "moveToTarget": return this.tickMoveToTarget(dt);
       case "attackWindup":
       case "healWindup":
-      case "repairWindup":
-        return tickWindup(this, dt);
+      case "repairWindup": return tickWindup(this, dt);
       case "attackRecover":
       case "healRecover":
-      case "repairRecover":
-        return tickRecover(this, dt);
-      case "acquireHealTarget":
-        return tickAcquireHeal(this, dt);
-      case "moveToHealRange":
-        return tickMoveToHeal(this, dt);
-      case "acquireRepairTarget":
-        return tickAcquireRepair(this, dt);
-      case "moveToRepairRange":
-        return tickMoveToRepair(this, dt);
+      case "repairRecover": return tickRecover(this, dt);
+      case "acquireHealTarget": return tickAcquireHeal(this, dt);
+      case "moveToHealRange": return tickMoveToHeal(this, dt);
+      case "acquireRepairTarget": return tickAcquireRepair(this, dt);
+      case "moveToRepairRange": return tickMoveToRepair(this, dt);
       case "followFormation":
-      case "returnToFormation":
-        return tickFormation(this, dt);
-      case "holdPosition":
-        return tickHold(this, dt);
-      case "stuckRecovery":
-        return this.tickStuckRecovery(dt);
-      case "dead":
-        return;
-      default:
-        this.transition("acquireTarget", "unhandledState");
-        return;
+      case "returnToFormation": return tickFormation(this, dt);
+      case "holdPosition": return tickHold(this, dt);
+      case "stuckRecovery": return this.tickStuckRecovery(dt);
+      case "dead": return;
+      default: this.transition("acquireTarget", "unhandledState"); return;
     }
   }
 
@@ -292,7 +261,6 @@ export class FriendlyBrain {
     }
 
     if (this.stateTime >= STATE_TIMEOUT.acquireTarget) {
-      // Searching is an activity in its own right, not a stall.
       this.heartbeat.markMeaningfulAction(this.clock);
       this.transition(this.hasRally ? "followFormation" : "holdPosition", "noTargetTimeout");
     }
@@ -307,14 +275,47 @@ export class FriendlyBrain {
 
     const reach = this.unit.attackReach(target);
     const dist = this.unit.distanceTo(target.position.x, target.position.z);
+    const crossLaneFallback = isCrossLaneUnitTarget(this.unit, target);
+
+    if (crossLaneFallback && dist > reach) {
+      this.target = null;
+      this.unit.setTarget(null);
+      this.transition("acquireTarget", "crossLaneLeftRange");
+      return;
+    }
 
     if (dist <= reach) {
-      this.unit.brakeMotor(dt);
       this.unit.faceMotor(target.position.x, target.position.z, dt);
       this.stuck.markIdle(this.clock);
-      // In range, waiting on the attack cooldown: a legitimate pause.
       this.heartbeat.markMeaningfulAction(this.clock);
-      if (this.unit.canStartAttack()) this.beginAttack("attackWindup");
+      if (this.unit.canStartAttack()) {
+        this.unit.brakeMotor(dt);
+        this.beginAttack("attackWindup");
+      } else if (crossLaneFallback) {
+        // The previous shot is cooling down: advance on our own road rather
+        // than parking to turret another lane or walking toward that target.
+        const next = laneAdvancePoint(this.unit.laneIndex, this.unit.position.x, this.unit.position.z, "outbound");
+        this.unit.moveMotor(next.x, next.z, dt, this.deps.formation);
+        this.checkStuck(dt, "crossLaneAdvance");
+      } else {
+        this.unit.brakeMotor(dt);
+      }
+      return;
+    }
+
+    // Same-lane pursuit follows the road instead of cutting a chord across a
+    // bend. Determine whether the target lies toward spawn or toward furnace.
+    if (target.kind === "unit") {
+      const lane = LANES[((this.unit.laneIndex % LANES.length) + LANES.length) % LANES.length];
+      const here = nearestPointOnLane(this.unit.position.x, this.unit.position.z, lane);
+      const there = nearestPointOnLane(target.position.x, target.position.z, lane);
+      const direction = there.segmentIndex < here.segmentIndex ||
+        (there.segmentIndex === here.segmentIndex && there.t < here.t)
+        ? "outbound"
+        : "inbound";
+      const next = laneAdvancePoint(this.unit.laneIndex, this.unit.position.x, this.unit.position.z, direction);
+      this.unit.moveMotor(next.x, next.z, dt, this.deps.formation);
+      this.checkStuck(dt, "lanePursuit");
       return;
     }
 
@@ -332,10 +333,6 @@ export class FriendlyBrain {
     this.transition(state, "strike");
   }
 
-  /**
-   * The hit frame reports back here. A stale token means the swing was already
-   * abandoned, so the damage is dropped rather than applied late.
-   */
   onHitFrame(): boolean {
     if (this.pendingToken !== this.attackToken || this.pendingToken < 0) return false;
     this.pendingToken = -1;
@@ -344,7 +341,6 @@ export class FriendlyBrain {
       this.deps.releaseRepair?.(this.unit);
       this.heartbeat.markMeaningfulAction(this.clock);
       this.transition("repairRecover", "repairLanded");
-      // Repair heals the structure via the squad, not the attack resolver.
       return false;
     }
 
@@ -352,15 +348,12 @@ export class FriendlyBrain {
       this.deps.releaseHeal?.(this.unit);
       this.heartbeat.markMeaningfulAction(this.clock);
       this.transition("healRecover", "healLanded");
-      // Healing is applied by the squad, not by the attack resolver.
       return false;
     }
 
     const target = this.target;
     if (!target || validateTarget(this.unit, target) !== "ok") return false;
-    if (this.unit.distanceTo(target.position.x, target.position.z) > this.unit.attackReach(target) + 0.6) {
-      return false;
-    }
+    if (this.unit.distanceTo(target.position.x, target.position.z) > this.unit.attackReach(target) + 0.6) return false;
     this.heartbeat.markMeaningfulAction(this.clock);
     this.transition(this._state === "healWindup" ? "healRecover" : "attackRecover", "hitLanded");
     return true;
@@ -369,7 +362,6 @@ export class FriendlyBrain {
   // ------------------------------------------------------------- stuck -----
 
   private checkStuck(dt: number, from: AllyState): void {
-    // Covering ground is progress; without this a long walk reads as a stall.
     if (this.unit.movementSpeed > 0.2) {
       this.heartbeat.markMovement(this.clock);
       this.heartbeat.markMeaningfulAction(this.clock);
@@ -379,12 +371,7 @@ export class FriendlyBrain {
     this.transition("stuckRecovery", `stuckIn:${from}`);
   }
 
-  /**
-   * Escalating recovery, delegated to `BrainRecovery`. The brain only decides
-   * what the outcome means for its state.
-   */
   private tickStuckRecovery(dt: number): void {
-    // Actively recovering counts as progress.
     this.heartbeat.markMeaningfulAction(this.clock);
     const outcome = stepRecovery(
       {
@@ -416,5 +403,4 @@ export class FriendlyBrain {
         break;
     }
   }
-
 }
