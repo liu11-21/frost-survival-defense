@@ -276,6 +276,47 @@ def limb_rings(data, n, pad_head, pad_tail, exp):
     return rings
 
 
+# Which bones each garment region is ALLOWED to inherit.
+#
+# The coat hem was weighted to the forearm. Not through a bug in the transfer
+# but through its premise: MPFB stands in an A-pose, the wrist hangs against
+# the skirt, and "nearest body surface" is therefore the wrist. Seventy-two
+# hem vertices came back with lowerarm_r above 0.5, and at melee impact the
+# arm swung up and took the hem with it.
+#
+# Proximity cannot answer this. The arm really is the closest surface, and it
+# really is touching. What separates a sleeve from a skirt is not distance,
+# it is what the piece IS -- and the builder knows that, because it lofts the
+# sleeve around the arm bone and the skirt around the hips. That knowledge is
+# what gets thrown away when the pieces merge into one mesh, so it is now
+# recorded while the pieces are still separate and used to filter the donor
+# weights before they are blended.
+def _family_filter(family):
+    def torso(name):
+        return (name in ("pelvis", "spine", "spine_01", "spine_02", "spine_03",
+                         "chest", "neck", "neck_01", "head")
+                or name.startswith("clavicle"))
+
+    if family == "skirt":
+        # Hips and thighs only. No arm or hand bone may drive a hem, ever.
+        return lambda n: (n in ("pelvis", "spine", "spine_01")
+                          or n.startswith("thigh"))
+    if family and family.startswith("sleeve_"):
+        side = family[-1]
+        allowed = ("clavicle_%s" % side, "upperarm_%s" % side,
+                   "lowerarm_%s" % side, "hand_%s" % side)
+        return lambda n: n in allowed or n.endswith("_%s" % side) and (
+            n.startswith(("thumb", "index", "middle", "ring", "pinky")))
+    if family and family.startswith("leg_"):
+        side = family[-1]
+        return lambda n: (n in ("pelvis", "spine_01")
+                          or n.endswith("_%s" % side) and n.startswith(
+                              ("thigh", "calf", "foot", "ball")))
+    if family == "torso":
+        return torso
+    return None
+
+
 def build_outfit(body, armature, variant):
     """Loft the garments around the measured body."""
     b = MeshBuilder(0)
@@ -299,6 +340,8 @@ def build_outfit(body, armature, variant):
     # --- coat ---------------------------------------------------------
     # Skirt flares below the belt; the body narrows there so a constant pad
     # would cling. Extra pad low down is what makes it read as a garment.
+    regions = []
+    coat_start = len(b.vertices)
     b.sweep([
         ring("hem", 0.085 + height * 0.030, 2.4),
         ring("thighTop", 0.075, 2.5),
@@ -309,6 +352,10 @@ def build_outfit(body, armature, variant):
         ring("upperChest", 0.054, 3.0),
         ring("shoulder", 0.048, 2.8),
     ], "coat", lambda y: {}, cap_bottom=False, cap_top=False)
+    # Rings are emitted in the order given, n vertices each: hem, thighTop and
+    # hip are the skirt; everything above the waist is torso.
+    regions.append(("skirt", coat_start, coat_start + 3 * n))
+    regions.append(("torso", coat_start + 3 * n, len(b.vertices)))
 
     # Fur collar, an open shawl rather than a closed tube.
     d = m["collar"]
@@ -403,9 +450,14 @@ def build_outfit(body, armature, variant):
             # fingertips and toes simply protrude through the hole -- which is
             # exactly what "bare hands and bare toes" looked like.
             closed = bone_name.startswith(("hand_", "foot_"))
+            mark = len(b.vertices)
             b.sweep_axis(limb_rings(data, n_limb, pad, tail_pad, exp),
                          surface, lambda t: {}, data["start"], data["end"],
                          cap_start=False, cap_end=closed)
+            family = ("sleeve_%s" % side
+                      if bone_name.startswith(("upperarm_", "lowerarm_", "hand_"))
+                      else "leg_%s" % side)
+            regions.append((family, mark, len(b.vertices)))
 
     # --- helmet: open face --------------------------------------------
     # Built from the head's own vertices like every other piece. The previous
@@ -454,7 +506,7 @@ def build_outfit(body, armature, variant):
                         (lo["centre"].x + sign * lo["halfWidth"] * 0.86, lo["centre"].y + (hi["centre"].y - lo["centre"].y) * 0.18),
                     ], hi["centre"].z + hi["front"] * 0.10, hi["front"] * 0.90, "metal", {})
 
-    return b, m, floor, top, height
+    return b, m, floor, top, height, regions
 
 
 def build_sword(body, armature, height):
@@ -669,8 +721,37 @@ def implausible_weights(obj, side=None, limit=12):
     return bad
 
 
+def region_violations(obj, families, threshold=0.02):
+    """Bones a garment region must never carry, checked after the merge.
+
+    The filter runs while the pieces are separate; this proves the guarantee
+    held through merging, smoothing and renormalisation. Anything here is a
+    build failure, not a warning -- a hem with an arm influence is a metre of
+    coat flying across the screen at melee impact.
+    """
+    names = {g.index: g.name for g in obj.vertex_groups}
+    bad = []
+    for vertex in obj.data.vertices:
+        family = families[vertex.index] if vertex.index < len(families) else None
+        if not family:
+            continue
+        allow = _family_filter(family)
+        if allow is None:
+            continue
+        for group in vertex.groups:
+            name = names.get(group.group)
+            if not name or group.weight <= threshold or allow(name):
+                continue
+            bad.append({"vertex": vertex.index, "family": family,
+                        "bone": name, "weight": round(group.weight, 4)})
+            if len(bad) >= 12:
+                return bad
+    return bad
+
+
 def transfer_weights(garment, body, armature, max_influences=4,
-                     smooth_passes=4, smooth_strength=0.35):
+                     smooth_passes=4, smooth_strength=0.35,
+                     families=None):
     """Copy weights from the nearest body SURFACE, interpolated across the face.
 
     The first version snapped each garment vertex to the single nearest body
@@ -714,6 +795,14 @@ def transfer_weights(garment, body, armature, max_influences=4,
                     name = groups.get(group.group)
                     if name:
                         blended[name] = blended.get(name, 0.0) + group.weight * share
+        allow = _family_filter(families[len(sampled)]) if families else None
+        if allow is not None:
+            # Filter the donors, then renormalise. A hem vertex whose nearest
+            # surface is the wrist keeps only what the hips and thighs
+            # contributed; if that leaves nothing it falls through to the
+            # trunk search below rather than silently keeping the arm.
+            kept = {n: w for n, w in blended.items() if allow(n)}
+            blended = kept if kept else blended
         sampled.append(blended)
 
     # Smooth the weight field over the GARMENT's own topology.
@@ -758,6 +847,15 @@ def transfer_weights(garment, body, armature, max_influences=4,
         sampled = updated
 
     for index, blended in enumerate(sampled):
+        if families:
+            # Smoothing averages across the seam between regions, which pulls
+            # an arm bone back onto the top skirt ring. Filter once more so
+            # the guarantee survives the blur that follows it.
+            allow = _family_filter(families[index])
+            if allow is not None:
+                kept = {n: w for n, w in blended.items() if allow(n)}
+                if kept:
+                    blended = kept
         if not blended:
             continue
         # Drop trace influences. MPFB's own body carries sub-1-per-mille
@@ -893,9 +991,19 @@ def main():
                 bsdf.inputs["Metallic"].default_value = metal
         materials[name] = mat
 
-    builder, measurements, floor, top, height = build_outfit(body, armature, args.variant)
+    builder, measurements, floor, top, height, regions = build_outfit(
+        body, armature, args.variant)
     outfit = to_object(builder, "HeroOutfit", materials)
-    transfer_weights(outfit, body, armature)
+    # Expand the recorded ranges into a per-vertex family. `to_object` builds
+    # the mesh straight from the builder's vertex list, so indices line up.
+    families = [None] * len(outfit.data.vertices)
+    for family, start, end in regions:
+        for index in range(start, min(end, len(families))):
+            families[index] = family
+    transfer_weights(outfit, body, armature, families=families)
+    outfit_gate = region_violations(outfit, families)
+    if outfit_gate:
+        raise SystemExit("HeroOutfit region binding violated: %s" % outfit_gate[:6])
 
     gloves = []
     glove_checks = []
