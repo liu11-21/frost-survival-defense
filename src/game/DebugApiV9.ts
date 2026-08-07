@@ -1,4 +1,4 @@
-import { Vector3 } from "@babylonjs/core";
+import { Matrix, Vector3 } from "@babylonjs/core";
 import type { HeroSkillId } from "../hero/HeroSkillDefinitions";
 import { structureRepairFixedBurst } from "../combat/StructureSelfRepair";
 import { LANES, nearestPointOnLane } from "../data/BuildSlotDefinitions";
@@ -177,6 +177,28 @@ export function createV9DebugApi(s: GameSystems): Record<string, unknown> {
       const point = new Vector3(x, 0, z);
       const touched = s.collision.resolve(point, Math.max(0, agentRadius));
       return { touched, x: point.x, z: point.z };
+    },
+    /** Projects an arbitrary world point to CSS-pixel canvas coordinates. The
+     * slot-centre helper in DebugApi cannot exercise near-edge pointer UX, so
+     * interaction regressions use this diagnostic instead of guessing camera
+     * maths in the test. */
+    projectWorldPoint: (x: number, z: number, y = 0) => {
+      const canvas = s.engine.getRenderingCanvas();
+      const rw = s.engine.getRenderWidth();
+      const rh = s.engine.getRenderHeight();
+      const viewport = s.camera.camera.viewport.toGlobal(rw, rh);
+      const coords = Vector3.Project(
+        new Vector3(x, y, z),
+        Matrix.Identity(),
+        s.scene.getTransformMatrix(),
+        viewport,
+      );
+      const scaleX = canvas ? canvas.clientWidth / rw : 1;
+      const scaleY = canvas ? canvas.clientHeight / rh : 1;
+      return {
+        x: Number((coords.x * scaleX).toFixed(1)),
+        y: Number((coords.y * scaleY).toFixed(1)),
+      };
     },
     healthLabelFacing: () =>
       s.scene.meshes
