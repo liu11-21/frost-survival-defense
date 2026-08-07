@@ -38,6 +38,17 @@ async function moveHero(page: Page, key: "w" | "a" | "s" | "d", frames: number):
   await step(page, 0.016, 2);
 }
 
+/** Teleport is intentionally position-only in production. Let the real no-input
+ * movement damping bleed off any velocity from the previous probe before the
+ * next directional approach, otherwise the test measures inherited momentum. */
+async function teleportAndSettle(page: Page, x: number, z: number): Promise<any> {
+  await call(page, "teleport", x, z);
+  await step(page, 0.016, 16);
+  const state = await call(page, "heroMovementStatus");
+  expect(state.speed).toBeLessThan(0.05);
+  return state;
+}
+
 function centroid(units: Array<{ x: number; z: number }>): { x: number; z: number } {
   const n = Math.max(1, units.length);
   return {
@@ -79,8 +90,7 @@ test("G1 closure: facility visuals do not create obvious invisible movement coll
   // Hero physically walks into the warehouse using real WASD. The remaining
   // centre-to-centre clearance beyond visible facility + hero body must stay
   // tiny; this catches an obvious invisible shell without changing balance.
-  await call(page, "teleport", warehouseSlot.x, warehouseSlot.z - 4.8);
-  const warehouseStart = await call(page, "heroMovementStatus");
+  const warehouseStart = await teleportAndSettle(page, warehouseSlot.x, warehouseSlot.z - 4.8);
   await moveHero(page, "w", 95);
   const warehouseStop = await call(page, "heroMovementStatus");
   const warehouseDistance = Math.hypot(
@@ -96,8 +106,7 @@ test("G1 closure: facility visuals do not create obvious invisible movement coll
 
   // Repeat against a tower because its compact gameplay radius is smaller and
   // its scaled visual bounds are slightly larger than collision.
-  await call(page, "teleport", towerSlot.x - 4.2, towerSlot.z);
-  const towerStart = await call(page, "heroMovementStatus");
+  const towerStart = await teleportAndSettle(page, towerSlot.x - 4.2, towerSlot.z);
   await moveHero(page, "d", 90);
   const towerStop = await call(page, "heroMovementStatus");
   const towerDistance = Math.hypot(towerStop.x - towerSlot.x, towerStop.z - towerSlot.z);
@@ -115,14 +124,14 @@ test("G1 closure: facility visuals do not create obvious invisible movement coll
   expect(visualGap - gameplayGap).toBeLessThan(0.15);
   expect(gameplayGap).toBeGreaterThan(warehouseStop.hitRadius * 2 + 1);
 
-  await call(page, "teleport", 2.8, 0);
+  await teleportAndSettle(page, 2.8, 0);
   await moveHero(page, "d", 90);
   const corridorExit = await call(page, "heroMovementStatus");
   expect(corridorExit.x).toBeGreaterThan(7);
   expect(Math.abs(corridorExit.z)).toBeLessThan(0.5);
 
   // Normal gameplay and minimap evidence after the real movement checks.
-  await call(page, "teleport", 7, 22);
+  await teleportAndSettle(page, 7, 22);
   await step(page, 0.016, 1, true);
   await page.screenshot({ path: testInfo.outputPath("g1-normal-gameplay.png"), fullPage: true });
   await page.locator("#ui-minimap").screenshot({ path: testInfo.outputPath("g1-minimap.png") });
@@ -160,7 +169,7 @@ test("G1 closure: facility visuals do not create obvious invisible movement coll
   expect((await call(page, "watchdog")).recoveries).toBe(0);
 
   // Put the normal tactical camera on the roadside engagement for closure evidence.
-  await call(page, "teleport", -7.5, 29.5);
+  await teleportAndSettle(page, -7.5, 29.5);
   await step(page, 0.016, 1, true);
   await page.screenshot({ path: testInfo.outputPath("g1-squad-combat-lane.png"), fullPage: true });
 });
