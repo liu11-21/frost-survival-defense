@@ -25,6 +25,23 @@ async function boot(page: Page): Promise<void> {
   await page.evaluate(() => (window as any).frostbound.stopLoop());
 }
 
+async function projectWorldPoint(
+  page: Page,
+  x: number,
+  z: number,
+  y: number,
+): Promise<{ x: number; y: number }> {
+  // Manual simulation intentionally runs with render=false for speed. Babylon's
+  // cached view/projection transform is refreshed by one render-only frame
+  // before converting a world point to real CSS pointer coordinates.
+  await page.evaluate(() => (window as any).frostbound?.step?.(0.001, 1, true));
+  const projected = await call(page, "projectWorldPoint", x, z, y);
+  if (!projected || !Number.isFinite(projected.x) || !Number.isFinite(projected.y)) {
+    throw new Error(`non-finite world projection for (${x}, ${y}, ${z})`);
+  }
+  return projected;
+}
+
 async function canvasClientPoint(
   page: Page,
   projected: { x: number; y: number },
@@ -47,8 +64,7 @@ test("mouse-clicking a remote visible slot opens the canonical build panel", asy
   // coreNE is ~7.35 units away from the hero, well beyond the old 3.4-unit
   // proximity interaction radius. This must therefore be the new pointer path,
   // not the old E/B-nearby path succeeding by accident.
-  const projected = await call(page, "projectWorldPoint", 5.2, 5.2, 0.08);
-  expect(projected).toBeTruthy();
+  const projected = await projectWorldPoint(page, 5.2, 5.2, 0.08);
   const point = await canvasClientPoint(page, projected);
   await page.mouse.click(point.x, point.y);
   await step(page, 0.016, 2);
@@ -78,8 +94,7 @@ test("scaled facility visuals still leave a generous real pointer placement targ
 
   const target = SLOT_BY_ID.get("coreNE")!;
   const visibleEdgeOffset = UNIVERSAL_MAX_VISUAL_RADIUS * contract.visualScale.x * 0.95;
-  const projected = await call(page, "projectWorldPoint", target.x + visibleEdgeOffset, target.z, 0.08);
-  expect(projected).toBeTruthy();
+  const projected = await projectWorldPoint(page, target.x + visibleEdgeOffset, target.z, 0.08);
   const point = await canvasClientPoint(page, projected);
   await page.mouse.click(point.x, point.y);
   await step(page, 0.016, 2);
@@ -118,8 +133,7 @@ test("a real draggable recruit icon spends only after a legal lane drop", async 
   expect(before.some((unit) => unit.id === "warrior")).toBe(false);
 
   // This is an exact point on north lane segment 3, not a slot approximation.
-  const projected = await call(page, "projectWorldPoint", 8, 25, 0.04);
-  expect(projected).toBeTruthy();
+  const projected = await projectWorldPoint(page, 8, 25, 0.04);
   const point = await canvasClientPoint(page, projected);
 
   await page.evaluate(({ x, y }) => {
