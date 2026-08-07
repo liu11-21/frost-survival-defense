@@ -669,7 +669,8 @@ def implausible_weights(obj, side=None, limit=12):
     return bad
 
 
-def transfer_weights(garment, body, armature, max_influences=4, smooth_passes=4):
+def transfer_weights(garment, body, armature, max_influences=4,
+                     smooth_passes=4, smooth_strength=0.35):
     """Copy weights from the nearest body SURFACE, interpolated across the face.
 
     The first version snapped each garment vertex to the single nearest body
@@ -730,17 +731,29 @@ def transfer_weights(garment, body, armature, max_influences=4, smooth_passes=4)
         a, b = edge.vertices
         adjacency[a].append(b)
         adjacency[b].append(a)
+    # Blend toward the neighbourhood average rather than replacing with it.
+    #
+    # Four full replacement passes cured the seam and caused a worse problem:
+    # coat vertices near the shoulder came out spine 0.2765 / spine_02 0.2625
+    # / two more at similar values -- a flat four-way split with no dominant
+    # bone at all. A vertex like that follows the average of several unrelated
+    # joints, and at melee impact the coat extruded roughly a metre into a
+    # blade. Smoothing has to remove the discontinuity without dissolving the
+    # dominant influence, so each pass moves only part of the way.
     for _pass in range(smooth_passes):
         updated = []
         for index, blended in enumerate(sampled):
-            merged = dict(blended)
             neighbours = adjacency[index]
-            if neighbours:
-                share = 1.0 / (len(neighbours) + 1.0)
-                merged = {n: w * share for n, w in blended.items()}
-                for other in neighbours:
-                    for name, weight in sampled[other].items():
-                        merged[name] = merged.get(name, 0.0) + weight * share
+            if not neighbours:
+                updated.append(dict(blended))
+                continue
+            average = {}
+            for other in neighbours:
+                for name, weight in sampled[other].items():
+                    average[name] = average.get(name, 0.0) + weight / len(neighbours)
+            merged = {n: w * (1.0 - smooth_strength) for n, w in blended.items()}
+            for name, weight in average.items():
+                merged[name] = merged.get(name, 0.0) + weight * smooth_strength
             updated.append(merged)
         sampled = updated
 

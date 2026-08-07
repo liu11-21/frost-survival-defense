@@ -19,6 +19,7 @@ Three passes on the *shipped* candidate GLB, the exact file Babylon loads:
         --input public/assets/models/characters/hero_male.glb
 """
 import argparse
+import hashlib
 import json
 import math
 import os
@@ -157,7 +158,12 @@ def main():
     # --- 1. Manual single-bone rotation, no animation anywhere in the scene.
     # Both naming conventions: MPFB authors `upperarm_r`, but the candidate is
     # retargeted onto the reference rig, which uses `upper_arm.R`.
-    for bone_name in ("upper_arm.R", "lower_arm.R", "upperarm_r", "lowerarm_r"):
+    # BOTH SIDES. Every earlier round tested the right arm only, and the
+    # melee-impact frame showed the LEFT arm extruded about a metre while the
+    # right-side numbers looked merely bad. A symmetric rig is not a symmetric
+    # skin, and an asymmetric defect is invisible to a one-sided test.
+    for bone_name in ("upper_arm.L", "lower_arm.L", "upper_arm.R", "lower_arm.R",
+                      "upperarm_l", "lowerarm_l", "upperarm_r", "lowerarm_r"):
         bone = armature.pose.bones.get(bone_name)
         if bone is None:
             report["manual"][bone_name] = {"error": "bone not found",
@@ -199,6 +205,58 @@ def main():
                 "result": survey(meshes, rests, depsgraph),
             }
 
+    # --- 3. Which mesh owns the blade, and which joint creates it.
+    if action is not None:
+        start, end = action.frame_range
+        frame = int(round(start + (end - start) * PHASES["impact"]))
+        bpy.context.scene.frame_set(frame)
+        bpy.context.view_layer.update()
+        depsgraph = bpy.context.evaluated_depsgraph_get()
+        everything = []
+        for entry in survey(meshes, rests, depsgraph, limit=20):
+            for edge in entry.get("worst", []):
+                everything.append(dict(edge, mesh=entry["mesh"]))
+        everything.sort(key=lambda item: -item["grewMetres"])
+        report["impactWorst20"] = everything[:20]
+        print("IMPACT_WORST20 %s" % json.dumps(
+            [{"mesh": e["mesh"], "grew": e["grewMetres"],
+              "v0W": e["v0Weights"][:2]} for e in everything[:6]]))
+
+        # Actual-transform isolation, not an arbitrary 35 deg. Take the pose
+        # the clip really puts the left chain in at impact, then add one bone
+        # at a time. The step where growth jumps is the joint at fault.
+        chain = [n for n in ("clavicle.L", "upper_arm.L", "lower_arm.L", "hand.L")
+                 if armature.pose.bones.get(n)]
+        captured = {n: armature.pose.bones[n].matrix_basis.copy() for n in chain}
+        # Unbind the action first. Leaving it assigned means every
+        # `view_layer.update()` re-evaluates it and overwrites the basis being
+        # set by hand, which made the whole ladder read 0.00000.
+        armature.animation_data.action = None
+        for bone in armature.pose.bones:
+            bone.matrix_basis = Matrix.Identity(4)
+        bpy.context.view_layer.update()
+        ladder = []
+        for depth in range(len(chain) + 1):
+            for index, name in enumerate(chain):
+                armature.pose.bones[name].matrix_basis = (
+                    captured[name] if index < depth else Matrix.Identity(4))
+            bpy.context.view_layer.update()
+            depsgraph = bpy.context.evaluated_depsgraph_get()
+            results = survey(meshes, rests, depsgraph, limit=1)
+            peak = max((r.get("maxGrowthMetres") or 0.0) for r in results)
+            owner = max(results, key=lambda r: r.get("maxGrowthMetres") or 0.0)
+            ladder.append({
+                "applied": chain[:depth] or ["rest"],
+                "maxGrowthMetres": round(peak, 5),
+                "mesh": owner["mesh"],
+                "weights": (owner.get("worst") or [{}])[0].get("v0Weights"),
+            })
+            print("LEFT_CHAIN +%-14s peak=%.5f mesh=%s" % (
+                chain[depth - 1] if depth else "rest", peak, owner["mesh"]))
+        report["leftChainIsolation"] = ladder
+        for bone in armature.pose.bones:
+            bone.matrix_basis = Matrix.Identity(4)
+
     os.makedirs(OUT, exist_ok=True)
     path = os.path.join(OUT, "deform-%s.json" % args.label)
     with open(path, "w", encoding="utf-8") as handle:
@@ -218,6 +276,11 @@ def main():
             print("DEFORM_CLIP %s peak=%s per=%s" % (
                 label, peak(entry),
                 json.dumps({r["mesh"]: r["maxRatio"] for r in entry["result"]})))
+    absolute = os.path.abspath(os.path.join(ROOT, args.input))
+    digest = hashlib.sha256(open(absolute, "rb").read()).hexdigest()
+    print("DEFORM_INPUT abs=%s sha256=%s bytes=%d" % (
+        absolute, digest, os.path.getsize(absolute)))
+    print("DEFORM_OUTPUT abs=%s" % os.path.abspath(path))
     print("DEFORM_REPORT %s" % os.path.relpath(path, ROOT).replace("\\", "/"))
 
 
