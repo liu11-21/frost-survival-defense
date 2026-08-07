@@ -163,8 +163,18 @@ test("G1 closure: facility visuals do not create obvious invisible movement coll
   // Normal gameplay and minimap evidence after the real movement checks.
   await teleportAndSettle(page, 7, 22);
   await step(page, 0.016, 1, true);
+  const minimap = page.locator("#ui-minimap");
+  const minimapBox = await minimap.boundingBox();
+  const viewport = page.viewportSize();
+  expect(minimapBox).not.toBeNull();
+  expect(viewport).not.toBeNull();
+  if (!minimapBox || !viewport) throw new Error("minimap or viewport bounds unavailable");
+  expect(minimapBox.x).toBeGreaterThanOrEqual(0);
+  expect(minimapBox.y).toBeGreaterThanOrEqual(0);
+  expect(minimapBox.x + minimapBox.width).toBeLessThanOrEqual(viewport.width);
+  expect(minimapBox.y + minimapBox.height).toBeLessThanOrEqual(viewport.height);
   await page.screenshot({ path: ".runtime/g1-evidence/g1-normal-gameplay.png", fullPage: true });
-  await page.locator("#ui-minimap").screenshot({ path: ".runtime/g1-evidence/g1-minimap.png" });
+  await minimap.screenshot({ path: ".runtime/g1-evidence/g1-minimap.png" });
 
   // A real FriendlyBrain/UnitMotor chase now crosses the tightest roadside
   // facility area. We sample the squad centroid instead of a geometry probe.
