@@ -289,15 +289,37 @@ def forearm_test(basemesh, armature):
     driven = {name for name in (lower, hand) if name}
     group_ids = {g.index for g in basemesh.vertex_groups if g.name in driven}
 
-    samples = []
+    # The band is derived from the group's OWN extent along the bone axis, not
+    # from the elbow-to-wrist distance.
+    #
+    # Normalising by that distance assumes the two bone heads bracket the
+    # weighted region. They do not on every rig: with group gating on, both
+    # `default` and `game_engine` produced an empty sample because their
+    # weighted forearm vertices fell entirely outside 15-90% of that span,
+    # while mixamo happened to line up. Measuring the group against itself
+    # removes the assumption -- whatever the rig calls things and wherever it
+    # puts its bone heads, the proximal and distal ends of the weighted region
+    # are exactly the ends of the region being tested.
+    weighted = []
     for index, world in enumerate(rest_coords):
         vertex = basemesh.data.vertices[index]
-        if not any(g.group in group_ids and g.weight > 1e-3 for g in vertex.groups):
-            continue
-        along = (world - origin).dot(axis) / length
+        if any(g.group in group_ids and g.weight > 1e-3 for g in vertex.groups):
+            weighted.append((index, world, (world - origin).dot(axis)))
+    if not weighted:
+        return {"ran": False, "reason": "no vertices weighted to %s or %s" % (lower, hand),
+                "vertexGroupsPresent": sorted(g.name for g in basemesh.vertex_groups)[:24]}
+    projections = [w[2] for w in weighted]
+    span_lo, span_hi = min(projections), max(projections)
+    span = span_hi - span_lo
+    if span < 1e-6:
+        return {"ran": False, "reason": "weighted forearm region has no extent along the bone axis"}
+
+    samples = []
+    for index, world, projection in weighted:
+        along = (projection - span_lo) / span
         if not (0.15 <= along <= 0.90):
             continue
-        radial = (world - origin) - axis * (along * length)
+        radial = (world - origin) - axis * projection
         radius = radial.length
         if radius < 1e-5:
             continue
@@ -365,8 +387,8 @@ def forearm_test(basemesh, armature):
             rest_radii, posed_radii, member_ratios = [], [], []
             for sample in members:
                 world = posed[sample["index"]]
-                along = (world - posed_origin).dot(axis) * 1.0
-                radial = (world - posed_origin) - axis * along
+                projection = (world - posed_origin).dot(axis)
+                radial = (world - posed_origin) - axis * projection
                 posed_radius = radial.length
                 rest_radii.append(sample["radius"])
                 posed_radii.append(posed_radius)
