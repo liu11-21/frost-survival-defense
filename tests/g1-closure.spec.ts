@@ -84,7 +84,7 @@ function centroid(units: Array<{ x: number; z: number }>): { x: number; z: numbe
   };
 }
 
-test("G1 closure: facility visuals do not create obvious invisible movement collision", async ({ page }, testInfo) => {
+test("G1 closure: facility visuals do not create obvious invisible movement collision", async ({ page }) => {
   await boot(page);
   await call(page, "startStage", "stage-3");
   await call(page, "setFurnaceLevel", 30);
@@ -163,8 +163,8 @@ test("G1 closure: facility visuals do not create obvious invisible movement coll
   // Normal gameplay and minimap evidence after the real movement checks.
   await teleportAndSettle(page, 7, 22);
   await step(page, 0.016, 1, true);
-  await page.screenshot({ path: testInfo.outputPath("g1-normal-gameplay.png"), fullPage: true });
-  await page.locator("#ui-minimap").screenshot({ path: testInfo.outputPath("g1-minimap.png") });
+  await page.screenshot({ path: ".runtime/g1-evidence/g1-normal-gameplay.png", fullPage: true });
+  await page.locator("#ui-minimap").screenshot({ path: ".runtime/g1-evidence/g1-minimap.png" });
 
   // A real FriendlyBrain/UnitMotor chase now crosses the tightest roadside
   // facility area. We sample the squad centroid instead of a geometry probe.
@@ -201,5 +201,5 @@ test("G1 closure: facility visuals do not create obvious invisible movement coll
   // Put the normal tactical camera on the roadside engagement for closure evidence.
   await teleportAndSettle(page, -7.5, 29.5);
   await step(page, 0.016, 1, true);
-  await page.screenshot({ path: testInfo.outputPath("g1-squad-combat-lane.png"), fullPage: true });
+  await page.screenshot({ path: ".runtime/g1-evidence/g1-squad-combat-lane.png", fullPage: true });
 });
