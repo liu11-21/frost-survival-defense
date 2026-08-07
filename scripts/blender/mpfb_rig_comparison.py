@@ -211,106 +211,219 @@ def deformation(basemesh, armature, rig_name):
 
 
 def forearm_test(basemesh, armature):
-    """Judge forearm rotation by orientation and skin, not by hand travel.
+    """Judge forearm rotation by orientation, weights and per-vertex radius.
 
-    The old gate rotated the forearm and measured how far `hand.R`'s head
-    moved. That is the wrong quantity: real pronation and supination turn the
-    hand about the forearm axis with the wrist centre barely translating at
-    all, so a correct rig scored near zero and "failed".
+    Two things were wrong with the first version and both inflated confidence:
 
-    What matters is whether the hand actually *reorients*, whether the
-    elbow-to-wrist centreline stays put while it does, and whether the skin
-    between them twists smoothly or collapses into a candy wrapper.
+    1. It re-selected the sampled vertex set *after* posing, by re-deriving
+       the elbow-to-wrist axis and re-filtering. `points[i] - rest_points[i]`
+       then compared two different vertices whenever membership shifted. The
+       set is now chosen once, at rest, and only those indices are ever read.
+
+    2. Candy wrapper was `min(posed radius) / mean(rest radius)`, which
+       compares the naturally-thin wrist against the average of the whole
+       forearm and reports a collapse that is just anatomy. Each vertex is now
+       compared against *its own* rest radius, and the verdict comes from
+       binned cross-sections along the bone.
+
+    It also records the weights on the sampled vertices, because "the surface
+    did not move" and "the surface is not weighted to the bone I rotated" are
+    completely different findings and the previous test could not tell them
+    apart.
     """
     lower = find_bone(armature, ("lowerarm", "lower_arm", "forearm"), "R")
     hand = find_bone(armature, ("hand", "wrist"), "R")
     if lower is None or hand is None:
         return {"ran": False, "reason": "missing forearm (%s) or hand (%s)" % (lower, hand)}
 
-    depsgraph = bpy.context.evaluated_depsgraph_get()
+    upper = find_bone(armature, ("upperarm", "upper_arm", "arm"), "R")
     lower_bone = armature.pose.bones[lower]
     hand_bone = armature.pose.bones[hand]
-
-    def hand_frame():
-        m = armature.matrix_world @ hand_bone.matrix
-        return m.to_quaternion(), m.col[0].to_3d().normalized(), \
-            m.col[1].to_3d().normalized(), m.col[2].to_3d().normalized()
-
-    def forearm_surface():
-        """Vertices lying between elbow and wrist, in forearm-local space."""
-        evaluated = basemesh.evaluated_get(depsgraph)
-        mesh = evaluated.to_mesh()
-        origin = armature.matrix_world @ lower_bone.head
-        tip = armature.matrix_world @ hand_bone.head
-        axis = (tip - origin)
-        length = axis.length
-        axis = axis.normalized()
-        points = []
-        for vertex in mesh.vertices:
-            world = basemesh.matrix_world @ vertex.co
-            along = (world - origin).dot(axis)
-            if 0.15 * length < along < 0.9 * length:
-                radial = (world - origin) - axis * along
-                points.append((along, radial.length, world.copy()))
-        evaluated.to_mesh_clear()
-        return points, origin.copy(), tip.copy()
-
     for pose_bone in armature.pose.bones:
         pose_bone.rotation_mode = "QUATERNION"
         pose_bone.rotation_quaternion = Quaternion((1, 0, 0, 0))
     bpy.context.view_layer.update()
-    rest_quat, rest_x, rest_y, rest_z = hand_frame()
-    rest_points, rest_origin, rest_tip = forearm_surface()
 
-    results = {"ran": True, "forearmBone": lower, "handBone": hand,
-               "sampledForearmVertices": len(rest_points)}
+    depsgraph = bpy.context.evaluated_depsgraph_get()
+    # Everything below works in ONE space: the mesh object's own local space.
+    #
+    # The previous version put bone heads through `armature.matrix_world` and
+    # mesh vertices through `basemesh.matrix_world`, then compared them. Those
+    # two matrices are not the same here, so the "elbow to wrist" band landed
+    # somewhere else entirely -- the diagnostic that caught it showed the
+    # sampled vertices weighted to ball_r, calf_r and foot_r. The test was
+    # measuring the leg and reporting it as a forearm that would not move.
+    to_mesh_space = basemesh.matrix_world.inverted() @ armature.matrix_world
+
+    def bone_head(pose_bone):
+        return (to_mesh_space @ pose_bone.head).copy()
+
+    def evaluated_coords():
+        evaluated = basemesh.evaluated_get(depsgraph)
+        mesh = evaluated.to_mesh()
+        coords = [v.co.copy() for v in mesh.vertices]
+        evaluated.to_mesh_clear()
+        return coords
+
+    # --- fixed sample set, chosen once at rest --------------------------
+    origin = bone_head(lower_bone)
+    tip = bone_head(hand_bone)
+    axis_vector = tip - origin
+    length = axis_vector.length
+    if length < 1e-6:
+        return {"ran": False, "reason": "degenerate forearm axis"}
+    axis = axis_vector.normalized()
+
+    rest_coords = evaluated_coords()
+    groups = {g.index: g.name for g in basemesh.vertex_groups}
+
+    # Selection is by VERTEX GROUP first, band second.
+    #
+    # Projecting onto the elbow-to-wrist axis and keeping everything in the
+    # 15-90% range has no radial cutoff, and MPFB stands in an A-pose -- the
+    # forearm axis points down and outward, so the legs project into exactly
+    # the same band. The diagnostic that caught this showed the "forearm"
+    # sample weighted to ball_r, calf_r and foot_r: the test was measuring a
+    # shin. Requiring real weight on the forearm or hand bone makes that
+    # impossible by construction.
+    driven = {name for name in (lower, hand) if name}
+    group_ids = {g.index for g in basemesh.vertex_groups if g.name in driven}
+
+    samples = []
+    for index, world in enumerate(rest_coords):
+        vertex = basemesh.data.vertices[index]
+        if not any(g.group in group_ids and g.weight > 1e-3 for g in vertex.groups):
+            continue
+        along = (world - origin).dot(axis) / length
+        if not (0.15 <= along <= 0.90):
+            continue
+        radial = (world - origin) - axis * (along * length)
+        radius = radial.length
+        if radius < 1e-5:
+            continue
+        weights = {}
+        for group in basemesh.data.vertices[index].groups:
+            name = groups.get(group.group)
+            if name and group.weight > 1e-4:
+                weights[name] = group.weight
+        samples.append({"index": index, "along": along, "radius": radius, "weights": weights})
+
+    if not samples:
+        return {"ran": False, "reason": "no forearm vertices in the 15-90% band"}
+
+    def weight_on(sample, bone_name):
+        return sample["weights"].get(bone_name, 0.0) if bone_name else 0.0
+
+    lower_weights = [weight_on(s, lower) for s in samples]
+    result = {
+        "ran": True,
+        "forearmBone": lower,
+        "handBone": hand,
+        "upperArmBone": upper,
+        "sampleVertexCount": len(samples),
+        "verticesWeightedToLowerarm": sum(1 for w in lower_weights if w > 1e-4),
+        "verticesWeightedToHand": sum(1 for s in samples if weight_on(s, hand) > 1e-4),
+        "verticesWeightedToUpperarm": sum(1 for s in samples if weight_on(s, upper) > 1e-4),
+        "maxLowerarmWeight": round(max(lower_weights), 4),
+        "meanLowerarmWeight": round(sum(lower_weights) / len(lower_weights), 4),
+        "distinctInfluenceNames": sorted({n for s in samples for n in s["weights"]})[:14],
+    }
+
+    # --- does the armature modifier actually act? -----------------------
+    raw = [v.co.copy() for v in basemesh.data.vertices]
+    result["armatureModifiers"] = [m.name for m in basemesh.modifiers if m.type == "ARMATURE"]
+    result["rawVsEvaluatedMaxDelta"] = round(
+        max((raw[s["index"]] - rest_coords[s["index"]]).length for s in samples), 6)
+
+    BINS = ((0.150, 0.275), (0.275, 0.400), (0.400, 0.525),
+            (0.525, 0.650), (0.650, 0.775), (0.775, 0.900))
+
+    def hand_frame():
+        matrix = to_mesh_space @ hand_bone.matrix
+        return (matrix.to_quaternion(),
+                matrix.col[0].to_3d().normalized(),
+                matrix.col[1].to_3d().normalized(),
+                matrix.col[2].to_3d().normalized())
+
+    rest_quat, rest_x, rest_y, rest_z = hand_frame()
+
     for label, degrees in (("pronate", 80.0), ("supinate", -80.0)):
         lower_bone.rotation_quaternion = Quaternion((0, 1, 0), math.radians(degrees))
         bpy.context.view_layer.update()
+        posed = evaluated_coords()
         quat, x_axis, y_axis, z_axis = hand_frame()
-        points, origin, tip = forearm_surface()
+        posed_origin = bone_head(lower_bone)
+        posed_tip = bone_head(hand_bone)
+
+        displacement, ratios = [], []
+        bins = []
+        for low, high in BINS:
+            members = [s for s in samples if low <= s["along"] < high]
+            if not members:
+                bins.append({"range": [low, high], "vertexCount": 0})
+                continue
+            rest_radii, posed_radii, member_ratios = [], [], []
+            for sample in members:
+                world = posed[sample["index"]]
+                along = (world - posed_origin).dot(axis) * 1.0
+                radial = (world - posed_origin) - axis * along
+                posed_radius = radial.length
+                rest_radii.append(sample["radius"])
+                posed_radii.append(posed_radius)
+                # Each vertex against ITS OWN rest radius.
+                member_ratios.append(posed_radius / sample["radius"])
+                displacement.append((world - rest_coords[sample["index"]]).length)
+            ratios.extend(member_ratios)
+            mean_rest = sum(rest_radii) / len(rest_radii)
+            mean_posed = sum(posed_radii) / len(posed_radii)
+            variance = sum((r - mean_posed) ** 2 for r in posed_radii) / len(posed_radii)
+            bins.append({
+                "range": [low, high],
+                "vertexCount": len(members),
+                "restMeanRadius": round(mean_rest, 5),
+                "posedMeanRadius": round(mean_posed, 5),
+                "minRadiusRatio": round(min(member_ratios), 4),
+                "maxRadiusRatio": round(max(member_ratios), 4),
+                "radialVariance": round(variance, 8),
+            })
 
         orientation_delta = math.degrees(quat.rotation_difference(rest_quat).angle)
-        axis_delta = max(
-            math.degrees(rest_x.angle(x_axis)),
-            math.degrees(rest_y.angle(y_axis)),
-            math.degrees(rest_z.angle(z_axis)))
-        centreline = max((origin - rest_origin).length, (tip - rest_tip).length)
+        axis_delta = max(math.degrees(rest_x.angle(x_axis)),
+                         math.degrees(rest_y.angle(y_axis)),
+                         math.degrees(rest_z.angle(z_axis)))
+        centreline = max((posed_origin - origin).length, (posed_tip - tip).length)
+        # Candy wrapper is judged on the MIDDLE of the forearm only. The wrist
+        # end is naturally thin and the elbow end naturally thick, and mixing
+        # them in is what produced the previous false reading.
+        middle = [b for b in bins if b.get("vertexCount") and 0.275 <= b["range"][0] < 0.775]
+        worst_middle = min((b["minRadiusRatio"] for b in middle), default=1.0)
 
-        n = min(len(rest_points), len(points))
-        surface = [(points[i][2] - rest_points[i][2]).length for i in range(n)]
-        radial = [abs(points[i][1] - rest_points[i][1]) for i in range(n)]
-        rest_radii = [rest_points[i][1] for i in range(n)]
-        mean_radius = (sum(rest_radii) / n) if n else 1.0
-        # Candy wrapper: the radius collapses toward the axis somewhere along
-        # the forearm while the surface elsewhere still moves.
-        collapse = (min(points[i][1] for i in range(n)) / mean_radius) if n and mean_radius else 1.0
-
-        results[label] = {
+        result[label] = {
             "degrees": degrees,
             "handOrientationDeltaDeg": round(orientation_delta, 2),
             "palmAxisDeltaDeg": round(axis_delta, 2),
             "centrelineDisplacement": round(centreline, 5),
-            "surfaceMaxDisplacement": round(max(surface) if surface else 0.0, 5),
-            "surfaceMeanDisplacement": round(sum(surface) / n, 5) if n else 0.0,
-            "radialDistortionMax": round(max(radial) if radial else 0.0, 5),
-            "minRadiusRatio": round(collapse, 4),
+            "surfaceMaxDisplacement": round(max(displacement) if displacement else 0.0, 6),
+            "surfaceMeanDisplacement": round(sum(displacement) / len(displacement), 6) if displacement else 0.0,
+            "perVertexRadiusRatioMin": round(min(ratios), 4) if ratios else None,
+            "perVertexRadiusRatioMax": round(max(ratios), 4) if ratios else None,
+            "worstMiddleBinRatio": round(worst_middle, 4),
+            "crossSections": bins,
             "orientationPassed": orientation_delta > 45.0,
             "centrelineStable": centreline < 0.02,
-            "surfaceDeformationPassed": bool(surface) and max(surface) > 0.002,
-            "candyWrapperRisk": collapse < 0.55,
+            "surfaceTracked": bool(displacement) and max(displacement) > 1e-4,
+            "crossSectionStable": worst_middle > 0.75,
+            "candyWrapperRisk": worst_middle < 0.60,
         }
         lower_bone.rotation_quaternion = Quaternion((1, 0, 0, 0))
         bpy.context.view_layer.update()
 
-    both = [results[k] for k in ("pronate", "supinate") if k in results]
-    results["orientationPassed"] = all(b["orientationPassed"] for b in both)
-    results["centrelineStable"] = all(b["centrelineStable"] for b in both)
-    results["surfaceDeformationPassed"] = all(b["surfaceDeformationPassed"] for b in both)
-    results["candyWrapperRisk"] = any(b["candyWrapperRisk"] for b in both)
-    # Absence of a twist bone is NOT a hard failure. It is a visual gate.
-    results["hasTwistBone"] = bool([b for b in armature.data.bones if "twist" in b.name.lower()])
-    return results
+    both = [result[k] for k in ("pronate", "supinate") if k in result]
+    for key in ("orientationPassed", "centrelineStable", "surfaceTracked", "crossSectionStable"):
+        result[key] = all(b[key] for b in both)
+    result["candyWrapperRisk"] = any(b["candyWrapperRisk"] for b in both)
+    result["hasTwistBone"] = bool([b for b in armature.data.bones if "twist" in b.name.lower()])
+    return result
 
 
 def main():
