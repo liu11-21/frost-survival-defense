@@ -103,6 +103,12 @@ export function createV9DebugApi(s: GameSystems): Record<string, unknown> {
             .toFixed(3),
         ),
       })),
+    heroMovementStatus: () => ({
+      x: s.hero.position.x,
+      z: s.hero.position.z,
+      speed: Math.hypot(s.hero.velocity.x, s.hero.velocity.z),
+      hitRadius: s.hero.hitRadius,
+    }),
     allyLaneStatus: () =>
       s.squads.allySquads.flatMap((squad) =>
         squad.members
