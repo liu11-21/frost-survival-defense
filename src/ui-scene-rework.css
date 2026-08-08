@@ -85,12 +85,56 @@
   pointer-events: none;
 }
 
+.building-thumb-scene {
+  position: relative;
+  display: grid;
+  place-items: center;
+  width: 100%;
+  height: 100%;
+  isolation: isolate;
+}
+
+.building-thumb-haze {
+  position: absolute;
+  inset: 3px 4px 7px;
+  z-index: -1;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(136, 193, 240, 0.17), transparent 68%);
+}
+
+.building-thumb-snow {
+  position: absolute;
+  left: 4px;
+  right: 4px;
+  bottom: 4px;
+  height: 6px;
+  z-index: 2;
+  border-radius: 50%;
+  background: linear-gradient(180deg, rgba(233, 246, 255, 0.46), rgba(158, 190, 216, 0.14));
+  opacity: 0.72;
+  pointer-events: none;
+}
+
 .build-icon-large .ricon {
   position: relative;
   z-index: 1;
   width: 43px;
   height: 43px;
   filter: drop-shadow(0 3px 2px rgba(0, 0, 0, 0.34));
+}
+
+.building-thumb-gold .ricon {
+  filter: drop-shadow(0 0 5px rgba(255, 205, 92, 0.24)) drop-shadow(0 3px 2px rgba(0, 0, 0, 0.34));
+}
+.building-thumb-frost .ricon {
+  filter: drop-shadow(0 0 6px rgba(111, 211, 255, 0.3)) drop-shadow(0 3px 2px rgba(0, 0, 0, 0.34));
+}
+.building-thumb-defense .ricon,
+.building-thumb-wall .ricon {
+  filter: drop-shadow(0 0 4px rgba(179, 211, 239, 0.2)) drop-shadow(0 3px 2px rgba(0, 0, 0, 0.34));
+}
+.building-thumb-auto .ricon {
+  filter: drop-shadow(0 0 5px rgba(97, 239, 184, 0.2)) drop-shadow(0 3px 2px rgba(0, 0, 0, 0.34));
 }
 
 .build-icon-main {
