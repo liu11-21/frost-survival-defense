@@ -19,14 +19,11 @@ export const healStats = { events: 0, healedUnits: 0 };
 /** Same shape, for the engineer's repair event. */
 export const repairStats = { events: 0 };
 
-/**
- * A recruited or spawned group. Members fight as individuals; the squad only
- * owns shared identity, formation anchoring and the medic's group heal.
- */
+/** A recruited or spawned group. Members fight as individuals; the squad owns
+ * shared identity, formation anchoring and the medic's group heal. */
 export class Squad {
   readonly id = nextSquadId++;
   readonly members: CombatUnit[] = [];
-  /** Guards the one-shot wipe notification so capacity is only freed once. */
   wipeReported = false;
   private healCooldown = MEDIC_RULES.interval * Math.random();
   private armedTarget: Squad | null = null;
@@ -43,9 +40,7 @@ export class Squad {
     private furnaceLevelValue = 1,
   ) {}
 
-  add(unit: CombatUnit): void {
-    this.members.push(unit);
-  }
+  add(unit: CombatUnit): void { this.members.push(unit); }
 
   get aliveCount(): number {
     let n = 0;
@@ -53,25 +48,15 @@ export class Squad {
     return n;
   }
 
-  /** A squad only leaves the roster once every member is down. */
-  get alive(): boolean {
-    return this.aliveCount > 0;
-  }
-
-  get isMedic(): boolean {
-    return this.def.attackType === "heal";
-  }
-
-  get furnaceLevel(): number {
-    return this.furnaceLevelValue;
-  }
+  get alive(): boolean { return this.aliveCount > 0; }
+  get isMedic(): boolean { return this.def.attackType === "heal"; }
+  get furnaceLevel(): number { return this.furnaceLevelValue; }
 
   setFurnaceLevel(level: number): void {
     this.furnaceLevelValue = Math.max(1, Math.floor(level));
     for (const member of this.members) member.setFurnaceLevel(this.furnaceLevelValue);
   }
 
-  /** Total current health over total max health across living members. */
   healthPercent(): number {
     let cur = 0;
     let max = 0;
@@ -105,14 +90,18 @@ export class Squad {
   }
 
   /**
-   * Writes each living member's rally point. Ranged and support squads sit one
-   * step further back so they are never pushed into the front line by a slot.
+   * Writes each living member's rally point.  A drag-deployed squad owns a
+   * `home` on its lane; that home outranks the old hero-follow anchor so idle
+   * units cannot quietly migrate to another road. Legacy/debug squads without
+   * a home still use the caller-provided anchor exactly as before.
    */
   assignRally(anchor: Vector3, formation: FormationSlotManager): void {
+    const home = this.members.find((member) => member.alive && member.home !== null)?.home ?? null;
+    const source = home ?? anchor;
     const backline = this.isMedic || this.def.attackRange >= 8 ? 1.6 : 0;
-    const len = Math.hypot(anchor.x, anchor.z) || 1;
-    const cx = anchor.x + (anchor.x / len) * backline;
-    const cz = anchor.z + (anchor.z / len) * backline;
+    const len = Math.hypot(source.x, source.z) || 1;
+    const cx = source.x + (source.x / len) * backline;
+    const cz = source.z + (source.z / len) * backline;
 
     let index = 0;
     for (const member of this.members) {
@@ -127,15 +116,7 @@ export class Squad {
     }
   }
 
-  /**
-   * Runs every member, living or not — a corpse still needs ticks to play its
-   * death pose and sink into the snow. But once a corpse is fully expired
-   * (`readyToRemove`), `CombatWorld.removeDead()` is about to dispose it and
-   * hand its visual back to the template pool for reuse — this squad must let
-   * go of it in that same frame, not keep ticking a reference that may belong
-   * to a brand-new unit one frame later. Iterating backwards makes the splice
-   * safe mid-loop.
-   */
+  /** Runs every member, including corpses until their visual lifecycle expires. */
   update(dt: number): void {
     if (this.healCooldown > 0) this.healCooldown -= dt;
     if (this.repairWaiting && this.repairWaitTarget?.alive) this.repairWaitElapsed += dt;
@@ -149,41 +130,22 @@ export class Squad {
     }
   }
 
-  /**
-   * Drops expired corpse references without advancing combat or cooldowns.
-   * The halted-frame cleanup uses this while result, upgrade and pause menus
-   * have stopped the rest of the simulation.
-   */
   pruneExpiredMembers(): void {
     for (let i = this.members.length - 1; i >= 0; i--) {
       if (this.members[i].readyToRemove) this.members.splice(i, 1);
     }
   }
 
-  /** Average health of the living members, for the squad HUD's status word. */
-  get averageHealthPercent(): number {
-    return this.healthPercent();
-  }
+  get averageHealthPercent(): number { return this.healthPercent(); }
+  get canHeal(): boolean { return this.isMedic && this.healCooldown <= 0; }
+  canHealNow(): boolean { return this.isMedic && this.healCooldown <= 0 && this.armedTarget === null; }
 
-  /** True when this medic squad's shared heal timer has come round again. */
-  canHealNow(): boolean {
-    return this.isMedic && this.healCooldown <= 0 && this.armedTarget === null;
-  }
-
-  /**
-   * Arms one squad-wide heal. It resolves on the healer's animation hit frame,
-   * which is why the cooldown is taken here — the event is already committed.
-   */
   armHeal(target: Squad, ctx: CombatContext): void {
     this.armedTarget = target;
     this.healCooldown = MEDIC_RULES.interval;
     void ctx;
   }
 
-  /**
-   * Applies the armed heal. Called once from the healer's hit frame; a second
-   * call in the same cycle finds nothing armed and does nothing.
-   */
   releaseHeal(ctx: CombatContext): boolean {
     const target = this.armedTarget;
     this.armedTarget = null;
@@ -201,23 +163,15 @@ export class Squad {
     return true;
   }
 
-  /** Drops an armed heal whose window passed, so the medic never waits on it. */
-  cancelArmedHeal(): void {
-    this.armedTarget = null;
-  }
+  cancelArmedHeal(): void { this.armedTarget = null; }
 
   // ------------------------------------------------------------- repair ----
 
-  get isEngineerSquad(): boolean {
-    return this.def.canRepair === true;
-  }
+  get isEngineerSquad(): boolean { return this.def.canRepair === true; }
+  get isGroundSupportSquad(): boolean { return this.def.temporaryGroundSupport === true; }
 
-  get isGroundSupportSquad(): boolean {
-    return this.def.temporaryGroundSupport === true;
-  }
-
-  /** Ground Support stays in a tight triangle immediately around the hero
-   * instead of consuming a normal formation ring slot. */
+  /** Ground Support stays in a tight triangle immediately around the hero and
+   * intentionally ignores lane homes because it is a Hero skill, not a recruit. */
   assignTightRally(anchor: Vector3, formation: FormationSlotManager): void {
     let index = 0;
     for (const member of this.members) {
@@ -237,10 +191,7 @@ export class Squad {
     }
   }
 
-  /**
-   * Begins the 3s/6s countdown on arrival, then arms exactly one 10% pulse.
-   * Returning false means the Engineer is still visibly working and counting.
-   */
+  /** Begins the 3s/6s countdown on arrival, then arms exactly one 10% pulse. */
   requestRepair(target: Building): boolean {
     if (!this.isEngineerSquad || this.armedRepairTarget !== null) return false;
     if (this.repairWaitTarget !== target) {
@@ -254,16 +205,13 @@ export class Squad {
       return false;
     }
     const underAttack = target.secondsSinceDamaged < ENGINEER_RULES.underAttackWindow;
-    const required = underAttack
-      ? ENGINEER_RULES.underAttackRepairInterval
-      : ENGINEER_RULES.safeRepairInterval;
+    const required = underAttack ? ENGINEER_RULES.underAttackRepairInterval : ENGINEER_RULES.safeRepairInterval;
     if (this.repairWaitElapsed < required) return false;
     this.armedRepairTarget = target;
     this.repairWaiting = false;
     return true;
   }
 
-  /** Applies one 10%-of-maximum-HP repair pulse. */
   releaseRepair(ctx: CombatContext): boolean {
     const target = this.armedRepairTarget;
     this.armedRepairTarget = null;
@@ -280,13 +228,8 @@ export class Squad {
     return true;
   }
 
-  cancelArmedRepair(): void {
-    this.armedRepairTarget = null;
-  }
-
-  get assignedRepairTarget(): Building | null {
-    return this.repairWaitTarget;
-  }
+  cancelArmedRepair(): void { this.armedRepairTarget = null; }
+  get assignedRepairTarget(): Building | null { return this.repairWaitTarget; }
 
   reserveRepairTarget(target: Building): void {
     if (this.repairWaitTarget === target) return;

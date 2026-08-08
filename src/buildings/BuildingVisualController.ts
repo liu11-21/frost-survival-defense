@@ -42,18 +42,24 @@ const AUTHORED_BUILDING_KEYS: Partial<Record<BuildingType, string>> = {
 };
 
 /**
+ * Runtime-only presentation scale. This intentionally does NOT touch Blender,
+ * GLB authoring, collision, costs or combat radii: the gameplay branch owns
+ * scene density, while Claude's art branch keeps ownership of source assets.
+ * Walls stay at authored scale because their physical span is the perimeter
+ * contract; every other facility reads less crowded beside the narrow lanes.
+ */
+const FACILITY_RUNTIME_SCALE = 0.82;
+
+function applyRuntimeScale(root: TransformNode, type: BuildingType): void {
+  if (type === "wall") return;
+  root.scaling.scaleInPlace(FACILITY_RUNTIME_SCALE);
+}
+
+/**
  * Owns one building's meshes for its whole life.
  *
- * The important rule lives in `dispose`: a building owns its *instances*, never
- * the shared materials or textures behind them. The previous code called
- * `root.dispose(false, true)`, and that second argument disposes the materials
- * of every descendant — which were the cached `MaterialFactory` materials every
- * other building was also using. One demolished wall therefore tore the
- * albedo textures out from under every stone, plank, beam and roof mesh in the
- * base, and Babylon silently stops drawing a mesh whose material is not ready.
- * That is why parts of finished buildings vanished, and why it showed up in
- * endless mode first: it is the only mode that destroys and rebuilds enough
- * times to hit it.
+ * A building owns its *instances*, never shared materials/textures. This is
+ * why dispose/repair never dispose cached materials used by sibling buildings.
  */
 export class BuildingVisualController {
   readonly animator: BuildingAnimator;
@@ -80,34 +86,27 @@ export class BuildingVisualController {
   ) {
     this.authoredKey = AUTHORED_BUILDING_KEYS[type] ?? null;
     const authored = this.authoredKey ? assets?.instantiate(this.authoredKey, `${type}.${slotId}`) ?? null : null;
-    const visual = authored ? authoredVisual(authored, scene, x, z, yaw, elevation) : createBuildingVisual(scene, materials, type, x, z, yaw, slotId);
+    const visual = authored
+      ? authoredVisual(authored, scene, x, z, yaw, elevation)
+      : createBuildingVisual(scene, materials, type, x, z, yaw, slotId);
     this.authored = authored;
     this.rootNode = visual.root;
     this.rootNode.position.y = elevation;
+    applyRuntimeScale(this.rootNode, type);
     if (authored) {
       findAnimationGroup(authored.animationGroups, "Idle")?.start(true, 1);
     }
     this.ownedMeshes = visual.body;
-    this.stageMeshes = visual.stages.map((s) => s.meshes);
+    this.stageMeshes = visual.stages.map((stage) => stage.meshes);
     this.animator = new BuildingAnimator(events, `${type}@${slotId}`, visual.stages);
   }
 
-  get root(): TransformNode {
-    return this.rootNode;
-  }
-  get currentPhase(): VisualPhase {
-    return this.phase;
-  }
-  get isFinished(): boolean {
-    return this.animator.isFinished;
-  }
-  get meshes(): ReadonlyArray<Mesh> {
-    return this.ownedMeshes;
-  }
+  get root(): TransformNode { return this.rootNode; }
+  get currentPhase(): VisualPhase { return this.phase; }
+  get isFinished(): boolean { return this.animator.isFinished; }
+  get meshes(): ReadonlyArray<Mesh> { return this.ownedMeshes; }
 
-  setPhase(phase: VisualPhase): void {
-    this.phase = phase;
-  }
+  setPhase(phase: VisualPhase): void { this.phase = phase; }
 
   update(dt: number): void {
     if (this.phase === "disposed") return;
@@ -115,7 +114,9 @@ export class BuildingVisualController {
     if (this.recoilTime > 0) {
       this.recoilTime = Math.max(0, this.recoilTime - dt);
       const recoil = this.authored?.nodes.find((node) => node.name.endsWith(":recoilPart"));
-      if (recoil && "position" in recoil) (recoil as TransformNode).position.z = this.recoilTime > 0 ? -0.12 : 0;
+      if (recoil && "position" in recoil) {
+        (recoil as TransformNode).position.z = this.recoilTime > 0 ? -0.12 : 0;
+      }
     }
     if (!this.animator.isFinished) return;
     if (this.phase === "constructing") {
@@ -124,11 +125,7 @@ export class BuildingVisualController {
     }
   }
 
-  /**
-   * Brings every part of a finished building back to its correct visible state.
-   * Called on completion, after a rebuild, after a quality change and when the
-   * tab regains focus — a safety net, not a substitute for the fix above.
-   */
+  /** Restores every part of a finished building to its visible state. */
   syncCompleted(): void {
     if (this.phase === "disposed" || this.phase === "demolishing") return;
     if (!this.rootNode.isEnabled()) this.rootNode.setEnabled(true);
@@ -143,7 +140,6 @@ export class BuildingVisualController {
     this.rootNode.computeWorldMatrix(true);
   }
 
-  /** Counts what should be on screen against what actually is. */
   inspect(): VisualIntegrity {
     let required = 0;
     let enabled = 0;
@@ -157,7 +153,6 @@ export class BuildingVisualController {
           continue;
         }
         const mat = mesh.material;
-        // A disposed shared material leaves the mesh unrenderable but present.
         if (!mat || mat.getScene() === null) materialsLost++;
         if (mesh.isEnabled() && mesh.isVisible && mesh.visibility > 0.01) enabled++;
       }
@@ -172,11 +167,7 @@ export class BuildingVisualController {
     };
   }
 
-  /**
-   * Rebuilds this building's meshes from scratch when the validator finds a
-   * part that no longer exists. It replaces geometry only: no resource is
-   * spent, no combat or health-bar registration is touched.
-   */
+  /** Rebuild geometry only when the visual validator finds missing parts. */
   repair(): void {
     if (this.phase === "disposed") return;
     this.disposeMeshes();
@@ -184,13 +175,16 @@ export class BuildingVisualController {
     this.authored = null;
     this.rootNode.dispose(false, false);
 
-    const authored = this.authoredKey ? this.assets?.instantiate(this.authoredKey, `${this.type}.${this.slotId}.repair`) ?? null : null;
+    const authored = this.authoredKey
+      ? this.assets?.instantiate(this.authoredKey, `${this.type}.${this.slotId}.repair`) ?? null
+      : null;
     const visual = authored
       ? authoredVisual(authored, this.scene, this.x, this.z, this.yaw, this.elevation)
       : createBuildingVisual(this.scene, this.materials, this.type, this.x, this.z, this.yaw, this.slotId);
     this.authored = authored;
     this.rootNode = visual.root;
     this.rootNode.position.y = this.elevation;
+    applyRuntimeScale(this.rootNode, this.type);
     if (authored) {
       findAnimationGroup(authored.animationGroups, "Idle")?.start(true, 1);
     }
@@ -203,12 +197,10 @@ export class BuildingVisualController {
     this.syncCompleted();
   }
 
-  /** Progress 0 → 1 of the take-apart animation. */
   playDemolish(dt: number, duration: number): number {
     this.phase = "demolishing";
     this.demolishTime += dt;
     const t = Math.min(1, this.demolishTime / Math.max(0.1, duration));
-    // Parts come off from the top down, so the shape reads as being taken apart.
     const groups = this.stageMeshes.length;
     for (let i = 0; i < groups; i++) {
       const groupStart = (groups - 1 - i) / groups;
@@ -224,10 +216,6 @@ export class BuildingVisualController {
     return t;
   }
 
-  /**
-   * Disposes only what this instance created. Materials and textures belong to
-   * the shared registry and outlive every individual building.
-   */
   dispose(): void {
     if (this.phase === "disposed") return;
     this.phase = "disposed";
@@ -237,13 +225,13 @@ export class BuildingVisualController {
     this.rootNode.dispose(false, false);
   }
 
-  /** Optional authored turret hook; procedural buildings simply ignore it. */
   aimAt(x: number, z: number): void {
     const pivot = this.authored?.nodes.find((node) => node.name.endsWith(":yawPivot"));
-    if (pivot && "rotation" in pivot) (pivot as TransformNode).rotation.y = Math.atan2(x - this.x, z - this.z) - this.yaw;
+    if (pivot && "rotation" in pivot) {
+      (pivot as TransformNode).rotation.y = Math.atan2(x - this.x, z - this.z) - this.yaw;
+    }
   }
 
-  /** Optional authored recoil hook; the normal Babylon VFX remains active. */
   pulseRecoil(): void {
     if (!this.authored) return;
     const group = findAnimationGroup(this.authored.animationGroups, "Recoil");
@@ -251,7 +239,6 @@ export class BuildingVisualController {
     this.recoilTime = 0.12;
   }
 
-  /** Plays the authored friendly gate clip when a wall is built or breached. */
   setGateOpen(open: boolean): void {
     if (this.type !== "wall" || !this.authored) return;
     const group = findAnimationGroup(this.authored.animationGroups, open ? "GateOpen" : "GateClose");
@@ -265,7 +252,14 @@ export class BuildingVisualController {
   }
 }
 
-function authoredVisual(instance: AssetInstance, _scene: Scene, x: number, z: number, yaw: number, elevation: number): { root: TransformNode; stages: BuildStageDef[]; body: Mesh[] } {
+function authoredVisual(
+  instance: AssetInstance,
+  _scene: Scene,
+  x: number,
+  z: number,
+  yaw: number,
+  elevation: number,
+): { root: TransformNode; stages: BuildStageDef[]; body: Mesh[] } {
   instance.root.position.set(x, elevation, z);
   instance.root.rotation.y = yaw;
   const body = instance.meshes as Mesh[];

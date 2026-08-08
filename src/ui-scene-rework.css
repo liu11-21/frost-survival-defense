@@ -1,0 +1,118 @@
+/* Scene-rework G1: compact command surfaces. Detailed stats live in Codex. */
+
+.build-icon-card {
+  align-items: center;
+  min-height: 58px;
+  padding: 7px 9px;
+}
+.build-icon-large {
+  display: grid;
+  place-items: center;
+  width: 44px;
+  height: 44px;
+  border-radius: 9px;
+  background: rgba(137, 181, 232, 0.1);
+  border: 1px solid rgba(160, 198, 240, 0.16);
+}
+.build-icon-main {
+  display: flex;
+  align-items: center;
+  min-height: 44px;
+}
+.build-icon-name {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 3px;
+  font-size: 13px;
+}
+.build-icon-cost {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  justify-content: center;
+  gap: 3px;
+  max-width: 116px;
+}
+
+.recruit-drag-hint {
+  margin-bottom: 2px;
+  text-align: center;
+  line-height: 1.35;
+}
+.recruit-icon-card {
+  position: relative;
+  display: grid;
+  grid-template-columns: 50px minmax(0, 1fr) auto;
+  grid-template-areas:
+    "icon name cost"
+    "icon reason reason";
+  align-items: center;
+  min-height: 62px;
+  cursor: grab;
+  touch-action: none;
+}
+.recruit-icon-card:not(:disabled):active,
+.recruit-icon-card.dragging {
+  cursor: grabbing;
+  border-color: rgba(255, 190, 92, 0.78);
+  background: rgba(255, 178, 87, 0.22);
+  box-shadow: 0 0 18px rgba(255, 178, 87, 0.12);
+}
+.recruit-icon-card.dragging {
+  opacity: 0.58;
+  transform: scale(0.985);
+}
+.recruit-icon-wrap {
+  grid-area: icon;
+  display: grid;
+  place-items: center;
+  width: 46px;
+  height: 46px;
+  color: #bcdcff;
+  border-radius: 10px;
+  background: linear-gradient(145deg, rgba(98, 142, 198, 0.18), rgba(255, 178, 87, 0.07));
+  border: 1px solid rgba(151, 194, 235, 0.22);
+}
+.recruit-glyph {
+  display: block;
+}
+.recruit-icon-name {
+  grid-area: name;
+  min-width: 0;
+  font-size: 14px;
+  font-weight: 750;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.recruit-icon-cost {
+  grid-area: cost;
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  color: #ffd56f;
+  font-size: 14px;
+  white-space: nowrap;
+}
+.recruit-icon-reason {
+  grid-area: reason;
+  justify-self: end;
+  margin-top: 2px;
+  font-size: 10px;
+}
+.recruit-icon-card:disabled .recruit-icon-wrap {
+  filter: grayscale(0.65);
+  opacity: 0.62;
+}
+
+/* The bottom-centre HUD can have a very wide min-content size once squad rows
+ * are visible. Keeping the minimap in HUD grid column 3 allowed that column to
+ * be pushed beyond the viewport. Pin the existing 176px map to the tactical
+ * corner instead; data, size and interaction remain unchanged. The id+class
+ * specificity intentionally wins over the later generic `.minimap` grid rule. */
+#ui-minimap.minimap {
+  position: absolute;
+  top: 128px;
+  right: 14px;
+}

@@ -12,10 +12,7 @@ export interface DirectorHooks {
   onFurnaceHit(): void;
 }
 
-/**
- * Builds the CombatContext. All damage in the game funnels through here, which
- * is what keeps hit feedback consistent no matter who swung.
- */
+/** Builds the CombatContext. All damage in the game funnels through here. */
 export function createCombatContext(
   world: CombatWorld,
   collision: CollisionWorld,
@@ -45,13 +42,13 @@ export function createCombatContext(
     maxTargets: number,
     onHit?: (target: Damageable) => void,
     source: DamageSource = "skill",
+    includeFacilities = true,
   ): number => {
     if (maxTargets <= 0 || amount <= 0) return 0;
     const victimFaction = attackerFaction === "ally" ? "enemy" : "ally";
     const hit = world.queryUnits(victimFaction, x, z, radius, scratch);
     let count = 0;
     for (let i = 0; i < hit.length && count < maxTargets; i++) {
-      // Engineers are protected support staff until the hero has fallen.
       if (attackerFaction === "enemy" && hit[i].def.id === "engineer" && world.hero?.alive) continue;
       if (attackerFaction === "ally" && source === "melee" && hit[i].def.isFlying) continue;
       damage(hit[i], amount, x, z, source);
@@ -66,13 +63,17 @@ export function createCombatContext(
         onHit?.(hero);
         count++;
       }
-      for (let i = 0; i < world.structures.length && count < maxTargets; i++) {
-        const s = world.structures[i];
-        if (!s.alive || (s as { isSky?: boolean }).isSky || !within(s, x, z, radius + s.hitRadius)) continue;
-        damage(s, amount, x, z, source);
-        onHit?.(s);
-        count++;
+      if (includeFacilities) {
+        for (let i = 0; i < world.structures.length && count < maxTargets; i++) {
+          const s = world.structures[i];
+          if (!s.alive || (s as { isSky?: boolean }).isSky || !within(s, x, z, radius + s.hitRadius)) continue;
+          damage(s, amount, x, z, source);
+          onHit?.(s);
+          count++;
+        }
       }
+      // The furnace remains a valid objective even when an ordinary enemy is
+      // forbidden from damaging optional facilities.
       const furnace = world.furnace;
       if (furnace?.alive && count < maxTargets && within(furnace, x, z, radius + furnace.hitRadius)) {
         damage(furnace, amount, x, z, source);

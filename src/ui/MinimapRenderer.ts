@@ -26,11 +26,7 @@ const CATEGORY_COLOR: Record<BuildMenuCategory, string> = {
   automation: "#6adfc0",
 };
 
-/**
- * Pure canvas-2D drawing, shared by the always-on minimap and the full map
- * overlay — both are just this function at different sizes/detail levels.
- * Deliberately 2D and low-frequency: never a second live 3D `Scene`.
- */
+/** Shared 2D renderer for the always-on minimap and full tactical map. */
 export class MinimapRenderer {
   constructor(private readonly canvas: HTMLCanvasElement) {}
 
@@ -55,14 +51,13 @@ export class MinimapRenderer {
     const cy = h / 2;
     const scale = (Math.min(w, h) / 2 / opts.worldExtent) * 0.94;
     const toX = (x: number) => cx + x * scale;
-    // North is "up" on the map, and world +z is north.
     const toY = (z: number) => cy - z * scale;
 
     ctx.clearRect(0, 0, w, h);
     ctx.fillStyle = "rgba(8, 12, 22, 0.82)";
     ctx.fillRect(0, 0, w, h);
 
-    this.drawRoads(ctx, toX, toY);
+    this.drawRoads(ctx, toX, toY, opts.detailed);
     this.drawBounds(ctx, toX, toY);
     this.drawWalls(ctx, snap, toX, toY, opts);
     this.drawSlots(ctx, snap, toX, toY, opts);
@@ -72,20 +67,66 @@ export class MinimapRenderer {
     if (snap.boss) this.drawBoss(ctx, snap.boss, toX, toY, opts.time);
     if (snap.hero.alive) this.drawHero(ctx, snap.hero, toX, toY);
     this.drawCameraRect(ctx, snap.camera, toX, toY);
-    if (opts.tempMarkers) this.drawTempMarkers(ctx, opts.tempMarkers, opts.time, opts.tempMarkerLifetime ?? 6, toX, toY);
+    if (opts.tempMarkers) {
+      this.drawTempMarkers(ctx, opts.tempMarkers, opts.time, opts.tempMarkerLifetime ?? 6, toX, toY);
+    }
   }
 
-  private drawRoads(ctx: CanvasRenderingContext2D, toX: (x: number) => number, toY: (z: number) => number): void {
-    ctx.strokeStyle = "rgba(180, 160, 140, 0.35)";
-    ctx.lineWidth = 2;
+  /** The map now draws exactly the same path points EnemyNavigator follows. */
+  private drawRoads(
+    ctx: CanvasRenderingContext2D,
+    toX: (x: number) => number,
+    toY: (z: number) => number,
+    detailed: boolean,
+  ): void {
+    ctx.lineCap = "round";
+    ctx.lineJoin = "round";
     for (const lane of LANES) {
-      const sx = Math.sin(lane.angle) * MAP.spawnRadius;
-      const sz = Math.cos(lane.angle) * MAP.spawnRadius;
+      if (lane.path.length < 2) continue;
+      ctx.strokeStyle = "rgba(180, 160, 140, 0.46)";
+      ctx.lineWidth = detailed ? 5 : 2.3;
       ctx.beginPath();
-      ctx.moveTo(toX(0), toY(0));
-      ctx.lineTo(toX(sx), toY(sz));
+      ctx.moveTo(toX(lane.path[0].x), toY(lane.path[0].z));
+      for (let i = 1; i < lane.path.length; i++) {
+        ctx.lineTo(toX(lane.path[i].x), toY(lane.path[i].z));
+      }
       ctx.stroke();
+
+      // Direction chevrons are intentionally sparse: one at the remote mouth
+      // and one near the wall, enough to make the attack direction unambiguous.
+      const arrowIndices = [1, Math.max(1, lane.gatePointIndex - 2)];
+      for (const index of arrowIndices) {
+        const from = lane.path[Math.max(0, index - 1)];
+        const to = lane.path[index];
+        const dx = toX(to.x) - toX(from.x);
+        const dy = toY(to.z) - toY(from.z);
+        const len = Math.hypot(dx, dy) || 1;
+        const ux = dx / len;
+        const uy = dy / len;
+        const px = -uy;
+        const py = ux;
+        const x = toX(to.x);
+        const y = toY(to.z);
+        const size = detailed ? 7 : 4;
+        ctx.fillStyle = "rgba(238, 206, 166, 0.78)";
+        ctx.beginPath();
+        ctx.moveTo(x + ux * size, y + uy * size);
+        ctx.lineTo(x - ux * size * 0.7 + px * size * 0.55, y - uy * size * 0.7 + py * size * 0.55);
+        ctx.lineTo(x - ux * size * 0.7 - px * size * 0.55, y - uy * size * 0.7 - py * size * 0.55);
+        ctx.closePath();
+        ctx.fill();
+      }
+
+      if (detailed) {
+        const spawn = lane.path[0];
+        ctx.fillStyle = "rgba(230, 235, 255, 0.86)";
+        ctx.font = "11px sans-serif";
+        ctx.textAlign = "center";
+        ctx.fillText(lane.shortName, toX(spawn.x), toY(spawn.z) - 8);
+      }
     }
+    ctx.lineCap = "butt";
+    ctx.lineJoin = "miter";
   }
 
   private drawBounds(ctx: CanvasRenderingContext2D, toX: (x: number) => number, toY: (z: number) => number): void {
@@ -117,7 +158,11 @@ export class MinimapRenderer {
       const bz = wall.z + dz;
       ctx.lineWidth = wall.state === "sealed" ? 4 : 3;
       ctx.strokeStyle =
-        wall.state === "open" ? "rgba(255, 120, 100, 0.55)" : wall.state === "sealed" ? "#8fe3b0" : `rgba(255, 90, 70, ${flash})`;
+        wall.state === "open"
+          ? "rgba(255, 120, 100, 0.55)"
+          : wall.state === "sealed"
+            ? "#8fe3b0"
+            : `rgba(255, 90, 70, ${flash})`;
       ctx.beginPath();
       ctx.moveTo(toX(ax), toY(az));
       ctx.lineTo(toX(bx), toY(bz));
@@ -139,16 +184,21 @@ export class MinimapRenderer {
       ctx.lineWidth = 1.2;
       ctx.stroke();
     }
-    for (const s of snap.structures) {
+    for (const structure of snap.structures) {
       const size = opts.detailed ? 7 : 4.4;
-      const x = toX(s.x);
-      const y = toY(s.z);
-      ctx.fillStyle = CATEGORY_COLOR[s.category];
+      const x = toX(structure.x);
+      const y = toY(structure.z);
+      ctx.fillStyle = CATEGORY_COLOR[structure.category];
       ctx.fillRect(x - size / 2, y - size / 2, size, size);
     }
   }
 
-  private drawFurnace(ctx: CanvasRenderingContext2D, snap: MinimapSnapshot, toX: (x: number) => number, toY: (z: number) => number): void {
+  private drawFurnace(
+    ctx: CanvasRenderingContext2D,
+    snap: MinimapSnapshot,
+    toX: (x: number) => number,
+    toY: (z: number) => number,
+  ): void {
     const x = toX(0);
     const y = toY(0);
     ctx.fillStyle = snap.furnaceHealthPct < 0.3 ? "#ff8a4a" : "#ff9a3c";
@@ -167,19 +217,19 @@ export class MinimapRenderer {
     toX: (x: number) => number,
     toY: (z: number) => number,
   ): void {
-    for (const c of clusters) {
-      const x = toX(c.x);
-      const y = toY(c.z);
-      const r = Math.min(9, 3 + Math.sqrt(c.count) * 1.4);
+    for (const cluster of clusters) {
+      const x = toX(cluster.x);
+      const y = toY(cluster.z);
+      const r = Math.min(9, 3 + Math.sqrt(cluster.count) * 1.4);
       ctx.fillStyle = color;
       ctx.beginPath();
       ctx.arc(x, y, r, 0, Math.PI * 2);
       ctx.fill();
-      if (c.count > 1) {
+      if (cluster.count > 1) {
         ctx.fillStyle = "#fff";
         ctx.font = "9px sans-serif";
         ctx.textAlign = "center";
-        ctx.fillText(`×${c.count}`, x, y - r - 3);
+        ctx.fillText(`×${cluster.count}`, x, y - r - 3);
       }
     }
   }
@@ -205,7 +255,12 @@ export class MinimapRenderer {
     ctx.strokeRect(x - pulse / 2 - 1, y - pulse / 2 - 1, pulse + 2, pulse + 2);
   }
 
-  private drawHero(ctx: CanvasRenderingContext2D, hero: { x: number; z: number }, toX: (x: number) => number, toY: (z: number) => number): void {
+  private drawHero(
+    ctx: CanvasRenderingContext2D,
+    hero: { x: number; z: number },
+    toX: (x: number) => number,
+    toY: (z: number) => number,
+  ): void {
     const x = toX(hero.x);
     const y = toY(hero.z);
     ctx.beginPath();
@@ -243,12 +298,12 @@ export class MinimapRenderer {
     toX: (x: number) => number,
     toY: (z: number) => number,
   ): void {
-    for (const m of markers) {
-      const age = time - m.bornAt;
+    for (const marker of markers) {
+      const age = time - marker.bornAt;
       if (age < 0 || age > lifetime) continue;
       const fade = 1 - age / lifetime;
-      const x = toX(m.x);
-      const y = toY(m.z);
+      const x = toX(marker.x);
+      const y = toY(marker.z);
       ctx.strokeStyle = `rgba(255, 214, 120, ${fade})`;
       ctx.lineWidth = 2;
       ctx.beginPath();

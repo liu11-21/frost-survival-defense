@@ -12,31 +12,23 @@ export interface CombatVfx {
   areaBlast(x: number, z: number, radius: number): void;
   heal(x: number, z: number): void;
   repair(x: number, z: number): void;
-  /** Generic passthrough to any registered particle burst, for one-off abilities. */
   burstAt(key: string, x: number, z: number, count: number): void;
-  /** Large, readable cast marker for the hero's manual and automatic skills. */
   heroSkill(
     kind: "airSupport" | "infiniteFirepower" | "groundSupport" | "seismicWave",
     x: number,
     z: number,
     radius: number,
   ): void;
-  /** A visible descending bombardment marker for Air Support's three hits. */
   airStrike(x: number, z: number, radius: number): void;
-  /** Persistent flame patches for Air Support and mortar burn zones. */
   groundFire(x: number, z: number, radius: number, duration: number): void;
-  /** A readable golden pulse for a Flagbearer's allied range. */
   supportAura(x: number, z: number, radius: number): void;
   taunt(x: number, z: number, radius: number): void;
   teleport(x: number, z: number): void;
   unitDeath(x: number, z: number, level: number): void;
   buildingHit(x: number, z: number): void;
   sound(name: string, volume?: number, pitch?: number): void;
-  /** Floating combat text. Merged per target over a short window. */
   damageNumber(x: number, y: number, z: number, amount: number, kind: "damage" | "heal"): void;
-  /** A unit or structure's health changed; the bar manager reveals its bar. */
   healthChanged(target: Damageable): void;
-  /** Announces a newly spawned unit so its bar can be shown briefly. */
   registerHealthBar(target: Damageable): void;
 }
 
@@ -70,12 +62,12 @@ export interface CombatContext {
   projectiles: ProjectilePool;
   vfx: CombatVfx;
   scaling: CombatScaling;
-  /** Applies damage and routes the hit feedback. */
   damage(target: Damageable, amount: number, fromX: number, fromZ: number, source?: DamageSource): void;
   /**
-   * Splash damage centred on a point. Returns how many targets were hit.
-   * `onHit`, when given, runs once per unit actually damaged — e.g. for an
-   * on-hit slow that must only land on things the blast really reached.
+   * Splash damage centred on a point. `includeFacilities` affects only ordinary
+   * built structures; the central furnace remains a valid objective. This lets
+   * Lv.1-5 enemies obey the no-facility rule without creating a second area
+   * damage implementation or accidentally making the furnace immune.
    */
   areaDamage(
     attackerFaction: "ally" | "enemy",
@@ -86,7 +78,7 @@ export interface CombatContext {
     maxTargets: number,
     onHit?: (target: Damageable) => void,
     source?: DamageSource,
+    includeFacilities?: boolean,
   ): number;
-  /** Called once per individual death so gold can drop. */
   reportKill(unit: CombatUnit): void;
 }
