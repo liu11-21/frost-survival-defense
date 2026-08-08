@@ -84,6 +84,39 @@ test("mouse-clicking a remote visible slot opens the canonical build panel", asy
   await expect(page.locator("#ui-build-panel")).toHaveClass(/show/);
 });
 
+test("a successful build closes the command panel and another slot can be selected immediately", async ({ page }) => {
+  await boot(page);
+  await call(page, "startStage", "stage-3");
+  await call(page, "grant", 999, 999, 999);
+  await call(page, "setFurnaceLevel", 30);
+  await call(page, "teleport", 0, 0);
+  await step(page, 0.016, 12);
+
+  const firstProjected = await projectWorldPoint(page, 5.2, 5.2, 0.08);
+  const firstPoint = await canvasClientPoint(page, firstProjected);
+  await page.mouse.click(firstPoint.x, firstPoint.y);
+  await step(page, 0.016, 2);
+  await expect(page.locator("#ui-build-panel")).toHaveClass(/show/);
+
+  const lumberyard = page.locator('.build-icon-card[data-build-type="lumberyard"]');
+  await expect(lumberyard).toBeVisible();
+  await expect(lumberyard).toBeEnabled();
+  await lumberyard.click();
+  await step(page, 0.016, 2);
+
+  await expect(page.locator("#ui-build-panel")).not.toHaveClass(/show/);
+  expect((await call(page, "canBuild", "coreNE", "lumberyard")).ok).toBe(false);
+
+  const secondProjected = await projectWorldPoint(page, -5.2, 5.2, 0.08);
+  const secondPoint = await canvasClientPoint(page, secondProjected);
+  await page.mouse.click(secondPoint.x, secondPoint.y);
+  await step(page, 0.016, 2);
+
+  expect(await call(page, "nearbySlotId")).toBe("coreNW");
+  await expect(page.locator("#ui-build-panel")).toHaveClass(/show/);
+  await expect(page.locator('.build-icon-card[data-build-type="mine"]')).toBeVisible();
+});
+
 test("scaled facility visuals still leave a generous real pointer placement target", async ({ page }) => {
   await boot(page);
   await call(page, "startStage", "stage-3");
