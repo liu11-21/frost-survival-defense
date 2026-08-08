@@ -37,6 +37,10 @@ const SHOTS: Array<{ camera: string; animation?: string; phase?: number; label: 
   { camera: "hand", animation: "MeleeAttack", phase: 0.25, label: "grip" },
   { camera: "three-quarter", animation: "MeleeAttack", phase: 0.25, label: "melee-windup" },
   { camera: "three-quarter", animation: "MeleeAttack", phase: 0.6, label: "melee-impact" },
+  // Frame 4 of 16. A per-frame scan in Blender put the clip's peak
+  // deformation here, not at 0.6 -- so this is the frame that has to be
+  // looked at, and the one no earlier capture ever showed.
+  { camera: "three-quarter", animation: "MeleeAttack", phase: 0.20, label: "melee-worst" },
   { camera: "three-quarter", animation: "RangedAttack", phase: 0.5, label: "ranged" },
   { camera: "front", animation: "Walk", phase: 0.3, label: "walk" },
 ];
