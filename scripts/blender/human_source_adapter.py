@@ -271,6 +271,104 @@ def normalise(meshes, armatures, profile, target_height):
     return root, {"sourceHeight": round(height, 4), "scaleFactor": round(factor, 5)}
 
 
+def bake_transforms(root, meshes, armature):
+    """Push the root's frame correction down into the data itself.
+
+    `normalise` orients and scales the character by transforming a parent
+    empty. That is correct on screen and wrong in the file. The geometry and
+    the bone rest positions each stay in whatever frame they arrived in, and
+    only the parent reconciles them -- so in the exported GLB the mesh is
+    Y-up while the armature's rest is still Z-up:
+
+        candidate  mesh Y 0.007..1.849   bones Y -0.315..0.026, Z -0.809..0.697
+        hero.glb   mesh Y 0.007..2.254   bones Y  0.000..1.821
+
+    Skinning is v' = M * B^-1 * v, so at rest M = B and the vertex returns to
+    itself no matter how far B is from the flesh. The mismatch is invisible in
+    every static frame and then multiplies every rotation, which is why a
+    35 deg turn moved a vertex 2.3 m while its own joint moved 0.36 m.
+
+    Applying rotation and scale to the armature rewrites `head_local` for
+    every bone, and applying it to the meshes rewrites their vertices, so the
+    two end up in one frame with identity object transforms -- which is what
+    the control asset has and why it does not do this.
+    """
+    view = bpy.context.view_layer
+    targets = [obj for obj in ([armature] + list(meshes)) if obj is not None]
+
+    # `transform_apply` bakes an object's OWN transform and leaves its parent's
+    # alone, and the frame correction lives on the root empty -- so applying it
+    # in place changes nothing, which the bind gate caught immediately. The
+    # children have to carry the world matrix themselves first.
+    world = {obj.name: obj.matrix_world.copy() for obj in targets}
+    for obj in targets:
+        obj.parent = None
+        obj.matrix_world = world[obj.name]
+    view.update()
+
+    for obj in bpy.data.objects:
+        obj.select_set(False)
+    for obj in targets:
+        obj.select_set(True)
+    view.objects.active = armature if armature is not None else targets[0]
+    # Location stays on the object: it carries the floor/centre placement, and
+    # baking it would move the bind pose away from the origin for no gain.
+    bpy.ops.object.transform_apply(location=False, rotation=True, scale=True)
+    for obj in targets:
+        obj.select_set(False)
+
+    # The orientation and scale now live in the vertices and in `head_local`,
+    # so the root must stop applying them a second time.
+    root.rotation_euler = (0.0, 0.0, 0.0)
+    root.rotation_quaternion = (1.0, 0.0, 0.0, 0.0)
+    root.scale = (1.0, 1.0, 1.0)
+    view.update()
+    for obj in targets:
+        obj.parent = root
+        obj.matrix_parent_inverse = root.matrix_world.inverted()
+    view.update()
+    return {
+        "baked": [obj.name for obj in targets],
+        "armatureScale": [round(v, 5) for v in armature.matrix_world.to_scale()]
+        if armature else None,
+    }
+
+
+def verify_bind_frame(meshes, armature, tolerance=0.25):
+    """Fail the build if the bones do not sit inside the flesh they drive.
+
+    This is the check whose absence let a metre-scale bind error ship through
+    a triangle budget, a JOINTS_0 contract, a pose test and ten rendered
+    frames. The control asset reads 0.10-0.16 m here; the broken candidate
+    read 1.47-1.97 m.
+    """
+    if armature is None:
+        return {"checked": 0}
+    body = max(meshes, key=lambda o: len(o.data.vertices))
+    names = {g.index: g.name for g in body.vertex_groups}
+    into = armature.matrix_world.inverted() @ body.matrix_world
+    worst = []
+    for bone_name in ("lower_arm.R", "lower_arm.L", "head", "pelvis"):
+        bone = armature.data.bones.get(bone_name)
+        group = body.vertex_groups.get(bone_name)
+        if bone is None or group is None:
+            continue
+        owned = [into @ v.co for v in body.data.vertices
+                 if any(g.group == group.index and g.weight > 0.5 for g in v.groups)]
+        if not owned:
+            continue
+        centroid = sum(owned, Vector((0.0, 0.0, 0.0))) / len(owned)
+        worst.append((round((centroid - bone.head_local).length, 4), bone_name))
+    worst.sort(reverse=True)
+    if worst and worst[0][0] > tolerance:
+        raise human_rig.RigError(
+            "bind frame mismatch: %s is %.3f m from the vertices weighted to it "
+            "(limit %.2f). The bones and the mesh are in different frames; the "
+            "rest pose will look correct and every rotation will tear."
+            % (worst[0][1], worst[0][0], tolerance))
+    return {"worstBoneToFlesh": worst[:4]}
+
+
 def verify_normalised(meshes, armature, target_height, tolerance=0.02):
     """Measure the result instead of trusting the transform that produced it.
 
@@ -657,6 +755,14 @@ def main():
         human_rig.align_rest_pose(armature, record["mapping"], {})
 
     source_root, scale_info = normalise(meshes, armatures, profile, args.height)
+    # No transform baking here. It was written to reconcile the bone rest with
+    # the mesh, but the mismatch was never created at this stage -- the rig
+    # arrives from MPFB already sitting 0.85 m below its own body, and
+    # `seat_rig_in_body` now corrects it there, where the offset is a plain
+    # translation and can be recovered exactly. Baking the root's rotation into
+    # the data here additionally failed to apply while still clearing the
+    # root's rotation, which laid the character flat on its back.
+    scale_info["bindFrame"] = verify_bind_frame(meshes, armature)
     placement = verify_normalised(meshes, armature, args.height)
     if not placement["allPassed"]:
         raise human_rig.RigError(

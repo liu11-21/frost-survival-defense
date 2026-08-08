@@ -291,6 +291,84 @@ def probe_stage(stage, basemesh, armature):
         growth.get("lowerarm_r", {}).get("maxGrowthMetres")))
 
 
+def seat_rig_in_body(basemesh, armature, tolerance=0.05):
+    """Move the rig onto the flesh it is supposed to drive.
+
+    `create_human(feet_on_ground=True)` puts the mesh's feet at z=0; the rig
+    that `add_builtin_rig` fits afterwards comes back centred on the origin
+    instead. The result is an armature translated roughly half a body height
+    below its own body:
+
+        mesh   z  0.000 .. 1.835
+        bones  z -0.809 .. 0.697
+
+    Nothing downstream notices, because skinning is v' = M * B^-1 * v and at
+    rest M = B, so every vertex returns to itself no matter where B is. The
+    static renders are correct, the triangle budget passes, the pose test
+    passes -- and then every rotation pivots the mesh about a point a metre
+    away and multiplies its displacement. Measured on the shipped candidate: a
+    vertex weighted 0.98 to lower_arm.R moved 2.32 m while lower_arm.R itself
+    moved 0.36 m.
+
+    The error is a pure translation, so it is recoverable exactly: for each
+    deform bone, compare its head against the centroid of the vertices it
+    owns, and take the MEDIAN of those differences. A median ignores the bones
+    whose centroid legitimately sits away from the head (the head bone points
+    up through the skull, the pelvis sits inside the hips) and locks onto the
+    offset they all share. Weights are addressed by group name and are not
+    touched, so re-binding is unnecessary.
+    """
+    from mathutils import Vector
+
+    names = {g.index: g.name for g in basemesh.vertex_groups}
+    owned = {}
+    for vertex in basemesh.data.vertices:
+        for group in vertex.groups:
+            name = names.get(group.group)
+            if name and group.weight > 0.5:
+                owned.setdefault(name, []).append(basemesh.matrix_world @ vertex.co)
+
+    deltas = []
+    for bone in armature.data.bones:
+        points = owned.get(bone.name)
+        if not points or len(points) < 8:
+            continue
+        centroid = sum(points, Vector((0.0, 0.0, 0.0))) / len(points)
+        deltas.append(centroid - (armature.matrix_world @ bone.head_local))
+    if len(deltas) < 4:
+        return {"seated": False, "reason": "only %d usable bones" % len(deltas)}
+
+    offset = Vector(tuple(
+        sorted(d[axis] for d in deltas)[len(deltas) // 2] for axis in range(3)))
+    if offset.length < tolerance:
+        return {"seated": False, "offset": [round(v, 4) for v in offset],
+                "reason": "already seated"}
+
+    previous = bpy.context.view_layer.objects.active
+    bpy.context.view_layer.objects.active = armature
+    bpy.ops.object.mode_set(mode="EDIT")
+    local = armature.matrix_world.inverted().to_3x3() @ offset
+    for bone in armature.data.edit_bones:
+        bone.head = bone.head + local
+        bone.tail = bone.tail + local
+    bpy.ops.object.mode_set(mode="OBJECT")
+    bpy.context.view_layer.objects.active = previous
+    bpy.context.view_layer.update()
+
+    after = []
+    for bone in armature.data.bones:
+        points = owned.get(bone.name)
+        if not points or len(points) < 8:
+            continue
+        centroid = sum(points, Vector((0.0, 0.0, 0.0))) / len(points)
+        after.append(round((centroid - (armature.matrix_world @ bone.head_local)).length, 4))
+    after.sort()
+    return {"seated": True, "offset": [round(v, 4) for v in offset],
+            "bones": len(deltas),
+            "medianBoneToFlesh": after[len(after) // 2] if after else None,
+            "maxBoneToFlesh": after[-1] if after else None}
+
+
 def smooth_body_weights(basemesh, armature, passes=6, floor=1e-3, max_influences=4):
     """Remove the weight discontinuities MPFB's builtin rig leaves on the body.
 
@@ -388,6 +466,11 @@ def main():
     if armature is None:
         raise SystemExit("no armature produced for %s" % args.variant)
 
+    # Before any measurement: the rig comes back centred on the origin
+    # while the mesh stands on the floor. Everything after this reads the
+    # rest pose, so it has to be right here or not at all.
+    seated = seat_rig_in_body(basemesh, armature)
+    print("SEAT_RIG %s" % json.dumps(seated))
     probe_stage("B_after_rig", basemesh, armature)
 
     skin = apply_skin(basemesh)
