@@ -50,11 +50,12 @@ function updateTutorial(s: GameSystems, workingNode: NaturalResourceNode | null)
 }
 
 function updateSlotFocus(s: GameSystems): void {
-  // A mouse-clicked remote slot is deliberately pinned for the lifetime of the
-  // open build panel. Without this guard the next frame's proximity scan would
-  // overwrite it with `null` and instantly close the panel. Once the panel is
-  // closed, the original 3.4-unit proximity behaviour resumes unchanged.
-  if (s.panels.isBuildOpen) return;
+  // Mouse-selected remote construction is intentionally pinned while that
+  // remote panel is open. Proximity-opened construction is *not* pinned: it
+  // keeps following the hero, so walking away closes the panel and walking to
+  // another plot updates the selection instead of leaving the UI stuck on the
+  // previously completed facility.
+  if (s.panels.isRemoteBuildSelection) return;
 
   let nearest: BuildSlot | null = null;
   let bestDist = SLOT_REACH * SLOT_REACH;
