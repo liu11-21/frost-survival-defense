@@ -1,6 +1,7 @@
 import { ALLY_UNITS } from "../data/UnitDefinitions";
 import { RECRUIT_DRAG_MIME } from "../input/RecruitDrag";
 import { resourceIcon } from "./ResourceIcons";
+import { unitThumbnailSvg } from "./UnitThumbnails";
 import type { PanelDeps, PanelResult } from "./ActionPanels";
 
 export type RecruitMenuTab = "melee" | "ranged" | "support" | "engineer";
@@ -12,19 +13,6 @@ const RECRUIT_TAB_LABELS: Record<RecruitMenuTab, string> = {
   ranged: "遠程",
   support: "支援",
   engineer: "工程",
-};
-
-const UNIT_GLYPHS: Record<string, string> = {
-  warrior: "戰",
-  shield: "盾",
-  archer: "弓",
-  medic: "療",
-  flagbearer: "旗",
-  mage: "法",
-  assault: "突",
-  engineer: "修",
-  musketeer: "銃",
-  frostmage: "霜",
 };
 
 function recruitCategory(defId: string): RecruitMenuTab {
@@ -41,16 +29,6 @@ export function renderRecruitTabsHtml(active: RecruitMenuTab): string {
   ).join("")}</div>`;
 }
 
-function unitIconSvg(id: string): string {
-  const glyph = UNIT_GLYPHS[id] ?? "兵";
-  return `<svg class="recruit-glyph" viewBox="0 0 48 48" width="42" height="42" aria-hidden="true">
-    <circle cx="24" cy="24" r="20" fill="none" stroke="currentColor" stroke-width="2" opacity=".72"/>
-    <path d="M14 34c2-6 6-9 10-9s8 3 10 9" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/>
-    <circle cx="24" cy="17" r="6" fill="none" stroke="currentColor" stroke-width="2.2"/>
-    <text x="36" y="15" text-anchor="middle" font-size="10" font-weight="700" fill="currentColor">${glyph}</text>
-  </svg>`;
-}
-
 export interface RecruitMenuCallbacks {
   onResult(result: PanelResult): void;
   onFocus(button: HTMLButtonElement): void;
@@ -58,7 +36,7 @@ export interface RecruitMenuCallbacks {
 }
 
 /**
- * Compact roster.  The panel is intentionally not a second codex: cards carry
+ * Compact roster. The panel is intentionally not a second codex: cards carry
  * only identity, price and availability. Full stats/special rules stay in the
  * existing Codex screen. A legal card exports a drag payload; spending does not
  * happen until the canvas accepts the drop on a real lane.
@@ -78,7 +56,7 @@ export function renderRecruitList(
 
   const list = refs.recruitList;
   list.innerHTML = hasHall
-    ? '<div class="panel-note recruit-drag-hint">拖曳兵種圖示到進攻路線部署。完整數值與特殊規則請查看圖鑑。</div>'
+    ? '<div class="panel-note recruit-drag-hint">拖曳兵種縮略圖到進攻路線部署。完整數值與特殊規則請查看圖鑑。</div>'
     : '<div class="panel-note">先建造招募所，才能拖曳部署小隊。</div>';
 
   const visible = ALLY_UNITS.filter((def) => recruitCategory(def.id) === activeTab);
@@ -99,7 +77,7 @@ export function renderRecruitList(
     button.draggable = !reason;
     button.title = reason || `${def.name}：拖曳到路線部署`;
     button.innerHTML = `
-      <span class="recruit-icon-wrap">${unitIconSvg(def.id)}</span>
+      <span class="recruit-icon-wrap">${unitThumbnailSvg(def.id)}</span>
       <span class="recruit-icon-name">${def.name}</span>
       <strong class="recruit-icon-cost">${resourceIcon("gold", 16)} ${cost}</strong>
       ${reason ? `<span class="bad recruit-icon-reason">${reason}</span>` : ""}`;
@@ -119,7 +97,7 @@ export function renderRecruitList(
       callbacks.onResult({
         ok: false,
         title: def.name,
-        message: reason || "請按住此圖示，拖曳到任一進攻路線上部署。",
+        message: reason || "請按住此縮略圖，拖曳到任一進攻路線上部署。",
         iconId: "gold",
       });
     });
