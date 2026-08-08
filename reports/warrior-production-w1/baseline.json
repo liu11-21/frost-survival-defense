@@ -1,0 +1,68 @@
+{
+  "stage": "Warrior-W1",
+  "status": "baseline",
+  "generatedAt": "2026-08-04",
+  "branch": "art/warrior-production-w1",
+  "baseBranch": "production/hero-r6",
+  "baseHead": "08b4fe069e99822ccc0b13b2f91f1c78ac3c8908",
+  "scope": {
+    "included": ["warrior"],
+    "excluded": ["hero", "shield", "archer", "medic", "flagbearer", "mage", "assault", "engineer", "musketeer", "frostmage", "all enemies", "all buildings", "all resources", "gameplay balance"]
+  },
+  "gameplayContract": {
+    "id": "warrior",
+    "name": "戰士",
+    "maxHealth": 400,
+    "attackPower": 10,
+    "attackType": "meleeArea",
+    "squadSize": 3,
+    "recruitCost": 15,
+    "moveSpeed": 3.6,
+    "scale": 0.95,
+    "visual": "warrior"
+  },
+  "source": {
+    "blend": {
+      "path": "assets-source/blender/characters/warrior.blend",
+      "bytes": 258919,
+      "sha256": "4CF71762FAE718D3E549936E3FA8B359CBBC58B05B9925C94E0B36F87DB55187"
+    },
+    "blender": "Blender 5.2.0 LTS (2026-07-14)"
+  },
+  "runtimeAsset": {
+    "path": "public/assets/models/characters/warrior.glb",
+    "bytes": 1188740,
+    "sha256": "789A625EAAB3C75040236703EBBE00F17F7FEBFEEEAA66520052283EC66D120B",
+    "nodes": 140,
+    "meshes": 114,
+    "triangles": 14880,
+    "lodTriangles": {"LOD0": 14336, "LOD1": 300, "LOD2": 244},
+    "materials": 13,
+    "textures": 12,
+    "skeletons": 1,
+    "root": "UnitRoot",
+    "requiredNodes": ["UnitRoot", "UnitSkeleton", "weapon_socket", "attackAnchor", "LOD1", "LOD2"],
+    "animations": ["Idle", "Walk", "Attack", "Cast", "Hit", "Death"],
+    "surfaceAttributes": {"TEXCOORD_0": true, "COLOR_0": true},
+    "externalUris": false,
+    "collisionRenderable": false
+  },
+  "runtimePipeline": {
+    "assetManifest": "src/assets/AssetManifest.ts",
+    "loader": "src/assets/AssetRegistry.ts -> src/assets/ModelLoader.ts",
+    "gameplayFactory": "src/combat/LiteHumanoid.ts via HumanoidTemplateCache",
+    "squadFactory": "src/combat/SquadManager.ts",
+    "modelMode": "authored GLB when manifest validation succeeds; procedural fallback otherwise",
+    "proceduralOverlay": "disabled for an authored instance by LiteHumanoid",
+    "squadCache": "one HumanoidTemplate per visual key; each squad member receives an authored instance from the shared asset container",
+    "fallbackBehavior": "AssetRegistry records unavailable assets and keeps the procedural renderer when GLB loading or contract validation fails",
+    "animationDriver": "src/combat/CombatAnimator.ts; current authored mapping uses Idle/Walk/Attack/Cast/Hit/Death"
+  },
+  "baselineFindings": [
+    "Current Warrior GLB is authored but is primarily a high-count primitive assembly.",
+    "Current LOD1 and LOD2 are generic body/head proxy geometry and do not preserve the requested axe, shoulder armor, fur collar, or boot identity.",
+    "Current GLB uses Attack and Cast rather than the Warrior-specific MeleeAttack and Run contract.",
+    "Current authored asset exceeds the requested Warrior LOD0 triangle/material/texture budget.",
+    "The current gameplay path can suppress the procedural parts once the authored instance is available; this behavior must remain fail-closed for the replacement asset."
+  ]
+}

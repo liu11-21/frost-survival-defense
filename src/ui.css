@@ -14,6 +14,107 @@
   cursor: pointer;
 }
 
+/* ---------------------------------------------------- Hero review mode ---- */
+body.hero-review #uiRoot > *:not(#heroReviewPanel) {
+  display: none !important;
+}
+
+.hero-review-panel {
+  position: absolute;
+  top: 16px;
+  right: 16px;
+  left: auto;
+  z-index: 80;
+  width: 238px;
+  padding: 8px 10px;
+  pointer-events: auto;
+  color: #e8f2ff;
+  background: rgba(10, 17, 28, 0.86);
+  border: 1px solid rgba(151, 194, 235, 0.42);
+  border-radius: 8px;
+  box-shadow: 0 8px 28px rgba(0, 0, 0, 0.42);
+  font: 12px/1.35 "Segoe UI", "Microsoft JhengHei", sans-serif;
+}
+
+.hero-review-title {
+  margin-bottom: 4px;
+  color: #ffd28a;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+}
+
+.hero-review-source {
+  margin-bottom: 5px;
+  color: #b9e6ff;
+  font-weight: 700;
+}
+
+.hero-review-panel label {
+  display: grid;
+  grid-template-columns: 62px 1fr;
+  align-items: center;
+  gap: 6px;
+  margin: 2px 0;
+  color: #c2d4e9;
+}
+
+.hero-review-panel select {
+  min-width: 0;
+  padding: 2px 4px;
+  color: #eef6ff;
+  background: #162338;
+  border: 1px solid rgba(151, 194, 235, 0.35);
+  border-radius: 4px;
+  font: inherit;
+}
+
+.hero-review-metrics {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 2px 8px;
+  margin-top: 6px;
+  color: #a8bfd8;
+}
+
+.hero-review-metrics span:first-child,
+.hero-review-metrics span:last-child {
+  grid-column: 1 / -1;
+}
+
+/* ------------------------------------------------ Hero gameplay art review --- */
+body.hero-gameplay-review #uiRoot > *:not(#heroGameplayReviewPanel) {
+  display: none !important;
+}
+
+.hero-gameplay-review-panel {
+  position: absolute;
+  top: 16px;
+  left: 16px;
+  z-index: 80;
+  width: 248px;
+  padding: 9px 11px;
+  pointer-events: none;
+  color: #e8f2ff;
+  background: rgba(10, 17, 28, 0.84);
+  border: 1px solid rgba(151, 194, 235, 0.42);
+  border-radius: 8px;
+  box-shadow: 0 8px 28px rgba(0, 0, 0, 0.42);
+  font: 12px/1.45 "Segoe UI", "Microsoft JhengHei", sans-serif;
+}
+
+.hero-gameplay-review-title {
+  margin-bottom: 5px;
+  color: #ffd28a;
+  font-weight: 800;
+  letter-spacing: 0.11em;
+}
+
+.hero-gameplay-review-panel [data-review-source] {
+  margin-bottom: 4px;
+  color: #b9e6ff;
+  font-weight: 700;
+}
+
 .hud {
   position: absolute;
   inset: 0;

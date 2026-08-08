@@ -5,7 +5,7 @@ import "./ui.css";
 import "./ui-hud.css";
 
 /** Entry point: find the canvas, start the game, report fatal failures visibly. */
-function bootstrap(): void {
+async function bootstrap(): Promise<void> {
   const canvas = document.getElementById("renderCanvas");
   if (!(canvas instanceof HTMLCanvasElement)) {
     throw new Error("renderCanvas element is missing from index.html");
@@ -21,7 +21,33 @@ function bootstrap(): void {
 
   game.start().catch(showFatal);
 
-  if (import.meta.env.DEV) {
+  const params = new URLSearchParams(window.location.search);
+  const heroReview = params.get("heroReview") === "1";
+  const heroGameplayReview = params.get("heroGameplayReview") === "1";
+  // Isolated candidate review. Returns before the game is constructed, so the
+  // production Hero path is untouched and nothing about gameplay is loaded.
+  if (params.get("humanCandidateReview") === "1") {
+    const canvas = document.getElementById("renderCanvas");
+    if (canvas instanceof HTMLCanvasElement) {
+      // The boot splash is removed by the game, and this path returns before
+      // the game exists -- so without this the overlay sits over the canvas
+      // and every screenshot is of a loading screen.
+      document.getElementById("loadingScreen")?.remove();
+      // index.html ships the HUD markup statically; the game normally owns it.
+      // This path never constructs the game, so the HUD would otherwise sit
+      // over every review frame.
+      for (const el of Array.from(document.body.children)) {
+        if (el !== canvas && !el.contains(canvas)) (el as HTMLElement).style.display = "none";
+      }
+      const { startHumanCandidateReview } = await import("./character/HumanCandidateReview");
+      startHumanCandidateReview(canvas);
+      document.body.classList.add("human-candidate-review");
+      return;
+    }
+  }
+  const warriorReview = params.get("unitReview") === "warrior";
+  const uiVerification = params.get("uiVerification") === "1";
+  if (import.meta.env.DEV || heroReview || heroGameplayReview || warriorReview || uiVerification) {
     const instance = game;
     window.frostbound = {
       game: instance,
@@ -30,6 +56,7 @@ function bootstrap(): void {
       },
       snapshot: () => instance.debugSnapshot(),
       stopLoop: () => instance.stopLoop(),
+      renderReviewFrame: () => instance.renderReviewFrame(),
       api: () => instance.debugApi(),
     };
   }
@@ -42,4 +69,4 @@ function showFatal(error: unknown): void {
   showFatalError("無法啟動：此瀏覽器可能不支援 WebGL。請使用最新版 Chrome、Edge 或 Firefox。");
 }
 
-bootstrap();
+void bootstrap();

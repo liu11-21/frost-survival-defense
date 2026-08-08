@@ -1,0 +1,185 @@
+{
+  "generatedAt": "2026-08-07T06:00:29.692Z",
+  "asset": "hero",
+  "sourcePath": "assets-source/blender/characters/hero.blend",
+  "glbPath": "public/assets/models/characters/hero.glb",
+  "status": "pass",
+  "source": {
+    "commit": "6da6bd523a0545bdc02c3a6ef1d78ab17cb68140",
+    "bytes": 1245782,
+    "sha256": "ec2527182212b4a449662001971602bc43bf0fd7671b8c77e56f4cf0f7425c02",
+    "lfsPointer": false
+  },
+  "glb": {
+    "sha256": "501164f8090bf9c17a7a31730339cb5f1cfb8bbdff158f868297ea644dd47398",
+    "bytes": 1509968,
+    "assetVersion": "2.0",
+    "nodes": 31,
+    "meshes": 6,
+    "materials": 3,
+    "textures": 1,
+    "skeletons": 1,
+    "skeletonJoints": 18,
+    "animations": [
+      "Idle",
+      "Walk",
+      "Run",
+      "MeleeAttack",
+      "RangedAttack",
+      "Hit",
+      "Death"
+    ],
+    "triangles": 7836,
+    "lodTriangles": {
+      "LOD0": 4320,
+      "LOD1": 2540,
+      "LOD2": 976
+    },
+    "lodRenderPrimitives": {
+      "LOD0": 5,
+      "LOD1": 4,
+      "LOD2": 2
+    },
+    "images": [
+      {
+        "name": "HERO_ATLAS",
+        "embedded": true,
+        "uri": null,
+        "mimeType": "image/png",
+        "resolution": {
+          "width": 1024,
+          "height": 1024
+        }
+      }
+    ],
+    "checks": {
+      "nonEmpty": true,
+      "notPlaceholder": true,
+      "requiredNodes": true,
+      "requiredAnimations": true,
+      "skeleton": true,
+      "weightedSkinning": true,
+      "rootTransform": true,
+      "orientationContract": true,
+      "groundedContract": true,
+      "uvAndColor": true,
+      "lodGeometry": true,
+      "lodIdentity": true,
+      "embeddedAtlas": true,
+      "atlasResolution": true,
+      "noExternalUris": true,
+      "noAbsolutePaths": true,
+      "collisionNotRenderable": true,
+      "materialBudget": true,
+      "primitiveBudget": true,
+      "triangleBudget": true,
+      "rootExtras": true,
+      "r7RootExtras": true
+    }
+  },
+  "checks": {
+    "sourceArtifact": true,
+    "nonEmpty": true,
+    "notPlaceholder": true,
+    "requiredNodes": true,
+    "requiredAnimations": true,
+    "skeleton": true,
+    "weightedSkinning": true,
+    "rootTransform": true,
+    "orientationContract": true,
+    "groundedContract": true,
+    "uvAndColor": true,
+    "lodGeometry": true,
+    "lodIdentity": true,
+    "embeddedAtlas": true,
+    "atlasResolution": true,
+    "noExternalUris": true,
+    "noAbsolutePaths": true,
+    "collisionNotRenderable": true,
+    "materialBudget": true,
+    "primitiveBudget": true,
+    "triangleBudget": true,
+    "rootExtras": true,
+    "r7RootExtras": true,
+    "productionEvidence": true
+  },
+  "productionEvidence": {
+    "requiredCount": 8,
+    "captures": [
+      {
+        "file": "hero-front.png",
+        "screenshotBytes": 95975,
+        "resolution": {
+          "width": 1600,
+          "height": 900
+        },
+        "valid": true
+      },
+      {
+        "file": "hero-three-quarter.png",
+        "screenshotBytes": 83803,
+        "resolution": {
+          "width": 1600,
+          "height": 900
+        },
+        "valid": true
+      },
+      {
+        "file": "hero-gameplay-snow.png",
+        "screenshotBytes": 806956,
+        "resolution": {
+          "width": 1600,
+          "height": 900
+        },
+        "valid": true
+      },
+      {
+        "file": "hero-gameplay-furnace.png",
+        "screenshotBytes": 813037,
+        "resolution": {
+          "width": 1600,
+          "height": 900
+        },
+        "valid": true
+      },
+      {
+        "file": "hero-gameplay-battle.png",
+        "screenshotBytes": 863501,
+        "resolution": {
+          "width": 1600,
+          "height": 900
+        },
+        "valid": true
+      },
+      {
+        "file": "hero-melee-impact.png",
+        "screenshotBytes": 863969,
+        "resolution": {
+          "width": 1600,
+          "height": 900
+        },
+        "valid": true
+      },
+      {
+        "file": "hero-ranged-fire.png",
+        "screenshotBytes": 864015,
+        "resolution": {
+          "width": 1600,
+          "height": 900
+        },
+        "valid": true
+      },
+      {
+        "file": "hero-death.png",
+        "screenshotBytes": 857739,
+        "resolution": {
+          "width": 1600,
+          "height": 900
+        },
+        "valid": true
+      }
+    ],
+    "valid": true
+  },
+  "runtimeVerificationNote": "Babylon runtime, normalized animation samples, and gameplay visibility are authoritative in the GitHub Actions artifact; this static validator does not judge commercial art quality."
+}

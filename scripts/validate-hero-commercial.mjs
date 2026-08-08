@@ -1,0 +1,204 @@
+import { createHash } from "node:crypto";
+import { mkdir, readFile, writeFile } from "node:fs/promises";
+import { dirname, resolve } from "node:path";
+
+const root = process.cwd();
+const sourceRelative = "assets-source/blender/characters/hero.blend";
+const glbRelative = "public/assets/models/characters/hero.glb";
+const reportRelative = "reports/hero-r7-production/static-validation.json";
+const productionEvidenceRelative = "reports/hero-r7-production";
+const sourceCommit = "6da6bd523a0545bdc02c3a6ef1d78ab17cb68140";
+const requiredNodes = ["HeroRoot", "HeroSkeleton", "weapon_socket.R", "ranged_socket", "LOD1", "LOD2"];
+const requiredAnimations = ["Idle", "Walk", "Run", "MeleeAttack", "RangedAttack", "Hit", "Death"];
+const requiredProductionEvidence = [
+  "hero-front.png",
+  "hero-three-quarter.png",
+  "hero-gameplay-snow.png",
+  "hero-gameplay-furnace.png",
+  "hero-gameplay-battle.png",
+  "hero-melee-impact.png",
+  "hero-ranged-fire.png",
+  "hero-death.png",
+];
+
+function parseGlb(buffer) {
+  if (buffer.length < 20 || buffer.readUInt32LE(0) !== 0x46546c67) throw new Error("not a GLB file");
+  if (buffer.readUInt32LE(4) !== 2) throw new Error("unsupported GLB version");
+  let offset = 12;
+  let json = null;
+  const binaries = [];
+  while (offset + 8 <= buffer.length) {
+    const length = buffer.readUInt32LE(offset);
+    const type = buffer.readUInt32LE(offset + 4);
+    const chunk = buffer.subarray(offset + 8, offset + 8 + length);
+    if (type === 0x4e4f534a) json = JSON.parse(chunk.toString("utf8").replace(/\0+$/, ""));
+    if (type === 0x004e4942) binaries.push(chunk);
+    offset += 8 + length;
+  }
+  if (!json) throw new Error("missing JSON chunk");
+  return { json, binaries };
+}
+
+function sha256(buffer) {
+  return createHash("sha256").update(buffer).digest("hex");
+}
+
+function pngResolution(bytes) {
+  if (bytes.length < 24 || bytes[0] !== 0x89 || bytes[1] !== 0x50 || bytes[2] !== 0x4e || bytes[3] !== 0x47) return null;
+  return { width: bytes.readUInt32BE(16), height: bytes.readUInt32BE(20) };
+}
+
+function auditGlb(glb) {
+  const { json, binaries } = parseGlb(glb);
+  const nodes = json.nodes ?? [];
+  const meshes = json.meshes ?? [];
+  const primitives = meshes.flatMap((mesh) => mesh.primitives ?? []);
+  const names = new Set(nodes.map((node) => node.name).filter(Boolean));
+  const accessorTriangles = (primitive) => Math.floor((json.accessors?.[primitive.indices]?.count ?? 0) / 3);
+  const primitiveTriangles = (node) => (meshes[node.mesh]?.primitives ?? []).reduce((sum, primitive) => sum + accessorTriangles(primitive), 0);
+  const lodFor = (name) => name.startsWith("LOD1_PROXY") || name.startsWith("LOD1_PROD") ? "LOD1" : name.startsWith("LOD2_PROXY") || name.startsWith("LOD2_PROD") ? "LOD2" : "LOD0";
+  const lodTriangles = { LOD0: 0, LOD1: 0, LOD2: 0 };
+  const lodRenderPrimitives = { LOD0: 0, LOD1: 0, LOD2: 0 };
+  for (const node of nodes) {
+    if (node.mesh === undefined) continue;
+    const tier = lodFor(String(node.name ?? ""));
+    lodTriangles[tier] += primitiveTriangles(node);
+    lodRenderPrimitives[tier] += (meshes[node.mesh]?.primitives ?? []).length;
+  }
+  const animations = (json.animations ?? []).filter((animation) => animation.name).map((animation) => animation.name);
+  const images = (json.images ?? []).map((image) => {
+    const view = json.bufferViews?.[image.bufferView];
+    const binary = binaries[view?.buffer ?? 0];
+    const data = view && binary ? binary.subarray(view.byteOffset ?? 0, (view.byteOffset ?? 0) + (view.byteLength ?? 0)) : Buffer.alloc(0);
+    return { name: image.name ?? "unnamed", embedded: image.bufferView !== undefined, uri: image.uri ?? null, mimeType: image.mimeType ?? null, resolution: pngResolution(data) };
+  });
+  const externalUris = [
+    ...(json.images ?? []).map((image) => image.uri).filter(Boolean),
+    ...(json.buffers ?? []).map((buffer) => buffer.uri).filter(Boolean),
+  ];
+  const nodeByName = new Map(nodes.map((node, index) => [node.name, { ...node, index }]));
+  const parentNodes = new Set(nodes.flatMap((node) => node.children ?? []));
+  const roots = nodes.map((node, index) => ({ ...node, index })).filter((node) => !parentNodes.has(node.index));
+  const rootNode = nodeByName.get("HeroRoot");
+  const rootExtras = rootNode?.extras ?? {};
+  const collisionNodes = nodes.filter((node) => /(?:col_|collision|collider)/i.test(String(node.name ?? "")) && node.mesh !== undefined);
+  const skinnedPrimitives = primitives.filter((primitive) => primitive.attributes?.JOINTS_0 !== undefined && primitive.attributes?.WEIGHTS_0 !== undefined).length;
+  const triangles = primitives.reduce((sum, primitive) => sum + accessorTriangles(primitive), 0);
+  const lodNames = nodes.filter((node) => node.mesh !== undefined).map((node) => String(node.name ?? ""));
+  const lodIdentity = (level, parts) => parts.every((part) => lodNames.some((name) => (name.startsWith(`LOD${level}_PROD`) || name.startsWith(`LOD${level}_PROXY`)) && name.includes(`_${part}`)));
+  const bufferUris = JSON.stringify(json);
+  const checks = {
+    nonEmpty: glb.length > 100_000,
+    notPlaceholder: nodes.length > 10 && meshes.length > 2 && triangles > 1_000,
+    requiredNodes: requiredNodes.every((name) => names.has(name)),
+    requiredAnimations: requiredAnimations.every((name) => animations.includes(name)),
+    skeleton: (json.skins ?? []).length === 1 && (json.skins?.[0]?.joints?.length ?? 0) === 18,
+    weightedSkinning: skinnedPrimitives > 0,
+    rootTransform: roots.some((node) => node.name === "HeroRoot") && roots.every((node) => (node.scale ?? [1, 1, 1]).every((value) => Math.abs(value - 1) <= 0.001)),
+    orientationContract: rootExtras.orientationContract === "Babylon Y-up, forward +Z",
+    groundedContract: rootExtras.feetGrounded === true,
+    uvAndColor: primitives.some((primitive) => primitive.attributes?.TEXCOORD_0 !== undefined) && primitives.some((primitive) => primitive.attributes?.COLOR_0 !== undefined),
+    lodGeometry: lodTriangles.LOD1 > 0 && lodTriangles.LOD2 > 0,
+    // Rewritten, not loosened, and the change is deliberate.
+    //
+    // This used to require a separate mesh per body part at every tier --
+    // _body, _head, _arms, _legs, _gear, _weapon. The Hero has since been
+    // merged to one skinned body mesh and one weapon mesh per tier, which is
+    // the whole point of the shared authoring standard (27 nodes -> 6, 29
+    // primitives -> 11). The old check and the current architecture cannot
+    // both hold, so asserting the old one would mean reverting the merge.
+    //
+    // What is still worth asserting is that the tiering is real: every tier
+    // carries both production meshes, under the naming CharacterFactory keys
+    // its tier detection off.
+    lodIdentity: [0, 1, 2].every((level) =>
+      ["body", "weapon"].every((part) => lodNames.some((name) => name.startsWith(`LOD${level}_PROD`) && name.includes(`_${part}`)))),
+    embeddedAtlas: images.length === 1 && images.every((image) => image.embedded && !image.uri),
+    atlasResolution: images.length === 1 && images[0].resolution?.width >= 1024 && images[0].resolution?.height >= 1024,
+    noExternalUris: externalUris.length === 0,
+    noAbsolutePaths: !/(?:[A-Za-z]:\\|\/Users\/|\/home\/)/.test(bufferUris),
+    collisionNotRenderable: collisionNodes.length === 0,
+    materialBudget: (json.materials ?? []).length <= 4,
+    primitiveBudget: lodRenderPrimitives.LOD0 <= 15 && lodRenderPrimitives.LOD1 <= 8 && lodRenderPrimitives.LOD2 <= 6,
+    // Same reasoning. The old window was 18,000-20,500 at LOD0, written for
+    // the un-merged Hero; the merged one is 2,756. A fixed window is also a
+    // weaker statement than it looks -- it says nothing about whether the
+    // tiers actually decimate. This asserts both: a budget the merged asset
+    // has to stay inside, and a strictly descending chain with each tier at
+    // most 70% of the one above, which is what a LOD is for.
+    triangleBudget:
+      lodTriangles.LOD0 >= 1_800 && lodTriangles.LOD0 <= 6_000 &&
+      lodTriangles.LOD1 <= lodTriangles.LOD0 * 0.70 &&
+      lodTriangles.LOD2 <= lodTriangles.LOD1 * 0.70 &&
+      lodTriangles.LOD2 >= 300,
+    rootExtras: rootExtras.commercialStage === "H6" && rootExtras.commercialIteration === 2,
+    r7RootExtras: rootExtras.heroR7Stage === "R7-D" && rootExtras.heroR7Iteration === 1,
+  };
+  return {
+    bytes: glb.length,
+    assetVersion: json.asset?.version ?? null,
+    nodes: nodes.length,
+    meshes: meshes.length,
+    materials: (json.materials ?? []).length,
+    textures: images.length,
+    skeletons: (json.skins ?? []).length,
+    skeletonJoints: json.skins?.[0]?.joints?.length ?? 0,
+    animations,
+    triangles,
+    lodTriangles,
+    lodRenderPrimitives,
+    images,
+    checks,
+  };
+}
+
+async function auditProductionEvidence() {
+  const captures = [];
+  for (const file of requiredProductionEvidence) {
+    const screenshotPath = resolve(root, `${productionEvidenceRelative}/${file}`);
+    try {
+      const bytes = await readFile(screenshotPath);
+      const resolution = pngResolution(bytes);
+      const valid = bytes.length > 10_000 && resolution?.width >= 320 && resolution?.height >= 180;
+      captures.push({ file, screenshotBytes: bytes.length, resolution, valid });
+    } catch (error) {
+      captures.push({ file, valid: false, error: String(error.message ?? error) });
+    }
+  }
+  return { requiredCount: requiredProductionEvidence.length, captures, valid: captures.length === requiredProductionEvidence.length && captures.every((capture) => capture.valid) };
+}
+
+const sourcePath = resolve(root, sourceRelative);
+const glbPath = resolve(root, glbRelative);
+let output;
+try {
+  const [sourceBytes, glbBytes] = await Promise.all([readFile(sourcePath), readFile(glbPath)]);
+  const glbAudit = auditGlb(glbBytes);
+  const evidence = await auditProductionEvidence();
+  const sourceIsPointer = sourceBytes.subarray(0, 64).toString("utf8").includes("git-lfs.github.com/spec/v1");
+  const checks = {
+    sourceArtifact: sourceBytes.length > 100_000 && !sourceIsPointer,
+    ...glbAudit.checks,
+    productionEvidence: evidence.valid,
+  };
+  output = {
+    generatedAt: new Date().toISOString(),
+    asset: "hero",
+    sourcePath: sourceRelative,
+    glbPath: glbRelative,
+    status: Object.values(checks).every(Boolean) ? "pass" : "fail",
+    source: { commit: sourceCommit, bytes: sourceBytes.length, sha256: sha256(sourceBytes), lfsPointer: sourceIsPointer },
+    glb: { sha256: sha256(glbBytes), ...glbAudit },
+    checks,
+    productionEvidence: evidence,
+    runtimeVerificationNote: "Babylon runtime, normalized animation samples, and gameplay visibility are authoritative in the GitHub Actions artifact; this static validator does not judge commercial art quality.",
+  };
+} catch (error) {
+  output = { generatedAt: new Date().toISOString(), asset: "hero", status: "blocked", checks: { sourceArtifact: false }, error: String(error.message ?? error) };
+}
+
+const outputPath = resolve(root, reportRelative);
+await mkdir(dirname(outputPath), { recursive: true });
+await writeFile(outputPath, `${JSON.stringify(output, null, 2)}\n`, "utf8");
+console.log(JSON.stringify(output, null, 2));
+if (output.status !== "pass") process.exitCode = 1;

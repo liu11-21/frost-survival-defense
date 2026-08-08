@@ -13,6 +13,12 @@ import { SupportSystems } from "./SupportSystems";
 import { PointerRouter } from "../input/PointerRouter";
 import { InputDebugOverlay } from "../ui/InputDebugOverlay";
 import { updateHaltedDeathLifecycle } from "../combat/HaltedDeathLifecycle";
+import { HeroReviewMode } from "../hero/HeroReviewMode";
+import { HeroGameplayReviewMode } from "../hero/HeroGameplayReviewMode";
+import { WarriorReviewMode } from "../warrior/WarriorReviewMode";
+import { LANES, nearestLanePoint } from "../data/BuildSlotDefinitions";
+
+const RECRUIT_DROP_MAX_ROAD_DISTANCE = 4.5;
 
 /** Owns the engine loop and the glue between input, rules and presentation. */
 export class Game {
@@ -24,6 +30,9 @@ export class Game {
   private readonly support = new SupportSystems();
   private readonly pointerRouter: PointerRouter;
   private readonly inputDebug: InputDebugOverlay | null;
+  private heroReview: HeroReviewMode | null = null;
+  private heroGameplayReview: HeroGameplayReviewMode | null = null;
+  private warriorReview: WarriorReviewMode | null = null;
 
   constructor(canvas: HTMLCanvasElement) {
     this.s = new GameSystems(canvas);
@@ -54,23 +63,82 @@ export class Game {
     this.pointerRouter = new PointerRouter(canvas, this.s.scene, this.s.slotPicker, {
       canActOnWorld: () => !this.inMenu && !this.paused && !this.s.confirm.isOpen && !this.s.mapView.isOpen,
       onSlotClick: (slotId) => this.handleSlotClick(slotId),
+      onRecruitDrop: (defId, x, z) => this.handleRecruitDrop(defId, x, z),
     });
     this.inputDebug =
       new URLSearchParams(window.location.search).get("inputDebug") === "1" ? new InputDebugOverlay(this.pointerRouter) : null;
   }
 
-  /** A click landed on a build slot's (oversized, invisible) pick region —
-   * the world-object counterpart to pressing `E`/`B` near it. Only slots the
-   * hero has already walked up to actually open, so clicking never becomes a
-   * way to build from across the map. */
+  /**
+   * Mouse construction is deliberately a second way to select the SAME slot,
+   * not a remote-build bypass. BuildingManager still performs affordability,
+   * unlock, occupancy and placement legality. The old proximity interaction
+   * remains available through E/B.
+   */
   private handleSlotClick(slotId: string): void {
     const s = this.s;
-    if (s.panels.nearbySlot?.id === slotId) {
-      s.panels.openBuild();
-      s.tutorial.report("openedBuildMenu");
-    } else {
-      s.hud.toast("靠近建築槽位才能建造");
+    const slot = s.buildings.slot(slotId);
+    if (!slot) return;
+    s.panels.setNearbySlot(slot);
+    s.arena.setSelected(slot.id);
+    s.panels.openBuild();
+    s.tutorial.report("openedBuildMenu");
+  }
+
+  /**
+   * A roster drag spends nothing until the drop is accepted by a real lane.
+   * `RunController.tryRecruit` stays the single source of truth for hall/cost/
+   * capacity rules and emits the existing squadRecruited event; this method
+   * only relocates that newly-created squad onto the chosen lane and records
+   * its lane/home metadata for AI.
+   */
+  private handleRecruitDrop(defId: string, x: number, z: number): void {
+    const s = this.s;
+    const drop = nearestLanePoint(x, z, RECRUIT_DROP_MAX_ROAD_DISTANCE);
+    if (!drop) {
+      s.hud.toast("請把兵種拖到進攻路線上", "failure");
+      return;
     }
+
+    const before = s.squads.allySquads.length;
+    const failure = s.run.tryRecruit(defId);
+    if (failure) {
+      s.hud.toast(failure, "failure");
+      return;
+    }
+    const squad = s.squads.allySquads[s.squads.allySquads.length - 1];
+    if (!squad || s.squads.allySquads.length <= before) {
+      s.hud.toast("招募完成但部署失敗，請重新嘗試", "failure");
+      return;
+    }
+
+    const lane = LANES[drop.laneIndex];
+    const from = lane.path[drop.segmentIndex];
+    const to = lane.path[Math.min(lane.path.length - 1, drop.segmentIndex + 1)];
+    const tx = to.x - from.x;
+    const tz = to.z - from.z;
+    const len = Math.hypot(tx, tz) || 1;
+    const sideX = -tz / len;
+    const sideZ = tx / len;
+    const inwardYaw = Math.atan2(to.x - drop.x, to.z - drop.z);
+
+    for (let i = 0; i < squad.members.length; i++) {
+      const member = squad.members[i];
+      const offset = (i - (squad.members.length - 1) * 0.5) * 0.9;
+      const px = drop.x + sideX * offset;
+      const pz = drop.z + sideZ * offset;
+      member.laneIndex = drop.laneIndex;
+      member.setPosition(px, pz);
+      member.setYaw(inwardYaw);
+      member.home = member.position.clone();
+    }
+
+    // Assault's existing instant-ambush code runs during tryRecruit. Resetting
+    // to the drop above intentionally prevents a global ambush from violating
+    // the lane contract; it still retains its combat stats and protection.
+    s.squadHud.markDirty();
+    s.hud.toast(`${squad.def.name}已部署至${lane.shortName}`);
+    s.audio.play("uiConfirm", 0.65);
   }
 
   /** Game-event reactions: audio, VFX, boss tracking and run transitions. */
@@ -93,7 +161,6 @@ export class Game {
     s.events.on("waveStarted", (p) => {
       s.audio.play(p.boss ? "bossSpawn" : "waveStart", 1);
       if (p.boss) s.camera.shake(0.2);
-      // Nothing may carry a previous wave's target or stuck state forward.
       s.squads.onWaveBoundary();
       s.buildings.onWaveBoundary();
       s.gates.setLiveLaneCount(s.waves.activeLaneCount);
@@ -143,7 +210,6 @@ export class Game {
     });
   }
 
-  /** Routes a main-menu / pause-menu selection. */
   private handleMenuChoice(choice: MenuChoice): void {
     routeMenuChoice(this.s, choice, {
       startRun: (mode, levelId) => this.startRun(mode, levelId),
@@ -155,77 +221,37 @@ export class Game {
         this.s.menus.markOpen();
         this.s.codex.open();
       },
-      leaveMenu: () => {
-        this.inMenu = false;
-      },
+      leaveMenu: () => { this.inMenu = false; },
     });
   }
 
   private handleAction(action: ActionKey): void {
     const s = this.s;
+    if (this.heroReview || this.heroGameplayReview) return;
     if (action === "pause") {
-      // Esc unwinds one layer at a time: dialog, then codex, then highlight,
-      // then panels, and only then does it pause the run.
-      if (s.confirm.isOpen) {
-        s.confirm.cancel();
-        return;
-      }
-      if (this.inCodex) {
-        this.closeCodex();
-        return;
-      }
-      if (s.mapView.isOpen) {
-        s.mapView.close();
-        return;
-      }
+      if (s.confirm.isOpen) { s.confirm.cancel(); return; }
+      if (this.inCodex) { this.closeCodex(); return; }
+      if (s.mapView.isOpen) { s.mapView.close(); return; }
       if (s.run.isOver) return;
-      if (!this.inMenu && s.squadHud.highlight !== null) {
-        s.squadHud.clearHighlight();
-        return;
-      }
-      if (!this.inMenu && s.panels.anyOpen) {
-        s.panels.closeAll();
-        return;
-      }
+      if (!this.inMenu && s.squadHud.highlight !== null) { s.squadHud.clearHighlight(); return; }
+      if (!this.inMenu && s.panels.anyOpen) { s.panels.closeAll(); return; }
       if (this.paused) this.setPaused(false);
       else if (!this.inMenu) this.setPaused(true);
       return;
     }
     if (this.inMenu || this.paused || s.confirm.isOpen) return;
-    // The tactical map is a look-only overlay: while it covers the screen, the
-    // only legal action is toggling it shut (Esc is already handled above).
-    // No building, recruiting, or wave-calling happens through it, and no
-    // build/recruit panel would even be reachable — it renders under the map.
     if (s.mapView.isOpen && action !== "map") return;
 
     switch (action) {
-      case "map":
-        s.mapView.toggle();
-        break;
-      case "interact":
-        this.handleInteract();
-        break;
-      case "confirm":
-        s.panels.confirmFocused();
-        break;
-      case "perfPanel":
-        s.debug.togglePerf();
-        break;
-      case "aiPanel":
-        s.debug.toggleAi();
-        break;
-      case "stressPanel":
-        s.debug.openStress();
-        break;
-      case "balancePanel":
-        s.debug.toggleBalance();
-        break;
-      case "verifyPanel":
-        s.debug.toggleVerify();
-        break;
-      case "build":
-        s.panels.toggleBuild();
-        break;
+      case "map": s.mapView.toggle(); break;
+      case "interact": this.handleInteract(); break;
+      case "confirm": s.panels.confirmFocused(); break;
+      case "perfPanel": s.debug.togglePerf(); break;
+      case "aiPanel": s.debug.toggleAi(); break;
+      case "stressPanel": s.debug.openStress(); break;
+      case "balancePanel": s.debug.toggleBalance(); break;
+      case "verifyPanel": s.debug.toggleVerify(); break;
+      case "build": s.panels.toggleBuild(); break;
       case "recruit":
         s.panels.toggleRecruit();
         if (s.panels.isRecruitOpen) s.tutorial.report("openedRecruit");
@@ -235,14 +261,9 @@ export class Game {
         if (failure) s.hud.toast(failure);
         break;
       }
-      case "callWave":
-        s.run.callNextWaveEarly();
-        break;
+      case "callWave": s.run.callNextWaveEarly(); break;
       case "toggleRebuild":
-        if (!s.buildings.hasAutoRebuilder) {
-          s.hud.toast("尚未建造自動重建站");
-          break;
-        }
+        if (!s.buildings.hasAutoRebuilder) { s.hud.toast("尚未建造自動重建站"); break; }
         s.buildings.autoRebuildEnabled = !s.buildings.autoRebuildEnabled;
         s.hud.toast(s.buildings.autoRebuildEnabled ? "自動重建已啟用" : "自動重建已停用");
         break;
@@ -264,10 +285,6 @@ export class Game {
     }
   }
 
-  /**
-   * One key for everything. What it opens depends on the nearest valid target,
-   * which is exactly what the on-screen prompt already told the player.
-   */
   private handleInteract(): void {
     const s = this.s;
     const it = s.prompt.interaction;
@@ -289,7 +306,6 @@ export class Game {
     }
   }
 
-  /** Manual pickup from a production building the hero is standing next to. */
   private collectFrom(slotId: string): void {
     const s = this.s;
     const building = s.buildings.slot(slotId)?.building;
@@ -300,9 +316,7 @@ export class Game {
     if (stored > 0) {
       s.feedback.resourceGain(building.position.x, building.position.z, building.produces, stored);
       s.audio.play("coinPickup", 0.4);
-    } else {
-      s.hud.toast("已達資源上限，建造倉庫可解除");
-    }
+    } else s.hud.toast("已達資源上限，建造倉庫可解除");
   }
 
   async start(): Promise<void> {
@@ -310,28 +324,58 @@ export class Game {
       this.s.scene.whenReadyAsync(),
       new Promise<void>((resolve) => window.setTimeout(resolve, 5000)),
     ]);
-    // Authored GLBs are optional. The registry records missing/invalid files
-    // and leaves every procedural factory in charge when Blender exports are
-    // not present yet; a slow network cannot block the playable menu forever.
+    const authoredPreload = this.s.assets.preload();
     await Promise.race([
-      this.s.assets.preload(),
+      authoredPreload,
       new Promise<void>((resolve) => window.setTimeout(resolve, 5000)),
     ]);
     this.s.nodes.attachAuthoredAssets(this.s.assets);
-    this.s.hero.applyAuthoredAsset(this.s.assets);
+    const heroApplied = this.s.hero.applyAuthoredAsset(this.s.assets);
+    if (!heroApplied) {
+      void authoredPreload.then(() => {
+        if (this.s.hero.modelSource !== "GLB") {
+          this.s.hero.applyAuthoredAsset(this.s.assets);
+          this.heroReview?.refreshAuthored();
+        }
+      });
+    }
     this.s.furnace.applyAuthoredAsset(this.s.assets);
     hideLoadingScreen();
     this.refitCamera();
     this.s.codex.onClose = () => this.closeCodex();
     this.s.markers.setStrength(this.s.markerStrength);
-    this.openMainMenu();
-    if (new URLSearchParams(window.location.search).get("uiVerification") === "1") {
-      this.s.debug.toggleVerify();
+    const params = new URLSearchParams(window.location.search);
+    if (params.get("heroGameplayReview") === "1") {
+      this.startRun("stage", "stage-1");
+      this.heroGameplayReview = new HeroGameplayReviewMode(this.s);
+      this.heroGameplayReview.enter();
+      this.inMenu = false;
+      this.paused = false;
+      this.s.engine.runRenderLoop(this.frame);
+      return;
     }
+    if (params.get("unitReview") === "warrior") {
+      this.startRun("stage", "stage-1");
+      this.warriorReview = new WarriorReviewMode(this.s);
+      this.warriorReview.enter();
+      this.inMenu = false;
+      this.paused = false;
+      this.s.engine.runRenderLoop(this.frame);
+      return;
+    }
+    if (params.get("heroReview") === "1") {
+      this.heroReview = new HeroReviewMode(this.s);
+      this.heroReview.enter();
+      this.inMenu = false;
+      this.paused = false;
+      this.s.engine.runRenderLoop(this.frame);
+      return;
+    }
+    this.openMainMenu();
+    if (new URLSearchParams(window.location.search).get("uiVerification") === "1") this.s.debug.toggleVerify();
     this.s.engine.runRenderLoop(this.frame);
   }
 
-  /** The tutorial runs on stage 1 with a practice flag so it is never ranked. */
   private startTutorial(): void {
     this.startRun("stage", "stage-1");
     this.s.tutorial.start();
@@ -370,13 +414,27 @@ export class Game {
 
   private readonly frame = (): void => {
     if (this.disposed) return;
+    if (this.heroReview) {
+      this.heroReview.update(0.016);
+      this.heroReview.beforeRender();
+      this.s.scene.render();
+      this.heroReview.afterRender();
+      return;
+    }
+    if (this.heroGameplayReview) {
+      this.heroGameplayReview.update(0.016);
+      this.s.scene.render();
+      return;
+    }
+    if (this.warriorReview) {
+      this.warriorReview.update();
+      this.s.scene.render();
+      return;
+    }
     renderFrame(this.s, this.paused || this.inMenu, (dt) => this.update(dt));
   };
 
   private update(dt: number): void {
-    // The map's own redraw/animation runs on real wall-clock time even while
-    // it slows the simulation below — otherwise the map itself would look
-    // laggy the moment it is the thing causing the slowdown.
     this.s.mapView.update(dt, this.s);
     runFrame(this.s, dt * this.s.mapView.timeScale, this.support);
     this.inputDebug?.update();
@@ -387,7 +445,6 @@ export class Game {
     this.refitCamera();
   };
 
-  /** Reframes so the whole wall ring stays on screen at the new aspect ratio. */
   private refitCamera(): void {
     const width = this.s.engine.getRenderWidth();
     const height = Math.max(1, this.s.engine.getRenderHeight());
@@ -398,17 +455,36 @@ export class Game {
 
   stopLoop(): void { this.s.engine.stopRenderLoop(); }
 
+  renderReviewFrame(): void {
+    this.heroGameplayReview?.renderFrame();
+    this.warriorReview?.renderFrame();
+  }
+
   stepManually(dt: number, render = true): void {
     if (this.disposed) return;
     const frameDt = Math.min(0.05, dt);
+    if (this.heroReview) {
+      this.heroReview.update(0.016);
+      if (render) { this.heroReview.beforeRender(); this.s.scene.render(); }
+      this.heroReview.afterRender();
+      return;
+    }
+    if (this.heroGameplayReview) {
+      this.heroGameplayReview.update(0.016);
+      if (render) this.s.scene.render();
+      return;
+    }
+    if (this.warriorReview) {
+      if (render) this.warriorReview.renderFrame();
+      else this.warriorReview.update();
+      return;
+    }
     if (!this.paused && !this.inMenu) this.update(frameDt);
     else updateHaltedDeathLifecycle(this.s.squads, this.s.world, frameDt);
     if (render) this.s.scene.render();
   }
 
-  debugSnapshot(): Record<string, number | string | boolean> {
-    return buildSnapshot(this.s, this.inMenu);
-  }
+  debugSnapshot(): Record<string, number | string | boolean> { return buildSnapshot(this.s, this.inMenu); }
 
   debugApi(): Record<string, unknown> {
     return {
@@ -416,6 +492,42 @@ export class Game {
         startRun: (mode, levelId) => this.startRun(mode, levelId),
         startTutorial: () => this.startTutorial(),
       }),
+      heroReview: this.heroReview
+        ? {
+            setCamera: (mode: Parameters<HeroReviewMode["setCamera"]>[0]) => this.heroReview?.setCamera(mode),
+            setAnimation: (animation: Parameters<HeroReviewMode["setAnimation"]>[0]) => this.heroReview?.setAnimation(animation),
+            setLod: (lod: Parameters<HeroReviewMode["setLod"]>[0]) => this.heroReview?.setLod(lod),
+            resetPerformance: () => this.heroReview?.resetPerformance(),
+            capture: () => this.heroReview?.capture() ?? null,
+            state: () => this.heroReview?.panelState() ?? null,
+          }
+        : null,
+      heroGameplayReview: this.heroGameplayReview
+        ? {
+            setCamera: (mode: Parameters<HeroGameplayReviewMode["setCamera"]>[0]) => this.heroGameplayReview?.setCamera(mode),
+            setLighting: (lighting: Parameters<HeroGameplayReviewMode["setLighting"]>[0]) => this.heroGameplayReview?.setLighting(lighting),
+            setContext: (context: Parameters<HeroGameplayReviewMode["setContext"]>[0]) => this.heroGameplayReview?.setContext(context),
+            setAnimation: (animation: Parameters<HeroGameplayReviewMode["setAnimation"]>[0]) => this.heroGameplayReview?.setAnimation(animation),
+            seekAnimation: (normalized: number) => this.heroGameplayReview?.seekAnimation(normalized),
+            setLod: (lod: Parameters<HeroGameplayReviewMode["setLod"]>[0]) => this.heroGameplayReview?.setLod(lod),
+            setAutoLod: (enabled = true) => this.heroGameplayReview?.setAutoLod(enabled),
+            renderFrame: () => this.heroGameplayReview?.renderFrame(),
+            capture: () => this.heroGameplayReview?.capture() ?? null,
+            state: () => this.heroGameplayReview?.state() ?? null,
+          }
+        : null,
+      warriorReview: this.warriorReview
+        ? {
+            setCamera: (mode: Parameters<WarriorReviewMode["setCamera"]>[0]) => this.warriorReview?.setCamera(mode),
+            setAnimation: (animation: Parameters<WarriorReviewMode["setAnimation"]>[0]) => this.warriorReview?.setAnimation(animation),
+            seekAnimation: (normalized: number) => this.warriorReview?.seekAnimation(normalized),
+            setLod: (lod: Parameters<WarriorReviewMode["setLod"]>[0]) => this.warriorReview?.setLod(lod),
+            setAutoLod: (enabled = true) => this.warriorReview?.setAutoLod(enabled),
+            renderFrame: () => this.warriorReview?.renderFrame(),
+            capture: () => this.warriorReview?.capture() ?? null,
+            state: () => this.warriorReview?.state() ?? null,
+          }
+        : null,
       pointerDebug: () => ({ ...this.pointerRouter.debug }),
     };
   }
@@ -426,6 +538,12 @@ export class Game {
     this.pointerRouter.dispose();
     this.inputDebug?.dispose();
     this.s.engine.stopRenderLoop();
+    this.heroReview?.dispose();
+    this.heroReview = null;
+    this.heroGameplayReview?.dispose();
+    this.heroGameplayReview = null;
+    this.warriorReview?.dispose();
+    this.warriorReview = null;
     window.removeEventListener("resize", this.onResize);
     this.s.dispose();
   }

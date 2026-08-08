@@ -1,8 +1,10 @@
+import { Matrix, Vector3 } from "@babylonjs/core";
 import type { HeroSkillId } from "../hero/HeroSkillDefinitions";
 import { structureRepairFixedBurst } from "../combat/StructureSelfRepair";
+import { LANES, nearestPointOnLane } from "../data/BuildSlotDefinitions";
 import type { GameSystems } from "./GameSystems";
 
-/** Hero-skill (1/2/3 plus automatic 4) inspection and control for the test harness. */
+/** Hero-skill plus scene/lane inspection and control for the permanent harness. */
 export function createV9DebugApi(s: GameSystems): Record<string, unknown> {
   return {
     heroSkillState: () => s.heroSkills.states(),
@@ -60,13 +62,150 @@ export function createV9DebugApi(s: GameSystems): Record<string, unknown> {
         .filter((enemy) => enemy.alive)
         .map((enemy) => ({
           id: enemy.def.id,
+          squadId: enemy.squadId,
           hp: enemy.health,
           x: enemy.position.x,
           z: enemy.position.z,
           target: enemy.currentTarget?.kind ?? null,
+          targetId:
+            (enemy.currentTarget as { def?: { id?: string } } | null)?.def?.id ??
+            enemy.currentTarget?.kind ??
+            null,
+          targetLane:
+            enemy.currentTarget?.kind === "unit"
+              ? (enemy.currentTarget as { laneIndex?: number }).laneIndex ?? null
+              : null,
+          laneIndex: enemy.laneIndex,
+          moveSpeed: enemy.def.moveSpeed,
+          effectiveMoveSpeed: enemy.effectiveMoveSpeed,
+          motorSpeed: enemy.movementSpeed,
+          stunned: enemy.isStunned,
+          navPoint: enemy.navPoint ? { x: enemy.navPoint.x, z: enemy.navPoint.z } : null,
+          navStuck: enemy.navStuck,
           vulnerability: enemy.vulnerabilityFactor,
           vulnerabilityRemaining: enemy.vulnerabilityRemaining,
         })),
+
+    // ------------------------------------------------------- G1 lane probes
+    laneDefinitions: () =>
+      LANES.map((lane) => ({
+        index: lane.index,
+        name: lane.name,
+        side: lane.side,
+        path: lane.path.map((point) => ({ ...point })),
+        pathLength: Number(
+          lane.path
+            .slice(0, -1)
+            .reduce((sum, point, index) => {
+              const next = lane.path[index + 1];
+              return sum + Math.hypot(next.x - point.x, next.z - point.z);
+            }, 0)
+            .toFixed(3),
+        ),
+      })),
+    heroMovementStatus: () => ({
+      x: s.hero.position.x,
+      z: s.hero.position.z,
+      speed: Math.hypot(s.hero.velocity.x, s.hero.velocity.z),
+      hitRadius: s.hero.hitRadius,
+    }),
+    allyLaneStatus: () =>
+      s.squads.allySquads.flatMap((squad) =>
+        squad.members
+          .filter((member) => member.alive)
+          .map((member) => ({
+            id: member.def.id,
+            squadId: squad.id,
+            laneIndex: member.laneIndex,
+            x: member.position.x,
+            z: member.position.z,
+            home: member.home ? { x: member.home.x, z: member.home.z } : null,
+            targetLane:
+              member.currentTarget?.kind === "unit"
+                ? (member.currentTarget as { laneIndex?: number }).laneIndex ?? null
+                : null,
+          })),
+      ),
+    /** A serializable alternative to the legacy DebugApi.spawnEnemy(), whose
+     * return value is the live Squad object and therefore cannot cross a
+     * Playwright page boundary. This also accepts the lane explicitly. */
+    spawnEnemyOnLaneForTest: (defId: string, x: number, z: number, laneIndex: number) => {
+      const squad = s.squads.spawnEnemy(defId, x, z, laneIndex);
+      return squad
+        ? { ok: true, squadId: squad.id, members: squad.members.length, laneIndex }
+        : { ok: false, squadId: null, members: 0, laneIndex };
+    },
+    /** Test-only deterministic deployment; production uses the real drag/drop
+     * path in Game.handleRecruitDrop. */
+    deploySquadForTest: (defId: string, laneIndex: number, x: number, z: number) => {
+      const squad = [...s.squads.allySquads]
+        .reverse()
+        .find((candidate) => candidate.alive && candidate.def.id === defId);
+      const lane = LANES[((laneIndex % LANES.length) + LANES.length) % LANES.length];
+      if (!squad || !lane) return false;
+      const snap = nearestPointOnLane(x, z, lane);
+      for (let i = 0; i < squad.members.length; i++) {
+        const member = squad.members[i];
+        if (!member.alive) continue;
+        const offset = (i - (squad.members.length - 1) * 0.5) * 0.7;
+        member.laneIndex = lane.index;
+        member.setPosition(snap.x + offset, snap.z);
+        member.home = member.position.clone();
+        member.aiBrain?.forceReacquire("debugLaneDeploy");
+      }
+      return true;
+    },
+    /**
+     * Presentation/gameplay separation probe. The scale comes from the actual
+     * instantiated root; combat radius/range/cost come from the live Building.
+     * If a future visual-density pass leaks into gameplay, this contract moves.
+     */
+    facilityRuntimeContract: (slotId: string) => {
+      const building = s.buildings.slot(slotId)?.building;
+      return building
+        ? {
+            type: building.type,
+            visualScale: {
+              x: building.root.scaling.x,
+              y: building.root.scaling.y,
+              z: building.root.scaling.z,
+            },
+            hitRadius: building.hitRadius,
+            attackRange: building.def.attackRange ?? null,
+            cost: { ...building.constructionCost },
+          }
+        : null;
+    },
+    /** Runs the same CollisionWorld solver used by the hero and combat units on
+     * a disposable point, so tests can verify a visual scale change did not
+     * silently shrink or enlarge gameplay collision. */
+    collisionProbe: (x: number, z: number, agentRadius = 0) => {
+      const point = new Vector3(x, 0, z);
+      const touched = s.collision.resolve(point, Math.max(0, agentRadius));
+      return { touched, x: point.x, z: point.z };
+    },
+    /** Projects an arbitrary world point to CSS-pixel canvas coordinates. The
+     * slot-centre helper in DebugApi cannot exercise near-edge pointer UX, so
+     * interaction regressions use this diagnostic instead of guessing camera
+     * maths in the test. */
+    projectWorldPoint: (x: number, z: number, y = 0) => {
+      const canvas = s.engine.getRenderingCanvas();
+      const rw = s.engine.getRenderWidth();
+      const rh = s.engine.getRenderHeight();
+      const viewport = s.camera.camera.viewport.toGlobal(rw, rh);
+      const coords = Vector3.Project(
+        new Vector3(x, y, z),
+        Matrix.Identity(),
+        s.scene.getTransformMatrix(),
+        viewport,
+      );
+      const scaleX = canvas ? canvas.clientWidth / rw : 1;
+      const scaleY = canvas ? canvas.clientHeight / rh : 1;
+      return {
+        x: Number((coords.x * scaleX).toFixed(1)),
+        y: Number((coords.y * scaleY).toFixed(1)),
+      };
+    },
     healthLabelFacing: () =>
       s.scene.meshes
         .filter((mesh) => mesh.name.startsWith("hpLabelPlane") && mesh.isEnabled())

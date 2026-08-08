@@ -1,4 +1,5 @@
 import { isInsideBase, WALL_SEGMENT_DEPTH } from "../data/BuildSlotDefinitions";
+import { BOSS_TIER_LEVEL } from "../data/CombatTypes";
 import type { CombatContext } from "./CombatContext";
 import type { CombatUnit } from "./CombatUnit";
 import type { Damageable } from "./Damageable";
@@ -6,7 +7,18 @@ import { claimCap, claimScore } from "../ai/ThreatTracker";
 
 /** Still used by the engineer's bounded repair search — see `SquadManager.findRepairTarget`. */
 export const ALLY_ENGAGE_RANGE = 13;
+/** Legacy baseline retained for specialist behaviour and debug expectations. */
 export const ENEMY_AGGRO_RANGE = 8;
+
+/** Enemy perception hierarchy requested by the lane rework.  A Lv.5 elite can
+ * notice a same-lane defender sooner than an ordinary ranged unit, and an
+ * ordinary ranged unit sooner than melee.  Cross-lane *shots* are stricter:
+ * they still require actual attack range. */
+export const ENEMY_LOCK_RANGE = {
+  melee: 6,
+  ranged: 10,
+  elite5Plus: 14,
+} as const;
 
 function isRanged(unit: CombatUnit): boolean {
   return unit.def.attackType === "rangedSingle" || unit.def.attackType === "rangedArea";
@@ -15,53 +27,97 @@ function isRanged(unit: CombatUnit): boolean {
 function withinRange(t: Damageable, x: number, z: number, range: number): boolean {
   const dx = t.position.x - x;
   const dz = t.position.z - z;
-  return dx * dx + dz * dz <= range * range;
+  const extra = t.hitRadius;
+  const r = range + extra;
+  return dx * dx + dz * dz <= r * r;
 }
 
-/**
- * Allies search the *entire* battlefield for a target, not a local radius —
- * "global" describes the search space, not the frame cost: this only runs on
- * the brain's own retarget timer (0.2-0.35s), a flat scan of the enemy list,
- * no spatial grid needed because every enemy is a candidate anyway.
- *
- * Priority: an enemy already inside the perimeter always outranks one still
- * outside it; a flagged priority target (e.g. the Commander) outranks an
- * ordinary one; higher level outranks lower; nearest breaks the remaining
- * ties. `claimScore` then softly steers *equally* good choices away from a
- * target that already has enough attackers on it, so the whole roster does
- * not converge on one weak enemy while every other approach goes undefended.
- */
-export function acquireAllyTarget(unit: CombatUnit, ctx: CombatContext): Damageable | null {
-  const enemies = ctx.world.enemies;
+export function enemyLockRange(unit: CombatUnit): number {
+  if (unit.level >= 5) return ENEMY_LOCK_RANGE.elite5Plus;
+  if (isRanged(unit)) return ENEMY_LOCK_RANGE.ranged;
+  return ENEMY_LOCK_RANGE.melee;
+}
+
+export function isCrossLaneUnitTarget(unit: CombatUnit, target: Damageable | null): boolean {
+  return Boolean(
+    target &&
+      target.kind === "unit" &&
+      (target as CombatUnit).laneIndex !== unit.laneIndex,
+  );
+}
+
+function legalAllyCandidate(attacker: CombatUnit, candidate: CombatUnit): boolean {
+  if (!candidate.alive) return false;
+  if (candidate.isFlying && !isRanged(attacker)) return false;
+  return attacker.canReach(candidate);
+}
+
+function allyScore(candidate: CombatUnit): number {
+  let score = 0;
+  if (isInsideBase(candidate.position.x, candidate.position.z)) score += 10_000;
+  if (candidate.def.priorityTarget) score += 5_000;
+  score += candidate.level * 100;
+  const overCap = claimScore(candidate) - claimCap(candidate);
+  if (overCap > 0) score -= overCap * 3_000;
+  return score;
+}
+
+function chooseAllyEnemy(
+  unit: CombatUnit,
+  ctx: CombatContext,
+  include: (enemy: CombatUnit) => boolean,
+): CombatUnit | null {
   let best: CombatUnit | null = null;
   let bestScore = -Infinity;
   let bestDist = Infinity;
-
-  for (let i = 0; i < enemies.length; i++) {
-    const e = enemies[i];
-    if (!e.alive) continue;
-    if (e.isFlying && !isRanged(unit)) continue;
-    const dx = e.position.x - unit.position.x;
-    const dz = e.position.z - unit.position.z;
+  for (const enemy of ctx.world.enemies) {
+    if (!legalAllyCandidate(unit, enemy) || !include(enemy)) continue;
+    const dx = enemy.position.x - unit.position.x;
+    const dz = enemy.position.z - unit.position.z;
     const dist = dx * dx + dz * dz;
-
-    let s = 0;
-    if (isInsideBase(e.position.x, e.position.z)) s += 10_000;
-    if (e.def.priorityTarget) s += 5_000;
-    s += e.level * 100;
-    const overCap = claimScore(e) - claimCap(e);
-    if (overCap > 0) s -= overCap * 3_000;
-
-    if (s > bestScore || (s === bestScore && dist < bestDist)) {
-      bestScore = s;
+    const score = allyScore(enemy);
+    if (score > bestScore || (score === bestScore && dist < bestDist)) {
+      best = enemy;
+      bestScore = score;
       bestDist = dist;
-      best = e;
     }
   }
   return best;
 }
 
-/** Enemy target tiers. Lower numbers always pre-empt higher ones. */
+/**
+ * Lane-locked allied acquisition:
+ *
+ * 1. A target already inside this unit's real attack range on the same lane.
+ * 2. Ranged units only: an in-range target on another lane, used as one-shot
+ *    fallback fire while they keep progressing on their own lane.
+ * 3. A same-lane target farther away, which melee/ranged units may chase along
+ *    their own corridor.  Melee never receives a cross-lane target at all.
+ */
+export function acquireAllyTarget(unit: CombatUnit, ctx: CombatContext): Damageable | null {
+  const sameLaneInRange = chooseAllyEnemy(
+    unit,
+    ctx,
+    (enemy) => enemy.laneIndex === unit.laneIndex && withinRange(enemy, unit.position.x, unit.position.z, unit.def.attackRange),
+  );
+  if (sameLaneInRange) return sameLaneInRange;
+
+  if (isRanged(unit)) {
+    const crossLaneShot = chooseAllyEnemy(
+      unit,
+      ctx,
+      (enemy) =>
+        enemy.laneIndex !== unit.laneIndex &&
+        withinRange(enemy, unit.position.x, unit.position.z, unit.def.attackRange),
+    );
+    if (crossLaneShot) return crossLaneShot;
+  }
+
+  return chooseAllyEnemy(unit, ctx, (enemy) => enemy.laneIndex === unit.laneIndex);
+}
+
+/** Enemy target tiers. Lower numbers always pre-empt higher ones.  Kept intact
+ * for the Lv.6 boss' legacy global order and specialist compatibility. */
 export function enemyTargetPriority(target: Damageable): number {
   if (target.kind === "wall") return 0;
   if (target.kind === "unit") {
@@ -81,11 +137,13 @@ function nearestReachableAlly(
   unit: CombatUnit,
   ctx: CombatContext,
   include: (candidate: CombatUnit) => boolean,
+  range = Infinity,
 ): CombatUnit | null {
   let best: CombatUnit | null = null;
   let bestDist = Infinity;
   for (const candidate of ctx.world.allies) {
     if (!candidate.alive || !include(candidate) || !unit.canReach(candidate)) continue;
+    if (!withinRange(candidate, unit.position.x, unit.position.z, range)) continue;
     const dx = candidate.position.x - unit.position.x;
     const dz = candidate.position.z - unit.position.z;
     const dist = dx * dx + dz * dz;
@@ -113,10 +171,59 @@ function nearestReachableStructure(unit: CombatUnit, ctx: CombatContext): Damage
   return best;
 }
 
+function validDefender(candidate: CombatUnit, heroAlive: boolean): boolean {
+  if (candidate.def.temporaryGroundSupport) return false;
+  if (candidate.def.id === "engineer" && heroAlive) return false;
+  return true;
+}
+
+function sameLaneDefender(
+  unit: CombatUnit,
+  ctx: CombatContext,
+  range: number,
+  shieldOnly = false,
+): CombatUnit | null {
+  return nearestReachableAlly(
+    unit,
+    ctx,
+    (candidate) =>
+      candidate.laneIndex === unit.laneIndex &&
+      validDefender(candidate, ctx.world.hero?.alive === true) &&
+      (shieldOnly ? candidate.def.id === "shield" : candidate.def.id !== "shield"),
+    range,
+  );
+}
+
+function crossLaneDefender(unit: CombatUnit, ctx: CombatContext): CombatUnit | null {
+  const canCross = isRanged(unit) || unit.level >= 5;
+  if (!canCross) return null;
+  const range = unit.def.attackRange;
+  const heroAlive = ctx.world.hero?.alive === true;
+  // Shield remains the first target inside the *fallback* tier as well, but a
+  // shield on another road never drags melee across the map because this branch
+  // is reachable only by ranged or Lv.5+ units and only inside attack range.
+  const shield = nearestReachableAlly(
+    unit,
+    ctx,
+    (candidate) => candidate.laneIndex !== unit.laneIndex && candidate.def.id === "shield",
+    range,
+  );
+  if (shield) return shield;
+  return nearestReachableAlly(
+    unit,
+    ctx,
+    (candidate) =>
+      candidate.laneIndex !== unit.laneIndex &&
+      candidate.def.id !== "shield" &&
+      validDefender(candidate, heroAlive),
+    range,
+  );
+}
+
 /**
- * Legacy behaviour retained only for explicit specialist enemies. Breachers
- * own a lane wall and bombers race the nearest reachable victim; neither is
- * allowed to inherit the general-purpose six-tier order accidentally.
+ * Explicit specialist behaviour. Breachers may hit their lane wall and bombers
+ * retain their self-destruct victim search; these are the requested exceptions
+ * to the ordinary Lv.1-5 "no facilities" rule.
  */
 function acquireSpecialistEnemyTarget(unit: CombatUnit, ctx: CombatContext): Damageable | null {
   const world = ctx.world;
@@ -154,14 +261,9 @@ function acquireSpecialistEnemyTarget(unit: CombatUnit, ctx: CombatContext): Dam
     ["tower", "warehouse", "recruitHall"],
   );
   if (canReach(structure)) return structure;
-
-  // Nothing can be got at: navigation has already chosen which wall is in the
-  // way. This is the only path that leads inside a sealed perimeter.
   if (unit.breachTarget?.alive) return unit.breachTarget;
 
   const furnace = world.furnace;
-  // Navigation has found a gap and is walking this unit to it. Stopping to
-  // chew on the wall it happens to be standing behind would undo that.
   if (unit.navPoint) return furnace;
   if (furnace) {
     const blocker = world.wallBlocks(x, z, furnace.position.x, furnace.position.z);
@@ -170,28 +272,15 @@ function acquireSpecialistEnemyTarget(unit: CombatUnit, ctx: CombatContext): Dam
   return furnace;
 }
 
-/**
- * General enemy order, evaluated as strict tiers:
- * wall → shield → nearest other ally → hero → nearest facility → furnace.
- *
- * A wall is the lane blocker chosen by navigation (or the wall directly
- * between the enemy and the furnace). Reachability is applied *within* every
- * later tier so a unit never tries to walk through that wall to honour a
- * nominally higher target behind it.
- */
-export function acquireEnemyTarget(unit: CombatUnit, ctx: CombatContext): Damageable | null {
-  if (unit.def.siegeFocus || unit.def.selfDestruct) {
-    return acquireSpecialistEnemyTarget(unit, ctx);
-  }
-
+/** The Lv.6 boss deliberately keeps the old global six-tier target order:
+ * wall → shield → other ally → hero → facility → furnace. */
+function acquireLegacyBossTarget(unit: CombatUnit, ctx: CombatContext): Damageable | null {
   const world = ctx.world;
   const x = unit.position.x;
   const z = unit.position.z;
   const furnace = world.furnace;
 
   if (!unit.isFlying && unit.breachTarget?.alive) return unit.breachTarget;
-  // A navigator already steering through an open gate must not abandon that
-  // route to hit an unrelated wall beside it.
   if (!unit.isFlying && !unit.navPoint && furnace?.alive) {
     const blocker = world.wallBlocks(x, z, furnace.position.x, furnace.position.z);
     if (blocker?.alive) return blocker;
@@ -199,7 +288,6 @@ export function acquireEnemyTarget(unit: CombatUnit, ctx: CombatContext): Damage
 
   const shield = nearestReachableAlly(unit, ctx, (candidate) => candidate.def.id === "shield");
   if (shield) return shield;
-
   const otherAlly = nearestReachableAlly(
     unit,
     ctx,
@@ -212,15 +300,12 @@ export function acquireEnemyTarget(unit: CombatUnit, ctx: CombatContext): Damage
 
   const hero = world.hero;
   if (hero?.alive && unit.canReach(hero)) return hero;
-
   if (!hero?.alive) {
     const engineer = nearestReachableAlly(unit, ctx, (candidate) => candidate.def.id === "engineer");
     if (engineer) return engineer;
   }
-
   const structure = nearestReachableStructure(unit, ctx);
   if (structure) return structure;
-
   if (furnace?.alive) {
     const blocker = unit.isFlying ? null : world.wallBlocks(x, z, furnace.position.x, furnace.position.z);
     if (blocker?.alive) return blocker;
@@ -230,24 +315,72 @@ export function acquireEnemyTarget(unit: CombatUnit, ctx: CombatContext): Damage
 }
 
 /**
- * How far from a target's origin an attacker has to stop.
+ * Ordinary enemy acquisition is lane-first and range-bounded:
  *
- * A wall is a long thin slab, so treating it as a disc of its `hitRadius`
- * parked besiegers four units clear of the stonework — far enough that a manned
- * perimeter could not shoot back, which turned a fully sealed base into a
- * permanent stalemate. Against a wall the stopping distance is its real
- * thickness instead.
+ * - Lv.1-5 never selects an ordinary facility.
+ * - same-lane defenders inside attack range always come before a cross-lane shot;
+ * - ranged and Lv.5 units may take a cross-lane shot only inside attack range;
+ * - if neither shot exists, a same-lane defender inside the unit's lock radius
+ *   may be approached; otherwise the unit keeps marching toward the furnace;
+ * - Hero is deliberately lane-neutral: if the player personally enters the
+ *   unit's lock radius they can intercept that lane.
  */
+export function acquireEnemyTarget(unit: CombatUnit, ctx: CombatContext): Damageable | null {
+  if (unit.def.siegeFocus || unit.def.selfDestruct) return acquireSpecialistEnemyTarget(unit, ctx);
+  if (unit.level >= BOSS_TIER_LEVEL) return acquireLegacyBossTarget(unit, ctx);
+
+  const world = ctx.world;
+  const furnace = world.furnace;
+  const lockRange = enemyLockRange(unit);
+
+  // A lane wall is not an optional facility; it is the route blocker that must
+  // be removed before a ground unit can reach the furnace.
+  if (!unit.isFlying && unit.breachTarget?.alive) return unit.breachTarget;
+
+  const sameShieldInRange = sameLaneDefender(unit, ctx, unit.def.attackRange, true);
+  if (sameShieldInRange) return sameShieldInRange;
+  const sameOtherInRange = sameLaneDefender(unit, ctx, unit.def.attackRange, false);
+  if (sameOtherInRange) return sameOtherInRange;
+
+  const hero = world.hero;
+  if (hero?.alive && withinRange(hero, unit.position.x, unit.position.z, unit.def.attackRange) && unit.canReach(hero)) {
+    return hero;
+  }
+
+  const cross = crossLaneDefender(unit, ctx);
+  if (cross) return cross;
+
+  const sameShieldDetected = sameLaneDefender(unit, ctx, lockRange, true);
+  if (sameShieldDetected) return sameShieldDetected;
+  const sameOtherDetected = sameLaneDefender(unit, ctx, lockRange, false);
+  if (sameOtherDetected) return sameOtherDetected;
+
+  if (hero?.alive && withinRange(hero, unit.position.x, unit.position.z, lockRange) && unit.canReach(hero)) {
+    return hero;
+  }
+  if (!hero?.alive) {
+    const engineer = nearestReachableAlly(
+      unit,
+      ctx,
+      (candidate) => candidate.def.id === "engineer" && candidate.laneIndex === unit.laneIndex,
+      lockRange,
+    );
+    if (engineer) return engineer;
+  }
+
+  // No legal defender in this lane: continue the route.  `EnemyNavigator`
+  // supplies the winding navPoint and swaps to the lane wall when necessary.
+  return furnace?.alive ? furnace : null;
+}
+
+/** A wall is a long thin slab, so stopping uses its real thickness rather than
+ * treating the whole segment as a giant disc. */
 export function stopRadius(target: Damageable): number {
   if (target.kind !== "wall") return target.hitRadius;
   return WALL_SEGMENT_DEPTH * 0.5 + 0.35;
 }
 
-/**
- * How close to stand before attacking. A siege unit shelling a wall from the far
- * edge of its range would sit outside every defence and stalemate the wave, so
- * anything shooting a *structure* commits to close quarters.
- */
+/** Structure attackers commit to close quarters; unit-vs-unit uses authored range. */
 export function approachRange(unit: CombatUnit, target: Damageable): number {
   const structural =
     target.kind === "wall" ||
@@ -257,11 +390,17 @@ export function approachRange(unit: CombatUnit, target: Damageable): number {
   return structural ? Math.min(unit.def.attackRange, 2.6) : unit.def.attackRange;
 }
 
-/** Only ever called for enemies — allies pursue globally and never leash off a target. */
+/** Only ever called for enemies.  Cross-lane fallback is dropped the instant
+ * the target leaves real attack range; same-lane targets get a small sensor
+ * hysteresis so they do not flicker at the perception boundary. */
 export function targetOutOfLeash(unit: CombatUnit, target: Damageable): boolean {
-  if (target.kind === "furnace") return false;
+  if (target.kind === "furnace" || target.kind === "wall") return false;
   const dx = target.position.x - unit.position.x;
   const dz = target.position.z - unit.position.z;
-  const leash = ENEMY_AGGRO_RANGE + 14;
+  const leash = isCrossLaneUnitTarget(unit, target)
+    ? approachRange(unit, target) + stopRadius(target) + 0.25
+    : unit.level >= BOSS_TIER_LEVEL
+      ? ENEMY_AGGRO_RANGE + 14
+      : enemyLockRange(unit) + 3;
   return dx * dx + dz * dz > leash * leash;
 }

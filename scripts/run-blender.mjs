@@ -43,10 +43,28 @@ function invokeBlender(blenderPath, blenderArgs, options = {}) {
   // reject a direct Node child process with EPERM. Going through cmd.exe keeps
   // the official executable and arguments unchanged; it is not a shell script
   // or an alternate Blender binary, just the Windows process launcher.
-  if (process.platform === "win32" && direct.error?.code === "EPERM") {
+  if (process.platform === "win32" && (direct.error?.code === "EPERM" || direct.error?.code === "EACCES")) {
     const quote = (value) => /[\s&()^|<>]/.test(value) ? `"${value.replaceAll('"', '""')}"` : value;
     const command = [quote(blenderPath), ...blenderArgs.map(quote)].join(" ");
-    return spawnSync("cmd.exe", ["/d", "/s", "/c", command], options);
+    const viaCmd = spawnSync("cmd.exe", ["/d", "/s", "/c", command], options);
+    if (!viaCmd.error && (viaCmd.status === 0 || viaCmd.status === null)) return viaCmd;
+
+    // On some managed Windows profiles cmd.exe is also denied as a child
+    // process, while PowerShell can still launch the signed Blender binary.
+    // Keep the argument list explicit so paths and Blender flags are not
+    // interpreted as project code.
+    return spawnSync(
+      "powershell.exe",
+      [
+        "-NoProfile",
+        "-NonInteractive",
+        "-Command",
+        "$exe=$args[0]; $argv=$args[1..($args.Length-1)]; & $exe @argv",
+        blenderPath,
+        ...blenderArgs,
+      ],
+      options,
+    );
   }
   return direct;
 }
@@ -58,5 +76,34 @@ if (probe.status !== 0) {
   process.exit(2);
 }
 
-const result = invokeBlender(blender, ["--background", "--python", join(process.cwd(), script), "--", ...args], { stdio: "inherit" });
+// Blender exits 0 from `--background --python` even when the script raises:
+// it prints the traceback and then quits normally. That has now bitten twice
+// in one session -- a build script died, the previous .glb stayed on disk, and
+// the Playwright suites went green against the stale artifact. The static
+// import checker cannot see a runtime failure, so the output is the only
+// signal there is. Capture it, echo it, and fail on it.
+const result = invokeBlender(
+  blender,
+  ["--background", "--python", join(process.cwd(), script), "--", ...args],
+  { encoding: "utf8", maxBuffer: 64 * 1024 * 1024 },
+);
+if (result.stdout) process.stdout.write(result.stdout);
+if (result.stderr) process.stderr.write(result.stderr);
+
+// A compile-time error -- SyntaxError, IndentationError, TabError -- is
+// reported by Blender WITHOUT a "Traceback" header, because the module never
+// starts executing. The first version of this guard only looked for the
+// header, so an IndentationError in build_units.py slipped through: the
+// command reported success, twenty-four unit .glb files silently kept their
+// previous contents, and a commit went out claiming work those artifacts did
+// not contain. Match the exception line itself, not the header.
+const output = `${result.stdout ?? ""}${result.stderr ?? ""}`;
+const failure =
+  /Traceback \(most recent call last\)/.exec(output) ??
+  /^(?:\w+\.)*(?:Syntax|Indentation|Tab|Name|Type|Attribute|Value|Key|Index|Import|Zero.*Division|Runtime|OS|IO|Assertion|NotImplemented)Error:.*$/m.exec(output);
+if (failure) {
+  console.error(`\nrun-blender: ${script} failed with "${failure[0].trim()}" (Blender still exited ${result.status}).`);
+  console.error("The asset on disk is now stale. Treat any suite that passes against it as meaningless.");
+  process.exit(1);
+}
 process.exit(result.status ?? 1);

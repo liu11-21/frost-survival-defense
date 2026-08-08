@@ -12,9 +12,9 @@ const PICK_RADIUS_FACTOR = 1.3;
  * once at startup covers both "empty" and "built-on" clicks without any
  * per-building create/dispose lifecycle to track.
  *
- * These meshes never render, never cast shadows, never collide and never
- * block navigation — `isVisible = false` keeps them out of the render list
- * while leaving them fully pickable.
+ * Babylon's ray picker skips meshes whose `isVisible` flag is false. Keep the
+ * mesh logically visible but set `visibility = 0` instead: it contributes no
+ * pixels, shadows or collisions while remaining available to `scene.pick`.
  */
 export class SlotPicker {
   private readonly slotIdByMeshId = new Map<number, string>();
@@ -31,7 +31,8 @@ export class SlotPicker {
       );
       mesh.rotation.x = Math.PI / 2;
       mesh.position.set(def.x, def.surface === "sky" ? def.elevation + 0.05 : 0.05, def.z);
-      mesh.isVisible = false;
+      mesh.isVisible = true;
+      mesh.visibility = 0;
       mesh.isPickable = true;
       mesh.checkCollisions = false;
       mesh.receiveShadows = false;
@@ -41,7 +42,7 @@ export class SlotPicker {
     }
   }
 
-  /** Resolves a canvas-space pick to a slot id, or null if nothing was hit. */
+  /** Resolves a render-space canvas pick to a slot id, or null if nothing was hit. */
   pick(scene: Scene, x: number, y: number): string | null {
     const info = scene.pick(x, y, (mesh) => this.slotIdByMeshId.has(mesh.uniqueId));
     if (!info?.hit || !info.pickedMesh) return null;

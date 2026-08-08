@@ -72,6 +72,15 @@ export class PerformanceMonitor {
 
   beginSimulation(): void {
     this.simStart = performance.now();
+    // Babylon's `_drawCalls` PerfCounter accumulates into `.current` and is
+    // only rolled over by an explicit `fetchNewFrame()`. Nothing in this
+    // project was calling it, so the reported draw-call count was a running
+    // total since page load, not a per-frame figure -- it read 21,041 against
+    // 205 active meshes, which is impossible for one frame, and it grew the
+    // longer a scenario ran. Rolling it here makes `.current` mean "draws
+    // issued this frame", which is the only form the number is useful in.
+    const counter = (this.engine as unknown as Record<string, { fetchNewFrame?: () => void } | undefined>)._drawCalls;
+    counter?.fetchNewFrame?.();
   }
 
   endSimulation(): void {

@@ -337,6 +337,7 @@ export class GameSystems {
       world: this.world,
       buildings: this.buildings,
       healthBars: this.healthBars,
+      hero: this.hero,
       markers: this.markers,
       onVerifyOpened: () => this.monitor.tagStressTest(),
       waves: this.waves,

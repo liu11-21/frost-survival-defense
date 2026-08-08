@@ -14,6 +14,7 @@ import { STRESS_PRESETS, type StressTestController } from "../performance/Stress
 import { renderBalancePanel } from "./BalancePanelView";
 import type { HealthBarManager } from "./HealthBarManager";
 import { renderVerifyPanel } from "./VerifyPanel";
+import type { HeroController } from "../hero/HeroController";
 
 export interface DebugDeps {
   monitor: PerformanceMonitor;
@@ -27,6 +28,7 @@ export interface DebugDeps {
   world: CombatWorld;
   buildings: BuildingManager;
   healthBars: HealthBarManager;
+  hero: HeroController;
   markers: FactionMarkers;
   waves: WaveManager;
   run: RunController;

@@ -1,0 +1,63 @@
+{
+  "stage": "Warrior-W1",
+  "status": "local-validation-passed",
+  "branch": "art/warrior-production-w1",
+  "baseBranch": "production/hero-r6",
+  "baseHead": "08b4fe069e99822ccc0b13b2f91f1c78ac3c8908",
+  "scope": {
+    "included": ["warrior"],
+    "excluded": ["hero", "shield", "archer", "medic", "flagbearer", "mage", "assault", "engineer", "musketeer", "frostmage", "enemies", "buildings", "resources", "gameplay balance"]
+  },
+  "asset": {
+    "blend": {
+      "path": "assets-source/blender/characters/warrior.blend",
+      "bytes": 626923,
+      "sha256": "3CAD948C727486278FDB1FD207A24FA84DDC2E57B936FDB016678EF53BD06612"
+    },
+    "glb": {
+      "path": "public/assets/models/characters/warrior.glb",
+      "bytes": 814016,
+      "sha256": "10CB59EE29AD06D2D79F483D0460C8D7878684ED9BFAA6E5A16E563EBDCBD1C6"
+    },
+    "root": "UnitRoot",
+    "bones": 18,
+    "animations": ["Idle", "Walk", "Run", "MeleeAttack", "Hit", "Death"],
+    "materials": 3,
+    "textures": 1,
+    "externalUris": false,
+    "collisionRenderable": false
+  },
+  "lod": {
+    "LOD0": {"triangles": 6632, "primitives": 5},
+    "LOD1": {"triangles": 2680, "primitives": 4},
+    "LOD2": {"triangles": 1016, "primitives": 2}
+  },
+  "runtime": {
+    "modelSource": "GLB",
+    "proceduralVisibleMeshes": 0,
+    "threeSquads": {"squads": 3, "members": 9, "glbInstances": 9},
+    "pressureContext": {"warriorMembers": 9, "gruntMembers": 12, "warriorLod": "auto", "consoleErrors": 0, "pageErrors": 0, "requestFailures": 0},
+    "normalizedAnimationSamples": 36,
+    "normalizedTimeline": [0, 0.2, 0.4, 0.6, 0.8, 1]
+  },
+  "validation": {
+    "static": "npm run art:validate:warrior",
+    "allAuthoredAssets": "npm run art:validate",
+    "typecheck": "npm run typecheck",
+    "build": "npm run build",
+    "runtimeTest": "tests/warrior-runtime.spec.ts",
+    "workflow": ".github/workflows/warrior-runtime-verify.yml",
+    "artifactNamePattern": "warrior-runtime-verification-<run-id>",
+    "ciStatus": "awaiting GitHub Actions run"
+  },
+  "evidence": [
+    "warrior-front.png",
+    "warrior-side.png",
+    "warrior-back.png",
+    "warrior-three-quarter.png",
+    "warrior-gameplay.png",
+    "warrior-squad.png",
+    "warrior-melee-impact.png",
+    "warrior-death.png"
+  ]
+}

@@ -1,10 +1,10 @@
 # Current status
 
-Generated at 2026-08-02T13:56:43.651Z.
+Generated at 2026-08-04T14:35:53.946Z.
 
-- Working tree at generation: unavailable; verify with git status
-- Latest commit: bc0d552fea2f1a4a40681bea684796e559fef65c
-- Branch: main
+- Working tree at generation: has local changes
+- Latest commit: bfbd397db97bb8c7ccc02b07413b9a028f944cc2
+- Branch: art/warrior-production-w1
 - Remote configuration: present
 - Authored model evidence: 42/42 assets pass the static validator.
 - TypeScript/build evidence must be refreshed after source changes; this file records repository state, not a substitute for those commands.

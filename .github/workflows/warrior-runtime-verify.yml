@@ -1,0 +1,81 @@
+name: Warrior Runtime Verification
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - art/warrior-production-w1
+  pull_request:
+    branches:
+      - production/hero-r6
+      - main
+    paths:
+      - "assets-source/blender/characters/warrior.blend"
+      - "public/assets/models/characters/warrior.glb"
+      - "scripts/blender/build_warrior.py"
+      - "scripts/validate-warrior-production.mjs"
+      - "src/assets/AssetManifest.ts"
+      - "src/combat/CombatAnimator.ts"
+      - "src/combat/CombatUnit.ts"
+      - "src/game/DebugApiV6.ts"
+      - "src/game/Game.ts"
+      - "src/warrior/**"
+      - "tests/warrior-runtime.spec.ts"
+      - "package.json"
+      - "package-lock.json"
+      - ".github/workflows/warrior-runtime-verify.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  warrior-runtime:
+    name: Warrior GLB and squad runtime
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout with Git LFS
+        uses: actions/checkout@v4
+        with:
+          lfs: true
+      - name: Use repository Node version
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - name: Install dependencies
+        run: npm ci
+      - name: TypeScript check
+        run: npm run typecheck
+      - name: Warrior static validation
+        run: npm run art:validate:warrior
+      - name: Full authored asset validation
+        run: npm run art:validate
+      - name: Production build
+        run: npm run build
+      - name: Install Chromium
+        run: npx playwright install --with-deps chromium
+      - name: Start production preview
+        shell: bash
+        run: |
+          npm run preview -- --host 127.0.0.1 --port 4173 > "$RUNNER_TEMP/warrior-preview.log" 2>&1 &
+          echo $! > "$RUNNER_TEMP/warrior-preview.pid"
+          for attempt in $(seq 1 60); do
+            if curl --fail --silent http://127.0.0.1:4173/ >/dev/null; then exit 0; fi
+            sleep 1
+          done
+          cat "$RUNNER_TEMP/warrior-preview.log"
+          exit 1
+      - name: Warrior runtime and squad verification
+        env:
+          WARRIOR_RUNTIME_OUTPUT: ${{ runner.temp }}/warrior-runtime
+        run: npx playwright test tests/warrior-runtime.spec.ts
+      - name: Upload Warrior verification artifact
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: warrior-runtime-verification-${{ github.run_id }}
+          path: |
+            ${{ runner.temp }}/warrior-runtime
+            ${{ runner.temp }}/warrior-preview.log
+            reports/warrior-production-w1/*.png
+          if-no-files-found: warn

@@ -158,15 +158,24 @@ export class CombatWorld {
 
   /**
    * The taunting unit that currently owns `(x, z)`, if any. `isBuilding` gates
-   * the tiers whose taunt is not allowed to drag structures.
+   * the tiers whose taunt is not allowed to drag structures. Enemy callers can
+   * provide `laneIndex` so a shield/Ground Support source on another road never
+   * bypasses the lane-first target contract.
    */
-  tauntSourceFor(faction: Faction, x: number, z: number, isBuilding: boolean): CombatUnit | null {
+  tauntSourceFor(
+    faction: Faction,
+    x: number,
+    z: number,
+    isBuilding: boolean,
+    laneIndex?: number,
+  ): CombatUnit | null {
     const hostile = faction === "ally" ? this.enemies : this.allies;
     let best: CombatUnit | null = null;
     let bestDist = Infinity;
     for (let i = 0; i < hostile.length; i++) {
       const u = hostile[i];
       if (!u.alive || u.tauntRadius <= 0) continue;
+      if (laneIndex !== undefined && u.laneIndex !== laneIndex) continue;
       if (isBuilding && !u.tauntAffectsBuildings) continue;
       const dx = u.position.x - x;
       const dz = u.position.z - z;

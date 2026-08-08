@@ -1,0 +1,62 @@
+{
+  "capturedAt": "2026-08-06T14:20:53.868Z",
+  "unitCounts": {
+    "allies": 18,
+    "enemies": 10,
+    "structures": 1
+  },
+  "aliveEnemies": [
+    "grunt",
+    "grunt",
+    "slinger",
+    "slinger",
+    "slinger",
+    "bruiser",
+    "bruiser",
+    "icearmor",
+    "boss"
+  ],
+  "enemyCast": [
+    {
+      "id": "grunt",
+      "form": "swarm",
+      "x": -5.5,
+      "z": 9.5
+    },
+    {
+      "id": "slinger",
+      "form": "stalker",
+      "x": -2,
+      "z": 11
+    },
+    {
+      "id": "bruiser",
+      "form": "brute",
+      "x": 1.5,
+      "z": 10
+    },
+    {
+      "id": "icearmor",
+      "form": "elite",
+      "x": 5,
+      "z": 11.5
+    },
+    {
+      "id": "boss",
+      "form": "boss",
+      "x": 9,
+      "z": 10.5
+    }
+  ],
+  "allyCast": [
+    "warrior",
+    "warrior",
+    "shield",
+    "shield",
+    "archer",
+    "medic",
+    "engineer",
+    "musketeer"
+  ],
+  "pageErrors": []
+}

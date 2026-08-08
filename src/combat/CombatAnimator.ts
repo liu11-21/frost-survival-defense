@@ -1,6 +1,7 @@
 import { damp, easeOutCubic } from "../util/MathUtil";
 import type { LiteRig } from "./LiteHumanoid";
 import { EffectSettingsState } from "../effects/EffectSettingsState";
+import { weaponTrailFor } from "../effects/WeaponTrail";
 
 export type CombatAnimState = "idle" | "walk" | "attack" | "hit" | "death" | "cast" | "taunt";
 
@@ -172,22 +173,37 @@ export class CombatAnimator {
   private syncAuthoredAnimation(): void {
     const authored = this.rig.authored;
     if (!authored) return;
-    const state = this.state === "walk"
-      ? "Walk"
+    // Formal gameplay fallback contract (Warrior-W2 §8): each authored state maps to
+    // its own clip. `attack` may fall back to `MeleeAttack` only because the current
+    // authored assets have no separate `Attack` clip yet. `cast` and `walk` must not
+    // silently borrow another clip (`MeleeAttack`/`Run`) and have that read as
+    // "integrated" — Run remains available for the GLB and Review Mode, just not as
+    // a formal-gameplay walk fallback.
+    const candidates = this.state === "walk"
+      ? ["Walk"]
       : this.state === "attack"
-        ? "Attack"
+        ? ["Attack", "MeleeAttack"]
         : this.state === "cast"
-          ? "Cast"
+          ? ["Cast"]
           : this.state === "death"
-            ? "Death"
+            ? ["Death"]
             : this.state === "hit"
-              ? "Hit"
-              : "Idle";
+              ? ["Hit"]
+              : ["Idle"];
+    const state = candidates.find((name) => authored.animationGroups.some((candidate) => candidate.name === name || candidate.name.endsWith(`:${name}`))) ?? candidates[0];
     if (state === this.authoredState) return;
     this.authoredState = state;
     for (const group of authored.animationGroups) group.stop();
     const group = authored.animationGroups.find((candidate) => candidate.name === state || candidate.name.endsWith(`:${state}`));
-    group?.start(state === "Idle" || state === "Walk", 1);
+    group?.start(state === "Idle" || state === "Walk" || state === "Run", 1);
+    // The weapon swoosh is tied to the clip, not to the attack *event*: it
+    // runs for exactly as long as the swing animation does, so it cannot be
+    // left streaming behind a unit whose attack was interrupted.
+    const trail = weaponTrailFor(authored);
+    if (trail) {
+      if (state === "MeleeAttack" || state === "Attack") trail.start();
+      else trail.stop();
+    }
   }
 
   /** 0..1, how far through the death animation the corpse is. */

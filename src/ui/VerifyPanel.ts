@@ -3,11 +3,13 @@ import { validateBuildSlots } from "../buildings/SlotLayoutValidation";
 import type { CombatWorld } from "../combat/CombatWorld";
 import type { FactionMarkers } from "../effects/FactionMarkers";
 import type { HealthBarManager } from "./HealthBarManager";
+import type { HeroController } from "../hero/HeroController";
 
 export interface VerifyDeps {
   world: CombatWorld;
   buildings: BuildingManager;
   healthBars: HealthBarManager;
+  hero: HeroController;
   markers: FactionMarkers;
 }
 
@@ -21,7 +23,7 @@ export interface VerifyDeps {
  * what `HealthBarManager` and `FactionMarkers` actually have bound.
  */
 export function renderVerifyPanel(deps: VerifyDeps): string {
-  const { world, buildings, healthBars, markers } = deps;
+  const { world, buildings, healthBars, hero, markers } = deps;
 
   const aliveEnemies = world.enemies.filter((e) => e.alive).length;
   const aliveAllies = world.allies.filter((a) => a.alive).length;
@@ -67,6 +69,9 @@ export function renderVerifyPanel(deps: VerifyDeps): string {
   }</b></div>`;
 
   return `
+    <div class="dbg-title">Hero authored runtime</div>
+    <div class="dbg-check ${hero.modelSource === "GLB" ? "ok" : "bad"}"><span>Hero Model Source</span><b>${hero.modelSource}</b></div>
+    <div class="dbg-note">Animations: ${hero.authoredAnimationNames.length ? hero.authoredAnimationNames.join(", ") : "procedural fallback"}</div>
     <div class="dbg-title">強制視覺驗證 (F6)</div>
     <div class="dbg-note">本局已標記為測試用途，不會寫入排行榜。</div>
     <div class="dbg-title">血條綁定</div>

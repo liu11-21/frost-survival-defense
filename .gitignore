@@ -14,6 +14,8 @@ temp/
 tmp/
 blender-cache/
 reports/runtime/
+.runtime/
+test-results/
 screenshots/
 recordings/
 *.log
@@ -28,3 +30,7 @@ Thumbs.db
 .vscode/
 .idea/
 .DS_Store
+
+# Adapter smoke-test output: a pipeline rehearsal, not an asset.
+assets-source/blender/characters/adapter_smoketest.blend
+assets-source/blender/characters/mpfb2_dryrun.blend
