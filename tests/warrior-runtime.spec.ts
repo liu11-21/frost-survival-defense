@@ -519,7 +519,7 @@ test("runs a real 9 Warrior + 12 Grunt pressure scenario with genuine engagement
   // wall-clock) and observe rather than force. `manualSteppingUnreliable`
   // records that FPS read during manual stepping is a stepping artefact, not
   // real player framerate (Warrior-W2 §11).
-  const timeline: Array<{ simSeconds: number; meleeAttackers: number; warriorAlive: number; gruntAlive: number; allyCorpses: number }> = [];
+  const timeline: Array<{ simSeconds: number; meleeAttackers: number; warriorAlive: number; warriorGlbCount: number; warriorProceduralVisible: number; gruntAlive: number; allyCorpses: number }> = [];
   let meleeAttackObserved = false;
   let anyDeathObserved = false;
   let simSeconds = 0;
@@ -532,11 +532,18 @@ test("runs a real 9 Warrior + 12 Grunt pressure scenario with genuine engagement
   const ENGAGEMENT_CHUNKS = 50; // 10s of real engagement, well over the 5s floor.
   const initial = await page.evaluate(() => {
     const api = (window as ReviewWindow).frostbound?.api() as Record<string, unknown>;
+    const warriorUnits = (api.allUnitsOf as (id: string) => Array<Record<string, unknown>>)("warrior");
     return {
-      warriorAlive: (api.allUnitsOf as (id: string) => unknown[])("warrior").length,
+      warriorAlive: warriorUnits.length,
+      warriorGlbCount: warriorUnits.filter((unit) => unit.modelSource === "GLB").length,
+      warriorProceduralVisible: warriorUnits.reduce((sum, unit) => sum + Number(unit.proceduralVisibleMeshCount ?? 0), 0),
       gruntAlive: (api.allUnitsOf as (id: string) => unknown[])("grunt").length,
     };
   });
+  expect(initial.warriorAlive, "pressure scenario must start with exactly 9 living Warriors").toBe(9);
+  expect(initial.warriorGlbCount, "all 9 initial Warriors must be GLB-backed before combat").toBe(initial.warriorAlive);
+  expect(initial.warriorProceduralVisible, "initial Warriors must expose no procedural visible meshes").toBe(0);
+
   for (let chunk = 0; chunk < WARMUP_CHUNKS + ENGAGEMENT_CHUNKS; chunk++) {
     const sample = await page.evaluate(({ dt, steps }) => {
       const w = window as ReviewWindow;
@@ -548,12 +555,16 @@ test("runs a real 9 Warrior + 12 Grunt pressure scenario with genuine engagement
       return {
         meleeAttackers: warriorUnits.filter((u) => u.currentAuthoredAnimation === "MeleeAttack").length,
         warriorAlive: warriorUnits.length,
+        warriorGlbCount: warriorUnits.filter((unit) => unit.modelSource === "GLB").length,
+        warriorProceduralVisible: warriorUnits.reduce((sum, unit) => sum + Number(unit.proceduralVisibleMeshCount ?? 0), 0),
         gruntAlive: gruntUnits.length,
         allyCorpses: bodies.corpses,
       };
     }, { dt: DT, steps: STEPS_PER_CHUNK });
     simSeconds += CHUNK_SECONDS;
     timeline.push({ simSeconds, ...sample });
+    expect(sample.warriorGlbCount, `all living Warriors must remain GLB-backed at t=${simSeconds.toFixed(1)}s`).toBe(sample.warriorAlive);
+    expect(sample.warriorProceduralVisible, `procedural Warrior meshes must stay hidden at t=${simSeconds.toFixed(1)}s`).toBe(0);
     if (sample.meleeAttackers > 0) meleeAttackObserved = true;
     if (sample.gruntAlive < initial.gruntAlive || sample.warriorAlive < initial.warriorAlive || sample.allyCorpses > 0) anyDeathObserved = true;
   }
@@ -639,7 +650,7 @@ test("runs a real 9 Warrior + 12 Grunt pressure scenario with genuine engagement
   expect(renderLoop.avgFps5s, "the real render loop must have produced frames during the sample window").toBeGreaterThan(0);
   expect(renderLoop.drawCalls, "draw calls must be observable in the real render loop").toBeGreaterThan(0);
 
-  expect(final.warriorGlbCount, "every Warrior must remain GLB-backed through combat").toBe(9);
+  expect(final.warriorGlbCount, "every living Warrior must remain GLB-backed through combat").toBe(final.warriorAlive);
   expect(final.warriorProceduralVisible, "procedural visible mesh count must stay 0").toBe(0);
   expect(meleeAttackObserved, "at least one Warrior must be observed playing MeleeAttack during real engagement").toBe(true);
   expect(anyDeathObserved, "at least one full death lifecycle (ally or enemy) must occur during real engagement").toBe(true);
@@ -658,6 +669,7 @@ test("runs a real 9 Warrior + 12 Grunt pressure scenario with genuine engagement
     `${JSON.stringify(
       {
         setup,
+        initial,
         timeline,
         simSeconds,
         meleeAttackObserved,
