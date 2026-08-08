@@ -56,6 +56,10 @@ test("captures Babylon runtime evidence for both human candidates", async ({ pag
   await page.waitForFunction(() => (window as ReviewWindow).__humanCandidateReview?.sceneReady === true, { timeout: 90_000 });
 
   const captured: Array<Record<string, unknown>> = [];
+  // Order matters here, and it is a regression guard, not a preference: the
+  // second variant loaded used to render as bone matrices sampled as colour,
+  // because the first was detached rather than disposed. Whichever runs second
+  // is the one that proves the swap releases its resources.
   for (const variant of ["male", "female"]) {
     await page.evaluate((v) => (window as ReviewWindow).frostboundHumanCandidate!.setVariant(v), variant);
     await page.waitForFunction(
