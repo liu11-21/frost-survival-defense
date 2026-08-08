@@ -1,0 +1,89 @@
+name: pages-playtest
+
+# Publishes the playable build to GitHub Pages on every push to main.
+#
+# Deliberately separate from the four runtime-verification workflows: those
+# gate correctness and must stay able to fail a change, while this one only
+# publishes. Nothing here runs Blender or touches an authored asset -- it
+# consumes the GLBs already committed under public/.
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+# `pages` and `id-token` are what deploy-pages needs to publish without a
+# long-lived token; `contents: read` is all the build itself requires.
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+# One deployment at a time, and never cancel one that is mid-publish -- a
+# half-written Pages deploy serves a broken mix of old and new bundles.
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        # The GLBs the game loads are ordinary git objects. Only .blend, .fbx,
+        # .wav, .mp4 and .psd are LFS-tracked, and none of them ship, so the
+        # default checkout is both sufficient and much faster.
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: npm
+
+      - run: npm ci
+
+      - run: npm run typecheck
+
+      - name: Build for the Pages subpath
+        run: npm run build
+        env:
+          # The site is served from https://<owner>.github.io/<repo>/, so the
+          # bundle and every runtime asset URL must resolve under that prefix.
+          # Derived from the repository name rather than typed, so a rename or
+          # a fork does not silently publish 404s.
+          VITE_BASE: /${{ github.event.repository.name }}/
+
+      - name: Fail if any asset URL is still root-absolute
+        # A root-absolute /assets/ URL resolves to the domain root on Pages and
+        # 404s. The game treats a missing model as a supported state and falls
+        # back to the procedural renderer, so this failure mode ships silently
+        # and looks like "the art disappeared" rather than a broken deploy.
+        run: |
+          if grep -rlE '"/assets/|`/assets/' dist/assets/*.js >/dev/null 2>&1; then
+            echo "::error::Found root-absolute /assets/ URLs in the bundle; they will 404 under the Pages subpath."
+            grep -rhoE '"/assets/[^"]*' dist/assets/*.js | sort -u | head -20
+            exit 1
+          fi
+          echo "No root-absolute asset URLs in the bundle."
+
+      - name: Confirm the models actually shipped
+        run: |
+          count=$(find dist/assets/models -name '*.glb' | wc -l)
+          echo "GLB files in dist: $count"
+          test "$count" -gt 0
+          test -f dist/assets/models/characters/hero.glb
+          test -f dist/assets/models/characters/warrior.glb
+
+      - uses: actions/configure-pages@v5
+
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: dist
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v4

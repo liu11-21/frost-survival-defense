@@ -1,4 +1,5 @@
 import type { AssetSpec } from "./AssetTypes";
+import { withBase } from "./basePath";
 
 /**
  * The public URL paths intentionally mirror the source Blender folders. A
@@ -17,7 +18,7 @@ const ALLY_MELEE_ANIMATIONS = ["Idle", "Walk", "Run", "MeleeAttack", "Hit", "Dea
 export const AUTHORED_ASSET_MANIFEST: readonly AssetSpec[] = [
   {
     key: "hero",
-    rootUrl: "/assets/models/characters/",
+    rootUrl: withBase("assets/models/characters/"),
     fileName: "hero.glb",
     requiredNodes: ["HeroRoot", "HeroSkeleton", "weapon_socket.R", "ranged_socket", "LOD1", "LOD2"],
     requiredAnimations: ["Idle", "Walk", "Run", "MeleeAttack", "RangedAttack", "Hit", "Death"],
@@ -25,7 +26,7 @@ export const AUTHORED_ASSET_MANIFEST: readonly AssetSpec[] = [
   },
   {
     key: "turret_basic",
-    rootUrl: "/assets/models/buildings/",
+    rootUrl: withBase("assets/models/buildings/"),
     fileName: "turret_basic.glb",
     requiredNodes: ["TurretRoot", "yawPivot", "pitchPivot", "barrel", "muzzle", "recoilPart", "LOD1", "LOD2"],
     requiredAnimations: ["Idle", "Aim", "Fire", "Recoil", "Reload"],
@@ -33,7 +34,7 @@ export const AUTHORED_ASSET_MANIFEST: readonly AssetSpec[] = [
   },
   {
     key: "wall_gate",
-    rootUrl: "/assets/models/buildings/",
+    rootUrl: withBase("assets/models/buildings/"),
     fileName: "wall_gate.glb",
     requiredNodes: ["WallGateRoot", "gateRoot", "gateDoorLeft", "gateDoorRight", "gateCollider", "friendlyPassTrigger", "LOD1", "LOD2"],
     requiredAnimations: ["GateOpen", "GateClose", "Damaged", "Destroyed"],
@@ -41,7 +42,7 @@ export const AUTHORED_ASSET_MANIFEST: readonly AssetSpec[] = [
   },
   ...UNIT_KEYS.map((key): AssetSpec => ({
     key,
-    rootUrl: "/assets/models/characters/",
+    rootUrl: withBase("assets/models/characters/"),
     fileName: `${key}.glb`,
     requiredNodes: key === "warrior"
       ? ["UnitRoot", "UnitSkeleton", "weapon_socket", "attackAnchor", "LOD1", "LOD2", "upper_grip", "lower_grip", "axe_tip"]
@@ -51,7 +52,7 @@ export const AUTHORED_ASSET_MANIFEST: readonly AssetSpec[] = [
   })),
   ...ECONOMY_ASSETS.map((key): AssetSpec => ({
     key,
-    rootUrl: "/assets/models/buildings/",
+    rootUrl: withBase("assets/models/buildings/"),
     fileName: `${key}.glb`,
     requiredNodes: ["BuildingRoot", "productionCore", "workPart", "LOD1", "LOD2"],
     requiredAnimations: ["Idle", "Operate", "Damaged", "Destroyed"],
@@ -59,7 +60,7 @@ export const AUTHORED_ASSET_MANIFEST: readonly AssetSpec[] = [
   })),
   ...ATTACK_ASSETS.map((key): AssetSpec => ({
     key,
-    rootUrl: "/assets/models/buildings/",
+    rootUrl: withBase("assets/models/buildings/"),
     fileName: `${key}.glb`,
     requiredNodes: ["BuildingRoot", "yawPivot", "pitchPivot", "barrel", "muzzle", "recoilPart", "LOD1", "LOD2"],
     requiredAnimations: ["Idle", "Aim", "Fire", "Recoil", "Damaged", "Destroyed"],
@@ -67,7 +68,7 @@ export const AUTHORED_ASSET_MANIFEST: readonly AssetSpec[] = [
   })),
   {
     key: "furnace",
-    rootUrl: "/assets/models/buildings/",
+    rootUrl: withBase("assets/models/buildings/"),
     fileName: "furnace.glb",
     requiredNodes: ["FurnaceRoot", "heatCore", "furnaceCrown", "emitter", "LOD1", "LOD2"],
     requiredAnimations: ["Idle", "Operate", "Damaged", "Destroyed"],
@@ -75,7 +76,7 @@ export const AUTHORED_ASSET_MANIFEST: readonly AssetSpec[] = [
   },
   {
     key: "resource_tree",
-    rootUrl: "/assets/models/environment/",
+    rootUrl: withBase("assets/models/environment/"),
     fileName: "resource_tree.glb",
     requiredNodes: ["ResourceTreeRoot", "resource_trunk", "resource_canopy0", "resource_canopy1", "resource_canopy2", "resource_snow0", "resource_snow1", "resource_snow2", "resource_stump", "LOD1", "LOD2"],
     requiredAnimations: [],
@@ -83,7 +84,7 @@ export const AUTHORED_ASSET_MANIFEST: readonly AssetSpec[] = [
   },
   {
     key: "resource_rock",
-    rootUrl: "/assets/models/environment/",
+    rootUrl: withBase("assets/models/environment/"),
     fileName: "resource_rock.glb",
     requiredNodes: ["ResourceRockRoot", "resource_rock_base", "resource_rock_face", "resource_rock_snow", "resource_ore0", "resource_ore1", "resource_ore2", "resource_rubble", "LOD1", "LOD2"],
     requiredAnimations: [],
