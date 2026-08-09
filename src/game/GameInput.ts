@@ -1,3 +1,4 @@
+import { audioDirector } from "../audio/AudioDirector";
 import type { ActionKey } from "../player/PlayerInput";
 import type { PanelResult } from "../ui/ActionPanels";
 import type { MenuChoice } from "../ui/GameMenus";
@@ -22,10 +23,15 @@ export function bindGameInput(
   canvas: HTMLCanvasElement,
   handlers: InputHandlers,
 ): void {
-  // Browsers only allow audio after a gesture, so any input unlocks it.
-  s.input.onAnyKey = () => s.audio.unlock();
-  canvas.addEventListener("pointerdown", () => s.audio.unlock());
-  s.refs.root.addEventListener("pointerdown", () => s.audio.unlock());
+  // Browsers only allow audio after a gesture, so any input unlocks both the
+  // existing SFX graph and the centralized BGM director.
+  const unlockAudio = (): void => {
+    s.audio.unlock();
+    audioDirector.unlock();
+  };
+  s.input.onAnyKey = unlockAudio;
+  canvas.addEventListener("pointerdown", unlockAudio);
+  s.refs.root.addEventListener("pointerdown", unlockAudio);
 
   s.input.onAction = (action) => handlers.action(action);
   s.menus.onChoice = (choice) => handlers.menu(choice);
