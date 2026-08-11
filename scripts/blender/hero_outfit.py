@@ -475,12 +475,23 @@ def build_outfit(body, armature, variant):
             (f"upperarm_{side}", "coat", 1.22, 1.15, 2.8, (), None, 0.0, 0.14),
             (f"lowerarm_{side}", "coat", 1.17, 1.10, 2.8, (), None, 0.12, 0.06),
             (f"thigh_{side}", "coat", 1.15, 1.10, 2.8, (), None, 0.0, 0.16),
-            (f"calf_{side}", "coat", 1.13, 1.18, 2.8, (), None, 0.14, 0.04),
+            # The trouser has to reach INTO the boot. The boot is swept along
+            # the foot, so its own overhangs run heel-to-toe and cannot cover
+            # the ankle; only the calf can close that seam.
+            (f"calf_{side}", "coat", 1.13, 1.22, 2.8, (), None, 0.14, 0.30),
             # Boot: foot plus the ball, oriented along the shin so the shaft
             # runs up the ankle instead of along the toes.
             # The boot has to swallow the toes: the foot bone stops at the ball,
             # and capping there left every toe poking out through the front.
-            (f"foot_{side}", "leather", 1.20, 1.30, 3.2, (f"ball_{side}",), f"calf_{side}", 0.10, 0.34),
+            # ONE boot, swept along the FOOT bone -- heel to ball -- rather than
+            # down the shin. Sweeping along the calf put the end cap across the
+            # shin axis, so the toes walked straight through the front of it,
+            # and no tail extension on that axis could ever help: it pushes
+            # toward the floor, not forward over the foot. A separate toe cap
+            # along the ball bone did cover them, at the cost of two tubes
+            # meeting in a lump with a wedge of bare skin between them.
+            # Overhangs reach back over the heel and forward past the toes.
+            (f"foot_{side}", "leather", 1.22, 1.30, 3.2, (f"ball_{side}",), f"foot_{side}", 0.42, 0.55),
         ):
             data = limb_profile(body, bone_name, armature,
                                 extra_bones=extra, axis_bone=axis_bone)
@@ -840,6 +851,48 @@ def rebind_in_spread_pose(garments, body, armature, angle=48.0):
     return {"posed": lifted, "angleDeg": angle, "rebound": rebound}
 
 
+def push_outside_body(garment, body, clearance=0.004, limit=0.05):
+    """Guarantee no garment vertex sits inside the skin.
+
+    The systematic leaks -- the bare band at each knee, the toes through the
+    boot -- were missing garment, and extending the tubes fixed those. What is
+    left is a different failure: isolated vertices where a lofted elliptical
+    section simply does not clear a local bump in the body, the shin bone and
+    the ankle being the obvious ones. A section is an ellipse; a shin is not.
+
+    Chasing those with pad values is whack-a-mole, and raising the pad enough
+    to clear the worst bump inflates the whole garment -- which is the blanket
+    scale-up this must not do. So instead each garment vertex is tested
+    against the body it covers and, only if it is inside, pushed out to a
+    fixed clearance along the body's own surface normal. Vertices already
+    outside are untouched, so the silhouette does not change; `limit` caps the
+    correction so a wild sample can never balloon the mesh.
+    """
+    to_body = body.matrix_world.inverted()
+    from_body = body.matrix_world
+    moved = 0
+    worst = 0.0
+    for vertex in garment.data.vertices:
+        world = garment.matrix_world @ vertex.co
+        local = to_body @ world
+        hit, location, normal, _f = body.closest_point_on_mesh(local)
+        if not hit:
+            continue
+        signed = (local - location).dot(normal)
+        if signed >= clearance:
+            continue
+        shift = min(clearance - signed, limit)
+        target = from_body @ (location + normal * clearance)
+        corrected = garment.matrix_world.inverted() @ target
+        if (corrected - vertex.co).length <= limit:
+            vertex.co = corrected
+            moved += 1
+            worst = max(worst, shift)
+    garment.data.update()
+    return {"pushed": moved, "of": len(garment.data.vertices),
+            "worstCorrection": round(worst, 5), "clearance": clearance}
+
+
 def region_violations(obj, families, threshold=0.02):
     """Bones a garment region must never carry, checked after the merge.
 
@@ -1141,6 +1194,9 @@ def main():
     # pass 2 needs from it.
     transfer_weights(outfit, body, armature, families=families)
     rebind = rebind_in_spread_pose([(outfit, families)], body, armature)
+    # Only after the weights are settled: this moves geometry, not weights.
+    pushed = push_outside_body(outfit, body)
+    print("PUSH_OUTSIDE %s" % json.dumps(pushed))
     outfit_gate = region_violations(outfit, families)
     if outfit_gate:
         raise SystemExit("HeroOutfit region binding violated: %s" % outfit_gate[:6])
