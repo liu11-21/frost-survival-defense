@@ -252,7 +252,7 @@ def limb_profile(body, bone_name, armature, slices=5, percentile=0.90,
     }
 
 
-def limb_rings(data, n, pad_head, pad_tail, exp):
+def limb_rings(data, n, pad_head, pad_tail, exp, over_head=0.0, over_tail=0.0):
     """Rings for sweep_axis, offset onto the measured centreline.
 
     sweep_axis places ring t on the straight line from start to end. The limb
@@ -273,6 +273,38 @@ def limb_rings(data, n, pad_head, pad_tail, exp):
         rings.append((t, section(
             n, entry["halfWidth"] * grow, entry["front"] * grow, entry["back"] * grow, exp,
             centre_x=offset.dot(side), centre_z=offset.dot(front))))
+
+    # Extend the tube past the bone it was lofted along.
+    #
+    # Each limb garment runs head-to-tail of one bone, so the thigh tube stops
+    # exactly where the calf tube starts and the two only touch. A close-up at
+    # the knee shows what that actually produces: a horizontal band of bare
+    # skin between them, on both legs. It is NOT hidden body that a cull could
+    # remove -- nothing covers it, and deleting those faces would open a hole
+    # straight through the leg. The garment has to reach further.
+    #
+    # `sweep_axis` maps ring t onto start + T * (length * t), so a ring at
+    # t = -0.12 or t = 1.12 extrapolates along the same axis for free. The end
+    # ring's own measured section is reused and drawn in slightly, so the tube
+    # closes toward the overlap rather than flaring into the neighbouring one.
+    def extrapolate(new_t, source, taper=0.97):
+        entry = data["slices"][source]
+        t, _sec = rings[source]
+        on_line = start + tangent * (length * t)
+        offset = entry["centre"] - on_line
+        grow = (pad_head + (pad_tail - pad_head) * t) * taper
+        return (new_t, section(
+            n, entry["halfWidth"] * grow, entry["front"] * grow, entry["back"] * grow, exp,
+            centre_x=offset.dot(side), centre_z=offset.dot(front)))
+
+    # Index into `data["slices"]`, not into `rings`: inserting the head ring
+    # shifts every ring index by one, and `len(rings) - 1` then runs off the
+    # end of the slice list.
+    last = len(data["slices"]) - 1
+    if over_tail > 0.0:
+        rings.append(extrapolate(1.0 + over_tail, last))
+    if over_head > 0.0:
+        rings.insert(0, extrapolate(-over_head, 0))
     return rings
 
 
@@ -433,14 +465,22 @@ def build_outfit(body, armature, variant):
         digits = tuple(f"{d}_{j:02d}_{side}" for d in
                        ("thumb", "index", "middle", "ring", "pinky")
                        for j in (1, 2, 3))
-        for bone_name, surface, pad, tail_pad, exp, extra, axis_bone in (
-            (f"upperarm_{side}", "coat", 1.22, 1.15, 2.8, (), None),
-            (f"lowerarm_{side}", "coat", 1.17, 1.10, 2.8, (), None),
-            (f"thigh_{side}", "coat", 1.15, 1.10, 2.8, (), None),
-            (f"calf_{side}", "coat", 1.13, 1.18, 2.8, (), None),
+        # `over_head` / `over_tail` extend a tube past its bone, as a fraction
+        # of that bone's length, so consecutive segments OVERLAP instead of
+        # merely touching. Butting them together left a visible band of bare
+        # skin at each knee and elbow; the toes came out through the boot for
+        # the same reason at the other end of the leg. These are local
+        # extensions of specific seams, not a blanket inflate of the garment.
+        for bone_name, surface, pad, tail_pad, exp, extra, axis_bone, over_head, over_tail in (
+            (f"upperarm_{side}", "coat", 1.22, 1.15, 2.8, (), None, 0.0, 0.14),
+            (f"lowerarm_{side}", "coat", 1.17, 1.10, 2.8, (), None, 0.12, 0.06),
+            (f"thigh_{side}", "coat", 1.15, 1.10, 2.8, (), None, 0.0, 0.16),
+            (f"calf_{side}", "coat", 1.13, 1.18, 2.8, (), None, 0.14, 0.04),
             # Boot: foot plus the ball, oriented along the shin so the shaft
             # runs up the ankle instead of along the toes.
-            (f"foot_{side}", "leather", 1.20, 1.30, 3.2, (f"ball_{side}",), f"calf_{side}"),
+            # The boot has to swallow the toes: the foot bone stops at the ball,
+            # and capping there left every toe poking out through the front.
+            (f"foot_{side}", "leather", 1.20, 1.30, 3.2, (f"ball_{side}",), f"calf_{side}", 0.10, 0.34),
         ):
             data = limb_profile(body, bone_name, armature,
                                 extra_bones=extra, axis_bone=axis_bone)
@@ -451,7 +491,8 @@ def build_outfit(body, armature, variant):
             # exactly what "bare hands and bare toes" looked like.
             closed = bone_name.startswith(("hand_", "foot_"))
             mark = len(b.vertices)
-            b.sweep_axis(limb_rings(data, n_limb, pad, tail_pad, exp),
+            b.sweep_axis(limb_rings(data, n_limb, pad, tail_pad, exp,
+                                    over_head=over_head, over_tail=over_tail),
                          surface, lambda t: {}, data["start"], data["end"],
                          cap_start=False, cap_end=closed)
             family = ("sleeve_%s" % side
