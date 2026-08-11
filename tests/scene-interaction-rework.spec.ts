@@ -81,7 +81,45 @@ test("mouse-clicking a remote visible slot opens the canonical build panel", asy
   expect(pointer.finalHandler).toBe("slotClick");
   expect(pointer.hitWorldSlot).toBe("coreNE");
   expect(await call(page, "nearbySlotId")).toBe("coreNE");
+  const buildPanel = page.locator("#ui-build-panel");
+  await expect(buildPanel).toHaveClass(/show/);
+  const buildBox = await buildPanel.boundingBox();
+  expect(buildBox).toBeTruthy();
+  expect(buildBox!.width).toBeLessThanOrEqual(280);
+  await expect(page.locator(".build-icon-card .building-thumb-scene").first()).toBeVisible();
+});
+
+test("a successful build closes the command panel and another slot can be selected immediately", async ({ page }) => {
+  await boot(page);
+  await call(page, "startStage", "stage-3");
+  await call(page, "grant", 999, 999, 999);
+  await call(page, "setFurnaceLevel", 30);
+  await call(page, "teleport", 0, 0);
+  await step(page, 0.016, 12);
+
+  const firstProjected = await projectWorldPoint(page, 5.2, 5.2, 0.08);
+  const firstPoint = await canvasClientPoint(page, firstProjected);
+  await page.mouse.click(firstPoint.x, firstPoint.y);
+  await step(page, 0.016, 2);
   await expect(page.locator("#ui-build-panel")).toHaveClass(/show/);
+
+  const lumberyard = page.locator('.build-icon-card[data-build-type="lumberyard"]');
+  await expect(lumberyard).toBeVisible();
+  await expect(lumberyard).toBeEnabled();
+  await lumberyard.click();
+  await step(page, 0.016, 2);
+
+  await expect(page.locator("#ui-build-panel")).not.toHaveClass(/show/);
+  expect((await call(page, "canBuild", "coreNE", "lumberyard")).ok).toBe(false);
+
+  const secondProjected = await projectWorldPoint(page, -5.2, 5.2, 0.08);
+  const secondPoint = await canvasClientPoint(page, secondProjected);
+  await page.mouse.click(secondPoint.x, secondPoint.y);
+  await step(page, 0.016, 2);
+
+  expect(await call(page, "nearbySlotId")).toBe("coreNW");
+  await expect(page.locator("#ui-build-panel")).toHaveClass(/show/);
+  await expect(page.locator('.build-icon-card[data-build-type="mine"]')).toBeVisible();
 });
 
 test("scaled facility visuals still leave a generous real pointer placement target", async ({ page }) => {
@@ -135,14 +173,27 @@ test("a real draggable recruit icon spends only after a legal lane drop", async 
   await step(page, 0.016, 500);
 
   // Move the tactical camera beside the north road so the exact ground point
-  // used for the drop is visible on canvas.
+  // used for the drop is visible on canvas. This is also the evidence frame for
+  // the authored S-bend: unlike the final gate-to-furnace segment, this outer
+  // section must visibly curve through the same points navigation uses.
   await call(page, "teleport", 8, 25);
   await step(page, 0.016, 30);
+  await page.keyboard.press("F6");
+  await page.evaluate(() => (window as any).frostbound?.step?.(0.001, 1, true));
+  await page.screenshot({ path: ".runtime/g1-evidence/g1-winding-road-north.png", fullPage: true });
 
   // Production binding is G. Use the real keyboard route to open the panel.
   await page.keyboard.press("g");
   await step(page, 0.016, 2);
-  await expect(page.locator("#ui-recruit-panel")).toHaveClass(/show/);
+  const recruitPanel = page.locator("#ui-recruit-panel");
+  await expect(recruitPanel).toHaveClass(/show/);
+  const recruitBox = await recruitPanel.boundingBox();
+  expect(recruitBox).toBeTruthy();
+  expect(recruitBox!.width).toBeLessThanOrEqual(312);
+  await expect(page.locator(".recruit-icon-card .recruit-glyph").first()).toBeVisible();
+  await expect(page.locator(".recruit-icon-card text")).toHaveCount(0);
+  await page.evaluate(() => (window as any).frostbound?.step?.(0.001, 1, true));
+  await page.screenshot({ path: ".runtime/g1-evidence/g1-recruit-compact.png", fullPage: true });
 
   const card = page.locator('.recruit-icon-card[data-recruit="warrior"]');
   await expect(card).toBeVisible();

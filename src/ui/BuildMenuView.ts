@@ -6,7 +6,7 @@ import { computeLaneCoverage, laneCoverageText } from "../buildings/AttackRangeG
 import { BUILDINGS, BUILDING_BY_ID, type BuildingDefinition } from "../data/BuildingDefinitions";
 import { BUILD_MENU_CATEGORY_NAMES, buildMenuCategoryOf, type BuildMenuCategory } from "../data/BuildMenuCategories";
 import { classifyEntry, sortClassified, type ClassifiedEntry } from "./BuildMenuSort";
-import { buildingIconSvg } from "./ResourceIcons";
+import { buildingThumbnailHtml } from "./BuildingThumbnails";
 import { costLine } from "./CostLine";
 
 export type BuildMenuTab = "all" | BuildMenuCategory | "wall";
@@ -81,9 +81,9 @@ function stateTag(entry: ClassifiedEntry): string {
 }
 
 /**
- * Icon-first build card. The build panel is now a command surface, not a
- * second encyclopedia: visible content is name + cost + availability + sky
- * marker. Full role, numeric combat data and descriptions remain in Codex.
+ * Thumbnail-first build card. The build panel is a compact command surface,
+ * not a second encyclopedia: visible content is identity + cost + availability
+ * + sky marker. Full role, numeric combat data and descriptions remain in Codex.
  *
  * Range coverage is still calculated here from the real winding path contract
  * and exposed through the native tooltip/aria label, while ActionPanels keeps
@@ -116,7 +116,7 @@ export function renderEntryHtml(
   return `
     <button class="entry build-icon-card" data-build-type="${def.id}" ${disabled ? "disabled" : ""}
       title="${tooltip}" aria-label="${def.name}${coverage ? `，${coverage}` : ""}">
-      <div class="entry-icon build-icon-large">${buildingIconSvg(def.id, 38)}</div>
+      <div class="entry-icon build-icon-large">${buildingThumbnailHtml(def.id)}</div>
       <div class="entry-main build-icon-main">
         <div class="entry-name build-icon-name">${def.name}${stateTag(entry)}</div>
       </div>

@@ -3,6 +3,7 @@ import { showFatalError } from "./ui/LoadingScreen";
 import "./styles.css";
 import "./ui.css";
 import "./ui-hud.css";
+import "./ui-scene-rework.css";
 
 /** Entry point: find the canvas, start the game, report fatal failures visibly. */
 async function bootstrap(): Promise<void> {
