@@ -1,0 +1,79 @@
+name: Audio Runtime Verification
+
+on:
+  workflow_dispatch:
+  pull_request:
+    branches:
+      - main
+    paths:
+      - "public/assets/audio/**"
+      - "src/audio/**"
+      - "src/game/GameInput.ts"
+      - "src/game/GameFlow.ts"
+      - "src/game/MenuRouter.ts"
+      - "tests/audio-runtime.spec.ts"
+      - "package.json"
+      - "playwright.config.ts"
+      - ".github/workflows/audio-runtime-verify.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  audio-runtime:
+    name: State BGM and base-path regression
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Use repository Node version
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - name: Install dependencies
+        run: npm ci
+      - name: TypeScript check
+        run: npm run typecheck
+      - name: Production build
+        run: npm run build
+      - name: Verify built music assets
+        shell: bash
+        run: |
+          set -euo pipefail
+          for file in menu-idle.mp3 preparation.mp3 warning.mp3 combat.mp3 intense.mp3 wave-clear.mp3; do
+            test -s "dist/assets/audio/music/$file"
+          done
+      - name: Install Chromium
+        run: npx playwright install --with-deps chromium
+      - name: Start production preview
+        shell: bash
+        run: |
+          set -euo pipefail
+          npm run preview -- --host 127.0.0.1 --port 4173 > "$RUNNER_TEMP/audio-preview.log" 2>&1 &
+          echo $! > "$RUNNER_TEMP/audio-preview.pid"
+          for attempt in $(seq 1 60); do
+            if curl --fail --silent http://127.0.0.1:4173/ >/dev/null; then exit 0; fi
+            sleep 1
+          done
+          cat "$RUNNER_TEMP/audio-preview.log"
+          exit 1
+      - name: Audio runtime regression
+        run: npm run test:audio
+      - name: Stop preview server
+        if: always()
+        shell: bash
+        run: |
+          if test -f "$RUNNER_TEMP/audio-preview.pid"; then
+            kill "$(cat "$RUNNER_TEMP/audio-preview.pid")" 2>/dev/null || true
+          fi
+      - name: Upload audio verification evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: audio-runtime-verification-${{ github.run_id }}
+          path: |
+            test-results/
+            ${{ runner.temp }}/audio-preview.log
+          if-no-files-found: warn
