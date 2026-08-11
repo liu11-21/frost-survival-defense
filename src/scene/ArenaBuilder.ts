@@ -27,11 +27,79 @@ export class ArenaBuilder {
     private readonly materials: MaterialFactory,
     slots: ReadonlyArray<BuildSlot>,
   ) {
+    this.buildRoadRibbons();
     this.buildSlotPads(slots);
     this.buildLaneMarkers();
     this.buildPerimeter();
     this.buildScatter();
     this.setFurnaceLevel(1);
+  }
+
+  /**
+   * The ground shader knows the real winding lane segments, but its road term
+   * only accelerates snow melt around heat. Far from the furnace that left the
+   * route visually buried even though navigation followed the curve. These two
+   * thin, non-interactive ribbons make the authored LANES polyline itself the
+   * permanent road presentation: a dark churned shoulder plus a narrower
+   * packed centre. No gameplay/pathfinding geometry is changed here.
+   */
+  private buildRoadRibbons(): void {
+    const shoulder = this.materials.pbr("mat.arena.roadShoulder", {
+      color: [0.22, 0.23, 0.25],
+      roughness: 0.98,
+      texture: "rock",
+    });
+    const packed = this.materials.pbr("mat.arena.roadPacked", {
+      color: [0.36, 0.33, 0.3],
+      roughness: 0.96,
+      texture: "rock",
+    });
+
+    for (const lane of LANES) {
+      this.createRoadRibbon(`road.lane${lane.index}.shoulder`, lane.path, 3.7, 0.012, shoulder);
+      this.createRoadRibbon(`road.lane${lane.index}.packed`, lane.path, 2.65, 0.02, packed);
+    }
+  }
+
+  private createRoadRibbon(
+    name: string,
+    points: ReadonlyArray<{ x: number; z: number }>,
+    width: number,
+    y: number,
+    material: ReturnType<MaterialFactory["pbr"]>,
+  ): Mesh {
+    const half = width * 0.5;
+    const left: Vector3[] = [];
+    const right: Vector3[] = [];
+
+    for (let i = 0; i < points.length; i++) {
+      const point = points[i];
+      const prev = points[Math.max(0, i - 1)];
+      const next = points[Math.min(points.length - 1, i + 1)];
+      const tx = next.x - prev.x;
+      const tz = next.z - prev.z;
+      const length = Math.hypot(tx, tz) || 1;
+      const nx = -tz / length;
+      const nz = tx / length;
+      left.push(new Vector3(point.x + nx * half, y, point.z + nz * half));
+      right.push(new Vector3(point.x - nx * half, y, point.z - nz * half));
+    }
+
+    const road = MeshBuilder.CreateRibbon(
+      name,
+      {
+        pathArray: [left, right],
+        closeArray: false,
+        closePath: false,
+        sideOrientation: Mesh.DOUBLESIDE,
+      },
+      this.scene,
+    );
+    road.material = material;
+    road.isPickable = false;
+    road.receiveShadows = true;
+    road.freezeWorldMatrix();
+    return road;
   }
 
   private buildSlotPads(slots: ReadonlyArray<BuildSlot>): void {

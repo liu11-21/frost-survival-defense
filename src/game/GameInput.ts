@@ -42,6 +42,11 @@ export function bindGameInput(
   s.panels.onToast = (text) => s.hud.toast(text);
   s.panels.onBuilt = (type) => {
     if (type === "mine" || type === "lumberyard") s.tutorial.report("builtProduction");
+    // A successful build is a completed command, not a navigation into the
+    // finished building's management page. Closing here prevents the panel from
+    // appearing stuck on "已完成／可拆除" after the first placement; clicking an
+    // occupied slot later still opens the canonical building-info/demolish view.
+    s.panels.closeAll();
   };
 
   // A short state-lock, not a long debounce: prevents the classic double
