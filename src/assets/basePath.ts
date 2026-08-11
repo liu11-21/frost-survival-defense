@@ -13,8 +13,11 @@
  * a no-op locally (BASE_URL is `/` under `npm run dev`) and prefixes correctly
  * in a subpath deployment. Runtime behaviour is unchanged either way; only the
  * URL the loader asks for moves.
+ *
+ * Tests/integration checks may pass an explicit base path; production callers
+ * normally omit it and use Vite's BASE_URL.
  */
-export function withBase(path: string): string {
-  const base = import.meta.env.BASE_URL || "/";
+export function withBase(path: string, basePath = import.meta.env.BASE_URL || "/"): string {
+  const base = basePath || "/";
   return `${base.replace(/\/+$/, "")}/${path.replace(/^\/+/, "")}`;
 }

@@ -1,3 +1,4 @@
+import { audioDirector } from "../audio/AudioDirector";
 import type { UpgradeId } from "../data/UpgradeDefinitions";
 import type { MenuChoice } from "../ui/GameMenus";
 import type { GameSystems } from "./GameSystems";
@@ -86,4 +87,5 @@ function showSettings(s: GameSystems, from?: "pause"): void {
     s.flashIntensity,
     from,
   );
+  audioDirector.mountSettingsControls(s.refs.screenBody);
 }
