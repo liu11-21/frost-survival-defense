@@ -64,12 +64,16 @@ async function setAudioState(page: Page, state: MusicState): Promise<void> {
   await page.evaluate((next) => (window as any).frostboundAudio.setState(next), state);
 }
 
-async function gameCall(page: Page, name: string, ...args: unknown[]): Promise<any> {
+async function gameCall(page: Page, name: string, ...args: unknown[]): Promise<string | number | boolean | null> {
   return page.evaluate(
     ({ method, params }) => {
       const api = (window as any).frostbound?.api?.();
       const fn = api?.[method];
-      return typeof fn === "function" ? fn(...params) : null;
+      if (typeof fn !== "function") return null;
+      const result = fn(...params);
+      if (result === null || result === undefined) return null;
+      const type = typeof result;
+      return type === "string" || type === "number" || type === "boolean" ? result : null;
     },
     { method: name, params: args },
   );
