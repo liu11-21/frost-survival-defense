@@ -34,3 +34,7 @@ Thumbs.db
 # Adapter smoke-test output: a pipeline rehearsal, not an asset.
 assets-source/blender/characters/adapter_smoketest.blend
 assets-source/blender/characters/mpfb2_dryrun.blend
+.agents/
+.claude/skills/
+skills-lock.json
+.mcp.json
