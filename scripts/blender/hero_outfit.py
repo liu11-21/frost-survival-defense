@@ -491,7 +491,12 @@ def build_outfit(body, armature, variant):
             # along the ball bone did cover them, at the cost of two tubes
             # meeting in a lump with a wedge of bare skin between them.
             # Overhangs reach back over the heel and forward past the toes.
-            (f"foot_{side}", "leather", 1.22, 1.30, 3.2, (f"ball_{side}",), f"foot_{side}", 0.42, 0.55),
+            # A 0.55 tail did swallow the toes and turned the boot into a flat
+            # slab. The toe end is instead made WIDER and rounder (tail_pad,
+            # lower exponent) and the reach cut back, which covers the same
+            # toes while keeping a boot-shaped silhouette. Any residual
+            # penetration is caught by push_outside_body below.
+            (f"foot_{side}", "leather", 1.22, 1.62, 2.4, (f"ball_{side}",), f"foot_{side}", 0.42, 0.24),
         ):
             data = limb_profile(body, bone_name, armature,
                                 extra_bones=extra, axis_bone=axis_bone)
