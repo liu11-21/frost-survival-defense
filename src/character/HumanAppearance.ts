@@ -35,7 +35,16 @@ export const HUMAN_APPEARANCE_VARIANTS: readonly HumanAppearanceVariant[] = ["ma
  * shipping build, so the promotion is deliberately a separate edit.
  */
 export const VARIANT_CANDIDATE_ROLES: ReadonlySet<string> = new Set(["hero"]);
-export const VARIANT_READY_ROLES: ReadonlySet<string> = new Set<string>();
+// Promoted on this integration branch only, so the male and female Hero can be
+// verified in real gameplay rather than in the review harness. This is an
+// APPEARANCE switch and nothing else: it changes which GLB the asset resolver
+// returns for the `hero` role and touches no stat, collision volume, attack
+// range, animation timing or AI behaviour. The two variants share one rig, one
+// clip set and one set of numbers.
+//
+// It must not reach main until the gameplay verification it exists for has
+// actually passed.
+export const VARIANT_READY_ROLES: ReadonlySet<string> = new Set(["hero"]);
 
 export interface HumanAppearance {
   readonly role: string;

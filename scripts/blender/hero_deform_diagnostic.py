@@ -36,7 +36,11 @@ OUT = os.path.join(ROOT, "reports", "human-candidates")
 
 # The phases the Babylon capture uses, so the numbers here line up with the
 # frames a person can look at.
-PHASES = {"grip": 0.25, "windup": 0.25, "impact": 0.6}
+# 0.20 is frame 4 of MeleeAttack, which a per-frame scan in a live
+# Blender session showed to be the worst of the clip (2.817 m of vertex
+# displacement). Every earlier capture used 0.6 -- frame 10 -- and so
+# never once looked at the frame that actually failed.
+PHASES = {"grip": 0.25, "windup": 0.25, "impact": 0.6, "worst": 0.20}
 
 
 def reset_animation(armature):

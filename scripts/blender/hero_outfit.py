@@ -252,7 +252,7 @@ def limb_profile(body, bone_name, armature, slices=5, percentile=0.90,
     }
 
 
-def limb_rings(data, n, pad_head, pad_tail, exp):
+def limb_rings(data, n, pad_head, pad_tail, exp, over_head=0.0, over_tail=0.0):
     """Rings for sweep_axis, offset onto the measured centreline.
 
     sweep_axis places ring t on the straight line from start to end. The limb
@@ -273,6 +273,38 @@ def limb_rings(data, n, pad_head, pad_tail, exp):
         rings.append((t, section(
             n, entry["halfWidth"] * grow, entry["front"] * grow, entry["back"] * grow, exp,
             centre_x=offset.dot(side), centre_z=offset.dot(front))))
+
+    # Extend the tube past the bone it was lofted along.
+    #
+    # Each limb garment runs head-to-tail of one bone, so the thigh tube stops
+    # exactly where the calf tube starts and the two only touch. A close-up at
+    # the knee shows what that actually produces: a horizontal band of bare
+    # skin between them, on both legs. It is NOT hidden body that a cull could
+    # remove -- nothing covers it, and deleting those faces would open a hole
+    # straight through the leg. The garment has to reach further.
+    #
+    # `sweep_axis` maps ring t onto start + T * (length * t), so a ring at
+    # t = -0.12 or t = 1.12 extrapolates along the same axis for free. The end
+    # ring's own measured section is reused and drawn in slightly, so the tube
+    # closes toward the overlap rather than flaring into the neighbouring one.
+    def extrapolate(new_t, source, taper=0.97):
+        entry = data["slices"][source]
+        t, _sec = rings[source]
+        on_line = start + tangent * (length * t)
+        offset = entry["centre"] - on_line
+        grow = (pad_head + (pad_tail - pad_head) * t) * taper
+        return (new_t, section(
+            n, entry["halfWidth"] * grow, entry["front"] * grow, entry["back"] * grow, exp,
+            centre_x=offset.dot(side), centre_z=offset.dot(front)))
+
+    # Index into `data["slices"]`, not into `rings`: inserting the head ring
+    # shifts every ring index by one, and `len(rings) - 1` then runs off the
+    # end of the slice list.
+    last = len(data["slices"]) - 1
+    if over_tail > 0.0:
+        rings.append(extrapolate(1.0 + over_tail, last))
+    if over_head > 0.0:
+        rings.insert(0, extrapolate(-over_head, 0))
     return rings
 
 
@@ -433,14 +465,38 @@ def build_outfit(body, armature, variant):
         digits = tuple(f"{d}_{j:02d}_{side}" for d in
                        ("thumb", "index", "middle", "ring", "pinky")
                        for j in (1, 2, 3))
-        for bone_name, surface, pad, tail_pad, exp, extra, axis_bone in (
-            (f"upperarm_{side}", "coat", 1.22, 1.15, 2.8, (), None),
-            (f"lowerarm_{side}", "coat", 1.17, 1.10, 2.8, (), None),
-            (f"thigh_{side}", "coat", 1.15, 1.10, 2.8, (), None),
-            (f"calf_{side}", "coat", 1.13, 1.18, 2.8, (), None),
+        # `over_head` / `over_tail` extend a tube past its bone, as a fraction
+        # of that bone's length, so consecutive segments OVERLAP instead of
+        # merely touching. Butting them together left a visible band of bare
+        # skin at each knee and elbow; the toes came out through the boot for
+        # the same reason at the other end of the leg. These are local
+        # extensions of specific seams, not a blanket inflate of the garment.
+        for bone_name, surface, pad, tail_pad, exp, extra, axis_bone, over_head, over_tail in (
+            (f"upperarm_{side}", "coat", 1.22, 1.15, 2.8, (), None, 0.0, 0.14),
+            (f"lowerarm_{side}", "coat", 1.17, 1.10, 2.8, (), None, 0.12, 0.06),
+            (f"thigh_{side}", "coat", 1.15, 1.10, 2.8, (), None, 0.0, 0.16),
+            # The trouser has to reach INTO the boot. The boot is swept along
+            # the foot, so its own overhangs run heel-to-toe and cannot cover
+            # the ankle; only the calf can close that seam.
+            (f"calf_{side}", "coat", 1.13, 1.22, 2.8, (), None, 0.14, 0.30),
             # Boot: foot plus the ball, oriented along the shin so the shaft
             # runs up the ankle instead of along the toes.
-            (f"foot_{side}", "leather", 1.20, 1.30, 3.2, (f"ball_{side}",), f"calf_{side}"),
+            # The boot has to swallow the toes: the foot bone stops at the ball,
+            # and capping there left every toe poking out through the front.
+            # ONE boot, swept along the FOOT bone -- heel to ball -- rather than
+            # down the shin. Sweeping along the calf put the end cap across the
+            # shin axis, so the toes walked straight through the front of it,
+            # and no tail extension on that axis could ever help: it pushes
+            # toward the floor, not forward over the foot. A separate toe cap
+            # along the ball bone did cover them, at the cost of two tubes
+            # meeting in a lump with a wedge of bare skin between them.
+            # Overhangs reach back over the heel and forward past the toes.
+            # A 0.55 tail did swallow the toes and turned the boot into a flat
+            # slab. The toe end is instead made WIDER and rounder (tail_pad,
+            # lower exponent) and the reach cut back, which covers the same
+            # toes while keeping a boot-shaped silhouette. Any residual
+            # penetration is caught by push_outside_body below.
+            (f"foot_{side}", "leather", 1.22, 1.62, 2.4, (f"ball_{side}",), f"foot_{side}", 0.42, 0.24),
         ):
             data = limb_profile(body, bone_name, armature,
                                 extra_bones=extra, axis_bone=axis_bone)
@@ -451,7 +507,8 @@ def build_outfit(body, armature, variant):
             # exactly what "bare hands and bare toes" looked like.
             closed = bone_name.startswith(("hand_", "foot_"))
             mark = len(b.vertices)
-            b.sweep_axis(limb_rings(data, n_limb, pad, tail_pad, exp),
+            b.sweep_axis(limb_rings(data, n_limb, pad, tail_pad, exp,
+                                    over_head=over_head, over_tail=over_tail),
                          surface, lambda t: {}, data["start"], data["end"],
                          cap_start=False, cap_end=closed)
             family = ("sleeve_%s" % side
@@ -799,6 +856,48 @@ def rebind_in_spread_pose(garments, body, armature, angle=48.0):
     return {"posed": lifted, "angleDeg": angle, "rebound": rebound}
 
 
+def push_outside_body(garment, body, clearance=0.004, limit=0.05):
+    """Guarantee no garment vertex sits inside the skin.
+
+    The systematic leaks -- the bare band at each knee, the toes through the
+    boot -- were missing garment, and extending the tubes fixed those. What is
+    left is a different failure: isolated vertices where a lofted elliptical
+    section simply does not clear a local bump in the body, the shin bone and
+    the ankle being the obvious ones. A section is an ellipse; a shin is not.
+
+    Chasing those with pad values is whack-a-mole, and raising the pad enough
+    to clear the worst bump inflates the whole garment -- which is the blanket
+    scale-up this must not do. So instead each garment vertex is tested
+    against the body it covers and, only if it is inside, pushed out to a
+    fixed clearance along the body's own surface normal. Vertices already
+    outside are untouched, so the silhouette does not change; `limit` caps the
+    correction so a wild sample can never balloon the mesh.
+    """
+    to_body = body.matrix_world.inverted()
+    from_body = body.matrix_world
+    moved = 0
+    worst = 0.0
+    for vertex in garment.data.vertices:
+        world = garment.matrix_world @ vertex.co
+        local = to_body @ world
+        hit, location, normal, _f = body.closest_point_on_mesh(local)
+        if not hit:
+            continue
+        signed = (local - location).dot(normal)
+        if signed >= clearance:
+            continue
+        shift = min(clearance - signed, limit)
+        target = from_body @ (location + normal * clearance)
+        corrected = garment.matrix_world.inverted() @ target
+        if (corrected - vertex.co).length <= limit:
+            vertex.co = corrected
+            moved += 1
+            worst = max(worst, shift)
+    garment.data.update()
+    return {"pushed": moved, "of": len(garment.data.vertices),
+            "worstCorrection": round(worst, 5), "clearance": clearance}
+
+
 def region_violations(obj, families, threshold=0.02):
     """Bones a garment region must never carry, checked after the merge.
 
@@ -1100,6 +1199,9 @@ def main():
     # pass 2 needs from it.
     transfer_weights(outfit, body, armature, families=families)
     rebind = rebind_in_spread_pose([(outfit, families)], body, armature)
+    # Only after the weights are settled: this moves geometry, not weights.
+    pushed = push_outside_body(outfit, body)
+    print("PUSH_OUTSIDE %s" % json.dumps(pushed))
     outfit_gate = region_violations(outfit, families)
     if outfit_gate:
         raise SystemExit("HeroOutfit region binding violated: %s" % outfit_gate[:6])
