@@ -1,6 +1,7 @@
 import { ArcRotateCamera, Color3, Color4, DirectionalLight, Engine, HemisphericLight, Scene, SceneLoader, Vector3 } from "@babylonjs/core";
 import "@babylonjs/loaders/glTF";
 
+import { withBase } from "../assets/basePath";
 import { HUMAN_APPEARANCE_VARIANTS, resolveHumanCandidateAsset, type HumanAppearanceVariant } from "./HumanAppearance";
 
 /**
@@ -133,7 +134,7 @@ export class HumanCandidateReview {
     this.disposeCurrent = null;
     try {
       const container = await SceneLoader.LoadAssetContainerAsync(
-        "/assets/models/characters/", `${key}.glb`, this.scene);
+        withBase("assets/models/characters/"), `${key}.glb`, this.scene);
       container.addAllToScene();
       this.disposeCurrent = () => container.removeAllFromScene();
 
