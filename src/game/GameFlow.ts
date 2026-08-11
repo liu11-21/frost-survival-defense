@@ -1,4 +1,5 @@
 import { audioDirector } from "../audio/AudioDirector";
+import { audioGameplayAdapter } from "../audio/AudioGameplayAdapter";
 import type { GameSystems } from "./GameSystems";
 
 /**
@@ -9,6 +10,7 @@ import type { GameSystems } from "./GameSystems";
  * the furnace, the watchdog and the boss all go back to their opening state.
  */
 export function beginRun(s: GameSystems, mode: "stage" | "endless", levelId?: string): void {
+  audioGameplayAdapter.reset();
   audioDirector.attachGameplayEvents(s.events);
   audioDirector.setState("PREPARATION");
   s.run.start(mode, levelId);
@@ -43,6 +45,7 @@ export function beginRun(s: GameSystems, mode: "stage" | "endless", levelId?: st
 
 /** Hides the in-run overlays when the player goes back to a menu. */
 export function leaveRun(s: GameSystems): void {
+  audioGameplayAdapter.reset();
   audioDirector.setState("MENU");
   s.squadHud.setVisible(false);
   s.laneHud.setVisible(false);
