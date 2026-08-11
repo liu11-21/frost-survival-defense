@@ -1,23 +1,20 @@
 import { Effect, Scene, ShaderMaterial, Vector3 } from "@babylonjs/core";
-import { COLORS, FOG_DENSITY, ROADS, ROAD_WIDTH } from "../game/GameConfig";
+import { COLORS, FOG_DENSITY } from "../game/GameConfig";
 
 export const MAX_HEAT_SOURCES = 4;
-/** Four lanes x eight segments. Keep this equal to the authored G1 road
- * contract so the shader cannot silently truncate the path list. */
-export const MAX_ROADS = 32;
 
 /**
  * Shared GLSL used by both stages: the snow coverage is evaluated in the vertex
  * shader (so melted ground physically sinks) and again in the fragment shader
  * (so the boundary stays crisp between vertices).
+ *
+ * Road presentation intentionally does not live here. ArenaBuilder owns the
+ * single visible road layer via the LANES-derived shoulder/packed ribbons.
  */
 const SNOW_FIELD = /* glsl */ `
 #define HEAT_COUNT ${MAX_HEAT_SOURCES}
-#define ROAD_COUNT ${MAX_ROADS}
 
 uniform vec4 uHeat[HEAT_COUNT];   // xy = world xz, z = radius, w = strength
-uniform vec4 uRoads[ROAD_COUNT];  // x1,z1,x2,z2
-uniform float uRoadWidth;
 
 float hash21(vec2 p) {
   return fract(sin(dot(p, vec2(127.1, 311.7))) * 43758.5453123);
@@ -45,24 +42,6 @@ float fbm3(vec2 p) {
   return v;
 }
 
-float segDist(vec2 p, vec2 a, vec2 b) {
-  vec2 pa = p - a;
-  vec2 ba = b - a;
-  float h = clamp(dot(pa, ba) / max(dot(ba, ba), 1e-4), 0.0, 1.0);
-  return length(pa - ba * h);
-}
-
-float roadField(vec2 p) {
-  float best = 1e4;
-  for (int i = 0; i < ROAD_COUNT; i++) {
-    vec4 r = uRoads[i];
-    best = min(best, segDist(p, r.xy, r.zw));
-  }
-  // wobble the road edge so it never reads as a straight ribbon
-  float wob = (fbm3(p * 0.42) - 0.5) * 1.3;
-  return 1.0 - smoothstep(uRoadWidth * 0.32, uRoadWidth * 0.62 + wob, best);
-}
-
 float heatField(vec2 p) {
   float m = 0.0;
   for (int i = 0; i < HEAT_COUNT; i++) {
@@ -77,15 +56,15 @@ float heatField(vec2 p) {
 }
 
 /** 1.0 = untouched snow, 0.0 = bare thawed ground. */
-float snowCoverage(vec2 p, out float heat, out float road, out float drift) {
+float snowCoverage(vec2 p, out float heat, out float drift) {
   heat = heatField(p);
-  road = roadField(p);
 
   float coarse = fbm3(p * 0.075);
   float fine = fbm3(p * 0.29 + 41.7);
 
-  // roads and the ground right around a heat source give way first
-  float melt = heat * (1.0 + road * 0.85);
+  // Heat sources alone drive thawing. Roads are rendered exclusively by the
+  // LANES-derived ArenaBuilder ribbons and must not create a second muddy path.
+  float melt = heat;
   melt += (coarse - 0.5) * 0.46 + (fine - 0.5) * 0.16;
 
   // stubborn drifts that survive well inside the thawed ring
@@ -107,7 +86,6 @@ uniform mat4 viewProjection;
 varying vec3 vWorld;
 varying float vSnow;
 varying float vHeat;
-varying float vRoad;
 varying float vDrift;
 varying vec2 vUV;
 
@@ -115,16 +93,15 @@ ${SNOW_FIELD}
 
 void main(void) {
   vec4 wp = world * vec4(position, 1.0);
-  float heat, road, drift;
-  float snow = snowCoverage(wp.xz, heat, road, drift);
+  float heat, drift;
+  float snow = snowCoverage(wp.xz, heat, drift);
   // Snow level *is* y = 0 so every character and prop sits correctly on it;
   // thawed ground drops away instead of snow rising.
-  wp.y -= (1.0 - snow) * 0.11 + road * (1.0 - snow) * 0.04;
+  wp.y -= (1.0 - snow) * 0.11;
   wp.y += drift * 0.07;
   vWorld = wp.xyz;
   vSnow = snow;
   vHeat = heat;
-  vRoad = road;
   vDrift = drift;
   vUV = uv;
   gl_Position = viewProjection * wp;
@@ -137,7 +114,6 @@ precision highp float;
 varying vec3 vWorld;
 varying float vSnow;
 varying float vHeat;
-varying float vRoad;
 varying float vDrift;
 varying vec2 vUV;
 
@@ -145,7 +121,6 @@ uniform vec3 uSnowColor;
 uniform vec3 uSnowShadow;
 uniform vec3 uDirtColor;
 uniform vec3 uWetColor;
-uniform vec3 uRoadColor;
 uniform vec3 uFogColor;
 uniform vec3 uWarmColor;
 uniform vec3 uSunDir;
@@ -168,12 +143,10 @@ void main(void) {
 
   // --- ground albedo ---------------------------------------------------
   float grit = fbm3(p * 1.35);
-  float wetness = clamp(vHeat * 1.35 + vRoad * 0.3, 0.0, 1.0);
+  float wetness = clamp(vHeat * 1.35, 0.0, 1.0);
   vec3 ground = mix(uDirtColor, uWetColor, wetness);
   ground *= 0.72 + grit * 0.62;
-  // packed gravel road reads lighter than the churned mud around it
-  ground = mix(ground, uRoadColor * (0.78 + grit * 0.55), vRoad * 0.92);
-  // a damp rim right where the snow gives way
+  // a damp rim right where heat-driven snow gives way
   float rim = smoothstep(0.02, 0.3, vSnow) * (1.0 - smoothstep(0.3, 0.62, vSnow));
   ground = mix(ground, uWetColor * 0.6, rim * 0.85);
 
@@ -227,7 +200,6 @@ export function createSnowMaterial(scene: Scene): ShaderMaterial {
         "uSnowShadow",
         "uDirtColor",
         "uWetColor",
-        "uRoadColor",
         "uFogColor",
         "uWarmColor",
         "uSunDir",
@@ -235,9 +207,7 @@ export function createSnowMaterial(scene: Scene): ShaderMaterial {
         "uCameraPos",
         "uFogDensity",
         "uTime",
-        "uRoadWidth",
         "uHeat",
-        "uRoads",
       ],
     },
   );
@@ -246,19 +216,11 @@ export function createSnowMaterial(scene: Scene): ShaderMaterial {
   mat.setVector3("uSnowShadow", new Vector3(...COLORS.snowShadow));
   mat.setVector3("uDirtColor", new Vector3(...COLORS.dirt));
   mat.setVector3("uWetColor", new Vector3(...COLORS.wetDirt));
-  mat.setVector3("uRoadColor", new Vector3(...COLORS.road));
   mat.setVector3("uFogColor", new Vector3(...COLORS.fog));
   mat.setVector3("uWarmColor", new Vector3(...COLORS.warm));
   mat.setVector3("uSunColor", new Vector3(...COLORS.sun));
   mat.setFloat("uFogDensity", FOG_DENSITY);
-  mat.setFloat("uRoadWidth", ROAD_WIDTH);
 
-  const roads = new Float32Array(MAX_ROADS * 4);
-  for (let i = 0; i < MAX_ROADS; i++) {
-    const seg = ROADS[i] ?? [0, 0, 0, 0];
-    roads.set(seg, i * 4);
-  }
-  mat.setArray4("uRoads", Array.from(roads));
   mat.backFaceCulling = true;
   // Fog is applied inside the fragment shader, so Babylon must not inject its
   // own FOG define and uniforms on top.
