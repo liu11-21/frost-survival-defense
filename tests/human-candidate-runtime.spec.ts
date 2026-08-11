@@ -43,6 +43,7 @@ const SHOTS: Array<{ camera: string; animation?: string; phase?: number; label: 
   { camera: "three-quarter", animation: "MeleeAttack", phase: 0.20, label: "melee-worst" },
   { camera: "three-quarter", animation: "RangedAttack", phase: 0.5, label: "ranged" },
   { camera: "front", animation: "Walk", phase: 0.3, label: "walk" },
+  { camera: "three-quarter", animation: "Idle", phase: 0.5, label: "idle" },
 ];
 
 test("captures Babylon runtime evidence for both human candidates", async ({ page }) => {
