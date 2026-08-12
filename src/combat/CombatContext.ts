@@ -28,7 +28,7 @@ export interface CombatVfx {
   buildingHit(x: number, z: number): void;
   sound(name: string, volume?: number, pitch?: number): void;
   /** Positional counterpart for real world-space combat events. */
-  soundAt(name: string, x: number, z: number, volume?: number, pitch?: number, priorityBoost?: number): void;
+  soundAt?(name: string, x: number, z: number, volume?: number, pitch?: number, priorityBoost?: number): void;
   damageNumber(x: number, y: number, z: number, amount: number, kind: "damage" | "heal"): void;
   healthChanged(target: Damageable): void;
   registerHealthBar(target: Damageable): void;
