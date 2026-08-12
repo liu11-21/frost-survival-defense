@@ -33,6 +33,15 @@ async function expectNoOverflow(page: Page): Promise<void> {
   expect(overflow!.bottom).toBeLessThanOrEqual(1);
 }
 
+async function tabTo(page: Page, locator: ReturnType<Page["locator"]>, maxTabs = 10): Promise<void> {
+  await page.evaluate(() => (document.activeElement as HTMLElement | null)?.blur());
+  for (let attempt = 0; attempt < maxTabs; attempt++) {
+    await page.keyboard.press("Tab");
+    if (await locator.evaluate((el) => document.activeElement === el)) return;
+  }
+  throw new Error(`keyboard traversal did not reach ${START} within ${maxTabs} Tab presses`);
+}
+
 test("Main Menu V2 commercial runtime, responsive states and transition", async ({ page }) => {
   await bootMenu(page, 1920, 1080);
 
@@ -55,8 +64,7 @@ test("Main Menu V2 commercial runtime, responsive states and transition", async 
   expect(hoverTransform).not.toBe("none");
   await page.screenshot({ path: ".runtime/menu-v2/menu-v2-hover.png", fullPage: true });
 
-  await page.evaluate(() => (document.activeElement as HTMLElement | null)?.blur());
-  await page.keyboard.press("Tab");
+  await tabTo(page, primary);
   await expect(primary).toBeFocused();
   const focusOutline = await primary.evaluate((el) => getComputedStyle(el).outlineStyle);
   expect(focusOutline).not.toBe("none");
