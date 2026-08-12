@@ -10,6 +10,7 @@ on:
       - "src/audio/**"
       - "src/effects/AudioManager.ts"
       - "src/combat/CombatContext.ts"
+      - "src/combat/CombatDirector.ts"
       - "src/game/GameInput.ts"
       - "src/game/GameFlow.ts"
       - "src/game/GameLoop.ts"
