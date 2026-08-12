@@ -5,10 +5,9 @@ const START = "[data-v2-start]";
 
 async function bootMenu(page: Page, width: number, height: number): Promise<void> {
   await page.setViewportSize({ width, height });
-  await page.goto("http://127.0.0.1:4173/?uiVerification=1", { waitUntil: "networkidle" });
-  await page.waitForFunction(() => Boolean((window as any).frostbound), null, { timeout: 60_000 });
+  await page.goto("http://127.0.0.1:4173/", { waitUntil: "networkidle" });
   await page.waitForSelector(MENU, { state: "visible", timeout: 20_000 });
-  await page.waitForTimeout(650);
+  await page.waitForTimeout(1050);
 }
 
 async function expectNoOverflow(page: Page): Promise<void> {
@@ -45,6 +44,7 @@ test("Main Menu V2 commercial runtime, responsive states and transition", async 
   await expect(page.locator("[data-v2-endless]")).toBeVisible();
   await expect(page.locator("[data-v2-codex]")).toBeVisible();
   await expect(page.locator("[data-v2-settings]")).toBeVisible();
+  await expect(page.locator(".menu-v2-legacy-actions")).toBeHidden();
   await expectNoOverflow(page);
 
   await page.screenshot({ path: ".runtime/menu-v2/menu-v2-1920x1080.png", fullPage: true });
@@ -55,7 +55,7 @@ test("Main Menu V2 commercial runtime, responsive states and transition", async 
   expect(hoverTransform).not.toBe("none");
   await page.screenshot({ path: ".runtime/menu-v2/menu-v2-hover.png", fullPage: true });
 
-  await page.locator("body").focus();
+  await page.evaluate(() => (document.activeElement as HTMLElement | null)?.blur());
   await page.keyboard.press("Tab");
   await expect(primary).toBeFocused();
   const focusOutline = await primary.evaluate((el) => getComputedStyle(el).outlineStyle);
