@@ -26,7 +26,13 @@ import sys
 
 import bpy
 
-ROOT = os.path.abspath(os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", ".."))
+HERE = os.path.dirname(os.path.abspath(__file__))
+ROOT = os.path.abspath(os.path.join(HERE, "..", ".."))
+# Sibling modules are not importable without this; the face map failed
+# with `No module named 'hero_face'` and the surrounding except turned
+# that into a silent downgrade to flat skin.
+sys.path.append(HERE)
+import hero_face  # noqa: E402
 OUT = os.path.join(ROOT, ".runtime", "mpfb", "variants")
 RIG_NAME = "game_engine"
 
@@ -228,6 +234,14 @@ def apply_skin(basemesh):
         # skin-appropriate roughness into the Principled node so the exporter
         # has real numbers to bake.
         record["pbrBake"] = bake_skin_pbr(material)
+        # Face. The head's UVs are scattered across the whole layout, so this
+        # paints by 3D anatomy and inverts the unwrap rather than drawing into
+        # a rectangle. See hero_face.py.
+        diffuse = record["pbrBake"].get("baseColor") or [0.76, 0.58, 0.47]
+        image, face_record = hero_face.build(basemesh, None, diffuse)
+        record["face"] = face_record
+        if image is not None:
+            hero_face.attach(material, image)
     except Exception as error:  # noqa: BLE001
         record["proceduralError"] = str(error)[:160]
         material = bpy.data.materials.new("HumanSkinFallback")
