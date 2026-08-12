@@ -396,6 +396,7 @@ export class AudioManager {
     if (!hadRuntime) return;
     this.disposeCount++;
     this.removeLifecycleListeners();
+    this.unsubscribeMix();
     for (const voice of [...this.activeVoices]) this.stopVoice(voice);
     this.activeVoices.length = 0;
     for (const source of this.ambienceSources.splice(0)) {
