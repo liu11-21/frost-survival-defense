@@ -720,6 +720,66 @@ def load_reference_rig(path):
     return reference
 
 
+def emit_ally_contract(root, armature, height):
+    """Emit the node contract the ALLY asset manifest requires.
+
+    An MPFB-derived character satisfies the human half of the contract already
+    -- UnitRoot, LOD{n}_PROD_* meshes, the legacy bone set -- but the ally spec
+    also names an armature `UnitSkeleton`, two LOD marker nodes, and five weapon
+    locators that the procedural units carry. Nothing on the human path ever
+    needed them, so nothing emitted them, and an MPFB warrior could not be a
+    drop-in for the procedural one no matter how good it looked.
+
+    This is asset-layer only: it renames the armature and adds empties. No
+    gameplay code is involved, and the runtime reads these by name.
+
+    The locators are placed from the RIG rather than typed in, so they follow
+    whatever body the macro produced:
+
+        upper_grip     the right hand itself, where a haft is held
+        lower_grip     a haft's length below it, along the forearm
+        weapon_socket  coincident with upper_grip, which is what the procedural
+                       warrior does and what the swing code expects
+        axe_tip        out along the haft, driving the swing arc
+        attackAnchor   in front of the chest, where a strike lands
+    """
+    armature.name = "UnitSkeleton"
+    armature.data.name = "UnitSkeleton"
+
+    hand = armature.pose.bones.get("hand.R") or armature.pose.bones.get("hand_r")
+    if hand is None:
+        raise SystemExit("ally contract needs a right hand bone; rig has none")
+    grip = armature.matrix_world @ hand.head
+    # Down the forearm: the direction the haft runs in a two-hand grip.
+    lower = armature.pose.bones.get("lower_arm.R") or armature.pose.bones.get("lowerarm_r")
+    if lower is not None:
+        along = (grip - (armature.matrix_world @ lower.head)).normalized()
+    else:
+        along = Vector((0.0, -1.0, 0.0))
+
+    made = []
+    for name, location in (
+        ("weapon_socket", grip),
+        ("upper_grip", grip),
+        ("lower_grip", grip + along * (height * 0.105)),
+        ("axe_tip", grip - along * (height * 0.290)),
+        ("attackAnchor", Vector((0.0, height * 0.62, height * 0.32))),
+    ):
+        node = empty(name, tuple(location), "EXPORT", "PLAIN_AXES")
+        node.parent = root
+        node.matrix_world = Matrix.Translation(location)
+        made.append(name)
+
+    # The manifest wants nodes literally named LOD1 and LOD2. The tiers live in
+    # Blender COLLECTIONS of that name, and collections are not exported as
+    # glTF nodes, so the contract saw nothing.
+    for level in (1, 2):
+        marker = empty("LOD%d" % level, (0, 0, 0), "EXPORT", "PLAIN_AXES")
+        marker.parent = root
+        made.append(marker.name)
+    return {"armature": armature.name, "locators": made}
+
+
 def main():
     # run-blender.mjs already inserts the "--" separator, so a caller who also
     # writes one produces two. Strip any leading separators rather than failing
@@ -730,6 +790,9 @@ def main():
     parser = argparse.ArgumentParser(prog="human_source_adapter")
     parser.add_argument("--input", required=True)
     parser.add_argument("--profile", default="generic-gltf")
+    parser.add_argument("--ally-contract", action="store_true",
+                        help="emit UnitSkeleton, weapon locators and LOD marker "
+                             "nodes required by the ally asset manifest")
     parser.add_argument("--name", default="hero_human_candidate")
     parser.add_argument("--height", type=float, default=1.86)
     parser.add_argument("--material-budget", type=int, default=4)
@@ -852,6 +915,11 @@ def main():
                 "tier %d is missing %s; refusing to write a candidate" % (level, missing))
 
     save_source(blend_path)
+    ally = None
+    if args.ally_contract and armature is not None:
+        ally = emit_ally_contract(root, armature, args.height)
+        print("ALLY_CONTRACT %s" % json.dumps(ally))
+
     export_glb(glb_path)
 
     joints = human_rig.verify_skin_contract(glb_path, human_rig.LEGACY_BONES)
@@ -867,6 +935,7 @@ def main():
         "normalisation": scale_info,
         "placementChecks": placement,
         "targetHeightMetres": args.height,
+        "allyContract": ally,
         "removedNodes": removed,
         "synthesisedRoot": synthesised,
         "bones": {

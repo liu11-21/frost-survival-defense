@@ -135,38 +135,46 @@ def build_outfit(body, armature, variant):
         regions.append(("torso", mark, len(b.vertices)))
 
     # --- tabard ---------------------------------------------------------
-    # Two flat panels, front and back, hanging from the chest to mid-thigh.
-    # This is the unit marking and the second half of the silhouette: a
-    # straight vertical slab against the Hero's flared skirt.
+    # The unit marking, and half the silhouette: a straight vertical slab of
+    # colour against the Hero's flared skirt.
+    #
+    # Two earlier attempts failed for the same underlying reason -- the panel
+    # was FLAT and the body is round. As a one-sided strip of points the loft
+    # twisted it into a wedge; as a thin flat section standing proud of the
+    # jacket it read from the side as a pair of braces floating clear of the
+    # figure, because its edges stayed at panel depth while the waist fell away
+    # behind them.
+    #
+    # So it is not a panel at all now. It is a thin over-layer that FOLLOWS the
+    # jacket -- same elliptical section, one centimetre further out -- with its
+    # side segments drawn back inside the jacket, where the wool hides them.
+    # What shows is a broad band of colour down the front and back that sits on
+    # the body, and from the side nothing but the edge.
     tabard_start = len(b.vertices)
-    for sign in (1.0, -1.0):
-        for key_lo, key_hi in (("hem", "upperChest"),):
-            lo_d, hi_d = m[key_lo], m[key_hi]
-            half_lo = lo_d["halfWidth"] * 0.80
-            half_hi = hi_d["halfWidth"] * 0.72
-            # Must clear the padded jacket beneath it (pad up to 0.100) or
-            # the panel sits inside the quilting and only a sliver shows.
-            depth_lo = (lo_d["front"] if sign > 0 else lo_d["back"]) + 0.132
-            depth_hi = (hi_d["front"] if sign > 0 else hi_d["back"]) + 0.128
-            b.sweep([
-                (lo_d["y"], [(x * half_lo, sign * depth_lo)
-                             for x in _panel_profile(n)]),
-                (m["hip"]["y"], [(x * (half_lo + half_hi) * 0.5,
-                                  sign * (depth_lo + depth_hi) * 0.5)
-                                 for x in _panel_profile(n)]),
-                (hi_d["y"], [(x * half_hi, sign * depth_hi)
-                             for x in _panel_profile(n)]),
-            ], "tabard", lambda y: {}, cap_bottom=False, cap_top=False)
+    rings = []
+    # Every pad here must clear the jacket AND its quilting ribs, which reach
+    # 0.100. At 0.094-0.100 the two surfaces interpenetrated and the tabard came
+    # out as a ragged red blotch where the ribs punched through it.
+    for key, pad in (("hem", 0.122), ("thighTop", 0.126), ("hip", 0.126),
+                     ("waist", 0.124), ("chest", 0.124), ("upperChest", 0.120)):
+        d = m[key]
+        ring_pts = section(n, d["halfWidth"] + pad, d["front"] + pad,
+                           d["back"] + pad, 3.0)
+        rings.append((d["y"], _hide_sides(ring_pts, d["halfWidth"] + pad)))
+    b.sweep(rings, "tabard", lambda y: {}, cap_bottom=False, cap_top=False)
     regions.append(("torso", tabard_start, len(b.vertices)))
 
     # --- wide belt ------------------------------------------------------
     belt_start = len(b.vertices)
     d = m["waist"]
+    # Outside the tabard (pads 0.120-0.126), not under it. Buckled beneath, the
+    # belt vanished behind the tabard and survived only as two stubs at the
+    # hips, which read as a mistake rather than as a belt.
     b.sweep([
-        (d["y"] - height * 0.020, section(n, d["halfWidth"] + 0.098,
-                                          d["front"] + 0.098, d["back"] + 0.098, 3.2)),
-        (d["y"] + height * 0.020, section(n, d["halfWidth"] + 0.100,
-                                          d["front"] + 0.100, d["back"] + 0.100, 3.2)),
+        (d["y"] - height * 0.020, section(n, d["halfWidth"] + 0.138,
+                                          d["front"] + 0.138, d["back"] + 0.138, 3.2)),
+        (d["y"] + height * 0.020, section(n, d["halfWidth"] + 0.140,
+                                          d["front"] + 0.140, d["back"] + 0.140, 3.2)),
     ], "leather", lambda y: {}, cap_bottom=False, cap_top=False)
     regions.append(("torso", belt_start, len(b.vertices)))
 
@@ -176,10 +184,14 @@ def build_outfit(body, armature, variant):
     # Hero-specific. The Warrior's are padded thicker.
     for side in ("l", "r"):
         for bone_name, surface, pad, tail_pad, exp, extra, axis_bone, over_head, over_tail in (
-            (f"upperarm_{side}", "coat", 1.30, 1.24, 2.8, (), None, 0.0, 0.16),
+            # over_head 0.0 left the top of the shoulder uncovered: the jacket ring
+            # stops at 0.83 and the sleeve started at the joint, so a hole opened
+            # over each shoulder. The Hero hides the same seam under a pauldron;
+            # infantry have none, so the sleeve has to reach up onto the shoulder.
+            (f"upperarm_{side}", "coat", 1.30, 1.24, 2.8, (), None, 0.26, 0.16),
             (f"lowerarm_{side}", "leather", 1.34, 1.28, 2.8, (), None, 0.14, 0.08),
-            (f"thigh_{side}", "coat", 1.24, 1.18, 2.9, (), None, 0.0, 0.26),
-            (f"calf_{side}", "coat", 1.20, 1.16, 2.9, (), None, 0.30, 0.12),
+            (f"thigh_{side}", "coat", 1.26, 1.36, 2.9, (), None, 0.20, 0.36),
+            (f"calf_{side}", "coat", 1.42, 1.22, 2.9, (), None, 0.44, 0.12),
             (f"foot_{side}", "leather", 1.30, 1.56, 2.4, (f"ball_{side}",),
              f"foot_{side}", 0.12, 0.18),
         ):
@@ -219,7 +231,10 @@ def build_outfit(body, armature, variant):
         for entry in head_data["slices"]:
             t = entry["t"]
             a = anat(t)
-            if a < 0.24:
+            # Down past the jaw line. Starting at 0.24 left roughly 35 mm of
+            # bare neck between the hood and the mantle. The face stays open
+            # regardless: sink_face_window enforces that against the body.
+            if a < 0.04:
                 continue
             # Wider than a helmet and barely tapered at the crown: a hood has
             # slack in it, and the extra width is the silhouette.
@@ -239,24 +254,79 @@ def build_outfit(body, armature, variant):
                                         (1.0 - 0.46 / 1.34) * sink, reach=0.95,
                                         face_sign=sign)))
         if len(shell) >= 2:
+            # The head BONE stops short of the head. Measured on this body its
+            # axis spans 0.239 m while the head's own vertices run from 0.004 to
+            # 0.245 along it, so the last profile slice (t = 1) sits at 0.974 of
+            # head height and the crown needs t = 1.026. Capping the shell there
+            # closed it about 6 mm BELOW the top of the skull, and the bare head
+            # came through as a disc of scalp -- which no amount of extra grow
+            # at t = 1 could fix, because the cap was simply in the wrong place.
+            #
+            # `sweep_axis` places rings at start + (end - start) * t and does not
+            # care that t exceeds 1, so the hood is closed with two rings above
+            # the last slice: one to draw it in, one to cap it over the crown.
+            last = head_data["slices"][-1]
+            offset = last["centre"] - (start + (end - start) * last["t"])
+            cx = offset.dot(head_data["side"])
+            cz = offset.dot(head_data["front"])
+            for extra_t, shrink in ((1.045, 0.74), (1.085, 0.30)):
+                cap_w = last["halfWidth"] * 1.34 * shrink
+                cap_d = last["front"] * 1.34 * shrink
+                shell.append((extra_t, section(
+                    n, cap_w, cap_d, last["back"] * 1.34 * shrink, 2.6,
+                    centre_x=cx, centre_z=cz)))
             mark = len(b.vertices)
-            # Capped: an open top ring showed as a hole in the crown of the hood.
             b.sweep_axis(shell, "coat", lambda t: {}, start, end,
                          cap_start=False, cap_end=True)
             regions.append(("helmet", mark, len(b.vertices)))
 
     # --- mantle ----------------------------------------------------------
-    # Skirt of the hood falling over the shoulders, which is what fuses the
-    # head and shoulder masses into one shape at distance.
+    # The hood's skirt over the shoulders: what fuses head and shoulder into
+    # one mass at distance, and what closes the bare neck between hood and
+    # jacket.
+    #
+    # It flared from a 0.128 pad at the chest up to 0.072 at the neck, which is
+    # an inverted cone -- widest at the bottom, narrowing upward -- and read as
+    # a lampshade sitting on the shoulders. It now starts close to the jacket's
+    # own pad (0.086) and tapers gently, so it lies ON the shoulders instead of
+    # standing off them, and carries on up past the neck to the collar.
     mantle_start = len(b.vertices)
+    # Clear of the jacket at every height. At 0.074 against the jacket's 0.070
+    # the two surfaces sat within 4 mm of each other and interpenetrated over
+    # the shoulders, opening a hole on each side that only showed under strong
+    # light -- the studio render found it, the softer one did not.
     b.sweep([
-        ring("upperChest", 0.128, 2.8),
-        ring("shoulder", 0.112, 2.7),
-        ring("neck", 0.072, 2.6),
+        ring("chest", 0.134, 2.9),
+        ring("upperChest", 0.126, 2.8),
+        ring("shoulder", 0.114, 2.7),
+        ring("neck", 0.086, 2.6),
+        ring("collar", 0.064, 2.5),
     ], "coat", lambda y: {}, cap_bottom=False, cap_top=False)
     regions.append(("torso", mantle_start, len(b.vertices)))
 
     return b, m, floor, top, height, regions
+
+
+def _hide_sides(ring, half_width, keep=0.52, sink=0.80):
+    """Pull the side segments of a ring inward so a garment beneath hides them.
+
+    The mirror of `tuck_front`, which hides the FRONT of a hood under the skin.
+    Here the over-layer must show only across the front and back of the torso;
+    at the sides it is drawn in behind the jacket rather than cut away, so the
+    ring stays closed and there is no open edge to cap.
+    """
+    if half_width <= 1e-6:
+        return ring
+    out = []
+    for x, z in ring:
+        lateral = abs(x) / half_width
+        if lateral <= keep:
+            out.append((x, z))
+            continue
+        t = min(1.0, (lateral - keep) / (1.0 - keep))
+        scale = 1.0 - (1.0 - sink) * (t * t * (3.0 - 2.0 * t))
+        out.append((x * scale, z * scale))
+    return out
 
 
 def _panel_profile(n):
