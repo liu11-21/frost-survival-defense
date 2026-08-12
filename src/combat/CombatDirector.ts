@@ -26,6 +26,19 @@ export function createCombatContext(
   const damage = (target: Damageable, amount: number, fromX: number, fromZ: number, source: DamageSource = "skill"): void => {
     if (!target.alive || amount <= 0) return;
     target.applyDamage(amount, fromX, fromZ, source);
+
+    // Audio observes the same canonical damage result but never changes it.
+    // Target faction/kind is known here, so enemy impacts cannot accidentally
+    // be emitted for allied units. A fatal blow intentionally layers impact +
+    // death, with bounded concurrency/cooldown enforced inside AudioManager.
+    if (target.kind === "unit" && target.faction === "enemy") {
+      const level = Math.max(1, target.level);
+      vfx.soundAt?.("enemyHit", target.position.x, target.position.z, Math.min(0.58, 0.3 + level * 0.025), 1, Math.min(12, level * 2));
+      if (!target.alive) {
+        vfx.soundAt?.("enemyDeath", target.position.x, target.position.z, Math.min(0.72, 0.36 + level * 0.05), 1, Math.min(18, level * 3));
+      }
+    }
+
     if (target.kind === "furnace") {
       hooks.onFurnaceHit();
     } else if (target.kind !== "unit" && target.kind !== "hero") {
