@@ -31,6 +31,7 @@ HERE = os.path.dirname(os.path.abspath(__file__))
 ROOT = os.path.abspath(os.path.join(HERE, "..", ".."))
 sys.path.append(HERE)
 from authoring import MeshBuilder, section, super_arc  # noqa: E402
+import hero_textures  # noqa: E402
 
 OUT = os.path.join(ROOT, ".runtime", "mpfb", "variants")
 
@@ -764,9 +765,56 @@ def to_object(builder, name, materials):
         tint = SURFACES[surface]
         for loop in polygon.loop_indices:
             colours.data[loop].color = (tint[0], tint[1], tint[2], 1.0)
+    add_cylindrical_uvs(mesh)
     obj = bpy.data.objects.new(name, mesh)
     bpy.context.collection.objects.link(obj)
     return obj
+
+
+def add_cylindrical_uvs(mesh, tiles_per_metre=5.0):
+    """Give the garments a UV layer so they can carry a texture at all.
+
+    The garments shipped with COLOR_0 and COLOR_1 and no TEXCOORD_0 whatsoever,
+    which is why every surface is a flat colour: there was nowhere for a
+    texture to land. The body has UVs -- MPFB supplies them -- but nothing that
+    this file builds did.
+
+    Every garment here is lofted around the figure, so a cylindrical projection
+    about the vertical axis is the shape the geometry already has: no unwrap,
+    no seam placement to author, and it is deterministic, which matters for a
+    pipeline that reruns from scratch. It is right for TILING fabric, leather
+    and metal detail; it is not an atlas and could not carry unique painted
+    art, which would need a real unwrap.
+
+    UVs are scaled by arc length rather than by raw angle, so the weave has the
+    same density on a wrist as on a chest instead of smearing round the thin
+    parts.
+    """
+    uv = mesh.uv_layers.new(name="UVMap")
+    heights = [v.co.y for v in mesh.vertices]
+    floor = min(heights) if heights else 0.0
+
+    for polygon in mesh.polygons:
+        # Resolve the wrap seam per FACE. A cylindrical map jumps by a full
+        # turn where atan2 crosses pi, and a face straddling that line would
+        # otherwise stretch the entire texture across itself. Each loop picks
+        # the branch nearest the face's first corner.
+        first = None
+        for loop_index in polygon.loop_indices:
+            co = mesh.vertices[mesh.loops[loop_index].vertex_index].co
+            angle = math.atan2(co.x, co.z)
+            if first is None:
+                first = angle
+            elif angle - first > math.pi:
+                angle -= 2.0 * math.pi
+            elif first - angle > math.pi:
+                angle += 2.0 * math.pi
+            radius = math.hypot(co.x, co.z)
+            uv.data[loop_index].uv = (
+                angle * max(radius, 0.02) * tiles_per_metre,
+                (co.y - floor) * tiles_per_metre,
+            )
+    return uv
 
 
 def implausible_weights(obj, side=None, limit=12):
@@ -1203,6 +1251,16 @@ def main():
             if "Metallic" in bsdf.inputs:
                 bsdf.inputs["Metallic"].default_value = metal
         materials[name] = mat
+    # Detail maps. Without them every surface is one flat colour, because the
+    # GLB carried no images at all.
+    tints = {"cloth": (0.128, 0.145, 0.184),
+             "leather": (0.222, 0.152, 0.098),
+             "metal": (0.352, 0.372, 0.402)}
+    details = {"cloth": hero_textures.weave(tints["cloth"]),
+               "leather": hero_textures.grain(tints["leather"]),
+               "metal": hero_textures.worn_metal(tints["metal"])}
+    for name, image in details.items():
+        hero_textures.attach(materials[name], image)
 
     builder, measurements, floor, top, height, regions = build_outfit(
         body, armature, args.variant)
