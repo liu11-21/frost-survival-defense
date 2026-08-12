@@ -91,11 +91,19 @@ export function createCombatContext(
         count++;
       }
     }
-
     return count;
   };
 
-  return { world, collision, projectiles, vfx, scaling, damage, areaDamage, reportKill: hooks.onKill };
+  return {
+    world,
+    collision,
+    projectiles,
+    vfx,
+    scaling,
+    damage,
+    areaDamage,
+    reportKill: (unit) => hooks.onKill(unit),
+  };
 }
 
 function within(target: Damageable, x: number, z: number, radius: number): boolean {
