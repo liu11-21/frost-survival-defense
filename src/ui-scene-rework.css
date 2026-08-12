@@ -455,10 +455,11 @@
 }
 
 .lane-hud.quiet .lane-row {
-  display: flex;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto auto;
+  grid-template-areas: "name count gate";
   align-items: center;
-  justify-content: space-between;
-  gap: 5px;
+  gap: 0 5px;
   padding: 2px 3px;
   border-left: 0;
   background: transparent;
@@ -475,13 +476,39 @@
 }
 
 .lane-hud.quiet .lane-count {
+  grid-area: count;
   color: #b8cddd;
   font-size: 10px;
   opacity: 0.58;
 }
 
 .lane-hud.quiet .lane-gate {
-  display: none;
+  display: block;
+  grid-area: gate;
+  min-width: 0;
+  overflow: hidden;
+  font-size: 9px;
+  font-weight: 650;
+  line-height: 1.15;
+  text-align: right;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.lane-hud.quiet .lane-gate.open {
+  color: #ffb09b;
+  opacity: 1;
+}
+
+.lane-hud.quiet .lane-gate.partial {
+  color: #ffd08a;
+  opacity: 0.92;
+}
+
+.lane-hud.quiet .lane-gate.sealed {
+  color: #9bbfb0;
+  font-weight: 550;
+  opacity: 0.5;
 }
 
 #ui-build-panel.side-panel {

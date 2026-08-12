@@ -244,6 +244,12 @@ test("production gameplay HUD stays contained across desktop viewports and panel
   expect(empty.boxes.squad?.height ?? Infinity).toBeLessThanOrEqual(42);
   expect(empty.boxes.engineer?.visible).toBe(false);
   expect(empty.boxes.lanes?.classes).toContain("quiet");
+  const openQuietRows = await page.locator("#ui-lane-hud.quiet .lane-row").evaluateAll((rows) => rows.filter((row) => {
+    const count = row.querySelector<HTMLElement>(".lane-count")?.textContent?.trim();
+    const gate = row.querySelector<HTMLElement>(".lane-gate.open");
+    return count === "0" && gate?.textContent?.includes("未設防");
+  }).length);
+  expect(openQuietRows, "an empty lane with an open gate must retain the 未設防 warning").toBeGreaterThan(0);
   const active = results.find((result) => result.label === "1280x720-squad-active")!;
   expect(active.boxes.squad?.classes).not.toContain("empty");
 });
