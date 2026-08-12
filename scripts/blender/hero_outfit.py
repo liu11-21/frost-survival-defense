@@ -252,7 +252,8 @@ def limb_profile(body, bone_name, armature, slices=5, percentile=0.90,
     }
 
 
-def limb_rings(data, n, pad_head, pad_tail, exp, over_head=0.0, over_tail=0.0):
+def limb_rings(data, n, pad_head, pad_tail, exp, over_head=0.0, over_tail=0.0,
+               over_taper=0.97):
     """Rings for sweep_axis, offset onto the measured centreline.
 
     sweep_axis places ring t on the straight line from start to end. The limb
@@ -301,10 +302,16 @@ def limb_rings(data, n, pad_head, pad_tail, exp, over_head=0.0, over_tail=0.0):
     # shifts every ring index by one, and `len(rings) - 1` then runs off the
     # end of the slice list.
     last = len(data["slices"]) - 1
+    # `over_taper` decides whether an overhang reads as coverage or as a pipe.
+    # Near 1.0 the extension keeps full girth, which is right for a knee or
+    # elbow where it is buried inside the neighbouring tube. On an EXPOSED end
+    # -- the toe and heel of a boot -- it produced a horizontal cylinder poking
+    # out both sides of the foot with an open cap at the back. Tapering closes
+    # the form off instead.
     if over_tail > 0.0:
-        rings.append(extrapolate(1.0 + over_tail, last))
+        rings.append(extrapolate(1.0 + over_tail, last, taper=over_taper))
     if over_head > 0.0:
-        rings.insert(0, extrapolate(-over_head, 0))
+        rings.insert(0, extrapolate(-over_head, 0, taper=over_taper))
     return rings
 
 
@@ -478,7 +485,10 @@ def build_outfit(body, armature, variant):
             # The trouser has to reach INTO the boot. The boot is swept along
             # the foot, so its own overhangs run heel-to-toe and cannot cover
             # the ankle; only the calf can close that seam.
-            (f"calf_{side}", "coat", 1.13, 1.22, 2.8, (), None, 0.14, 0.30),
+            # 0.30 drove the trouser straight through the boot and out the
+            # bottom, where its open end showed as a bare ellipse. It only has
+            # to reach the boot cuff, not past it.
+            (f"calf_{side}", "coat", 1.13, 1.22, 2.8, (), None, 0.14, 0.10),
             # Boot: foot plus the ball, oriented along the shin so the shaft
             # runs up the ankle instead of along the toes.
             # The boot has to swallow the toes: the foot bone stops at the ball,
@@ -496,7 +506,9 @@ def build_outfit(body, armature, variant):
             # lower exponent) and the reach cut back, which covers the same
             # toes while keeping a boot-shaped silhouette. Any residual
             # penetration is caught by push_outside_body below.
-            (f"foot_{side}", "leather", 1.22, 1.62, 2.4, (f"ball_{side}",), f"foot_{side}", 0.42, 0.24),
+            # Short, strongly tapered overhangs. A long untapered pair turned
+            # the boot into a pipe through the foot, open at the heel.
+            (f"foot_{side}", "leather", 1.22, 1.48, 2.4, (f"ball_{side}",), f"foot_{side}", 0.10, 0.16),
         ):
             data = limb_profile(body, bone_name, armature,
                                 extra_bones=extra, axis_bone=axis_bone)
@@ -506,11 +518,17 @@ def build_outfit(body, armature, variant):
             # fingertips and toes simply protrude through the hole -- which is
             # exactly what "bare hands and bare toes" looked like.
             closed = bone_name.startswith(("hand_", "foot_"))
+            # The boot must be closed at BOTH ends; an open start cap left a
+            # bare circle behind the heel.
+            cap_start = bone_name.startswith("foot_")
             mark = len(b.vertices)
+            # A boot's overhangs are exposed; a knee's are buried.
+            taper = 0.55 if bone_name.startswith("foot_") else 0.97
             b.sweep_axis(limb_rings(data, n_limb, pad, tail_pad, exp,
-                                    over_head=over_head, over_tail=over_tail),
+                                    over_head=over_head, over_tail=over_tail,
+                                    over_taper=taper),
                          surface, lambda t: {}, data["start"], data["end"],
-                         cap_start=False, cap_end=closed)
+                         cap_start=cap_start, cap_end=closed)
             family = ("sleeve_%s" % side
                       if bone_name.startswith(("upperarm_", "lowerarm_", "hand_"))
                       else "leg_%s" % side)
