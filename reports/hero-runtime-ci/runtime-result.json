@@ -10,7 +10,7 @@
   "captures": [
     {
       "captureId": "hero-review-gameplay",
-      "capturedAt": "2026-08-06T14:21:01.985Z",
+      "capturedAt": "2026-08-12T07:26:57.534Z",
       "screenshot": "D:\\codex\\遊戲開發\\reports\\hero-runtime-ci\\hero-review-gameplay.png",
       "camera": "gameplay",
       "animation": "Idle",
@@ -21,30 +21,30 @@
         "currentCamera": "gameplay",
         "currentAnimation": "Idle",
         "currentLod": "LOD0",
-        "authoredVisibleMeshes": 5,
+        "authoredVisibleMeshes": 8,
         "proceduralVisibleMeshes": 0,
-        "visibleVertices": 3196,
-        "visibleTriangles": 4320,
+        "visibleVertices": 20048,
+        "visibleTriangles": 36246,
         "heroWorldPosition": {
           "x": 0,
           "y": 0,
           "z": 0
         },
         "heroScreenBounds": {
-          "x": 728.357,
-          "y": 356.945,
-          "width": 143.286,
-          "height": 279.457,
+          "x": 712.414,
+          "y": 414.346,
+          "width": 164.225,
+          "height": 217.851,
           "visible": true
         },
         "animationGroups": [
+          "hero.player:Death",
+          "hero.player:Hit",
           "hero.player:Idle",
-          "hero.player:Walk",
-          "hero.player:Run",
           "hero.player:MeleeAttack",
           "hero.player:RangedAttack",
-          "hero.player:Hit",
-          "hero.player:Death"
+          "hero.player:Run",
+          "hero.player:Walk"
         ],
         "consoleErrors": [],
         "uiOccluded": false
@@ -61,12 +61,12 @@
           "z": 0
         },
         "screenSpaceBoundingBox": {
-          "x": 728.357,
-          "y": 356.945,
-          "width": 143.286,
-          "height": 279.457,
-          "right": 871.643,
-          "bottom": 636.403
+          "x": 712.414,
+          "y": 414.346,
+          "width": 164.225,
+          "height": 217.851,
+          "right": 876.639,
+          "bottom": 632.197
         },
         "viewport": {
           "width": 1600,
@@ -77,26 +77,26 @@
           "x": 1346,
           "y": 16,
           "width": 238,
-          "height": 315.25
+          "height": 331.438
         },
-        "authoredVisibleMeshCount": 5,
+        "authoredVisibleMeshCount": 8,
         "proceduralVisibleMeshCount": 0,
-        "drawCalls": 8,
-        "drawCallsThisFrame": 8,
-        "drawCallsAvg120": 8,
-        "activeMeshes": 6,
+        "drawCalls": 11,
+        "drawCallsThisFrame": 11,
+        "drawCallsAvg120": 11,
+        "activeMeshes": 9,
         "fps": 0,
         "fpsAvg5s": 0,
         "frameTimeP50": 0,
         "frameTimeP95": 0,
-        "visibleMeshes": 5,
-        "visibleVertices": 3196,
-        "visibleTriangles": 4320
+        "visibleMeshes": 8,
+        "visibleVertices": 20048,
+        "visibleTriangles": 36246
       }
     },
     {
       "captureId": "hero-review-front",
-      "capturedAt": "2026-08-06T14:21:02.112Z",
+      "capturedAt": "2026-08-12T07:26:57.646Z",
       "screenshot": "D:\\codex\\遊戲開發\\reports\\hero-runtime-ci\\hero-review-front.png",
       "camera": "front",
       "animation": "Idle",
@@ -107,30 +107,30 @@
         "currentCamera": "front",
         "currentAnimation": "Idle",
         "currentLod": "LOD0",
-        "authoredVisibleMeshes": 5,
+        "authoredVisibleMeshes": 8,
         "proceduralVisibleMeshes": 0,
-        "visibleVertices": 3196,
-        "visibleTriangles": 4320,
+        "visibleVertices": 20048,
+        "visibleTriangles": 36246,
         "heroWorldPosition": {
           "x": 0,
           "y": 0,
           "z": 0
         },
         "heroScreenBounds": {
-          "x": 715.685,
-          "y": 343.838,
-          "width": 168.631,
-          "height": 334.581,
+          "x": 695.87,
+          "y": 408.528,
+          "width": 195.509,
+          "height": 266.282,
           "visible": true
         },
         "animationGroups": [
+          "hero.player:Death",
+          "hero.player:Hit",
           "hero.player:Idle",
-          "hero.player:Walk",
-          "hero.player:Run",
           "hero.player:MeleeAttack",
           "hero.player:RangedAttack",
-          "hero.player:Hit",
-          "hero.player:Death"
+          "hero.player:Run",
+          "hero.player:Walk"
         ],
         "consoleErrors": [],
         "uiOccluded": false
@@ -147,12 +147,12 @@
           "z": 0
         },
         "screenSpaceBoundingBox": {
-          "x": 715.685,
-          "y": 343.838,
-          "width": 168.631,
-          "height": 334.581,
-          "right": 884.315,
-          "bottom": 678.419
+          "x": 695.87,
+          "y": 408.528,
+          "width": 195.509,
+          "height": 266.282,
+          "right": 891.379,
+          "bottom": 674.811
         },
         "viewport": {
           "width": 1600,
@@ -163,26 +163,26 @@
           "x": 1346,
           "y": 16,
           "width": 238,
-          "height": 315.25
+          "height": 331.438
         },
-        "authoredVisibleMeshCount": 5,
+        "authoredVisibleMeshCount": 8,
         "proceduralVisibleMeshCount": 0,
-        "drawCalls": 8,
-        "drawCallsThisFrame": 8,
-        "drawCallsAvg120": 8,
-        "activeMeshes": 6,
+        "drawCalls": 11,
+        "drawCallsThisFrame": 11,
+        "drawCallsAvg120": 11,
+        "activeMeshes": 9,
         "fps": 0,
         "fpsAvg5s": 0,
         "frameTimeP50": 0,
         "frameTimeP95": 0,
-        "visibleMeshes": 5,
-        "visibleVertices": 3196,
-        "visibleTriangles": 4320
+        "visibleMeshes": 8,
+        "visibleVertices": 20048,
+        "visibleTriangles": 36246
       }
     },
     {
       "captureId": "hero-review-side",
-      "capturedAt": "2026-08-06T14:21:02.231Z",
+      "capturedAt": "2026-08-12T07:26:57.746Z",
       "screenshot": "D:\\codex\\遊戲開發\\reports\\hero-runtime-ci\\hero-review-side.png",
       "camera": "left-side",
       "animation": "Idle",
@@ -193,30 +193,30 @@
         "currentCamera": "left-side",
         "currentAnimation": "Idle",
         "currentLod": "LOD0",
-        "authoredVisibleMeshes": 5,
+        "authoredVisibleMeshes": 8,
         "proceduralVisibleMeshes": 0,
-        "visibleVertices": 3196,
-        "visibleTriangles": 4320,
+        "visibleVertices": 20048,
+        "visibleTriangles": 36246,
         "heroWorldPosition": {
           "x": 0,
           "y": 0,
           "z": 0
         },
         "heroScreenBounds": {
-          "x": 754.324,
-          "y": 341.018,
-          "width": 103.911,
-          "height": 343.702,
+          "x": 721.668,
+          "y": 401.232,
+          "width": 148.906,
+          "height": 289.728,
           "visible": true
         },
         "animationGroups": [
+          "hero.player:Death",
+          "hero.player:Hit",
           "hero.player:Idle",
-          "hero.player:Walk",
-          "hero.player:Run",
           "hero.player:MeleeAttack",
           "hero.player:RangedAttack",
-          "hero.player:Hit",
-          "hero.player:Death"
+          "hero.player:Run",
+          "hero.player:Walk"
         ],
         "consoleErrors": [],
         "uiOccluded": false
@@ -233,12 +233,12 @@
           "z": 0
         },
         "screenSpaceBoundingBox": {
-          "x": 754.324,
-          "y": 341.018,
-          "width": 103.911,
-          "height": 343.702,
-          "right": 858.235,
-          "bottom": 684.72
+          "x": 721.668,
+          "y": 401.232,
+          "width": 148.906,
+          "height": 289.728,
+          "right": 870.574,
+          "bottom": 690.96
         },
         "viewport": {
           "width": 1600,
@@ -249,26 +249,26 @@
           "x": 1346,
           "y": 16,
           "width": 238,
-          "height": 315.25
+          "height": 331.438
         },
-        "authoredVisibleMeshCount": 5,
+        "authoredVisibleMeshCount": 8,
         "proceduralVisibleMeshCount": 0,
-        "drawCalls": 8,
-        "drawCallsThisFrame": 8,
-        "drawCallsAvg120": 8,
-        "activeMeshes": 6,
+        "drawCalls": 11,
+        "drawCallsThisFrame": 11,
+        "drawCallsAvg120": 11,
+        "activeMeshes": 9,
         "fps": 0,
         "fpsAvg5s": 0,
         "frameTimeP50": 0,
         "frameTimeP95": 0,
-        "visibleMeshes": 5,
-        "visibleVertices": 3196,
-        "visibleTriangles": 4320
+        "visibleMeshes": 8,
+        "visibleVertices": 20048,
+        "visibleTriangles": 36246
       }
     },
     {
       "captureId": "hero-review-back",
-      "capturedAt": "2026-08-06T14:21:02.357Z",
+      "capturedAt": "2026-08-12T07:26:57.840Z",
       "screenshot": "D:\\codex\\遊戲開發\\reports\\hero-runtime-ci\\hero-review-back.png",
       "camera": "back",
       "animation": "Idle",
@@ -279,30 +279,30 @@
         "currentCamera": "back",
         "currentAnimation": "Idle",
         "currentLod": "LOD0",
-        "authoredVisibleMeshes": 5,
+        "authoredVisibleMeshes": 8,
         "proceduralVisibleMeshes": 0,
-        "visibleVertices": 3196,
-        "visibleTriangles": 4320,
+        "visibleVertices": 20048,
+        "visibleTriangles": 36246,
         "heroWorldPosition": {
           "x": 0,
           "y": 0,
           "z": 0
         },
         "heroScreenBounds": {
-          "x": 715.509,
-          "y": 342.814,
-          "width": 168.982,
-          "height": 331.354,
+          "x": 703.671,
+          "y": 404.339,
+          "width": 197.008,
+          "height": 256.575,
           "visible": true
         },
         "animationGroups": [
+          "hero.player:Death",
+          "hero.player:Hit",
           "hero.player:Idle",
-          "hero.player:Walk",
-          "hero.player:Run",
           "hero.player:MeleeAttack",
           "hero.player:RangedAttack",
-          "hero.player:Hit",
-          "hero.player:Death"
+          "hero.player:Run",
+          "hero.player:Walk"
         ],
         "consoleErrors": [],
         "uiOccluded": false
@@ -319,12 +319,12 @@
           "z": 0
         },
         "screenSpaceBoundingBox": {
-          "x": 715.509,
-          "y": 342.814,
-          "width": 168.982,
-          "height": 331.354,
-          "right": 884.491,
-          "bottom": 674.168
+          "x": 703.671,
+          "y": 404.339,
+          "width": 197.008,
+          "height": 256.575,
+          "right": 900.679,
+          "bottom": 660.914
         },
         "viewport": {
           "width": 1600,
@@ -335,26 +335,26 @@
           "x": 1346,
           "y": 16,
           "width": 238,
-          "height": 315.25
+          "height": 331.438
         },
-        "authoredVisibleMeshCount": 5,
+        "authoredVisibleMeshCount": 8,
         "proceduralVisibleMeshCount": 0,
-        "drawCalls": 8,
-        "drawCallsThisFrame": 8,
-        "drawCallsAvg120": 8,
-        "activeMeshes": 6,
+        "drawCalls": 11,
+        "drawCallsThisFrame": 11,
+        "drawCallsAvg120": 11,
+        "activeMeshes": 9,
         "fps": 0,
         "fpsAvg5s": 0,
         "frameTimeP50": 0,
         "frameTimeP95": 0,
-        "visibleMeshes": 5,
-        "visibleVertices": 3196,
-        "visibleTriangles": 4320
+        "visibleMeshes": 8,
+        "visibleVertices": 20048,
+        "visibleTriangles": 36246
       }
     },
     {
       "captureId": "hero-review-three-quarter",
-      "capturedAt": "2026-08-06T14:21:02.461Z",
+      "capturedAt": "2026-08-12T07:26:57.934Z",
       "screenshot": "D:\\codex\\遊戲開發\\reports\\hero-runtime-ci\\hero-review-three-quarter.png",
       "camera": "three-quarter",
       "animation": "Idle",
@@ -365,30 +365,30 @@
         "currentCamera": "three-quarter",
         "currentAnimation": "Idle",
         "currentLod": "LOD0",
-        "authoredVisibleMeshes": 5,
+        "authoredVisibleMeshes": 8,
         "proceduralVisibleMeshes": 0,
-        "visibleVertices": 3196,
-        "visibleTriangles": 4320,
+        "visibleVertices": 20048,
+        "visibleTriangles": 36246,
         "heroWorldPosition": {
           "x": 0,
           "y": 0,
           "z": 0
         },
         "heroScreenBounds": {
-          "x": 728.018,
-          "y": 359.407,
-          "width": 141.284,
-          "height": 282.654,
+          "x": 711.319,
+          "y": 406.876,
+          "width": 185.581,
+          "height": 227.563,
           "visible": true
         },
         "animationGroups": [
+          "hero.player:Death",
+          "hero.player:Hit",
           "hero.player:Idle",
-          "hero.player:Walk",
-          "hero.player:Run",
           "hero.player:MeleeAttack",
           "hero.player:RangedAttack",
-          "hero.player:Hit",
-          "hero.player:Death"
+          "hero.player:Run",
+          "hero.player:Walk"
         ],
         "consoleErrors": [],
         "uiOccluded": false
@@ -405,12 +405,12 @@
           "z": 0
         },
         "screenSpaceBoundingBox": {
-          "x": 728.018,
-          "y": 359.407,
-          "width": 141.284,
-          "height": 282.654,
-          "right": 869.302,
-          "bottom": 642.06
+          "x": 711.319,
+          "y": 406.876,
+          "width": 185.581,
+          "height": 227.563,
+          "right": 896.9,
+          "bottom": 634.439
         },
         "viewport": {
           "width": 1600,
@@ -421,26 +421,26 @@
           "x": 1346,
           "y": 16,
           "width": 238,
-          "height": 315.25
+          "height": 331.438
         },
-        "authoredVisibleMeshCount": 5,
+        "authoredVisibleMeshCount": 8,
         "proceduralVisibleMeshCount": 0,
-        "drawCalls": 8,
-        "drawCallsThisFrame": 8,
-        "drawCallsAvg120": 8,
-        "activeMeshes": 6,
+        "drawCalls": 11,
+        "drawCallsThisFrame": 11,
+        "drawCallsAvg120": 11,
+        "activeMeshes": 9,
         "fps": 0,
         "fpsAvg5s": 0,
         "frameTimeP50": 0,
         "frameTimeP95": 0,
-        "visibleMeshes": 5,
-        "visibleVertices": 3196,
-        "visibleTriangles": 4320
+        "visibleMeshes": 8,
+        "visibleVertices": 20048,
+        "visibleTriangles": 36246
       }
     },
     {
       "captureId": "hero-review-close-up",
-      "capturedAt": "2026-08-06T14:21:02.618Z",
+      "capturedAt": "2026-08-12T07:26:58.064Z",
       "screenshot": "D:\\codex\\遊戲開發\\reports\\hero-runtime-ci\\hero-review-close-up.png",
       "camera": "close-up",
       "animation": "Idle",
@@ -451,30 +451,30 @@
         "currentCamera": "close-up",
         "currentAnimation": "Idle",
         "currentLod": "LOD0",
-        "authoredVisibleMeshes": 5,
+        "authoredVisibleMeshes": 8,
         "proceduralVisibleMeshes": 0,
-        "visibleVertices": 3196,
-        "visibleTriangles": 4320,
+        "visibleVertices": 20048,
+        "visibleTriangles": 36246,
         "heroWorldPosition": {
           "x": 0,
           "y": 0,
           "z": 0
         },
         "heroScreenBounds": {
-          "x": 643.669,
-          "y": 258.822,
-          "width": 312.661,
-          "height": 603.428,
+          "x": 606.54,
+          "y": 375.059,
+          "width": 358.694,
+          "height": 478.223,
           "visible": true
         },
         "animationGroups": [
+          "hero.player:Death",
+          "hero.player:Hit",
           "hero.player:Idle",
-          "hero.player:Walk",
-          "hero.player:Run",
           "hero.player:MeleeAttack",
           "hero.player:RangedAttack",
-          "hero.player:Hit",
-          "hero.player:Death"
+          "hero.player:Run",
+          "hero.player:Walk"
         ],
         "consoleErrors": [],
         "uiOccluded": false
@@ -491,12 +491,12 @@
           "z": 0
         },
         "screenSpaceBoundingBox": {
-          "x": 643.669,
-          "y": 258.822,
-          "width": 312.661,
-          "height": 603.428,
-          "right": 956.331,
-          "bottom": 862.249
+          "x": 606.54,
+          "y": 375.059,
+          "width": 358.694,
+          "height": 478.223,
+          "right": 965.234,
+          "bottom": 853.282
         },
         "viewport": {
           "width": 1600,
@@ -507,26 +507,26 @@
           "x": 1346,
           "y": 16,
           "width": 238,
-          "height": 315.25
+          "height": 331.438
         },
-        "authoredVisibleMeshCount": 5,
+        "authoredVisibleMeshCount": 8,
         "proceduralVisibleMeshCount": 0,
-        "drawCalls": 8,
-        "drawCallsThisFrame": 8,
-        "drawCallsAvg120": 8,
-        "activeMeshes": 6,
+        "drawCalls": 11,
+        "drawCallsThisFrame": 11,
+        "drawCallsAvg120": 11,
+        "activeMeshes": 9,
         "fps": 0,
         "fpsAvg5s": 0,
         "frameTimeP50": 0,
         "frameTimeP95": 0,
-        "visibleMeshes": 5,
-        "visibleVertices": 3196,
-        "visibleTriangles": 4320
+        "visibleMeshes": 8,
+        "visibleVertices": 20048,
+        "visibleTriangles": 36246
       }
     },
     {
       "captureId": "hero-review-animation-idle",
-      "capturedAt": "2026-08-06T14:21:02.723Z",
+      "capturedAt": "2026-08-12T07:26:58.173Z",
       "screenshot": "D:\\codex\\遊戲開發\\reports\\hero-runtime-ci\\hero-review-animation-idle.png",
       "camera": "three-quarter",
       "animation": "Idle",
@@ -537,30 +537,30 @@
         "currentCamera": "three-quarter",
         "currentAnimation": "Idle",
         "currentLod": "LOD0",
-        "authoredVisibleMeshes": 5,
+        "authoredVisibleMeshes": 8,
         "proceduralVisibleMeshes": 0,
-        "visibleVertices": 3196,
-        "visibleTriangles": 4320,
+        "visibleVertices": 20048,
+        "visibleTriangles": 36246,
         "heroWorldPosition": {
           "x": 0,
           "y": 0,
           "z": 0
         },
         "heroScreenBounds": {
-          "x": 728.018,
-          "y": 359.407,
-          "width": 141.284,
-          "height": 282.654,
+          "x": 711.319,
+          "y": 406.876,
+          "width": 185.581,
+          "height": 227.563,
           "visible": true
         },
         "animationGroups": [
+          "hero.player:Death",
+          "hero.player:Hit",
           "hero.player:Idle",
-          "hero.player:Walk",
-          "hero.player:Run",
           "hero.player:MeleeAttack",
           "hero.player:RangedAttack",
-          "hero.player:Hit",
-          "hero.player:Death"
+          "hero.player:Run",
+          "hero.player:Walk"
         ],
         "consoleErrors": [],
         "uiOccluded": false
@@ -577,12 +577,12 @@
           "z": 0
         },
         "screenSpaceBoundingBox": {
-          "x": 728.018,
-          "y": 359.407,
-          "width": 141.284,
-          "height": 282.654,
-          "right": 869.302,
-          "bottom": 642.06
+          "x": 711.319,
+          "y": 406.876,
+          "width": 185.581,
+          "height": 227.563,
+          "right": 896.9,
+          "bottom": 634.439
         },
         "viewport": {
           "width": 1600,
@@ -593,26 +593,26 @@
           "x": 1346,
           "y": 16,
           "width": 238,
-          "height": 315.25
+          "height": 331.438
         },
-        "authoredVisibleMeshCount": 5,
+        "authoredVisibleMeshCount": 8,
         "proceduralVisibleMeshCount": 0,
-        "drawCalls": 8,
-        "drawCallsThisFrame": 8,
-        "drawCallsAvg120": 8,
-        "activeMeshes": 6,
+        "drawCalls": 11,
+        "drawCallsThisFrame": 11,
+        "drawCallsAvg120": 11,
+        "activeMeshes": 9,
         "fps": 0,
         "fpsAvg5s": 0,
         "frameTimeP50": 0,
         "frameTimeP95": 0,
-        "visibleMeshes": 5,
-        "visibleVertices": 3196,
-        "visibleTriangles": 4320
+        "visibleMeshes": 8,
+        "visibleVertices": 20048,
+        "visibleTriangles": 36246
       }
     },
     {
       "captureId": "hero-review-animation-walk",
-      "capturedAt": "2026-08-06T14:21:02.830Z",
+      "capturedAt": "2026-08-12T07:26:58.284Z",
       "screenshot": "D:\\codex\\遊戲開發\\reports\\hero-runtime-ci\\hero-review-animation-walk.png",
       "camera": "three-quarter",
       "animation": "Walk",
@@ -623,30 +623,30 @@
         "currentCamera": "three-quarter",
         "currentAnimation": "Walk",
         "currentLod": "LOD0",
-        "authoredVisibleMeshes": 5,
+        "authoredVisibleMeshes": 8,
         "proceduralVisibleMeshes": 0,
-        "visibleVertices": 3196,
-        "visibleTriangles": 4320,
+        "visibleVertices": 20048,
+        "visibleTriangles": 36246,
         "heroWorldPosition": {
           "x": 0,
           "y": 0,
           "z": 0
         },
         "heroScreenBounds": {
-          "x": 728.018,
-          "y": 359.407,
-          "width": 141.284,
-          "height": 282.654,
+          "x": 711.319,
+          "y": 406.876,
+          "width": 185.581,
+          "height": 227.563,
           "visible": true
         },
         "animationGroups": [
+          "hero.player:Death",
+          "hero.player:Hit",
           "hero.player:Idle",
-          "hero.player:Walk",
-          "hero.player:Run",
           "hero.player:MeleeAttack",
           "hero.player:RangedAttack",
-          "hero.player:Hit",
-          "hero.player:Death"
+          "hero.player:Run",
+          "hero.player:Walk"
         ],
         "consoleErrors": [],
         "uiOccluded": false
@@ -663,12 +663,12 @@
           "z": 0
         },
         "screenSpaceBoundingBox": {
-          "x": 728.018,
-          "y": 359.407,
-          "width": 141.284,
-          "height": 282.654,
-          "right": 869.302,
-          "bottom": 642.06
+          "x": 711.319,
+          "y": 406.876,
+          "width": 185.581,
+          "height": 227.563,
+          "right": 896.9,
+          "bottom": 634.439
         },
         "viewport": {
           "width": 1600,
@@ -679,26 +679,26 @@
           "x": 1346,
           "y": 16,
           "width": 238,
-          "height": 315.25
+          "height": 331.438
         },
-        "authoredVisibleMeshCount": 5,
+        "authoredVisibleMeshCount": 8,
         "proceduralVisibleMeshCount": 0,
-        "drawCalls": 8,
-        "drawCallsThisFrame": 8,
-        "drawCallsAvg120": 8,
-        "activeMeshes": 6,
+        "drawCalls": 11,
+        "drawCallsThisFrame": 11,
+        "drawCallsAvg120": 11,
+        "activeMeshes": 9,
         "fps": 0,
         "fpsAvg5s": 0,
         "frameTimeP50": 0,
         "frameTimeP95": 0,
-        "visibleMeshes": 5,
-        "visibleVertices": 3196,
-        "visibleTriangles": 4320
+        "visibleMeshes": 8,
+        "visibleVertices": 20048,
+        "visibleTriangles": 36246
       }
     },
     {
       "captureId": "hero-review-animation-run",
-      "capturedAt": "2026-08-06T14:21:02.955Z",
+      "capturedAt": "2026-08-12T07:26:58.386Z",
       "screenshot": "D:\\codex\\遊戲開發\\reports\\hero-runtime-ci\\hero-review-animation-run.png",
       "camera": "three-quarter",
       "animation": "Run",
@@ -709,30 +709,30 @@
         "currentCamera": "three-quarter",
         "currentAnimation": "Run",
         "currentLod": "LOD0",
-        "authoredVisibleMeshes": 5,
+        "authoredVisibleMeshes": 8,
         "proceduralVisibleMeshes": 0,
-        "visibleVertices": 3196,
-        "visibleTriangles": 4320,
+        "visibleVertices": 20048,
+        "visibleTriangles": 36246,
         "heroWorldPosition": {
           "x": 0,
           "y": 0,
           "z": 0
         },
         "heroScreenBounds": {
-          "x": 728.018,
-          "y": 359.407,
-          "width": 141.284,
-          "height": 282.654,
+          "x": 711.319,
+          "y": 406.876,
+          "width": 185.581,
+          "height": 227.563,
           "visible": true
         },
         "animationGroups": [
+          "hero.player:Death",
+          "hero.player:Hit",
           "hero.player:Idle",
-          "hero.player:Walk",
-          "hero.player:Run",
           "hero.player:MeleeAttack",
           "hero.player:RangedAttack",
-          "hero.player:Hit",
-          "hero.player:Death"
+          "hero.player:Run",
+          "hero.player:Walk"
         ],
         "consoleErrors": [],
         "uiOccluded": false
@@ -749,12 +749,12 @@
           "z": 0
         },
         "screenSpaceBoundingBox": {
-          "x": 728.018,
-          "y": 359.407,
-          "width": 141.284,
-          "height": 282.654,
-          "right": 869.302,
-          "bottom": 642.06
+          "x": 711.319,
+          "y": 406.876,
+          "width": 185.581,
+          "height": 227.563,
+          "right": 896.9,
+          "bottom": 634.439
         },
         "viewport": {
           "width": 1600,
@@ -765,26 +765,26 @@
           "x": 1346,
           "y": 16,
           "width": 238,
-          "height": 315.25
+          "height": 331.438
         },
-        "authoredVisibleMeshCount": 5,
+        "authoredVisibleMeshCount": 8,
         "proceduralVisibleMeshCount": 0,
-        "drawCalls": 8,
-        "drawCallsThisFrame": 8,
-        "drawCallsAvg120": 8,
-        "activeMeshes": 6,
+        "drawCalls": 11,
+        "drawCallsThisFrame": 11,
+        "drawCallsAvg120": 11,
+        "activeMeshes": 9,
         "fps": 0,
         "fpsAvg5s": 0,
         "frameTimeP50": 0,
         "frameTimeP95": 0,
-        "visibleMeshes": 5,
-        "visibleVertices": 3196,
-        "visibleTriangles": 4320
+        "visibleMeshes": 8,
+        "visibleVertices": 20048,
+        "visibleTriangles": 36246
       }
     },
     {
       "captureId": "hero-review-melee",
-      "capturedAt": "2026-08-06T14:21:03.077Z",
+      "capturedAt": "2026-08-12T07:26:58.498Z",
       "screenshot": "D:\\codex\\遊戲開發\\reports\\hero-runtime-ci\\hero-review-melee.png",
       "camera": "three-quarter",
       "animation": "MeleeAttack",
@@ -795,30 +795,30 @@
         "currentCamera": "three-quarter",
         "currentAnimation": "MeleeAttack",
         "currentLod": "LOD0",
-        "authoredVisibleMeshes": 5,
+        "authoredVisibleMeshes": 8,
         "proceduralVisibleMeshes": 0,
-        "visibleVertices": 3196,
-        "visibleTriangles": 4320,
+        "visibleVertices": 20048,
+        "visibleTriangles": 36246,
         "heroWorldPosition": {
           "x": 0,
           "y": 0,
           "z": 0
         },
         "heroScreenBounds": {
-          "x": 728.018,
-          "y": 359.407,
-          "width": 141.284,
-          "height": 282.654,
+          "x": 711.319,
+          "y": 406.876,
+          "width": 185.581,
+          "height": 227.563,
           "visible": true
         },
         "animationGroups": [
+          "hero.player:Death",
+          "hero.player:Hit",
           "hero.player:Idle",
-          "hero.player:Walk",
-          "hero.player:Run",
           "hero.player:MeleeAttack",
           "hero.player:RangedAttack",
-          "hero.player:Hit",
-          "hero.player:Death"
+          "hero.player:Run",
+          "hero.player:Walk"
         ],
         "consoleErrors": [],
         "uiOccluded": false
@@ -835,12 +835,12 @@
           "z": 0
         },
         "screenSpaceBoundingBox": {
-          "x": 728.018,
-          "y": 359.407,
-          "width": 141.284,
-          "height": 282.654,
-          "right": 869.302,
-          "bottom": 642.06
+          "x": 711.319,
+          "y": 406.876,
+          "width": 185.581,
+          "height": 227.563,
+          "right": 896.9,
+          "bottom": 634.439
         },
         "viewport": {
           "width": 1600,
@@ -851,26 +851,26 @@
           "x": 1346,
           "y": 16,
           "width": 238,
-          "height": 315.25
+          "height": 331.438
         },
-        "authoredVisibleMeshCount": 5,
+        "authoredVisibleMeshCount": 8,
         "proceduralVisibleMeshCount": 0,
-        "drawCalls": 8,
-        "drawCallsThisFrame": 8,
-        "drawCallsAvg120": 8,
-        "activeMeshes": 6,
+        "drawCalls": 11,
+        "drawCallsThisFrame": 11,
+        "drawCallsAvg120": 11,
+        "activeMeshes": 9,
         "fps": 0,
         "fpsAvg5s": 0,
         "frameTimeP50": 0,
         "frameTimeP95": 0,
-        "visibleMeshes": 5,
-        "visibleVertices": 3196,
-        "visibleTriangles": 4320
+        "visibleMeshes": 8,
+        "visibleVertices": 20048,
+        "visibleTriangles": 36246
       }
     },
     {
       "captureId": "hero-review-ranged",
-      "capturedAt": "2026-08-06T14:21:03.190Z",
+      "capturedAt": "2026-08-12T07:26:58.612Z",
       "screenshot": "D:\\codex\\遊戲開發\\reports\\hero-runtime-ci\\hero-review-ranged.png",
       "camera": "three-quarter",
       "animation": "RangedAttack",
@@ -881,30 +881,30 @@
         "currentCamera": "three-quarter",
         "currentAnimation": "RangedAttack",
         "currentLod": "LOD0",
-        "authoredVisibleMeshes": 5,
+        "authoredVisibleMeshes": 8,
         "proceduralVisibleMeshes": 0,
-        "visibleVertices": 3196,
-        "visibleTriangles": 4320,
+        "visibleVertices": 20048,
+        "visibleTriangles": 36246,
         "heroWorldPosition": {
           "x": 0,
           "y": 0,
           "z": 0
         },
         "heroScreenBounds": {
-          "x": 728.018,
-          "y": 359.407,
-          "width": 141.284,
-          "height": 282.654,
+          "x": 711.319,
+          "y": 406.876,
+          "width": 185.581,
+          "height": 227.563,
           "visible": true
         },
         "animationGroups": [
+          "hero.player:Death",
+          "hero.player:Hit",
           "hero.player:Idle",
-          "hero.player:Walk",
-          "hero.player:Run",
           "hero.player:MeleeAttack",
           "hero.player:RangedAttack",
-          "hero.player:Hit",
-          "hero.player:Death"
+          "hero.player:Run",
+          "hero.player:Walk"
         ],
         "consoleErrors": [],
         "uiOccluded": false
@@ -921,12 +921,12 @@
           "z": 0
         },
         "screenSpaceBoundingBox": {
-          "x": 728.018,
-          "y": 359.407,
-          "width": 141.284,
-          "height": 282.654,
-          "right": 869.302,
-          "bottom": 642.06
+          "x": 711.319,
+          "y": 406.876,
+          "width": 185.581,
+          "height": 227.563,
+          "right": 896.9,
+          "bottom": 634.439
         },
         "viewport": {
           "width": 1600,
@@ -937,26 +937,26 @@
           "x": 1346,
           "y": 16,
           "width": 238,
-          "height": 315.25
+          "height": 331.438
         },
-        "authoredVisibleMeshCount": 5,
+        "authoredVisibleMeshCount": 8,
         "proceduralVisibleMeshCount": 0,
-        "drawCalls": 8,
-        "drawCallsThisFrame": 8,
-        "drawCallsAvg120": 8,
-        "activeMeshes": 6,
+        "drawCalls": 11,
+        "drawCallsThisFrame": 11,
+        "drawCallsAvg120": 11,
+        "activeMeshes": 9,
         "fps": 0,
         "fpsAvg5s": 0,
         "frameTimeP50": 0,
         "frameTimeP95": 0,
-        "visibleMeshes": 5,
-        "visibleVertices": 3196,
-        "visibleTriangles": 4320
+        "visibleMeshes": 8,
+        "visibleVertices": 20048,
+        "visibleTriangles": 36246
       }
     },
     {
       "captureId": "hero-review-animation-hit",
-      "capturedAt": "2026-08-06T14:21:03.306Z",
+      "capturedAt": "2026-08-12T07:26:58.726Z",
       "screenshot": "D:\\codex\\遊戲開發\\reports\\hero-runtime-ci\\hero-review-animation-hit.png",
       "camera": "three-quarter",
       "animation": "Hit",
@@ -967,30 +967,30 @@
         "currentCamera": "three-quarter",
         "currentAnimation": "Hit",
         "currentLod": "LOD0",
-        "authoredVisibleMeshes": 5,
+        "authoredVisibleMeshes": 8,
         "proceduralVisibleMeshes": 0,
-        "visibleVertices": 3196,
-        "visibleTriangles": 4320,
+        "visibleVertices": 20048,
+        "visibleTriangles": 36246,
         "heroWorldPosition": {
           "x": 0,
           "y": 0,
           "z": 0
         },
         "heroScreenBounds": {
-          "x": 728.018,
-          "y": 359.407,
-          "width": 141.284,
-          "height": 282.654,
+          "x": 711.319,
+          "y": 406.876,
+          "width": 185.581,
+          "height": 227.563,
           "visible": true
         },
         "animationGroups": [
+          "hero.player:Death",
+          "hero.player:Hit",
           "hero.player:Idle",
-          "hero.player:Walk",
-          "hero.player:Run",
           "hero.player:MeleeAttack",
           "hero.player:RangedAttack",
-          "hero.player:Hit",
-          "hero.player:Death"
+          "hero.player:Run",
+          "hero.player:Walk"
         ],
         "consoleErrors": [],
         "uiOccluded": false
@@ -1007,12 +1007,12 @@
           "z": 0
         },
         "screenSpaceBoundingBox": {
-          "x": 728.018,
-          "y": 359.407,
-          "width": 141.284,
-          "height": 282.654,
-          "right": 869.302,
-          "bottom": 642.06
+          "x": 711.319,
+          "y": 406.876,
+          "width": 185.581,
+          "height": 227.563,
+          "right": 896.9,
+          "bottom": 634.439
         },
         "viewport": {
           "width": 1600,
@@ -1023,26 +1023,26 @@
           "x": 1346,
           "y": 16,
           "width": 238,
-          "height": 315.25
+          "height": 331.438
         },
-        "authoredVisibleMeshCount": 5,
+        "authoredVisibleMeshCount": 8,
         "proceduralVisibleMeshCount": 0,
-        "drawCalls": 8,
-        "drawCallsThisFrame": 8,
-        "drawCallsAvg120": 8,
-        "activeMeshes": 6,
+        "drawCalls": 11,
+        "drawCallsThisFrame": 11,
+        "drawCallsAvg120": 11,
+        "activeMeshes": 9,
         "fps": 0,
         "fpsAvg5s": 0,
         "frameTimeP50": 0,
         "frameTimeP95": 0,
-        "visibleMeshes": 5,
-        "visibleVertices": 3196,
-        "visibleTriangles": 4320
+        "visibleMeshes": 8,
+        "visibleVertices": 20048,
+        "visibleTriangles": 36246
       }
     },
     {
       "captureId": "hero-review-death",
-      "capturedAt": "2026-08-06T14:21:03.415Z",
+      "capturedAt": "2026-08-12T07:26:58.837Z",
       "screenshot": "D:\\codex\\遊戲開發\\reports\\hero-runtime-ci\\hero-review-death.png",
       "camera": "three-quarter",
       "animation": "Death",
@@ -1053,30 +1053,30 @@
         "currentCamera": "three-quarter",
         "currentAnimation": "Death",
         "currentLod": "LOD0",
-        "authoredVisibleMeshes": 5,
+        "authoredVisibleMeshes": 8,
         "proceduralVisibleMeshes": 0,
-        "visibleVertices": 3196,
-        "visibleTriangles": 4320,
+        "visibleVertices": 20048,
+        "visibleTriangles": 36246,
         "heroWorldPosition": {
           "x": 0,
           "y": 0,
           "z": 0
         },
         "heroScreenBounds": {
-          "x": 728.018,
-          "y": 359.407,
-          "width": 141.284,
-          "height": 282.654,
+          "x": 711.319,
+          "y": 406.876,
+          "width": 185.581,
+          "height": 227.563,
           "visible": true
         },
         "animationGroups": [
+          "hero.player:Death",
+          "hero.player:Hit",
           "hero.player:Idle",
-          "hero.player:Walk",
-          "hero.player:Run",
           "hero.player:MeleeAttack",
           "hero.player:RangedAttack",
-          "hero.player:Hit",
-          "hero.player:Death"
+          "hero.player:Run",
+          "hero.player:Walk"
         ],
         "consoleErrors": [],
         "uiOccluded": false
@@ -1093,12 +1093,12 @@
           "z": 0
         },
         "screenSpaceBoundingBox": {
-          "x": 728.018,
-          "y": 359.407,
-          "width": 141.284,
-          "height": 282.654,
-          "right": 869.302,
-          "bottom": 642.06
+          "x": 711.319,
+          "y": 406.876,
+          "width": 185.581,
+          "height": 227.563,
+          "right": 896.9,
+          "bottom": 634.439
         },
         "viewport": {
           "width": 1600,
@@ -1109,26 +1109,26 @@
           "x": 1346,
           "y": 16,
           "width": 238,
-          "height": 315.25
+          "height": 331.438
         },
-        "authoredVisibleMeshCount": 5,
+        "authoredVisibleMeshCount": 8,
         "proceduralVisibleMeshCount": 0,
-        "drawCalls": 8,
-        "drawCallsThisFrame": 8,
-        "drawCallsAvg120": 8,
-        "activeMeshes": 6,
+        "drawCalls": 11,
+        "drawCallsThisFrame": 11,
+        "drawCallsAvg120": 11,
+        "activeMeshes": 9,
         "fps": 0,
         "fpsAvg5s": 0,
         "frameTimeP50": 0,
         "frameTimeP95": 0,
-        "visibleMeshes": 5,
-        "visibleVertices": 3196,
-        "visibleTriangles": 4320
+        "visibleMeshes": 8,
+        "visibleVertices": 20048,
+        "visibleTriangles": 36246
       }
     },
     {
       "captureId": "hero-review-lod0",
-      "capturedAt": "2026-08-06T14:21:03.525Z",
+      "capturedAt": "2026-08-12T07:26:58.957Z",
       "screenshot": "D:\\codex\\遊戲開發\\reports\\hero-runtime-ci\\hero-review-lod0.png",
       "camera": "front",
       "animation": "Idle",
@@ -1139,30 +1139,30 @@
         "currentCamera": "front",
         "currentAnimation": "Idle",
         "currentLod": "LOD0",
-        "authoredVisibleMeshes": 5,
+        "authoredVisibleMeshes": 8,
         "proceduralVisibleMeshes": 0,
-        "visibleVertices": 3196,
-        "visibleTriangles": 4320,
+        "visibleVertices": 20048,
+        "visibleTriangles": 36246,
         "heroWorldPosition": {
           "x": 0,
           "y": 0,
           "z": 0
         },
         "heroScreenBounds": {
-          "x": 715.685,
-          "y": 343.838,
-          "width": 168.631,
-          "height": 334.581,
+          "x": 695.87,
+          "y": 408.528,
+          "width": 195.509,
+          "height": 266.282,
           "visible": true
         },
         "animationGroups": [
+          "hero.player:Death",
+          "hero.player:Hit",
           "hero.player:Idle",
-          "hero.player:Walk",
-          "hero.player:Run",
           "hero.player:MeleeAttack",
           "hero.player:RangedAttack",
-          "hero.player:Hit",
-          "hero.player:Death"
+          "hero.player:Run",
+          "hero.player:Walk"
         ],
         "consoleErrors": [],
         "uiOccluded": false
@@ -1179,12 +1179,12 @@
           "z": 0
         },
         "screenSpaceBoundingBox": {
-          "x": 715.685,
-          "y": 343.838,
-          "width": 168.631,
-          "height": 334.581,
-          "right": 884.315,
-          "bottom": 678.419
+          "x": 695.87,
+          "y": 408.528,
+          "width": 195.509,
+          "height": 266.282,
+          "right": 891.379,
+          "bottom": 674.811
         },
         "viewport": {
           "width": 1600,
@@ -1195,26 +1195,26 @@
           "x": 1346,
           "y": 16,
           "width": 238,
-          "height": 315.25
+          "height": 331.438
         },
-        "authoredVisibleMeshCount": 5,
+        "authoredVisibleMeshCount": 8,
         "proceduralVisibleMeshCount": 0,
-        "drawCalls": 8,
-        "drawCallsThisFrame": 8,
-        "drawCallsAvg120": 8,
-        "activeMeshes": 6,
+        "drawCalls": 11,
+        "drawCallsThisFrame": 11,
+        "drawCallsAvg120": 11,
+        "activeMeshes": 9,
         "fps": 0,
         "fpsAvg5s": 0,
         "frameTimeP50": 0,
         "frameTimeP95": 0,
-        "visibleMeshes": 5,
-        "visibleVertices": 3196,
-        "visibleTriangles": 4320
+        "visibleMeshes": 8,
+        "visibleVertices": 20048,
+        "visibleTriangles": 36246
       }
     },
     {
       "captureId": "hero-review-lod1",
-      "capturedAt": "2026-08-06T14:21:03.639Z",
+      "capturedAt": "2026-08-12T07:26:59.072Z",
       "screenshot": "D:\\codex\\遊戲開發\\reports\\hero-runtime-ci\\hero-review-lod1.png",
       "camera": "front",
       "animation": "Idle",
@@ -1225,30 +1225,30 @@
         "currentCamera": "front",
         "currentAnimation": "Idle",
         "currentLod": "LOD1",
-        "authoredVisibleMeshes": 4,
+        "authoredVisibleMeshes": 8,
         "proceduralVisibleMeshes": 0,
-        "visibleVertices": 1974,
-        "visibleTriangles": 2540,
+        "visibleVertices": 9676,
+        "visibleTriangles": 16308,
         "heroWorldPosition": {
           "x": 0,
           "y": 0,
           "z": 0
         },
         "heroScreenBounds": {
-          "x": 715.72,
-          "y": 344.226,
-          "width": 168.559,
-          "height": 333.911,
+          "x": 695.852,
+          "y": 408.523,
+          "width": 195.556,
+          "height": 266.342,
           "visible": true
         },
         "animationGroups": [
+          "hero.player:Death",
+          "hero.player:Hit",
           "hero.player:Idle",
-          "hero.player:Walk",
-          "hero.player:Run",
           "hero.player:MeleeAttack",
           "hero.player:RangedAttack",
-          "hero.player:Hit",
-          "hero.player:Death"
+          "hero.player:Run",
+          "hero.player:Walk"
         ],
         "consoleErrors": [],
         "uiOccluded": false
@@ -1265,12 +1265,12 @@
           "z": 0
         },
         "screenSpaceBoundingBox": {
-          "x": 715.72,
-          "y": 344.226,
-          "width": 168.559,
-          "height": 333.911,
-          "right": 884.279,
-          "bottom": 678.137
+          "x": 695.852,
+          "y": 408.523,
+          "width": 195.556,
+          "height": 266.342,
+          "right": 891.408,
+          "bottom": 674.865
         },
         "viewport": {
           "width": 1600,
@@ -1281,26 +1281,26 @@
           "x": 1346,
           "y": 16,
           "width": 238,
-          "height": 315.25
+          "height": 331.438
         },
-        "authoredVisibleMeshCount": 4,
+        "authoredVisibleMeshCount": 8,
         "proceduralVisibleMeshCount": 0,
-        "drawCalls": 7,
-        "drawCallsThisFrame": 7,
-        "drawCallsAvg120": 7,
-        "activeMeshes": 5,
+        "drawCalls": 11,
+        "drawCallsThisFrame": 11,
+        "drawCallsAvg120": 11,
+        "activeMeshes": 9,
         "fps": 0,
         "fpsAvg5s": 0,
         "frameTimeP50": 0,
         "frameTimeP95": 0,
-        "visibleMeshes": 4,
-        "visibleVertices": 1974,
-        "visibleTriangles": 2540
+        "visibleMeshes": 8,
+        "visibleVertices": 9676,
+        "visibleTriangles": 16308
       }
     },
     {
       "captureId": "hero-review-lod2",
-      "capturedAt": "2026-08-06T14:21:03.743Z",
+      "capturedAt": "2026-08-12T07:26:59.185Z",
       "screenshot": "D:\\codex\\遊戲開發\\reports\\hero-runtime-ci\\hero-review-lod2.png",
       "camera": "front",
       "animation": "Idle",
@@ -1311,30 +1311,30 @@
         "currentCamera": "front",
         "currentAnimation": "Idle",
         "currentLod": "LOD2",
-        "authoredVisibleMeshes": 2,
+        "authoredVisibleMeshes": 8,
         "proceduralVisibleMeshes": 0,
-        "visibleVertices": 804,
-        "visibleTriangles": 976,
+        "visibleVertices": 4215,
+        "visibleTriangles": 6519,
         "heroWorldPosition": {
           "x": 0,
           "y": 0,
           "z": 0
         },
         "heroScreenBounds": {
-          "x": 724.629,
-          "y": 345.536,
-          "width": 150.741,
-          "height": 326.663,
+          "x": 695.767,
+          "y": 408.67,
+          "width": 195.102,
+          "height": 265.95,
           "visible": true
         },
         "animationGroups": [
+          "hero.player:Death",
+          "hero.player:Hit",
           "hero.player:Idle",
-          "hero.player:Walk",
-          "hero.player:Run",
           "hero.player:MeleeAttack",
           "hero.player:RangedAttack",
-          "hero.player:Hit",
-          "hero.player:Death"
+          "hero.player:Run",
+          "hero.player:Walk"
         ],
         "consoleErrors": [],
         "uiOccluded": false
@@ -1351,12 +1351,12 @@
           "z": 0
         },
         "screenSpaceBoundingBox": {
-          "x": 724.629,
-          "y": 345.536,
-          "width": 150.741,
-          "height": 326.663,
-          "right": 875.371,
-          "bottom": 672.199
+          "x": 695.767,
+          "y": 408.67,
+          "width": 195.102,
+          "height": 265.95,
+          "right": 890.869,
+          "bottom": 674.62
         },
         "viewport": {
           "width": 1600,
@@ -1367,21 +1367,21 @@
           "x": 1346,
           "y": 16,
           "width": 238,
-          "height": 315.25
+          "height": 331.438
         },
-        "authoredVisibleMeshCount": 2,
+        "authoredVisibleMeshCount": 8,
         "proceduralVisibleMeshCount": 0,
-        "drawCalls": 5,
-        "drawCallsThisFrame": 5,
-        "drawCallsAvg120": 5,
-        "activeMeshes": 3,
+        "drawCalls": 11,
+        "drawCallsThisFrame": 11,
+        "drawCallsAvg120": 11,
+        "activeMeshes": 9,
         "fps": 0,
         "fpsAvg5s": 0,
         "frameTimeP50": 0,
         "frameTimeP95": 0,
-        "visibleMeshes": 2,
-        "visibleVertices": 804,
-        "visibleTriangles": 976
+        "visibleMeshes": 8,
+        "visibleVertices": 4215,
+        "visibleTriangles": 6519
       }
     }
   ],
@@ -1393,5 +1393,5 @@
   "consoleErrors": [],
   "pageErrors": [],
   "requestFailures": [],
-  "finishedAt": "2026-08-06T14:21:03.743Z"
+  "finishedAt": "2026-08-12T07:26:59.185Z"
 }
