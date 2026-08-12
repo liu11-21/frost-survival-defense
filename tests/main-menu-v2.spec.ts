@@ -43,6 +43,12 @@ async function tabTo(page: Page, locator: ReturnType<Page["locator"]>, maxTabs =
 }
 
 test("Main Menu V2 commercial runtime, responsive states and transition", async ({ page }) => {
+  // This acceptance test intentionally reloads the full production runtime at
+  // multiple desktop resolutions and captures seven full-frame images. The
+  // default 180 s budget is too small on CI runners with cold WebGL/assets;
+  // functional/layout assertions remain unchanged.
+  test.setTimeout(420_000);
+
   await bootMenu(page, 1920, 1080);
 
   const shell = page.locator(MENU);
