@@ -7,19 +7,15 @@ const WARN_TIME = 5;
 
 interface LaneVisual {
   index: number;
-  road: Mesh;
   arrows: Mesh[];
   warn: Mesh;
   warnTime: number;
 }
 
 /**
- * Makes each approach visible on the ground: a packed-snow road from the spawn
- * gate to the wall, arrows pointing the way in, and a red pulse when a wave is
- * about to come down it.
- *
- * "There are three lanes" told the player nothing they could act on. A road
- * they can see and a marker that lights up does.
+ * Makes each approach readable without owning permanent road presentation:
+ * arrows point the way in and a red pulse appears when a wave is about to come
+ * down the lane. ArenaBuilder owns the single permanent LANES-derived road.
  */
 export class LaneMarkers {
   private readonly lanes: LaneVisual[] = [];
@@ -27,7 +23,6 @@ export class LaneMarkers {
   private liveCount = 2;
 
   constructor(scene: Scene, materials: MaterialFactory) {
-    const road = materials.pbr("mat.lane.road", { color: [0.62, 0.66, 0.74], roughness: 0.95 });
     const arrowMat = materials.unlit("mat.lane.arrow", [0.95, 0.55, 0.35], 0.55);
     const warnMat = new StandardMaterial("mat.lane.warn", scene);
     warnMat.diffuseColor = Color3.Black();
@@ -38,23 +33,11 @@ export class LaneMarkers {
     warnMat.backFaceCulling = false;
 
     for (const lane of LANES) {
-      // The road runs from just outside the spawn gate to this lane's own
-      // wall — the rectangle's four sides sit at different true distances
-      // from the centre depending on bearing, not one shared ring radius.
+      // Warning geometry still spans the approach as a temporary wave
+      // telegraph. It is not a permanent road layer.
       const wallDist = distanceToWall(lane.angle);
       const length = MAP.spawnRadius - wallDist + 4;
       const mid = (MAP.spawnRadius + wallDist) * 0.5;
-      const strip = MeshBuilder.CreateGround(
-        `lane${lane.index}.strip`,
-        { width: 6.4, height: length },
-        scene,
-      );
-      strip.position.set(Math.sin(lane.angle) * mid, 0.03, Math.cos(lane.angle) * mid);
-      strip.rotation.y = lane.angle;
-      strip.material = road;
-      strip.isPickable = false;
-      strip.receiveShadows = false;
-      strip.freezeWorldMatrix();
 
       const arrows: Mesh[] = [];
       for (let i = 0; i < 3; i++) {
@@ -84,17 +67,16 @@ export class LaneMarkers {
       warn.isPickable = false;
       warn.setEnabled(false);
 
-      this.lanes.push({ index: lane.index, road: strip, arrows, warn, warnTime: 0 });
+      this.lanes.push({ index: lane.index, arrows, warn, warnTime: 0 });
     }
     this.setLiveLaneCount(2);
   }
 
-  /** Hides the roads of lanes this level never uses. */
+  /** Hides the directional markers of lanes this level never uses. */
   setLiveLaneCount(count: number): void {
     this.liveCount = Math.max(1, count);
     for (const lane of this.lanes) {
       const live = lane.index < this.liveCount;
-      lane.road.setEnabled(live);
       for (const arrow of lane.arrows) arrow.setEnabled(live);
       if (!live && lane.warn.isEnabled()) lane.warn.setEnabled(false);
     }
