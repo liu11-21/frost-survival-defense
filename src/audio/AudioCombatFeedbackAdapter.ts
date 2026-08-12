@@ -1,6 +1,7 @@
 import type { CombatVfx } from "../combat/CombatContext";
 import type { Damageable } from "../combat/Damageable";
 import type { AudioManager, SfxName } from "../effects/AudioManager";
+import type { HeroController } from "../hero/HeroController";
 
 /**
  * Audio-only adapter around the existing CombatFeedback. It preserves every
@@ -8,13 +9,32 @@ import type { AudioManager, SfxName } from "../effects/AudioManager";
  * state, damage or targeting logic is owned here.
  */
 export class AudioCombatFeedbackAdapter implements CombatVfx {
+  private heroGetter: (() => HeroController) | null = null;
+
   constructor(
     private readonly inner: CombatVfx,
     private readonly audio: AudioManager,
   ) {}
 
-  meleeHit(x: number, z: number): void { this.inner.meleeHit(x, z); }
-  rangedHit(x: number, z: number): void { this.inner.rangedHit(x, z); }
+  bindHero(getHero: () => HeroController): void {
+    this.heroGetter = getHero;
+  }
+
+  meleeHit(x: number, z: number): void {
+    this.inner.meleeHit(x, z);
+    this.audio.playAt("enemyHit", x, z, 0.34, 1);
+    const hero = this.heroGetter?.();
+    const target = hero?.currentTarget;
+    if (!hero?.alive || !hero.inMelee || !target) return;
+    if (Math.hypot(target.position.x - x, target.position.z - z) > 1.4 + target.hitRadius) return;
+    this.audio.playAt("heroMeleeHit", x, z, 0.62, 1, 24);
+  }
+
+  rangedHit(x: number, z: number): void {
+    this.inner.rangedHit(x, z);
+    this.audio.playAt("enemyHit", x, z, 0.28, 1);
+  }
+
   areaBlast(x: number, z: number, radius: number): void {
     this.inner.areaBlast(x, z, radius);
     this.audio.playAt("artilleryExplosion", x, z, Math.min(0.85, 0.48 + radius * 0.05), 1, 8);
@@ -33,7 +53,10 @@ export class AudioCombatFeedbackAdapter implements CombatVfx {
   supportAura(x: number, z: number, radius: number): void { this.inner.supportAura(x, z, radius); }
   taunt(x: number, z: number, radius: number): void { this.inner.taunt(x, z, radius); }
   teleport(x: number, z: number): void { this.inner.teleport(x, z); }
-  unitDeath(x: number, z: number, level: number): void { this.inner.unitDeath(x, z, level); }
+  unitDeath(x: number, z: number, level: number): void {
+    this.inner.unitDeath(x, z, level);
+    this.audio.playAt("enemyDeath", x, z, Math.min(0.72, 0.36 + level * 0.05), 1, Math.min(18, level * 3));
+  }
   buildingHit(x: number, z: number): void { this.inner.buildingHit(x, z); }
 
   /** UI / non-world events intentionally remain centred/non-positional. */
