@@ -84,6 +84,73 @@ function centroid(units: Array<{ x: number; z: number }>): { x: number; z: numbe
   };
 }
 
+test("G1 closure: lane markers do not create a second permanent road", async ({ page }, testInfo) => {
+  await boot(page);
+  await call(page, "startStage", "stage-3");
+  await step(page, 0.016, 2, true);
+
+  const contract = await page.evaluate(() => {
+    const game = (window as any).frostbound?.game as any;
+    const systems = game?.s;
+    if (!systems?.scene || !systems?.laneMarkers) {
+      throw new Error("runtime scene or LaneMarkers unavailable");
+    }
+
+    const snapshot = () =>
+      systems.scene.meshes
+        .filter((mesh: any) => /^lane\d+\./.test(mesh.name) || /^road\.lane\d+\./.test(mesh.name))
+        .map((mesh: any) => ({
+          name: mesh.name,
+          enabled: mesh.isEnabled(),
+          alpha: typeof mesh.material?.alpha === "number" ? mesh.material.alpha : null,
+        }));
+
+    const initial = snapshot();
+    systems.laneMarkers.setLiveLaneCount(2);
+    const liveTwo = snapshot();
+    systems.laneMarkers.warn(0);
+    systems.laneMarkers.update(0.1);
+    const warningPulse = snapshot();
+    systems.laneMarkers.clearWarnings();
+    systems.laneMarkers.setLiveLaneCount(4);
+
+    return { initial, liveTwo, warningPulse };
+  });
+
+  const initialNames = contract.initial.map((entry: any) => entry.name);
+  expect(initialNames.filter((name: string) => /^lane\d+\.strip$/.test(name))).toEqual([]);
+
+  for (const lane of LANES) {
+    expect(initialNames).toContain(`road.lane${lane.index}.shoulder`);
+    expect(initialNames).toContain(`road.lane${lane.index}.packed`);
+    expect(initialNames).toContain(`lane${lane.index}.warn`);
+    for (let arrow = 0; arrow < 3; arrow++) {
+      expect(initialNames).toContain(`lane${lane.index}.arrow${arrow}`);
+    }
+  }
+
+  for (const lane of LANES) {
+    const arrows = contract.liveTwo.filter((entry: any) => entry.name.startsWith(`lane${lane.index}.arrow`));
+    expect(arrows).toHaveLength(3);
+    expect(arrows.every((entry: any) => entry.enabled === (lane.index < 2))).toBe(true);
+  }
+
+  const warning = contract.warningPulse.find((entry: any) => entry.name === "lane0.warn");
+  expect(warning).toBeTruthy();
+  expect(warning.enabled).toBe(true);
+  expect(warning.alpha).toBeGreaterThan(0);
+
+  await testInfo.attach("lane-presentation-mesh-contract.json", {
+    body: Buffer.from(JSON.stringify(contract, null, 2)),
+    contentType: "application/json",
+  });
+
+  await call(page, "teleport", 8, 25);
+  await step(page, 0.016, 1, true);
+  await page.keyboard.press("F6");
+  await page.screenshot({ path: ".runtime/g1-evidence/g1-ribbon-only-road.png", fullPage: true });
+});
+
 test("G1 closure: facility visuals do not create obvious invisible movement collision", async ({ page }) => {
   await boot(page);
   await call(page, "startStage", "stage-3");
