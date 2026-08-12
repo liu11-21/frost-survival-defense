@@ -175,6 +175,14 @@ export class SquadStatusHud {
   private render(): void {
     const combatRows = this.collect(false);
     const engineerRows = this.collect(true);
+    const combatEmpty = combatRows.length === 0;
+    const engineerEmpty = engineerRows.length === 0;
+    // Presentation state only: the roster managers remain the source of truth.
+    // CSS uses these flags to collapse empty chrome without changing gameplay.
+    this.host.classList.toggle("empty", combatEmpty);
+    this.host.dataset.state = combatEmpty ? "empty" : "active";
+    this.engineerHost.classList.toggle("empty", engineerEmpty);
+    this.engineerHost.dataset.state = engineerEmpty ? "empty" : "active";
     this.header.textContent = `我方小隊 ${this.squads.allySquadSlotsUsed}/${this.run.squadLimit}`;
     this.engineerHeader.textContent =
       `工程兵 ${this.squads.engineerSquadsUsed}/${this.run.engineerLimit}`;

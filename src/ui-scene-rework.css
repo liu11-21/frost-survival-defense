@@ -286,3 +286,296 @@
   top: 128px;
   right: 14px;
 }
+
+/* ================= Gameplay HUD responsive hierarchy V1 ==================
+ * Critical gameplay groups are independently anchored to the viewport. This
+ * removes the grid min-content coupling that pushed the minimap off-screen
+ * when the squad roster grew. No gameplay values or interaction paths change.
+ */
+.hud {
+  --hud-edge: 14px;
+  --hud-gap: 10px;
+  display: block;
+  padding: 0;
+  gap: 0;
+}
+
+.hud > .panel-box,
+.hud .furnace-box,
+.hud .squad-hud {
+  margin: 0;
+}
+
+.hud .res-box,
+.hud .hero-box,
+.hud .squad-hud,
+.hud .engineer-hud,
+.lane-hud {
+  background: rgba(10, 18, 30, 0.64);
+  border-color: rgba(150, 184, 220, 0.2);
+  box-shadow: 0 4px 16px rgba(3, 8, 15, 0.28);
+}
+
+.hud .wave-box,
+.hud .furnace-box {
+  background: rgba(11, 18, 29, 0.84);
+  box-shadow: 0 6px 20px rgba(3, 8, 15, 0.34);
+}
+
+.hud .furnace-box {
+  border-color: rgba(255, 178, 87, 0.36);
+}
+
+.res-box {
+  position: absolute;
+  top: var(--hud-edge);
+  left: var(--hud-edge);
+}
+
+.wave-box {
+  position: absolute;
+  top: var(--hud-edge);
+  left: min(calc(100vw - 424px), calc(50% + 330px));
+  width: 210px;
+  min-width: 0;
+  transform: none;
+}
+
+.fps-box {
+  position: absolute;
+  top: 200px;
+  right: var(--hud-edge);
+}
+
+.hero-box {
+  position: absolute;
+  left: var(--hud-edge);
+  bottom: var(--hud-edge);
+  width: clamp(410px, 34vw, 520px);
+  min-width: 0;
+}
+
+.bottom-centre {
+  display: contents;
+}
+
+.furnace-box {
+  position: absolute;
+  left: 50%;
+  bottom: var(--hud-edge);
+  width: clamp(276px, 19vw, 300px);
+  min-width: 0;
+  transform: translateX(-50%);
+}
+
+.squad-hud {
+  position: absolute;
+  right: var(--hud-edge);
+  bottom: var(--hud-edge);
+  width: clamp(320px, 32vw, 520px);
+  max-width: calc(100vw - (var(--hud-edge) * 2));
+}
+
+.squad-hud.empty {
+  width: auto;
+  min-width: 132px;
+  padding: 6px 9px;
+  background: rgba(10, 18, 30, 0.48);
+  border-color: rgba(150, 184, 220, 0.14);
+  box-shadow: none;
+}
+
+.squad-hud.empty .squad-title {
+  margin: 0;
+  color: #dbe8f4;
+  font-size: 11px;
+  font-weight: 650;
+  opacity: 0.66;
+}
+
+.squad-hud.empty .squad-list,
+.squad-hud.empty .squad-foot {
+  display: none;
+}
+
+.engineer-hud.empty.show {
+  display: none;
+}
+
+.engineer-hud:not(.empty) {
+  right: var(--hud-edge);
+  bottom: 218px;
+}
+
+.rebuild-box {
+  position: absolute;
+  right: var(--hud-edge);
+  bottom: var(--hud-edge);
+}
+
+.hud:has(.rebuild-box:not(.hidden)) .squad-hud {
+  bottom: 116px;
+}
+
+#ui-minimap.minimap {
+  position: absolute;
+  top: var(--hud-edge);
+  right: var(--hud-edge);
+  width: 176px;
+  height: 176px;
+  background: rgba(10, 18, 30, 0.7);
+  border-color: rgba(150, 184, 220, 0.2);
+  box-shadow: 0 4px 16px rgba(3, 8, 15, 0.28);
+}
+
+.lane-hud {
+  bottom: 172px;
+}
+
+.lane-hud.quiet {
+  width: 218px;
+  padding: 6px 8px;
+  background: rgba(10, 18, 30, 0.46);
+  border-color: rgba(150, 184, 220, 0.12);
+  box-shadow: none;
+}
+
+.lane-hud.quiet .lane-title {
+  margin-bottom: 2px;
+  color: #dbe8f4;
+  font-size: 10px;
+  letter-spacing: 0.04em;
+  opacity: 0.58;
+}
+
+.lane-hud.quiet .lane-list {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 2px 7px;
+}
+
+.lane-hud.quiet .lane-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto auto;
+  grid-template-areas: "name count gate";
+  align-items: center;
+  gap: 0 5px;
+  padding: 2px 3px;
+  border-left: 0;
+  background: transparent;
+  font-size: 10.5px;
+}
+
+.lane-hud.quiet .lane-name {
+  overflow: hidden;
+  color: #dbe8f4;
+  font-weight: 600;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  opacity: 0.68;
+}
+
+.lane-hud.quiet .lane-count {
+  grid-area: count;
+  color: #b8cddd;
+  font-size: 10px;
+  opacity: 0.58;
+}
+
+.lane-hud.quiet .lane-gate {
+  display: block;
+  grid-area: gate;
+  min-width: 0;
+  overflow: hidden;
+  font-size: 9px;
+  font-weight: 650;
+  line-height: 1.15;
+  text-align: right;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.lane-hud.quiet .lane-gate.open {
+  color: #ffb09b;
+  opacity: 1;
+}
+
+.lane-hud.quiet .lane-gate.partial {
+  color: #ffd08a;
+  opacity: 0.92;
+}
+
+.lane-hud.quiet .lane-gate.sealed {
+  color: #9bbfb0;
+  font-weight: 550;
+  opacity: 0.5;
+}
+
+#ui-build-panel.side-panel {
+  top: 84px;
+  max-height: calc(100vh - 258px);
+}
+
+#ui-recruit-panel.side-panel {
+  top: 204px;
+  max-height: calc(100vh - 378px);
+}
+
+#uiRoot:has(#ui-build-panel.show) .lane-hud.quiet,
+#uiRoot:has(#ui-recruit-panel.show) .fps-box {
+  display: none;
+}
+
+@media (max-width: 1400px) {
+  .res-box {
+    gap: 10px;
+    padding-inline: 9px;
+  }
+
+  .res-box .res-name {
+    display: none;
+  }
+
+  .res-box .res {
+    gap: 4px;
+    font-size: 15px;
+  }
+
+  .hero-box {
+    padding: 7px 10px;
+  }
+
+  .hero-box .stat-line {
+    font-size: 10px;
+  }
+
+  .hero-box .skill-row {
+    gap: 5px;
+  }
+
+  .hero-box .skill-slot {
+    padding-inline: 5px;
+  }
+}
+
+@media (prefers-reduced-transparency: reduce) {
+  .hud .panel-box,
+  .hud .squad-hud,
+  .hud .engineer-hud,
+  .lane-hud,
+  .side-panel {
+    background: rgba(10, 18, 30, 0.96);
+    backdrop-filter: none;
+  }
+}
+
+@media (prefers-contrast: more) {
+  .hud .panel-box,
+  .hud .squad-hud,
+  .hud .engineer-hud,
+  .lane-hud,
+  .side-panel {
+    background: rgba(7, 13, 23, 0.94);
+    border-color: rgba(222, 237, 249, 0.64);
+  }
+}
