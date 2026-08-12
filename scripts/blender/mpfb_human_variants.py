@@ -45,6 +45,21 @@ VARIANTS = {
         "cupsize": 0.0,
         "firmness": 0.5,
     },
+    # A rank-and-file melee soldier, not the protagonist. Heavier, older and
+    # broader than the Hero on purpose: the two share a base mesh, so the
+    # silhouette has to come from build and kit or they read as the same person
+    # in different coats. Shorter and thicker-set reads as infantry next to the
+    # Hero's taller, leaner outline.
+    "warrior": {
+        "gender": 0.95,
+        "age": 0.62,
+        "muscle": 0.74,
+        "weight": 0.66,
+        "height": 0.46,
+        "proportions": 0.42,
+        "cupsize": 0.0,
+        "firmness": 0.6,
+    },
     "female": {
         "gender": 0.08,
         "age": 0.50,
