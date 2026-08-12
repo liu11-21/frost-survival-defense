@@ -88,7 +88,13 @@ def _weave_height(u, v):
     # rather than as a grid.
     cross = warp if (int(v * 16.0) % 2 == 0) else weft
     fibre = _smooth_noise(u, v, 3.0, 32)
-    return 0.78 + 0.16 * cross + 0.10 * (fibre - 0.5)
+    # Two extra octaves on lattices that share no common factor with the
+    # 16-thread weave (7 and 13 against 16), so the eye cannot lock onto a
+    # repeat. With the weave alone the tiling was obvious at close range: the
+    # same block of cloth over and over.
+    slack = _smooth_noise(u, v, 19.0, 7) - 0.5
+    wear = _smooth_noise(u, v, 53.0, 13) - 0.5
+    return 0.78 + 0.16 * cross + 0.10 * (fibre - 0.5) + 0.085 * slack + 0.045 * wear
 
 
 def weave(tint=(1.0, 1.0, 1.0), name="Hero_weave_detail"):

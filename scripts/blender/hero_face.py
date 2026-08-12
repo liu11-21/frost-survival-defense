@@ -23,6 +23,20 @@ import bpy
 SIZE = 512
 
 
+def _smoothstep(edge0, edge1, value):
+    """Soft 0..1 ramp. Hard `if` boundaries alias badly here: the head gets only
+    a slice of a whole-body 512 map, so an eye is a few dozen texels across and
+    every sharp edge shows as a staircase."""
+    if edge1 <= edge0:
+        return 0.0 if value < edge0 else 1.0
+    t = max(0.0, min(1.0, (value - edge0) / (edge1 - edge0)))
+    return t * t * (3.0 - 2.0 * t)
+
+
+def _mix(a, b, t):
+    return a + (b - a) * t
+
+
 def _head_frame(body, armature):
     """Head bounding box and facing direction, measured off this mesh.
 
@@ -51,6 +65,14 @@ def _head_frame(body, armature):
     forward = 1.0 if (max(p[1] for p in band) - centre_y) >= (centre_y - min(p[1] for p in band)) else -1.0
     return {
         "lo": lo, "hi": hi, "height": height,
+        # The head is NOT centred on the world origin -- measured on this rig it
+        # sits at x = 0.12. Every feature below is placed relative to this, and
+        # the first version was not: it used raw world x, so the eye pair
+        # straddled x = 0, which is off the side of the skull. One eye landed
+        # smeared on the left edge, the other missed the head entirely, and the
+        # face rendered blank except for a dark band where the brow wrapped
+        # round. Nothing about it looked like a centring bug from the front.
+        "centreX": (lo[0] + hi[0]) * 0.5,
         "eyeZ": eye_z,
         "browZ": lo[2] + height * 0.60,
         # 0.26 put the band on the philtrum, under the nose. The lips sit
@@ -118,6 +140,7 @@ def _rasterise_positions(body):
 def _shade(point, frame, base):
     """Skin colour at a 3D point: features placed by anatomy, not by UV."""
     x, y, z = point
+    x -= frame["centreX"]          # head-relative, not world; see _head_frame
     red, green, blue = base
     face = frame["forward"] * (y - frame["faceY"]) > -frame["height"] * 0.55
 
@@ -134,19 +157,60 @@ def _shade(point, frame, base):
                 red *= 1.0 - shade * 0.72
                 green *= 1.0 - shade * 0.78
                 blue *= 1.0 - shade * 0.80
-        # Eye sockets: a gentle darkening, which is what actually reads as an
-        # eye at gameplay distance -- a painted iris on a head this size is a
-        # smudge.
+        # Eyes.
+        #
+        # The first version drew concentric discs: a round sclera with an iris
+        # floating in it. That is not what an eye looks like -- the lids cover
+        # the top and bottom of the eyeball, so what shows is an ALMOND, and
+        # the iris is clipped by the upper lid rather than sitting clear of it.
+        # Drawn as full discs it read as a staring zombie.
+        #
+        # So the aperture is an ellipse two and a half times wider than it is
+        # tall, and the iris is deliberately made TALLER than the aperture: the
+        # lids then cut it, which is what makes an eye look open rather than
+        # painted on. Every boundary is a smoothstep, because at this texel
+        # density a hard edge is a visible staircase.
         for side in (-1.0, 1.0):
-            dx = abs(x - side * frame["eyeX"])
-            dz = abs(z - frame["eyeZ"])
-            radius = frame["eyeX"] * 0.85
-            distance = math.sqrt(dx * dx + (dz * 2.1) ** 2)
-            if distance < radius:
-                shade = (1.0 - distance / radius) * 0.42
-                red *= 1.0 - shade * 0.55
-                green *= 1.0 - shade * 0.62
-                blue *= 1.0 - shade * 0.62
+            dx = x - side * frame["eyeX"]
+            dz = z - frame["eyeZ"]
+            half_w = frame["eyeX"] * 0.54
+            half_h = frame["eyeX"] * 0.21
+            aperture = math.sqrt((dx / half_w) ** 2 + (dz / half_h) ** 2)
+            if aperture > 1.9:
+                continue
+            # Socket/crease shading OUTSIDE the lids, so the eye sits in a
+            # hollow instead of on a flat plane.
+            socket = (1.0 - _smoothstep(0.95, 1.85, aperture)) * 0.30
+            red *= 1.0 - socket * 0.45
+            green *= 1.0 - socket * 0.50
+            blue *= 1.0 - socket * 0.50
+
+            open_eye = 1.0 - _smoothstep(0.88, 1.02, aperture)
+            if open_eye <= 0.002:
+                continue
+            radius = math.sqrt(dx * dx + dz * dz)
+            iris_r = frame["eyeX"] * 0.25
+            pupil_r = frame["eyeX"] * 0.105
+            # Cool grey-blue, darker at the limbus: a flat disc reads as a
+            # sticker, the darker rim is what gives it depth.
+            edge = min(1.0, radius / iris_r)
+            iris_rgb = (0.30 - 0.13 * edge, 0.36 - 0.15 * edge, 0.41 - 0.16 * edge)
+            # Not pure white -- a white sclera glows against skin -- and
+            # shaded toward the corners where the lids overhang.
+            corner = 1.0 - 0.20 * _smoothstep(0.3, 1.0, aperture)
+            # The upper lid throws a shadow across the top of the eyeball.
+            lid = 1.0 - 0.22 * _smoothstep(-0.2, 1.0, dz / half_h)
+            sclera_rgb = (0.79 * corner * lid, 0.78 * corner * lid, 0.75 * corner * lid)
+
+            to_pupil = _smoothstep(pupil_r * 0.72, pupil_r * 1.18, radius)
+            to_sclera = _smoothstep(iris_r * 0.90, iris_r * 1.10, radius)
+            eye = [
+                _mix(_mix(p, i, to_pupil), s, to_sclera)
+                for p, i, s in zip((0.045, 0.040, 0.038), iris_rgb, sclera_rgb)
+            ]
+            red = _mix(red, eye[0], open_eye)
+            green = _mix(green, eye[1], open_eye)
+            blue = _mix(blue, eye[2], open_eye)
         # Lips: warmer and slightly darker, widest at the centre line.
         dz = abs(z - frame["mouthZ"])
         half = frame["eyeX"] * 1.30
@@ -200,6 +264,9 @@ def build(body, armature, base_colour, name="Hero_skin_map"):
         "texelsCovered": painted,
         "of": SIZE * SIZE,
         "facing": "+Y" if frame["forward"] > 0 else "-Y",
+        # Logged because a wrong value here is invisible in every render: the
+        # face simply comes out blank rather than obviously misplaced.
+        "centreX": round(frame["centreX"], 4),
         "eyeZ": round(frame["eyeZ"], 4),
         "mouthZ": round(frame["mouthZ"], 4),
     }
