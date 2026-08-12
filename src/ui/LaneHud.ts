@@ -81,9 +81,19 @@ export class LaneHud {
 
   private render(rows: LaneRow[]): void {
     if (rows.length === 0) {
+      this.host.classList.add("quiet");
+      this.host.dataset.state = "quiet";
       this.list.innerHTML = "";
       return;
     }
+    const quiet = rows.every((row) => {
+      const wallLow = row.wallPct !== null && row.wallPct < 0.5 && row.gate !== "open";
+      return row.remaining === 0 && !row.boss && !row.breached && !wallLow;
+    });
+    // Quiet is a visual-priority signal only. Lane count, gates and WaveManager
+    // remain untouched and continue to render from the same read-only rows.
+    this.host.classList.toggle("quiet", quiet);
+    this.host.dataset.state = quiet ? "quiet" : "active";
     this.list.innerHTML = rows
       .map((row) => {
         const tags: string[] = [GATE_TEXT[row.gate]];
