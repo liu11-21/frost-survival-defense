@@ -1,6 +1,8 @@
 import { expect, test, type Page } from "@playwright/test";
 import { SLOT_BY_ID, UNIVERSAL_MAX_VISUAL_RADIUS } from "../src/data/BuildSlotDefinitions";
 
+const BASE_URL = process.env.FROSTBOUND_BASE_URL ?? "http://127.0.0.1:4173";
+
 async function call(page: Page, name: string, ...args: unknown[]): Promise<any> {
   return page.evaluate(
     ({ name, args }) => {
@@ -20,7 +22,7 @@ async function step(page: Page, dt: number, frames: number): Promise<void> {
 }
 
 async function boot(page: Page): Promise<void> {
-  await page.goto("http://127.0.0.1:4173/?uiVerification=1", { waitUntil: "networkidle" });
+  await page.goto(`${BASE_URL}/?uiVerification=1`, { waitUntil: "networkidle" });
   await page.waitForFunction(() => Boolean((window as any).frostbound), null, { timeout: 60_000 });
   // `window.frostbound` is exposed immediately after Game construction, while
   // Game.start() is still awaiting scene/assets and the production loading
