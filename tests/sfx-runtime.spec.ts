@@ -121,6 +121,24 @@ function latest(snapshot: SfxSnapshot, event: CoreSfxName): SfxVoice | undefined
   return playing(snapshot, event).sort((a, b) => b.id - a.id)[0];
 }
 
+async function stepUntilVoice(
+  page: Page,
+  event: CoreSfxName,
+  maxFrames = 40,
+  requestedName?: string,
+): Promise<SfxSnapshot> {
+  for (let frame = 0; frame < maxFrames; frame++) {
+    await step(page, 0.05);
+    const snapshot = await sfxSnapshot(page);
+    const found = playing(snapshot, event).some((voice) => requestedName === undefined || voice.requestedName === requestedName);
+    if (found) return snapshot;
+  }
+  const snapshot = await sfxSnapshot(page);
+  throw new Error(
+    `Timed out waiting for ${event}${requestedName ? ` (${requestedName})` : ""}; active=${JSON.stringify(snapshot.activeVoices)}`,
+  );
+}
+
 test.beforeEach(async ({ page }) => {
   await page.addInitScript(() => {
     try {
@@ -193,25 +211,41 @@ test("variation pools play real WebAudio sources with bounded pitch and volume j
 test("cooldown, per-event concurrency and the global cap prevent a death noise wall", async ({ page }) => {
   await boot(page);
 
-  const beforeCooldown = await sfxSnapshot(page);
-  await playAt(page, "enemyHit", 2, -2, 0.5);
-  await playAt(page, "enemyHit", 2.2, -2, 0.5);
-  const afterCooldown = await sfxSnapshot(page);
-  expect(afterCooldown.droppedByCooldown).toBeGreaterThan(beforeCooldown.droppedByCooldown);
+  // Keep both requests inside the same browser task. Playwright round-trips can
+  // exceed an 18ms gameplay cooldown and would make this assertion flaky.
+  const cooldown = await page.evaluate(() => {
+    const api = (window as any).frostboundSfx;
+    const before = api.snapshot().droppedByCooldown as number;
+    api.playAt("enemyHit", 2, -2, 0.5, 1, 0);
+    api.playAt("enemyHit", 2.2, -2, 0.5, 1, 0);
+    return { before, after: api.snapshot().droppedByCooldown as number };
+  });
+  expect(cooldown.after).toBeGreaterThan(cooldown.before);
 
   // Death duration is >=250 ms and cooldown is 35 ms. Five launches spaced
-  // 45 ms therefore overlap, so the fifth must hit the per-event cap of four.
+  // 40 ms inside one browser task overlap, so the fifth must hit cap=4.
   await page.waitForTimeout(80);
-  const beforeConcurrency = (await sfxSnapshot(page)).droppedByConcurrency;
-  for (let i = 0; i < 5; i++) {
-    await playAt(page, "enemyDeath", 3 + i * 0.2, -2, 0.55);
-    if (i < 4) await page.waitForTimeout(45);
-  }
-  const capped = await sfxSnapshot(page);
-  expect(playing(capped, "enemyDeath").length).toBeLessThanOrEqual(4);
-  expect(capped.droppedByConcurrency).toBeGreaterThan(beforeConcurrency);
-  expect(capped.activeCount).toBeLessThanOrEqual(capped.totalConcurrencyCap);
-  expect(capped.totalConcurrencyCap).toBeLessThan(20);
+  const concurrency = await page.evaluate(async () => {
+    const api = (window as any).frostboundSfx;
+    const before = api.snapshot().droppedByConcurrency as number;
+    for (let i = 0; i < 5; i++) {
+      api.playAt("enemyDeath", 3 + i * 0.2, -2, 0.55, 1, 0);
+      if (i < 4) await new Promise<void>((resolve) => window.setTimeout(resolve, 40));
+    }
+    const snapshot = api.snapshot();
+    return {
+      before,
+      after: snapshot.droppedByConcurrency as number,
+      deathVoices: snapshot.activeVoices.filter((voice: SfxVoice) => voice.event === "enemyDeath" && voice.sourceState === "playing").length,
+      activeCount: snapshot.activeCount as number,
+      totalCap: snapshot.totalConcurrencyCap as number,
+    };
+  });
+  expect(concurrency.deathVoices).toBeLessThanOrEqual(4);
+  expect(concurrency.after).toBeGreaterThan(concurrency.before);
+  expect(concurrency.activeCount).toBeLessThanOrEqual(concurrency.totalCap);
+  expect(concurrency.totalCap).toBe(16);
+  expect(concurrency.totalCap).toBeLessThan(20);
 
   // A burst of many low-priority hit/death requests still cannot create 20+
   // simultaneous voices, even when they originate at different world points.
@@ -282,57 +316,70 @@ test("real gameplay separates Hero swing from hit and produces ranged, enemy-hit
   await gameCall(page, "teleport", 0, -5);
   await gameCall(page, "spawnEnemy", "grunt", 0, -3.5);
 
-  // One simulation frame acquires the target and begins the melee animation.
-  await step(page, 0.05);
-  let snapshot = await sfxSnapshot(page);
-  expect(playing(snapshot, "heroMeleeSwing").length).toBeGreaterThan(0);
+  // Wait for the real target acquisition / attack-start frame rather than
+  // assuming it must occur on the first 50ms simulation step.
+  let snapshot = await stepUntilVoice(page, "heroMeleeSwing", 24, "heroMelee");
   expect(playing(snapshot, "heroMeleeHit")).toHaveLength(0);
 
-  // Kill the target before the animation's actual hit frame: this is a real
-  // gameplay miss/abort path, so no impact is allowed to appear retroactively.
+  // Kill through the existing debug cleanup before the animation hit frame.
+  // This direct cleanup does not route through CombatDirector damage, so the
+  // only assertion here is the important semantic one: no fabricated impact.
   await gameCall(page, "killAllEnemies");
   await step(page, 0.45);
   snapshot = await sfxSnapshot(page);
   expect(playing(snapshot, "heroMeleeHit")).toHaveLength(0);
-  expect(playing(snapshot, "enemyDeath").length).toBeGreaterThan(0);
 
-  // Fresh target survives through the real hit frame: attack + impact now layer.
+  await page.waitForTimeout(260);
+  // Fresh target survives through the real hit frame: swing + impact now layer.
   await gameCall(page, "startStage", "stage-1");
   await gameCall(page, "teleport", 0, -5);
   await gameCall(page, "spawnEnemy", "bruiser", 0, -3.5);
-  await step(page, 0.4);
-  snapshot = await sfxSnapshot(page);
-  expect(playing(snapshot, "heroMeleeSwing").length).toBeGreaterThan(0);
+  await stepUntilVoice(page, "heroMeleeSwing", 24, "heroMelee");
+  snapshot = await stepUntilVoice(page, "heroMeleeHit", 24);
   expect(playing(snapshot, "heroMeleeHit").length).toBeGreaterThan(0);
   expect(playing(snapshot, "enemyHit").length).toBeGreaterThan(0);
 
-  // A target outside melee threshold uses the existing ranged attack path.
+  // Continue the same real combat until CombatDirector observes the fatal hit.
+  snapshot = await stepUntilVoice(page, "enemyDeath", 160);
+  expect(playing(snapshot, "enemyDeath").length).toBeGreaterThan(0);
+  expect(latest(snapshot, "enemyDeath")?.positional).toBe(true);
+
+  await page.waitForTimeout(750);
+  // A target outside melee threshold uses the existing ranged attack-start path.
   await gameCall(page, "startStage", "stage-1");
   await gameCall(page, "teleport", 0, -5);
   await gameCall(page, "spawnEnemy", "bruiser", 0, 1.5);
-  await step(page, 0.05);
-  snapshot = await sfxSnapshot(page);
+  snapshot = await stepUntilVoice(page, "heroRangedShot", 40, "heroRanged");
   expect(playing(snapshot, "heroRangedShot").length).toBeGreaterThan(0);
 });
 
 test("real squad attack starts preserve melee, gunshot and magic distinctions", async ({ page }) => {
   await boot(page);
 
-  const expectSquadEvent = async (ally: string, event: CoreSfxName, enemyDistance: number): Promise<void> => {
+  const expectSquadEvent = async (
+    ally: string,
+    event: CoreSfxName,
+    requestedName: string,
+    enemyDistance: number,
+  ): Promise<void> => {
     await gameCall(page, "startStage", "stage-1");
     await gameCall(page, "teleport", 28, 28);
     await gameCall(page, "spawnAlly", ally, 0, -5);
     await gameCall(page, "spawnEnemy", "bruiser", 0, -5 + enemyDistance);
-    await step(page, 0.7);
-    const snapshot = await sfxSnapshot(page);
-    expect(playing(snapshot, event).length, `${ally} should start ${event}`).toBeGreaterThan(0);
+    const snapshot = await stepUntilVoice(page, event, 80, requestedName);
+    expect(
+      playing(snapshot, event).some((voice) => voice.requestedName === requestedName),
+      `${ally} should start ${event} through ${requestedName}`,
+    ).toBe(true);
   };
 
-  await expectSquadEvent("warrior", "squadMelee", 1.5);
-  await expectSquadEvent("musketeer", "squadGunshot", 7);
-  await expectSquadEvent("frostmage", "magicAttack", 7);
+  // requestedName prevents an enemy's own legacy attack sound from satisfying
+  // the allied melee assertion.
+  await expectSquadEvent("warrior", "squadMelee", "allyAttack", 1.5);
+  await expectSquadEvent("musketeer", "squadGunshot", "musketFire", 7);
+  await expectSquadEvent("frostmage", "magicAttack", "frostCast", 7);
 
-  // Recipes are independent semantic voices, not the same event renamed.
+  // Artillery is a separate semantic recipe/voice family from magic.
   await playAt(page, "artilleryExplosion", 0, 0, 0.6);
   const final = await sfxSnapshot(page);
   expect(latest(final, "artilleryExplosion")?.sourceState).toBe("playing");
