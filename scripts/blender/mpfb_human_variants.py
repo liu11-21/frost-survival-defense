@@ -119,6 +119,69 @@ def strip_helper_geometry(basemesh):
     return removed
 
 
+def bake_skin_pbr(material, roughness=0.62, specular=0.28):
+    """Give the skin material PBR values glTF can actually export.
+
+    MPFB's v2 skin drives its look through a node group. glTF has no such
+    concept: the exporter reads a Principled BSDF and writes baseColorFactor,
+    metallic and roughness. With the group in place and the Principled node
+    untouched, the export came out with an EMPTY baseColorFactor -- white --
+    and roughness 0.2.
+
+    MPFB knows what colour the skin is (`get_skin_diffuse_color`), so that is
+    used rather than a typed-in tone: a different macro or a future installed
+    skin will move it. Roughness is set for skin rather than left at the
+    node group's default, because 0.2 is wet plastic.
+    """
+    from bl_ext.blender_org.mpfb.services.materialservice import MaterialService
+
+    if material is None or not material.use_nodes:
+        return {"applied": False, "reason": "no node-based material"}
+    tree = material.node_tree
+    bsdf = next((n for n in tree.nodes if n.type == "BSDF_PRINCIPLED"), None)
+    added = False
+    if bsdf is None:
+        # MPFB's v2 skin wires a custom node group straight to the output, with
+        # no Principled node anywhere. glTF cannot represent that group, so the
+        # export came out with an empty baseColorFactor -- white -- at
+        # roughness 0.2, which is WORSE than the flat fallback it replaced
+        # (that one at least exported a real skin tone).
+        #
+        # So the group is replaced, for export purposes, by a Principled node
+        # carrying MPFB's own diffuse colour. The v2 look cannot survive glTF
+        # by any route; what can survive is a correct base colour, roughness
+        # and metallic, and that is what the runtime actually shades with.
+        output = next((n for n in tree.nodes if n.type == "OUTPUT_MATERIAL"), None)
+        if output is None:
+            return {"applied": False, "reason": "material has no output node"}
+        bsdf = tree.nodes.new("ShaderNodeBsdfPrincipled")
+        bsdf.location = (output.location.x - 300, output.location.y)
+        for link in list(tree.links):
+            if link.to_node is output and link.to_socket.name == "Surface":
+                tree.links.remove(link)
+        tree.links.new(bsdf.outputs["BSDF"], output.inputs["Surface"])
+        added = True
+    try:
+        diffuse = list(MaterialService.get_skin_diffuse_color())
+    except Exception:  # noqa: BLE001
+        diffuse = [0.76, 0.58, 0.47]
+    while len(diffuse) < 4:
+        diffuse.append(1.0)
+    bsdf.inputs["Base Color"].default_value = tuple(diffuse[:4])
+    bsdf.inputs["Roughness"].default_value = roughness
+    if "Metallic" in bsdf.inputs:
+        bsdf.inputs["Metallic"].default_value = 0.0
+    # Skin is dielectric with a soft sheen; the clamp matters because a PBR
+    # metal has no diffuse and blowing out specular is how the earlier review
+    # renders lost the face.
+    for name in ("Specular IOR Level", "Specular"):
+        if name in bsdf.inputs:
+            bsdf.inputs[name].default_value = specular
+            break
+    return {"applied": True, "baseColor": [round(v, 4) for v in diffuse[:3]],
+            "roughness": roughness, "principledAdded": added}
+
+
 def apply_skin(basemesh):
     """Official core skin when installed, MPFB's procedural skin otherwise."""
     from bl_ext.blender_org.mpfb.services.assetservice import AssetService
@@ -146,9 +209,25 @@ def apply_skin(basemesh):
             record["officialSkinError"] = str(error)[:160]
 
     try:
-        MaterialService.create_v2_skin_material(basemesh, "skin")
+        # (name, blender_object) -- NOT (blender_object, name).
+        #
+        # The arguments were the other way round, so MPFB took the mesh as the
+        # material name and the string "skin" as the object, then reached for
+        # `"skin".data`. That surfaced as
+        # `proceduralError: 'str' object has no attribute 'data'` in the
+        # provenance record and dropped every build to the flat fallback --
+        # which is why the Hero has been a single untextured colour all along.
+        material = MaterialService.create_v2_skin_material("skin", basemesh)
         record.update({"source": "mpfb-procedural-v2",
                        "note": "official system-asset pack not installed; procedural stand-in"})
+        # MPFB's v2 skin is a node group, and glTF can only carry what a
+        # Principled BSDF exposes. Exported as-is it produced
+        # `baseColorFactor: []` -- i.e. white -- with roughness 0.2, so the
+        # Hero would have rendered as a shiny white mannequin: worse than the
+        # flat skin tone it replaced. Write MPFB's own diffuse colour and a
+        # skin-appropriate roughness into the Principled node so the exporter
+        # has real numbers to bake.
+        record["pbrBake"] = bake_skin_pbr(material)
     except Exception as error:  # noqa: BLE001
         record["proceduralError"] = str(error)[:160]
         material = bpy.data.materials.new("HumanSkinFallback")
