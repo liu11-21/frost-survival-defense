@@ -243,10 +243,26 @@ def normalise(meshes, armatures, profile, target_height):
         right, up, forward = basis
         # Rows map the measured frame onto the project's: +X right, +Y up,
         # +Z forward.
-        rotation = Matrix((right, up, forward)).to_4x4()
+        # Rows map the measured frame onto BLENDER's, not onto the project's
+        # Y-up output convention: +X right, +Y forward, +Z up.
+        #
+        # Targeting Y-up here meant the glTF exporter converted a second time.
+        # Only half the character received both conversions -- the LOD copies
+        # were re-parented off this root (see build_lods) and got exactly one,
+        # which is why every static render looked upright, while the armature
+        # stayed under the root and got two. The shipped file therefore had its
+        # bones a whole coordinate frame from its skin, 2.1714 m median against
+        # 0.10 m on the project's own asset, and skinning hides that entirely
+        # at rest because v' = M * B^-1 * v collapses to v whenever M = B.
+        rotation = Matrix((right, forward, up)).to_4x4()
+        if rotation.determinant() < 0:
+            # Keep it right-handed; a mirrored basis swaps the character's left
+            # and right along with the axes. Measured source: right = -X,
+            # up = +Z, forward = +Y, which needs this branch.
+            rotation = Matrix((-Vector(right), forward, up)).to_4x4()
         root.matrix_world = rotation @ root.matrix_world
-    elif profile.get("up_axis", "Y").upper() == "Z":
-        root.rotation_euler[0] = -math.pi / 2
+    elif profile.get("up_axis", "Y").upper() == "Y":
+        root.rotation_euler[0] = math.pi / 2
     root.scale = tuple(v * profile.get("unit_scale", 1.0) for v in root.scale)
     bpy.context.view_layer.update()
 
@@ -257,16 +273,20 @@ def normalise(meshes, armatures, profile, target_height):
             world = mesh.matrix_world @ Vector(corner)
             lo = Vector((min(lo[i], world[i]) for i in range(3)))
             hi = Vector((max(hi[i], world[i]) for i in range(3)))
-    height = max(1e-6, hi[1] - lo[1])
+    # Blender axes now: up is +Z and the floor the feet stand on is z = 0.
+    # The exporter maps that to the Y-up floor the runtime contract asks for.
+    height = max(1e-6, hi[2] - lo[2])
     factor = target_height / height
     root.scale = tuple(s * factor for s in root.scale)
     bpy.context.view_layer.update()
 
-    lo_y = min((mesh.matrix_world @ Vector(c))[1] for mesh in meshes for c in mesh.bound_box)
+    lo_z = min((mesh.matrix_world @ Vector(c))[2] for mesh in meshes for c in mesh.bound_box)
     cx = sum((mesh.matrix_world @ Vector(c))[0] for mesh in meshes for c in mesh.bound_box)
-    cz = sum((mesh.matrix_world @ Vector(c))[2] for mesh in meshes for c in mesh.bound_box)
+    cy = sum((mesh.matrix_world @ Vector(c))[1] for mesh in meshes for c in mesh.bound_box)
     n = len(meshes) * 8
-    root.location = (root.location[0] - cx / n, root.location[1] - lo_y, root.location[2] - cz / n)
+    root.location = (root.location[0] - cx / n, root.location[1] - cy / n, root.location[2] - lo_z)
+    bpy.context.view_layer.update()
+    print("NORMALISE height=%.4f factor=%.5f" % (height, factor))
     bpy.context.view_layer.update()
     return root, {"sourceHeight": round(height, 4), "scaleFactor": round(factor, 5)}
 
@@ -384,7 +404,7 @@ def verify_normalised(meshes, armature, target_height, tolerance=0.02):
             world = mesh.matrix_world @ Vector(corner)
             lo = Vector((min(lo[i], world[i]) for i in range(3)))
             hi = Vector((max(hi[i], world[i]) for i in range(3)))
-    height = hi[1] - lo[1]
+    height = hi[2] - lo[2]
     # Facing is read off the rig: the vector from the pelvis to the head is up,
     # and a human's chest normal is the cross of up with the hip-to-hip axis.
     facing = None
@@ -399,21 +419,22 @@ def verify_normalised(meshes, armature, target_height, tolerance=0.02):
             if hip.length > 1e-6 and up.length > 1e-6:
                 facing = hip.normalized().cross(up.normalized())
     checks = {
-        "feetOnFloor": abs(lo[1]) <= tolerance,
-        "footY": round(lo[1], 5),
+        "feetOnFloor": abs(lo[2]) <= tolerance,
+        "footZ": round(lo[2], 5),
         "heightMetres": round(height, 4),
         "heightOnTarget": abs(height - target_height) <= tolerance,
         "centredOnX": abs((lo[0] + hi[0]) * 0.5) <= tolerance * 4,
-        "yUp": height >= (hi[0] - lo[0]) and height >= (hi[2] - lo[2]),
+        "zUpInBlender": height >= (hi[0] - lo[0]) and height >= (hi[1] - lo[1]),
         "facingVector": [round(v, 4) for v in facing] if facing else None,
-        "facesPositiveZ": bool(facing and facing.z > 0.5),
+        # Blender +Y becomes glTF +Z, the forward the contract wants.
+        "facesPositiveYInBlender": bool(facing and facing.y > 0.5),
         "sameCoordinateSystem": all(
             (m.matrix_world.translation - (armature.matrix_world.translation if armature else Vector())).length < 50.0
             for m in meshes
         ),
     }
     checks["allPassed"] = all(
-        checks[k] for k in ("feetOnFloor", "heightOnTarget", "yUp", "sameCoordinateSystem")
+        checks[k] for k in ("feetOnFloor", "heightOnTarget", "zUpInBlender", "sameCoordinateSystem")
     )
     return checks
 
@@ -792,9 +813,20 @@ def main():
     tiers = build_lods(meshes, armature, args.name)
     for made in tiers:
         for obj in made:
+            # `.parent` does NOT preserve the world transform. The copies are
+            # made under the armature, which sits below SourceRoot and carries
+            # the normalisation; re-parenting to UnitRoot silently dropped it
+            # and left them in a different frame from the rig driving them.
+            world = obj.matrix_world.copy()
             obj.parent = root
+            obj.matrix_world = world
     for mesh in meshes:
         bpy.data.objects.remove(mesh, do_unlink=True)
+    # Gate the bind on the meshes that SHIP. The call after `normalise` only
+    # ever saw the source meshes, still correctly parented, so it passed while
+    # the LOD copies it never inspected went out with a 2.17 m error.
+    scale_info["bindFrameShipped"] = verify_bind_frame(
+        [obj for tier in tiers for obj in tier], armature)
     lods = verify_lods(tiers, armature)
 
     collision_box("COL_Unit", (0.82, args.height * 1.02, 0.70), (0, args.height * 0.5, 0), root)

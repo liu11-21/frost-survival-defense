@@ -35,7 +35,16 @@ export const HUMAN_APPEARANCE_VARIANTS: readonly HumanAppearanceVariant[] = ["ma
  * shipping build, so the promotion is deliberately a separate edit.
  */
 export const VARIANT_CANDIDATE_ROLES: ReadonlySet<string> = new Set(["hero"]);
-export const VARIANT_READY_ROLES: ReadonlySet<string> = new Set<string>();
+// Promoted on this integration branch only, so the male and female Hero can be
+// verified in real gameplay rather than in the review harness. This is an
+// APPEARANCE switch and nothing else: it changes which GLB the asset resolver
+// returns for the `hero` role and touches no stat, collision volume, attack
+// range, animation timing or AI behaviour. The two variants share one rig, one
+// clip set and one set of numbers.
+//
+// It must not reach main until the gameplay verification it exists for has
+// actually passed.
+export const VARIANT_READY_ROLES: ReadonlySet<string> = new Set(["hero"]);
 
 export interface HumanAppearance {
   readonly role: string;
@@ -49,6 +58,29 @@ export interface HumanAppearance {
  * can be called unconditionally from the asset layer without every call site
  * needing to know how far the migration has got.
  */
+/**
+ * Which appearance the player's Hero wears this session.
+ *
+ * Appearance is not a gameplay property, so it is deliberately NOT read from
+ * unit definitions, save data or combat state -- nothing that could let a
+ * variant change how the Hero plays. `?heroVariant=female` selects one for a
+ * session, which is what makes the two variants separately verifiable in a
+ * real gameplay build rather than only in the review harness, and male is the
+ * default everywhere else.
+ */
+export function heroAppearanceVariant(): HumanAppearanceVariant {
+  if (typeof window === "undefined") return "male";
+  // `?heroVariant=` overrides for a session; otherwise the player's own stored
+  // choice wins. Defining a second source of truth here rather than deferring
+  // to `loadHeroAppearance` would mean the setting a player picked and the
+  // model they actually get could disagree.
+  const asked = new URLSearchParams(window.location.search).get("heroVariant");
+  if (HUMAN_APPEARANCE_VARIANTS.includes(asked as HumanAppearanceVariant)) {
+    return asked as HumanAppearanceVariant;
+  }
+  return loadHeroAppearance();
+}
+
 export function resolveHumanAsset(role: string, variant: HumanAppearanceVariant): string {
   return VARIANT_READY_ROLES.has(role) ? `${role}_${variant}` : role;
 }
