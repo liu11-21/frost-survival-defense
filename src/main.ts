@@ -6,6 +6,7 @@ import "./ui.css";
 import "./ui-hud.css";
 import "./ui-scene-rework.css";
 import "./main-menu-v2.css";
+import "./main-menu-v2-tuning.css";
 
 /** Entry point: find the canvas, start the game, report fatal failures visibly. */
 async function bootstrap(): Promise<void> {
