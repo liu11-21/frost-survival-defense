@@ -12,42 +12,45 @@ export type CoreSfxName =
   | "artilleryExplosion"
   | "buildPlace"
   | "uiConfirm"
-  | "uiError";
+  | "uiError"
+  | "footstep"
+  | "enemyAttack"
+  | "healing"
+  | "teleport"
+  | "waveStart"
+  | "bossSpawn"
+  | "furnaceUpgrade"
+  | "victory"
+  | "defeat"
+  | "gatherWood"
+  | "gatherStone"
+  | "bossWindup"
+  | "commanderHorn"
+  | "heroDown"
+  | "heroRevive";
 
 export type SfxName = CoreSfxName
-  | "footstep"
   | "heroRanged"
   | "heroMelee"
-  | "heroDown"
-  | "heroRevive"
   | "allyAttack"
-  | "enemyAttack"
   | "medicHeal"
   | "assaultTeleport"
   | "towerFire"
   | "wallHit"
   | "buildingDestroyed"
   | "coinPickup"
-  | "waveStart"
-  | "bossSpawn"
   | "furnaceDamaged"
   | "furnaceHeal"
-  | "furnaceUpgrade"
   | "buildStage"
   | "buildComplete"
-  | "defeat"
-  | "victory"
-  | "gatherWood"
-  | "gatherStone"
-  | "bossSlamWindup"
-  | "bossSlam"
   | "buildFail"
   | "engineerRepair"
   | "musketFire"
   | "frostCast"
+  | "bossSlamWindup"
+  | "bossSlam"
   | "freezeZoneSlam"
   | "armorBreak"
-  | "commanderHorn"
   | "bomberWarn"
   | "bomberBlast"
   | "heroSkillFrost"
@@ -64,7 +67,21 @@ type RecipeKind =
   | "build"
   | "confirm"
   | "error"
-  | "step";
+  | "step"
+  | "enemyAttack"
+  | "heal"
+  | "teleport"
+  | "wave"
+  | "boss"
+  | "upgrade"
+  | "victory"
+  | "defeat"
+  | "wood"
+  | "stone"
+  | "windup"
+  | "horn"
+  | "down"
+  | "revive";
 
 interface VariationRecipe {
   readonly kind: RecipeKind;
@@ -192,46 +209,103 @@ const SFX: Record<CoreSfxName, SfxDefinition> = {
     variations: [V("error", 240, 0, 0.2)],
     cooldown: 0.05, concurrency: 2, priority: 88, positional: false, pitchJitter: 0, volumeJitter: 0,
   },
+  footstep: {
+    variations: [V("step", 0, 780, 0.085), V("step", 0, 920, 0.075), V("step", 0, 680, 0.095)],
+    cooldown: 0.065, concurrency: 2, priority: 28, positional: false, pitchJitter: 0.025, volumeJitter: 0.04,
+  },
+  enemyAttack: {
+    variations: [V("enemyAttack", 170, 980, 0.13), V("enemyAttack", 205, 1160, 0.12)],
+    cooldown: 0.03, concurrency: 4, priority: 44, positional: true, pitchJitter: 0.035, volumeJitter: 0.045,
+  },
+  healing: {
+    variations: [V("heal", 659, 0, 0.32), V("heal", 740, 0, 0.29)],
+    cooldown: 0.05, concurrency: 3, priority: 62, positional: true, pitchJitter: 0.02, volumeJitter: 0.035,
+  },
+  teleport: {
+    variations: [V("teleport", 1380, 3200, 0.3), V("teleport", 1180, 2800, 0.34)],
+    cooldown: 0.08, concurrency: 2, priority: 68, positional: true, pitchJitter: 0.025, volumeJitter: 0.04,
+  },
+  waveStart: {
+    variations: [V("wave", 220, 500, 0.85)],
+    cooldown: 0.35, concurrency: 1, priority: 76, positional: false, pitchJitter: 0, volumeJitter: 0,
+  },
+  bossSpawn: {
+    variations: [V("boss", 60, 380, 1.8)],
+    cooldown: 0.8, concurrency: 1, priority: 100, positional: false, pitchJitter: 0, volumeJitter: 0,
+  },
+  furnaceUpgrade: {
+    variations: [V("upgrade", 120, 900, 1.05), V("upgrade", 145, 1150, 0.95)],
+    cooldown: 0.3, concurrency: 1, priority: 86, positional: false, pitchJitter: 0.015, volumeJitter: 0.025,
+  },
+  victory: {
+    variations: [V("victory", 523, 0, 1.2)],
+    cooldown: 0.8, concurrency: 1, priority: 96, positional: false, pitchJitter: 0, volumeJitter: 0,
+  },
+  defeat: {
+    variations: [V("defeat", 220, 0, 1.45)],
+    cooldown: 0.8, concurrency: 1, priority: 96, positional: false, pitchJitter: 0, volumeJitter: 0,
+  },
+  gatherWood: {
+    variations: [V("wood", 260, 1400, 0.12), V("wood", 235, 1220, 0.14)],
+    cooldown: 0.055, concurrency: 2, priority: 35, positional: false, pitchJitter: 0.03, volumeJitter: 0.04,
+  },
+  gatherStone: {
+    variations: [V("stone", 180, 900, 0.13), V("stone", 205, 1040, 0.12)],
+    cooldown: 0.055, concurrency: 2, priority: 35, positional: false, pitchJitter: 0.025, volumeJitter: 0.04,
+  },
+  bossWindup: {
+    variations: [V("windup", 70, 0, 0.9)],
+    cooldown: 0.15, concurrency: 1, priority: 92, positional: true, pitchJitter: 0.015, volumeJitter: 0.025,
+  },
+  commanderHorn: {
+    variations: [V("horn", 220, 0, 0.55), V("horn", 196, 0, 0.62)],
+    cooldown: 0.2, concurrency: 2, priority: 82, positional: true, pitchJitter: 0.015, volumeJitter: 0.025,
+  },
+  heroDown: {
+    variations: [V("down", 220, 0, 0.68)],
+    cooldown: 0.4, concurrency: 1, priority: 96, positional: false, pitchJitter: 0, volumeJitter: 0,
+  },
+  heroRevive: {
+    variations: [V("revive", 392, 0, 0.5)],
+    cooldown: 0.4, concurrency: 1, priority: 96, positional: false, pitchJitter: 0, volumeJitter: 0,
+  },
 };
 
-const ALIASES: Partial<Record<SfxName, CoreSfxName>> = {
+type LegacyAliasName = Exclude<SfxName, CoreSfxName>;
+
+/**
+ * Exhaustive compatibility map for pre-V1 call sites. Only genuinely related
+ * sound families are aliased; high-salience legacy events have their own
+ * semantic definition above. Adding a new legacy name without auditing it is a
+ * TypeScript error instead of silently falling back to a random combat sound.
+ */
+const ALIASES: Record<LegacyAliasName, CoreSfxName> = {
   heroMelee: "heroMeleeSwing",
   heroRanged: "heroRangedShot",
   allyAttack: "squadMelee",
-  enemyAttack: "squadMelee",
-  musketFire: "squadGunshot",
-  frostCast: "magicAttack",
-  medicHeal: "magicAttack",
-  assaultTeleport: "magicAttack",
+  medicHeal: "healing",
+  assaultTeleport: "teleport",
   towerFire: "squadGunshot",
   wallHit: "enemyHit",
   buildingDestroyed: "artilleryExplosion",
   coinPickup: "uiConfirm",
-  waveStart: "uiConfirm",
-  bossSpawn: "artilleryExplosion",
   furnaceDamaged: "enemyHit",
-  furnaceHeal: "magicAttack",
-  furnaceUpgrade: "magicAttack",
+  furnaceHeal: "healing",
   buildStage: "buildPlace",
   buildComplete: "buildPlace",
   buildFail: "uiError",
   engineerRepair: "buildPlace",
-  gatherWood: "buildPlace",
-  gatherStone: "buildPlace",
-  bossSlamWindup: "magicAttack",
+  musketFire: "squadGunshot",
+  frostCast: "magicAttack",
+  bossSlamWindup: "bossWindup",
   bossSlam: "artilleryExplosion",
   freezeZoneSlam: "artilleryExplosion",
   armorBreak: "enemyHit",
-  commanderHorn: "magicAttack",
   bomberWarn: "uiError",
   bomberBlast: "artilleryExplosion",
   heroSkillFrost: "magicAttack",
   heroSkillBarrage: "artilleryExplosion",
-  heroSkillRally: "magicAttack",
-  heroDown: "enemyHit",
-  heroRevive: "uiConfirm",
-  defeat: "uiError",
-  victory: "uiConfirm",
+  heroSkillRally: "commanderHorn",
 };
 
 const VARIATION_COUNTS = Object.fromEntries(
@@ -240,7 +314,7 @@ const VARIATION_COUNTS = Object.fromEntries(
 
 /**
  * Gameplay SFX V1. One reusable WebAudio graph owns SFX, ambience and a reserved
- * voice bus. Core events use bounded variation pools, priority/concurrency,
+ * voice bus. Semantic events use bounded variation pools, priority/concurrency,
  * cooldowns and PannerNode positioning. Placeholder sounds are procedural and
  * intentionally asset-free until commercially cleared samples replace them.
  */
@@ -515,8 +589,7 @@ export class AudioManager {
 
   private semanticName(name: SfxName): CoreSfxName {
     if (name in SFX) return name as CoreSfxName;
-    if (name === "footstep") return "squadMelee";
-    return ALIASES[name] ?? "enemyHit";
+    return ALIASES[name as LegacyAliasName];
   }
 
   private selectVariation(name: CoreSfxName, count: number): number {
@@ -538,73 +611,116 @@ export class AudioManager {
     const sources: AudioScheduledSourceNode[] = [];
     const nodes: AudioNode[] = [];
     const duration = recipe.duration;
+    const addTone = (type: OscillatorType, start: number, end: number, d: number, level: number, offset = 0): void => {
+      const tone = this.makeTone(destination, at + offset, type, start, end, d, level);
+      sources.push(tone.source); nodes.push(tone.gain);
+    };
+    const addNoise = (d: number, level: number, frequency: number, type: BiquadFilterType, offset = 0): void => {
+      const noise = this.makeNoise(destination, at + offset, d, level, frequency, type);
+      sources.push(noise.source); nodes.push(noise.filter, noise.gain);
+    };
 
     switch (recipe.kind) {
-      case "whoosh": {
-        const noise = this.makeNoise(destination, at, duration, 0.22, recipe.colour * pitch, "bandpass");
-        sources.push(noise.source); nodes.push(noise.filter, noise.gain);
-        const tone = this.makeTone(destination, at, "triangle", recipe.tone * pitch, Math.max(45, recipe.tone * 0.35 * pitch), duration, 0.09);
-        sources.push(tone.source); nodes.push(tone.gain);
+      case "whoosh":
+        addNoise(duration, 0.22, recipe.colour * pitch, "bandpass");
+        addTone("triangle", recipe.tone * pitch, Math.max(45, recipe.tone * 0.35 * pitch), duration, 0.09);
         break;
-      }
-      case "impact": {
-        const noise = this.makeNoise(destination, at, duration, 0.28, recipe.colour * pitch, "lowpass");
-        sources.push(noise.source); nodes.push(noise.filter, noise.gain);
-        const tone = this.makeTone(destination, at, "sine", recipe.tone * pitch, Math.max(30, recipe.tone * 0.45 * pitch), duration, 0.22);
-        sources.push(tone.source); nodes.push(tone.gain);
+      case "impact":
+        addNoise(duration, 0.28, recipe.colour * pitch, "lowpass");
+        addTone("sine", recipe.tone * pitch, Math.max(30, recipe.tone * 0.45 * pitch), duration, 0.22);
         break;
-      }
-      case "shot": {
-        const noise = this.makeNoise(destination, at, duration, 0.3, recipe.colour * pitch, "highpass");
-        sources.push(noise.source); nodes.push(noise.filter, noise.gain);
-        const tone = this.makeTone(destination, at, "square", recipe.tone * pitch, Math.max(55, recipe.tone * 0.3 * pitch), duration * 0.75, 0.18);
-        sources.push(tone.source); nodes.push(tone.gain);
+      case "shot":
+        addNoise(duration, 0.3, recipe.colour * pitch, "highpass");
+        addTone("square", recipe.tone * pitch, Math.max(55, recipe.tone * 0.3 * pitch), duration * 0.75, 0.18);
         break;
-      }
-      case "death": {
-        const noise = this.makeNoise(destination, at, duration, 0.2, recipe.colour * pitch, "bandpass");
-        sources.push(noise.source); nodes.push(noise.filter, noise.gain);
-        const tone = this.makeTone(destination, at, "triangle", recipe.tone * pitch, 70 * pitch, duration, 0.12);
-        sources.push(tone.source); nodes.push(tone.gain);
+      case "death":
+        addNoise(duration, 0.2, recipe.colour * pitch, "bandpass");
+        addTone("triangle", recipe.tone * pitch, 70 * pitch, duration, 0.12);
         break;
-      }
-      case "magic": {
-        const a = this.makeTone(destination, at, "sine", recipe.tone * pitch, recipe.tone * 0.55 * pitch, duration, 0.11);
-        const b = this.makeTone(destination, at + 0.035, "triangle", recipe.tone * 1.5 * pitch, recipe.tone * 0.8 * pitch, duration * 0.8, 0.06);
-        sources.push(a.source, b.source); nodes.push(a.gain, b.gain);
-        const noise = this.makeNoise(destination, at, duration * 0.8, 0.08, recipe.colour * pitch, "highpass");
-        sources.push(noise.source); nodes.push(noise.filter, noise.gain);
+      case "magic":
+        addTone("sine", recipe.tone * pitch, recipe.tone * 0.55 * pitch, duration, 0.11);
+        addTone("triangle", recipe.tone * 1.5 * pitch, recipe.tone * 0.8 * pitch, duration * 0.8, 0.06, 0.035);
+        addNoise(duration * 0.8, 0.08, recipe.colour * pitch, "highpass");
         break;
-      }
-      case "explosion": {
-        const noise = this.makeNoise(destination, at, duration, 0.42, recipe.colour * pitch, "lowpass");
-        sources.push(noise.source); nodes.push(noise.filter, noise.gain);
-        const tone = this.makeTone(destination, at, "sine", recipe.tone * pitch, 28 * pitch, duration, 0.34);
-        sources.push(tone.source); nodes.push(tone.gain);
+      case "explosion":
+        addNoise(duration, 0.42, recipe.colour * pitch, "lowpass");
+        addTone("sine", recipe.tone * pitch, 28 * pitch, duration, 0.34);
         break;
-      }
-      case "build": {
-        const tone = this.makeTone(destination, at, "square", recipe.tone * pitch, recipe.tone * 1.25 * pitch, duration, 0.09);
-        const noise = this.makeNoise(destination, at, duration * 0.7, 0.16, recipe.colour, "bandpass");
-        sources.push(tone.source, noise.source); nodes.push(tone.gain, noise.filter, noise.gain);
+      case "build":
+        addTone("square", recipe.tone * pitch, recipe.tone * 1.25 * pitch, duration, 0.09);
+        addNoise(duration * 0.7, 0.16, recipe.colour, "bandpass");
         break;
-      }
-      case "confirm": {
-        const a = this.makeTone(destination, at, "sine", recipe.tone, recipe.tone, duration * 0.7, 0.07);
-        const b = this.makeTone(destination, at + 0.07, "sine", recipe.tone * 1.33, recipe.tone * 1.33, duration * 0.55, 0.06);
-        sources.push(a.source, b.source); nodes.push(a.gain, b.gain);
+      case "confirm":
+        addTone("sine", recipe.tone, recipe.tone, duration * 0.7, 0.07);
+        addTone("sine", recipe.tone * 1.33, recipe.tone * 1.33, duration * 0.55, 0.06, 0.07);
         break;
-      }
-      case "error": {
-        const tone = this.makeTone(destination, at, "square", recipe.tone, recipe.tone * 0.62, duration, 0.09);
-        sources.push(tone.source); nodes.push(tone.gain);
+      case "error":
+        addTone("square", recipe.tone, recipe.tone * 0.62, duration, 0.09);
         break;
-      }
-      case "step": {
-        const noise = this.makeNoise(destination, at, duration, 0.08, recipe.colour, "lowpass");
-        sources.push(noise.source); nodes.push(noise.filter, noise.gain);
+      case "step":
+        addNoise(duration, 0.085, recipe.colour * pitch, "lowpass");
         break;
-      }
+      case "enemyAttack":
+        addNoise(duration, 0.14, recipe.colour * pitch, "bandpass");
+        addTone("triangle", recipe.tone * pitch, recipe.tone * 0.58 * pitch, duration, 0.07);
+        break;
+      case "heal":
+        addTone("sine", recipe.tone * pitch, recipe.tone * 1.05 * pitch, duration, 0.055);
+        addTone("sine", recipe.tone * 1.34 * pitch, recipe.tone * 1.4 * pitch, duration * 0.72, 0.045, 0.055);
+        break;
+      case "teleport":
+        addTone("sawtooth", recipe.tone * pitch, 220 * pitch, duration, 0.1);
+        addNoise(duration * 0.8, 0.11, recipe.colour * pitch, "highpass");
+        break;
+      case "wave":
+        addTone("sine", recipe.tone, recipe.tone, duration, 0.075);
+        addTone("sine", recipe.tone * 1.26, recipe.tone * 1.26, duration * 0.9, 0.065, 0.06);
+        addTone("sine", recipe.tone * 1.5, recipe.tone * 1.5, duration * 0.8, 0.055, 0.12);
+        addNoise(duration, 0.07, recipe.colour, "lowpass");
+        break;
+      case "boss":
+        addTone("sine", recipe.tone, 38, duration, 0.42);
+        addTone("sawtooth", recipe.tone * 2.15, 46, duration * 0.8, 0.12);
+        addNoise(duration, 0.16, recipe.colour, "lowpass");
+        break;
+      case "upgrade":
+        addTone("sine", 52, 38, duration, 0.22);
+        addTone("triangle", recipe.tone, recipe.tone * 2.25, duration * 0.72, 0.09, 0.08);
+        addNoise(duration * 0.75, 0.1, recipe.colour, "bandpass");
+        break;
+      case "victory":
+        addTone("sine", recipe.tone, recipe.tone, duration * 0.78, 0.08);
+        addTone("sine", recipe.tone * 1.26, recipe.tone * 1.26, duration * 0.68, 0.075, 0.12);
+        addTone("sine", recipe.tone * 1.5, recipe.tone * 1.5, duration * 0.58, 0.07, 0.24);
+        addTone("sine", recipe.tone * 2, recipe.tone * 2, duration * 0.48, 0.06, 0.36);
+        break;
+      case "defeat":
+        addTone("triangle", recipe.tone, recipe.tone * 0.72, duration, 0.11);
+        addTone("sine", recipe.tone * 1.19, recipe.tone * 0.55, duration * 0.82, 0.07, 0.1);
+        break;
+      case "wood":
+        addTone("triangle", recipe.tone * pitch, recipe.tone * 0.46 * pitch, duration, 0.12);
+        addNoise(duration * 0.8, 0.12, recipe.colour * pitch, "bandpass");
+        break;
+      case "stone":
+        addTone("square", recipe.tone * pitch, recipe.tone * 0.5 * pitch, duration * 0.75, 0.08);
+        addNoise(duration, 0.18, recipe.colour * pitch, "bandpass");
+        break;
+      case "windup":
+        addTone("sawtooth", recipe.tone * pitch, recipe.tone * 2.2 * pitch, duration, 0.13);
+        break;
+      case "horn":
+        addTone("sawtooth", recipe.tone * pitch, recipe.tone * 1.18 * pitch, duration, 0.1);
+        addTone("sine", recipe.tone * 0.5 * pitch, recipe.tone * 0.55 * pitch, duration * 0.9, 0.055);
+        break;
+      case "down":
+        addTone("sawtooth", recipe.tone, 60, duration, 0.15);
+        break;
+      case "revive":
+        addTone("sine", recipe.tone, recipe.tone, duration, 0.055);
+        addTone("sine", recipe.tone * 1.33, recipe.tone * 1.33, duration * 0.85, 0.05, 0.06);
+        addTone("sine", recipe.tone * 1.68, recipe.tone * 1.68, duration * 0.7, 0.045, 0.12);
+        break;
     }
     return { sources, nodes, duration };
   }
