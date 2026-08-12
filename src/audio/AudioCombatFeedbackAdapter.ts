@@ -22,7 +22,8 @@ export class AudioCombatFeedbackAdapter implements CombatVfx {
 
   meleeHit(x: number, z: number): void {
     this.inner.meleeHit(x, z);
-    this.audio.playAt("enemyHit", x, z, 0.34, 1);
+    // Enemy impact/death is emitted from CombatDirector where target faction is
+    // known. This layer only adds the Hero's close hit on the actual hit frame.
     const hero = this.heroGetter?.();
     const target = hero?.currentTarget;
     if (!hero?.alive || !hero.inMelee || !target) return;
@@ -32,7 +33,6 @@ export class AudioCombatFeedbackAdapter implements CombatVfx {
 
   rangedHit(x: number, z: number): void {
     this.inner.rangedHit(x, z);
-    this.audio.playAt("enemyHit", x, z, 0.28, 1);
   }
 
   areaBlast(x: number, z: number, radius: number): void {
@@ -53,10 +53,7 @@ export class AudioCombatFeedbackAdapter implements CombatVfx {
   supportAura(x: number, z: number, radius: number): void { this.inner.supportAura(x, z, radius); }
   taunt(x: number, z: number, radius: number): void { this.inner.taunt(x, z, radius); }
   teleport(x: number, z: number): void { this.inner.teleport(x, z); }
-  unitDeath(x: number, z: number, level: number): void {
-    this.inner.unitDeath(x, z, level);
-    this.audio.playAt("enemyDeath", x, z, Math.min(0.72, 0.36 + level * 0.05), 1, Math.min(18, level * 3));
-  }
+  unitDeath(x: number, z: number, level: number): void { this.inner.unitDeath(x, z, level); }
   buildingHit(x: number, z: number): void { this.inner.buildingHit(x, z); }
 
   /** UI / non-world events intentionally remain centred/non-positional. */
