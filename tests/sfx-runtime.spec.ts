@@ -12,7 +12,22 @@ type CoreSfxName =
   | "artilleryExplosion"
   | "buildPlace"
   | "uiConfirm"
-  | "uiError";
+  | "uiError"
+  | "footstep"
+  | "enemyAttack"
+  | "healing"
+  | "teleport"
+  | "waveStart"
+  | "bossSpawn"
+  | "furnaceUpgrade"
+  | "victory"
+  | "defeat"
+  | "gatherWood"
+  | "gatherStone"
+  | "bossWindup"
+  | "commanderHorn"
+  | "heroDown"
+  | "heroRevive";
 
 interface SfxVoice {
   id: number;
@@ -190,6 +205,11 @@ test("variation pools play real WebAudio sources with bounded pitch and volume j
     buildPlace: 2,
     uiConfirm: 1,
     uiError: 1,
+    footstep: 3,
+    bossSpawn: 1,
+    victory: 1,
+    defeat: 1,
+    furnaceUpgrade: 2,
   });
 
   const picked: number[] = [];
@@ -208,11 +228,63 @@ test("variation pools play real WebAudio sources with bounded pitch and volume j
   expect(picked[2]).not.toBe(picked[1]);
 });
 
+test("legacy high-salience sounds keep dedicated semantic events", async ({ page }) => {
+  await boot(page);
+  const cases: Array<[CoreSfxName, CoreSfxName]> = [
+    ["bossSpawn", "artilleryExplosion"],
+    ["victory", "uiConfirm"],
+    ["defeat", "uiError"],
+    ["furnaceUpgrade", "magicAttack"],
+  ];
+
+  for (const [event, forbidden] of cases) {
+    await play(page, event, 0.65);
+    const snapshot = await sfxSnapshot(page);
+    const voice = latest(snapshot, event);
+    expect(voice?.requestedName).toBe(event);
+    expect(voice?.sourceState).toBe("playing");
+    expect(snapshot.activeVoices.some((candidate) => candidate.requestedName === event && candidate.event === forbidden)).toBe(false);
+    await page.waitForTimeout(90);
+  }
+});
+
+test("real Hero movement emits footstep semantic, never squad melee", async ({ page }) => {
+  await boot(page);
+  await gameCall(page, "startStage", "stage-1");
+
+  const start = await page.evaluate(() => {
+    const p = (window as any).frostbound?.game?.s?.hero?.position;
+    return { x: Number(p?.x ?? 0), z: Number(p?.z ?? 0) };
+  });
+
+  await page.keyboard.down("w");
+  let snapshot: SfxSnapshot | null = null;
+  try {
+    for (let frame = 0; frame < 60; frame++) {
+      await step(page, 0.05);
+      const candidate = await sfxSnapshot(page);
+      if (playing(candidate, "footstep").some((voice) => voice.requestedName === "footstep")) {
+        snapshot = candidate;
+        break;
+      }
+    }
+  } finally {
+    await page.keyboard.up("w");
+  }
+
+  const end = await page.evaluate(() => {
+    const p = (window as any).frostbound?.game?.s?.hero?.position;
+    return { x: Number(p?.x ?? 0), z: Number(p?.z ?? 0) };
+  });
+  expect(Math.hypot(end.x - start.x, end.z - start.z)).toBeGreaterThan(1.5);
+  expect(snapshot, "Hero moved but no footstep voice was observed").not.toBeNull();
+  expect(latest(snapshot!, "footstep")?.requestedName).toBe("footstep");
+  expect(snapshot!.activeVoices.some((voice) => voice.requestedName === "footstep" && voice.event === "squadMelee")).toBe(false);
+});
+
 test("cooldown, per-event concurrency and the global cap prevent a death noise wall", async ({ page }) => {
   await boot(page);
 
-  // Keep both requests inside the same browser task. Playwright round-trips can
-  // exceed an 18ms gameplay cooldown and would make this assertion flaky.
   const cooldown = await page.evaluate(() => {
     const api = (window as any).frostboundSfx;
     const before = api.snapshot().droppedByCooldown as number;
@@ -222,8 +294,6 @@ test("cooldown, per-event concurrency and the global cap prevent a death noise w
   });
   expect(cooldown.after).toBeGreaterThan(cooldown.before);
 
-  // Death duration is >=250 ms and cooldown is 35 ms. Five launches spaced
-  // 40 ms inside one browser task overlap, so the fifth must hit cap=4.
   await page.waitForTimeout(80);
   const concurrency = await page.evaluate(async () => {
     const api = (window as any).frostboundSfx;
@@ -247,8 +317,6 @@ test("cooldown, per-event concurrency and the global cap prevent a death noise w
   expect(concurrency.totalCap).toBe(16);
   expect(concurrency.totalCap).toBeLessThan(20);
 
-  // A burst of many low-priority hit/death requests still cannot create 20+
-  // simultaneous voices, even when they originate at different world points.
   for (let i = 0; i < 40; i++) {
     await playAt(page, i % 2 === 0 ? "enemyHit" : "enemyDeath", 4 + (i % 5), i % 3, 0.5);
   }
@@ -316,21 +384,15 @@ test("real gameplay separates Hero swing from hit and produces ranged, enemy-hit
   await gameCall(page, "teleport", 0, -5);
   await gameCall(page, "spawnEnemy", "grunt", 0, -3.5);
 
-  // Wait for the real target acquisition / attack-start frame rather than
-  // assuming it must occur on the first 50ms simulation step.
   let snapshot = await stepUntilVoice(page, "heroMeleeSwing", 24, "heroMelee");
   expect(playing(snapshot, "heroMeleeHit")).toHaveLength(0);
 
-  // Kill through the existing debug cleanup before the animation hit frame.
-  // This direct cleanup does not route through CombatDirector damage, so the
-  // only assertion here is the important semantic one: no fabricated impact.
   await gameCall(page, "killAllEnemies");
   await step(page, 0.45);
   snapshot = await sfxSnapshot(page);
   expect(playing(snapshot, "heroMeleeHit")).toHaveLength(0);
 
   await page.waitForTimeout(260);
-  // Fresh target survives through the real hit frame: swing + impact now layer.
   await gameCall(page, "startStage", "stage-1");
   await gameCall(page, "teleport", 0, -5);
   await gameCall(page, "spawnEnemy", "bruiser", 0, -3.5);
@@ -339,13 +401,13 @@ test("real gameplay separates Hero swing from hit and produces ranged, enemy-hit
   expect(playing(snapshot, "heroMeleeHit").length).toBeGreaterThan(0);
   expect(playing(snapshot, "enemyHit").length).toBeGreaterThan(0);
 
-  // Continue the same real combat until CombatDirector observes the fatal hit.
-  snapshot = await stepUntilVoice(page, "enemyDeath", 160);
-  expect(playing(snapshot, "enemyDeath").length).toBeGreaterThan(0);
-  expect(latest(snapshot, "enemyDeath")?.positional).toBe(true);
+  // CombatDirector owns enemyHit; the existing unitDeath(x,z) callback owns
+  // exactly one positional enemyDeath voice when the unit actually dies.
+  snapshot = await stepUntilVoice(page, "enemyDeath", 160, "enemyDeath");
+  expect(playing(snapshot, "enemyDeath")).toHaveLength(1);
+  expect(latest(snapshot, "enemyDeath")).toMatchObject({ requestedName: "enemyDeath", positional: true });
 
   await page.waitForTimeout(750);
-  // A target outside melee threshold uses the existing ranged attack-start path.
   await gameCall(page, "startStage", "stage-1");
   await gameCall(page, "teleport", 0, -5);
   await gameCall(page, "spawnEnemy", "bruiser", 0, 1.5);
@@ -373,13 +435,10 @@ test("real squad attack starts preserve melee, gunshot and magic distinctions", 
     ).toBe(true);
   };
 
-  // requestedName prevents an enemy's own legacy attack sound from satisfying
-  // the allied melee assertion.
   await expectSquadEvent("warrior", "squadMelee", "allyAttack", 1.5);
   await expectSquadEvent("musketeer", "squadGunshot", "musketFire", 7);
   await expectSquadEvent("frostmage", "magicAttack", "frostCast", 7);
 
-  // Artillery is a separate semantic recipe/voice family from magic.
   await playAt(page, "artilleryExplosion", 0, 0, 0.6);
   const final = await sfxSnapshot(page);
   expect(latest(final, "artilleryExplosion")?.sourceState).toBe("playing");
