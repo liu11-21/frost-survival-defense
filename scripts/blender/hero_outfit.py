@@ -481,14 +481,14 @@ def build_outfit(body, armature, variant):
         for bone_name, surface, pad, tail_pad, exp, extra, axis_bone, over_head, over_tail in (
             (f"upperarm_{side}", "coat", 1.22, 1.15, 2.8, (), None, 0.0, 0.14),
             (f"lowerarm_{side}", "coat", 1.17, 1.10, 2.8, (), None, 0.12, 0.06),
-            (f"thigh_{side}", "coat", 1.15, 1.10, 2.8, (), None, 0.0, 0.16),
+            (f"thigh_{side}", "coat", 1.15, 1.10, 2.8, (), None, 0.0, 0.24),
             # The trouser has to reach INTO the boot. The boot is swept along
             # the foot, so its own overhangs run heel-to-toe and cannot cover
             # the ankle; only the calf can close that seam.
             # 0.30 drove the trouser straight through the boot and out the
             # bottom, where its open end showed as a bare ellipse. It only has
             # to reach the boot cuff, not past it.
-            (f"calf_{side}", "coat", 1.13, 1.22, 2.8, (), None, 0.14, 0.10),
+            (f"calf_{side}", "coat", 1.13, 1.22, 2.8, (), None, 0.28, 0.10),
             # Boot: foot plus the ball, oriented along the shin so the shaft
             # runs up the ankle instead of along the toes.
             # The boot has to swallow the toes: the foot bone stops at the ball,
