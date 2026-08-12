@@ -37,7 +37,7 @@ OUT = os.path.join(ROOT, ".runtime", "mpfb", "variants")
 # Surface palette. Kept to four so the GLB stays inside the material budget,
 # and pulled apart on value so the silhouette reads in a flat grey render.
 SURFACES = {
-    "coat":    (0.243, 0.271, 0.325),
+    "coat":    (0.128, 0.145, 0.184),
     "leather": (0.372, 0.263, 0.171),
     "fur":     (0.606, 0.564, 0.487),
     "metal":   (0.404, 0.428, 0.463),
@@ -1179,10 +1179,20 @@ def main():
     bpy.context.view_layer.update()
 
     materials = {}
+    # Roughness is the only thing separating "worn kit" from "showroom prop"
+    # while there are no textures. At 0.34 the helmet and pauldrons rendered as
+    # polished chrome -- a mirror finish on a character whose whole premise is
+    # surviving a winter. Steel that has been rained on and knocked about sits
+    # far rougher, and the darker base stops it reading as bright silver.
+    #
+    # Leather likewise: 0.58 is a buffed dress shoe, not a boot.
     for name, base, rough, metal in (
-        ("cloth", (0.243, 0.271, 0.325), 0.92, 0.0),
-        ("leather", (0.243, 0.166, 0.106), 0.58, 0.04),
-        ("metal", (0.430, 0.455, 0.492), 0.34, 0.85),
+        # Dark winter wool, so the steel plate over it actually reads. At
+        # 0.243/0.271/0.325 the coat sat within a few percent of the armour and
+        # the whole figure flattened into one pale grey mass.
+        ("cloth", (0.128, 0.145, 0.184), 0.94, 0.0),
+        ("leather", (0.222, 0.152, 0.098), 0.72, 0.04),
+        ("metal", (0.352, 0.372, 0.402), 0.62, 0.82),
     ):
         mat = bpy.data.materials.new("Hero_" + name)
         mat.use_nodes = True
