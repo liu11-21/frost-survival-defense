@@ -21,7 +21,7 @@
     "art:export": "node scripts/run-blender.mjs scripts/blender/batch_export.py",
     "test:hero:runtime": "playwright test tests/hero-runtime.spec.ts",
     "test:hero:gameplay": "playwright test tests/hero-gameplay-review.spec.ts",
-    "test:audio": "playwright test tests/audio-runtime.spec.ts",
+    "test:audio": "playwright test tests/audio-runtime.spec.ts tests/sfx-runtime.spec.ts",
     "art:validate": "node scripts/validate-build-scripts.mjs && node scripts/validate-models.mjs",
     "art:validate:scripts": "node scripts/validate-build-scripts.mjs",
     "art:validate:hero": "node scripts/validate-hero-commercial.mjs",
