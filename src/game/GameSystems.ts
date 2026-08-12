@@ -236,6 +236,7 @@ export class GameSystems {
     this.heroStats = new HeroStats(this.upgrades);
     this.hero = new HeroController(this.scene, this.materials, this.heroStats, this.ctx, this.collision);
     this.world.hero = this.hero;
+    combatFeedback.bindHero(() => this.hero);
     this.heroSkills = new HeroSkills(this.hero, this.ctx, this.buildings, this.squads);
 
     this.waves = new WaveManager(this.squads, this.events);
