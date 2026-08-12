@@ -24,6 +24,7 @@ interface MusicSnapshotChannel {
   readonly paused: boolean;
   readonly src: string;
   readonly gain: number;
+  readonly currentTime: number;
 }
 
 export interface MusicSnapshot {
@@ -36,11 +37,16 @@ export interface MusicSnapshot {
   readonly crossfadeSeconds: number;
   readonly tracks: Record<MusicState, string>;
   readonly channels: MusicSnapshotChannel[];
+  readonly contextState: AudioContextState | "none";
+  readonly lifecycleSuspended: boolean;
+  readonly contextCreateCount: number;
+  readonly lifecycleListenerInstallCount: number;
+  readonly disposeCount: number;
 }
 
 /**
  * Central BGM owner. Gameplay only sends semantic music states; this class owns
- * media elements, Web Audio routing, persistence and crossfade lifecycle.
+ * media elements, Web Audio routing, persistence, lifecycle and crossfades.
  */
 export class AudioDirector {
   private ctx: AudioContext | null = null;
@@ -57,19 +63,51 @@ export class AudioDirector {
   private boundEvents: GameEvents | null = null;
   private eventUnsubscribers: Array<() => void> = [];
 
+  private lifecycleSuspended = false;
+  private lifecycleListenersInstalled = false;
+  private contextCreateCount = 0;
+  private lifecycleListenerInstallCount = 0;
+  private disposeCount = 0;
+
+  private readonly onPageHide = (event: PageTransitionEvent): void => {
+    if (event.persisted) {
+      // BFCache keeps this exact JS realm alive. Suspend, but deliberately keep
+      // the graph and listeners so pageshow can resume without a second context.
+      this.suspendForLifecycle();
+      return;
+    }
+    // A terminal navigation must stop media immediately and release Web Audio.
+    this.dispose();
+  };
+
+  private readonly onPageShow = (event: PageTransitionEvent): void => {
+    if (event.persisted || this.lifecycleSuspended) this.resumeFromLifecycle();
+  };
+
+  private readonly onVisibilityChange = (): void => {
+    if (document.hidden) this.suspendForLifecycle();
+    else this.resumeFromLifecycle();
+  };
+
   constructor() {
     this.installVerificationApi();
-    window.addEventListener("pagehide", () => this.dispose(), { once: true });
+    this.installLifecycleListeners();
   }
 
   /** Must run from a real user gesture. Creates/resumes the music AudioContext. */
   unlock(): void {
+    this.installLifecycleListeners();
     if (!this.ctx) this.createGraph();
     const ctx = this.ctx;
     if (!ctx) return;
-    if (ctx.state === "suspended") void ctx.resume();
     this.unlocked = true;
     this.applyVolume();
+
+    if (!this.lifecycleSuspended && ctx.state === "suspended") {
+      void ctx.resume().catch((error: unknown) => {
+        console.warn("[audio] failed to resume AudioContext", error);
+      });
+    }
     if (this.requestedState !== null && this.activeState !== this.requestedState) {
       this.transitionTo(this.requestedState);
     }
@@ -189,11 +227,27 @@ export class AudioDirector {
         paused: channel.element.paused,
         src: channel.element.src,
         gain: Number(channel.gain.gain.value.toFixed(3)),
+        currentTime: Number(channel.element.currentTime.toFixed(3)),
       })),
+      contextState: this.ctx?.state ?? "none",
+      lifecycleSuspended: this.lifecycleSuspended,
+      contextCreateCount: this.contextCreateCount,
+      lifecycleListenerInstallCount: this.lifecycleListenerInstallCount,
+      disposeCount: this.disposeCount,
     };
   }
 
   dispose(): void {
+    const hadRuntime =
+      this.lifecycleListenersInstalled ||
+      this.ctx !== null ||
+      this.channels.length > 0 ||
+      this.boundEvents !== null ||
+      this.eventUnsubscribers.length > 0;
+    if (!hadRuntime) return;
+
+    this.disposeCount++;
+    this.removeLifecycleListeners();
     for (const unsubscribe of this.eventUnsubscribers) unsubscribe();
     this.eventUnsubscribers = [];
     this.boundEvents = null;
@@ -203,6 +257,7 @@ export class AudioDirector {
       channel.generation++;
       channel.element.pause();
       channel.element.removeAttribute("src");
+      channel.element.load();
       channel.source.disconnect();
       channel.gain.disconnect();
     }
@@ -214,6 +269,59 @@ export class AudioDirector {
     this.activeChannel = -1;
     this.activeState = null;
     this.unlocked = false;
+    this.lifecycleSuspended = false;
+  }
+
+  private installLifecycleListeners(): void {
+    if (this.lifecycleListenersInstalled) return;
+    window.addEventListener("pagehide", this.onPageHide);
+    window.addEventListener("pageshow", this.onPageShow);
+    document.addEventListener("visibilitychange", this.onVisibilityChange);
+    this.lifecycleListenersInstalled = true;
+    this.lifecycleListenerInstallCount++;
+  }
+
+  private removeLifecycleListeners(): void {
+    if (!this.lifecycleListenersInstalled) return;
+    window.removeEventListener("pagehide", this.onPageHide);
+    window.removeEventListener("pageshow", this.onPageShow);
+    document.removeEventListener("visibilitychange", this.onVisibilityChange);
+    this.lifecycleListenersInstalled = false;
+  }
+
+  private suspendForLifecycle(): void {
+    if (this.lifecycleSuspended) return;
+    this.lifecycleSuspended = true;
+    for (const channel of this.channels) {
+      if (channel.state !== null && !channel.element.paused) channel.element.pause();
+    }
+    if (this.ctx?.state === "running") {
+      void this.ctx.suspend().catch((error: unknown) => {
+        console.warn("[audio] failed to suspend AudioContext", error);
+      });
+    }
+  }
+
+  private resumeFromLifecycle(): void {
+    if (!this.lifecycleSuspended || document.hidden) return;
+    this.lifecycleSuspended = false;
+    const ctx = this.ctx;
+    if (!ctx || !this.unlocked || ctx.state === "closed") return;
+
+    const resumeChannels = (): void => {
+      for (const channel of this.channels) {
+        if (channel.state !== null && channel.element.paused) this.playChannel(channel);
+      }
+    };
+
+    if (ctx.state === "suspended") {
+      void ctx
+        .resume()
+        .then(resumeChannels)
+        .catch((error: unknown) => console.warn("[audio] failed to resume after lifecycle suspension", error));
+      return;
+    }
+    resumeChannels();
   }
 
   private createGraph(): void {
@@ -228,6 +336,7 @@ export class AudioDirector {
     musicGain.connect(ctx.destination);
     this.ctx = ctx;
     this.musicGain = musicGain;
+    this.contextCreateCount++;
 
     for (let index = 0; index < CHANNEL_COUNT; index++) {
       const element = document.createElement("audio");
@@ -277,8 +386,12 @@ export class AudioDirector {
     channel.state = state;
     channel.element.load();
     channel.gain.gain.linearRampToValueAtTime(1, end);
+    if (!this.lifecycleSuspended) this.playChannel(channel);
+  }
+
+  private playChannel(channel: MusicChannel): void {
     void channel.element.play().catch((error: unknown) => {
-      console.warn(`[audio] failed to play ${state}`, error);
+      console.warn(`[audio] failed to play ${channel.state ?? "track"}`, error);
     });
   }
 

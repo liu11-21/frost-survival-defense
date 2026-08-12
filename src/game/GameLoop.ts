@@ -6,6 +6,7 @@ import { computeLaneCoverage } from "../buildings/AttackRangeGeometry";
 import { LANES } from "../data/BuildSlotDefinitions";
 import { BUILDING_BY_ID } from "../data/BuildingDefinitions";
 import { updateHaltedDeathLifecycle } from "../combat/HaltedDeathLifecycle";
+import { audioGameplayAdapter } from "../audio/AudioGameplayAdapter";
 
 /**
  * One simulation frame, in dependency order.
@@ -31,6 +32,9 @@ export function runFrame(s: GameSystems, dt: number, support: SupportSystems): v
   updateFrameUi(s, support.workingNode);
 
   s.waves.update(dt);
+  // Audio reads the canonical phase and live combat field after WaveManager has
+  // advanced. It never writes gameplay state or combat balance.
+  audioGameplayAdapter.update(s, dt);
   s.run.update(dt);
 
   s.nodes.update(dt);
