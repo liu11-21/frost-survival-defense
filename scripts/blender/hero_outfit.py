@@ -18,6 +18,7 @@ seen, they z-fight against the garment, and on a 26k body they are most of the
 triangles.
 """
 import argparse
+import importlib
 import json
 import math
 import os
@@ -31,23 +32,43 @@ HERE = os.path.dirname(os.path.abspath(__file__))
 ROOT = os.path.abspath(os.path.join(HERE, "..", ".."))
 sys.path.append(HERE)
 from authoring import MeshBuilder, section, super_arc  # noqa: E402
+import hero_textures  # noqa: E402
 
 OUT = os.path.join(ROOT, ".runtime", "mpfb", "variants")
 
 # Surface palette. Kept to four so the GLB stays inside the material budget,
 # and pulled apart on value so the silhouette reads in a flat grey render.
 SURFACES = {
-    "coat":    (0.243, 0.271, 0.325),
+    "coat":    (0.128, 0.145, 0.184),
     "leather": (0.372, 0.263, 0.171),
     "fur":     (0.606, 0.564, 0.487),
     "metal":   (0.404, 0.428, 0.463),
     "edge":    (0.612, 0.641, 0.680),
     "accent":  (0.902, 0.560, 0.157),
+    "hair":    (0.106, 0.078, 0.061),
 }
+# name, base colour, roughness, metallic. A kit may replace this entirely.
+#
+# Roughness is the only thing separating "worn kit" from "showroom prop" while
+# there are no textures: at 0.34 the helmet and pauldrons rendered as polished
+# chrome, a mirror finish on a character whose whole premise is surviving a
+# winter. Leather likewise -- 0.58 is a buffed dress shoe, not a boot.
+MATERIAL_TABLE = (
+    # Dark winter wool, so the steel plate over it actually reads. At
+    # 0.243/0.271/0.325 the coat sat within a few percent of the armour and the
+    # whole figure flattened into one pale grey mass.
+    ("cloth", (0.128, 0.145, 0.184), 0.94, 0.0),
+    ("leather", (0.222, 0.152, 0.098), 0.72, 0.04),
+    ("metal", (0.352, 0.372, 0.402), 0.62, 0.82),
+    # Dark brown and very matte, or it reads as a leather cap.
+    ("hair", (0.106, 0.078, 0.061), 0.88, 0.0),
+)
+
 MATERIAL_OF = {
     "coat": "cloth", "fur": "cloth",
     "leather": "leather",
     "metal": "metal", "edge": "metal", "accent": "metal",
+    "hair": "hair",
 }
 
 
@@ -252,7 +273,8 @@ def limb_profile(body, bone_name, armature, slices=5, percentile=0.90,
     }
 
 
-def limb_rings(data, n, pad_head, pad_tail, exp):
+def limb_rings(data, n, pad_head, pad_tail, exp, over_head=0.0, over_tail=0.0,
+               over_taper=0.97):
     """Rings for sweep_axis, offset onto the measured centreline.
 
     sweep_axis places ring t on the straight line from start to end. The limb
@@ -273,6 +295,44 @@ def limb_rings(data, n, pad_head, pad_tail, exp):
         rings.append((t, section(
             n, entry["halfWidth"] * grow, entry["front"] * grow, entry["back"] * grow, exp,
             centre_x=offset.dot(side), centre_z=offset.dot(front))))
+
+    # Extend the tube past the bone it was lofted along.
+    #
+    # Each limb garment runs head-to-tail of one bone, so the thigh tube stops
+    # exactly where the calf tube starts and the two only touch. A close-up at
+    # the knee shows what that actually produces: a horizontal band of bare
+    # skin between them, on both legs. It is NOT hidden body that a cull could
+    # remove -- nothing covers it, and deleting those faces would open a hole
+    # straight through the leg. The garment has to reach further.
+    #
+    # `sweep_axis` maps ring t onto start + T * (length * t), so a ring at
+    # t = -0.12 or t = 1.12 extrapolates along the same axis for free. The end
+    # ring's own measured section is reused and drawn in slightly, so the tube
+    # closes toward the overlap rather than flaring into the neighbouring one.
+    def extrapolate(new_t, source, taper=0.97):
+        entry = data["slices"][source]
+        t, _sec = rings[source]
+        on_line = start + tangent * (length * t)
+        offset = entry["centre"] - on_line
+        grow = (pad_head + (pad_tail - pad_head) * t) * taper
+        return (new_t, section(
+            n, entry["halfWidth"] * grow, entry["front"] * grow, entry["back"] * grow, exp,
+            centre_x=offset.dot(side), centre_z=offset.dot(front)))
+
+    # Index into `data["slices"]`, not into `rings`: inserting the head ring
+    # shifts every ring index by one, and `len(rings) - 1` then runs off the
+    # end of the slice list.
+    last = len(data["slices"]) - 1
+    # `over_taper` decides whether an overhang reads as coverage or as a pipe.
+    # Near 1.0 the extension keeps full girth, which is right for a knee or
+    # elbow where it is buried inside the neighbouring tube. On an EXPOSED end
+    # -- the toe and heel of a boot -- it produced a horizontal cylinder poking
+    # out both sides of the foot with an open cap at the back. Tapering closes
+    # the form off instead.
+    if over_tail > 0.0:
+        rings.append(extrapolate(1.0 + over_tail, last, taper=over_taper))
+    if over_head > 0.0:
+        rings.insert(0, extrapolate(-over_head, 0, taper=over_taper))
     return rings
 
 
@@ -312,9 +372,121 @@ def _family_filter(family):
         return lambda n: (n in ("pelvis", "spine_01")
                           or n.endswith("_%s" % side) and n.startswith(
                               ("thigh", "calf", "foot", "ball")))
-    if family == "torso":
+    # Hair and helmet ride the head and neck exactly as the collar does, so
+    # they take the torso filter. They are named separately only because both
+    # have geometry deliberately tucked inside the skin, which
+    # `push_outside_body` must be told to leave alone.
+    if family in ("torso", "hair", "helmet"):
         return torso
     return None
+
+
+def face_direction(body, data):
+    """Which way the head faces, decided by topology rather than a world axis.
+
+    `limb_profile` builds its front/side frame by projecting world +Z, which is
+    a convention and not anatomy. In the adapted file that lands on the face
+    only because the head bone leans slightly forward; in the builder's rotated
+    frame it can just as easily point at the back of the skull. Every check I
+    ran agreed with itself and was still wrong, because both sides of the
+    comparison used the same accidental axis -- the face-window pass spent
+    several rounds sinking the NAPE and reporting success.
+
+    MakeHuman's basemesh spends most of its head topology on the face: eyes,
+    nose and lips are densely meshed, the cranium is not. So the denser half is
+    the face. Measured across the middle of the head, where the split is
+    cleanest and the jaw and neck cannot bias it.
+    """
+    group = body.vertex_groups.get("head")
+    if group is None:
+        return data["front"]
+    start, end = data["start"], data["end"]
+    up = (end - start).normalized()
+    ahead = behind = 0
+    spans = []
+    for vertex in body.data.vertices:
+        if not any(g.group == group.index and g.weight > 0.5 for g in vertex.groups):
+            continue
+        point = body.matrix_world @ vertex.co
+        along = (point - start).dot(up)
+        spans.append((along, (point - (start + up * along)).dot(data["front"])))
+    if len(spans) < 50:
+        return data["front"]
+    low = min(a for a, _f in spans)
+    high = max(a for a, _f in spans)
+    for along, forward in spans:
+        if 0.30 <= (along - low) / max(high - low, 1e-6) <= 0.70:
+            if forward > 0:
+                ahead += 1
+            else:
+                behind += 1
+    return data["front"] if ahead >= behind else -data["front"]
+
+
+def head_extent(body, start, end):
+    """Where the head's own vertices begin and end along the head axis.
+
+    Ring `t` from `limb_profile` runs along the head BONE, which starts inside
+    the skull and stops short of both the chin and the crown. Landmarks -- the
+    brow, a hairline, the underside of the jaw -- are fractions of the head's
+    ACTUAL extent, and the two frames differ by roughly one ring's spacing.
+
+    Aiming the helmet's brow edge in bone space put the opening across the
+    forehead and left solid metal over the eyes: the same class of frame
+    mismatch that has bitten this pipeline before, and just as invisible from
+    the numbers alone. Everything anatomical is measured here instead, in the
+    same fraction-of-head-height frame hero_face.py places features in.
+    """
+    group = body.vertex_groups.get("head")
+    if group is None or (end - start).length < 1e-6:
+        return None
+    up = (end - start).normalized()
+    values = [(body.matrix_world @ v.co - start).dot(up)
+              for v in body.data.vertices
+              if any(g.group == group.index and g.weight > 0.5 for g in v.groups)]
+    if len(values) < 50:
+        return None
+    low, high = min(values), max(values)
+    if high - low < 1e-6:
+        return None
+    span = (end - start).length
+    return lambda t: (span * t - low) / (high - low)
+
+
+def tuck_front(ring, centre_x, centre_z, depth, half_width, amount, reach=0.74,
+               face_sign=1.0):
+    """Draw the forward-facing side of a ring in under the skin.
+
+    For anything that has to STOP at the face -- a hairline, the brow edge of
+    an open-face helmet -- the ring still has to close, and cutting one open
+    means a boolean plus an edge to cap. The skin is opaque, so geometry behind
+    it costs nothing to hide and the arithmetic is exact.
+
+    `amount` is the fraction of the radius removed dead ahead. Callers derive
+    it from the ring's own measured depth rather than picking a number: a first
+    pass tucked by a flat 0.28 and the hair still crossed the face, because the
+    profile depth is a 90th percentile and the nose sits well outside it. Aim
+    at a fraction of the measured skin depth and the margin holds on any head.
+
+    `reach` is how far round the ring the opening goes, in half-widths. Without
+    it the falloff reached the ears and took the sides of the helmet with it.
+
+    Only the DEPTH moves. Scaling x as well pulled the front points inward
+    sideways too, which turned the opening into a funnel whose wall ran nearly
+    parallel to the line of sight and stood 2-6 mm proud of the cheek -- a thin
+    rim of metal across the eyes that read exactly like the bug it was meant to
+    fix. Holding x means the silhouette keeps its width and the tucked face
+    simply sinks straight back into the skull.
+    """
+    if depth <= 1e-6 or half_width <= 1e-6:
+        return ring
+    out = []
+    for x, z in ring:
+        facing = max(0.0, face_sign * (z - centre_z) / depth)
+        edge = max(0.0, min(1.0, (reach - abs(x - centre_x) / half_width) / (reach * 0.35)))
+        scale = 1.0 - amount * facing * edge * edge * (3.0 - 2.0 * edge)
+        out.append((x, centre_z + (z - centre_z) * scale))
+    return out
 
 
 def build_outfit(body, armature, variant):
@@ -358,13 +530,30 @@ def build_outfit(body, armature, variant):
     regions.append(("torso", coat_start + 3 * n, len(b.vertices)))
 
     # Fur collar, an open shawl rather than a closed tube.
-    d = m["collar"]
-    for i, (dy, pad) in enumerate(((0.0, 0.052), (height * 0.016, 0.066), (height * 0.030, 0.048))):
-        pass
+    #
+    # Its top ring was a fixed fraction of body height above the collar
+    # landmark, which on this build put it 66 mm above the chin: the collar
+    # covered the mouth and most of the jaw, so the head read as sunk into it.
+    # Capped just under the jaw instead, measured off the head rather than
+    # scaled off the whole body.
+    head_group = body.vertex_groups.get("head")
+    chin = min([(body.matrix_world @ v.co).y for v in body.data.vertices
+                if any(g.group == head_group.index and g.weight > 0.5
+                       for g in v.groups)] or [0.0]) if head_group else 0.0
+    print("COLLAR_LIMIT %s" % json.dumps(
+        {"chinY": round(chin, 4), "collarY": round(m["collar"]["y"], 4),
+         "wouldReach": round(m["collar"]["y"] + height * 0.030, 4)}))
+    # Capped at the chin, and the middle ring interpolated rather than set from
+    # its own fraction, so the three heights cannot come out of order on a
+    # short-necked build and fold the collar back through itself.
+    jaw = min(m["collar"]["y"] + height * 0.030, chin + 0.004) if chin else \
+        m["collar"]["y"] + height * 0.030
+    jaw = max(jaw, m["neck"]["y"] + height * 0.012)
+    upper = m["neck"]["y"] + (jaw - m["neck"]["y"]) * 0.55
     b.sweep([
-        (m["neck"]["y"], section(n, m["neck"]["halfWidth"] + 0.050, m["neck"]["front"] + 0.050, m["neck"]["back"] + 0.050, 2.5)),
-        (m["collar"]["y"] + height * 0.012, section(n, m["collar"]["halfWidth"] + 0.070, m["collar"]["front"] + 0.070, m["collar"]["back"] + 0.070, 2.4)),
-        (m["collar"]["y"] + height * 0.030, section(n, m["collar"]["halfWidth"] + 0.040, m["collar"]["front"] + 0.040, m["collar"]["back"] + 0.044, 2.3)),
+        (m["neck"]["y"], section(n, m["neck"]["halfWidth"] + 0.034, m["neck"]["front"] + 0.034, m["neck"]["back"] + 0.034, 2.5)),
+        (upper, section(n, m["collar"]["halfWidth"] + 0.046, m["collar"]["front"] + 0.046, m["collar"]["back"] + 0.046, 2.4)),
+        (jaw, section(n, m["collar"]["halfWidth"] + 0.028, m["collar"]["front"] + 0.028, m["collar"]["back"] + 0.032, 2.3)),
     ], "fur", lambda y: {}, cap_bottom=False, cap_top=False)
 
     # Front closure: leather facing with a wool storm flap lapping over it.
@@ -433,14 +622,43 @@ def build_outfit(body, armature, variant):
         digits = tuple(f"{d}_{j:02d}_{side}" for d in
                        ("thumb", "index", "middle", "ring", "pinky")
                        for j in (1, 2, 3))
-        for bone_name, surface, pad, tail_pad, exp, extra, axis_bone in (
-            (f"upperarm_{side}", "coat", 1.22, 1.15, 2.8, (), None),
-            (f"lowerarm_{side}", "coat", 1.17, 1.10, 2.8, (), None),
-            (f"thigh_{side}", "coat", 1.15, 1.10, 2.8, (), None),
-            (f"calf_{side}", "coat", 1.13, 1.18, 2.8, (), None),
+        # `over_head` / `over_tail` extend a tube past its bone, as a fraction
+        # of that bone's length, so consecutive segments OVERLAP instead of
+        # merely touching. Butting them together left a visible band of bare
+        # skin at each knee and elbow; the toes came out through the boot for
+        # the same reason at the other end of the leg. These are local
+        # extensions of specific seams, not a blanket inflate of the garment.
+        for bone_name, surface, pad, tail_pad, exp, extra, axis_bone, over_head, over_tail in (
+            (f"upperarm_{side}", "coat", 1.22, 1.15, 2.8, (), None, 0.0, 0.14),
+            (f"lowerarm_{side}", "coat", 1.17, 1.10, 2.8, (), None, 0.12, 0.06),
+            (f"thigh_{side}", "coat", 1.15, 1.10, 2.8, (), None, 0.0, 0.24),
+            # The trouser has to reach INTO the boot. The boot is swept along
+            # the foot, so its own overhangs run heel-to-toe and cannot cover
+            # the ankle; only the calf can close that seam.
+            # 0.30 drove the trouser straight through the boot and out the
+            # bottom, where its open end showed as a bare ellipse. It only has
+            # to reach the boot cuff, not past it.
+            (f"calf_{side}", "coat", 1.13, 1.22, 2.8, (), None, 0.28, 0.10),
             # Boot: foot plus the ball, oriented along the shin so the shaft
             # runs up the ankle instead of along the toes.
-            (f"foot_{side}", "leather", 1.20, 1.30, 3.2, (f"ball_{side}",), f"calf_{side}"),
+            # The boot has to swallow the toes: the foot bone stops at the ball,
+            # and capping there left every toe poking out through the front.
+            # ONE boot, swept along the FOOT bone -- heel to ball -- rather than
+            # down the shin. Sweeping along the calf put the end cap across the
+            # shin axis, so the toes walked straight through the front of it,
+            # and no tail extension on that axis could ever help: it pushes
+            # toward the floor, not forward over the foot. A separate toe cap
+            # along the ball bone did cover them, at the cost of two tubes
+            # meeting in a lump with a wedge of bare skin between them.
+            # Overhangs reach back over the heel and forward past the toes.
+            # A 0.55 tail did swallow the toes and turned the boot into a flat
+            # slab. The toe end is instead made WIDER and rounder (tail_pad,
+            # lower exponent) and the reach cut back, which covers the same
+            # toes while keeping a boot-shaped silhouette. Any residual
+            # penetration is caught by push_outside_body below.
+            # Short, strongly tapered overhangs. A long untapered pair turned
+            # the boot into a pipe through the foot, open at the heel.
+            (f"foot_{side}", "leather", 1.22, 1.48, 2.4, (f"ball_{side}",), f"foot_{side}", 0.10, 0.16),
         ):
             data = limb_profile(body, bone_name, armature,
                                 extra_bones=extra, axis_bone=axis_bone)
@@ -450,61 +668,139 @@ def build_outfit(body, armature, variant):
             # fingertips and toes simply protrude through the hole -- which is
             # exactly what "bare hands and bare toes" looked like.
             closed = bone_name.startswith(("hand_", "foot_"))
+            # The boot must be closed at BOTH ends; an open start cap left a
+            # bare circle behind the heel.
+            cap_start = bone_name.startswith("foot_")
             mark = len(b.vertices)
-            b.sweep_axis(limb_rings(data, n_limb, pad, tail_pad, exp),
+            # A boot's overhangs are exposed; a knee's are buried.
+            taper = 0.55 if bone_name.startswith("foot_") else 0.97
+            b.sweep_axis(limb_rings(data, n_limb, pad, tail_pad, exp,
+                                    over_head=over_head, over_tail=over_tail,
+                                    over_taper=taper),
                          surface, lambda t: {}, data["start"], data["end"],
-                         cap_start=False, cap_end=closed)
+                         cap_start=cap_start, cap_end=closed)
             family = ("sleeve_%s" % side
                       if bone_name.startswith(("upperarm_", "lowerarm_", "hand_"))
                       else "leg_%s" % side)
             regions.append((family, mark, len(b.vertices)))
 
+    # --- hair: a skull cap under the helmet ----------------------------
+    # The Hero was bald. With the helmet on that barely showed; with it off,
+    # or from behind where the helmet stops, it did.
+    #
+    # Same method as every other piece: profiled from the head's own vertices,
+    # so it fits whichever skull the macro produced rather than a typed
+    # radius. It sits just above the scalp and stops at the brow in front
+    # while reaching lower at the back, which is where a hairline actually
+    # sits. It is a shell, not strands -- strands need cards and an alpha
+    # pipeline neither the material budget nor the LOD chain has room for.
+    head_hair = limb_profile(body, "head", armature, slices=13)
+    if head_hair is not None:
+        start, end = head_hair["start"], head_hair["end"]
+        # A full skull cap is wasted geometry here: the helmet is a closed
+        # shell from the brow (t 0.42) up, so every ring above that is hidden
+        # no matter what it does. The only band that can ever be seen is
+        # between the brim and the jaw -- the hair over the ears and the nape.
+        # Building the cap anyway is what put a ring of hair straight across
+        # the eyes, and drove a dark patch through the crown of the helmet.
+        anat = head_extent(body, start, end) or (lambda t: t)
+        # Which way round the ring the face is; see face_direction().
+        hair_sign = (1.0 if face_direction(body, head_hair).dot(head_hair["front"]) > 0
+                     else -1.0)
+        # Lower bound at ear level. At 0.20 the bottom ring sat UNDER the
+        # jaw, where hair does not grow and where the throat crease makes
+        # any inside/outside test unreliable -- the last few millimetres of
+        # protrusion the sink could not resolve were all on that ring.
+        band = [e for e in head_hair["slices"] if 0.34 <= anat(e["t"]) <= 0.66]
+        cap = []
+        for entry in band:
+            t = entry["t"]
+            grow = 1.035
+            offset = entry["centre"] - (start + (end - start) * t)
+            centre_x = offset.dot(head_hair["side"])
+            centre_z = offset.dot(head_hair["front"])
+            depth = max(entry["front"] * grow, 1e-6)
+            ring = section(
+                n, entry["halfWidth"] * grow, depth,
+                entry["back"] * grow * 1.05, 2.7,
+                centre_x=centre_x, centre_z=centre_z)
+            # This whole band sits BELOW the brow, so none of it belongs on the
+            # face; the front is tucked away and only the sides and nape show.
+            cap.append((t, tuck_front(ring, centre_x, centre_z, depth,
+                                      entry["halfWidth"] * grow,
+                                      1.0 - 0.50 / grow, reach=0.88,
+                                      face_sign=hair_sign)))
+        if len(cap) >= 2:
+            mark = len(b.vertices)
+            b.sweep_axis(cap, "hair", lambda t: {}, start, end, cap_start=False)
+            # Tagged so `push_outside_body` leaves it alone: that pass exists to
+            # lift garment out of the skin, and it would read the tucked front
+            # as a defect and push it back out across the face.
+            regions.append(("hair", mark, len(b.vertices)))
+
     # --- helmet: open face --------------------------------------------
     # Built from the head's own vertices like every other piece. The previous
     # version stacked rings up world Y from a pose-bone position and a guessed
     # skull radius, and did not read at all.
-    head = limb_profile(body, "head", armature, slices=6)
+    head = limb_profile(body, "head", armature, slices=9)
     if head is not None:
         start, end = head["start"], head["end"]
         slices = head["slices"]
-        # The brow sits a little above the middle of the head; everything from
-        # there up is shell, and the face below it stays open.
+        # "Open face" was a comment, not a fact: every ring is a closed loop, so
+        # the shell wrapped the front of the head as well, and measured on the
+        # deformed mesh it sat 3 mm proud of the brow, eyes and nose. Opaque and
+        # skin-tight, it hid the face completely -- and because the character
+        # faces -Y, every check until now had been looking at the back of the
+        # head, where it looked fine.
+        #
+        # The shell still STARTS low, so the sides and back come down past the
+        # ears; what changes is that below the brow the forward-facing part of
+        # each ring is tucked under the skin. FRONT_EDGE is measured in the same
+        # fraction-of-head-height frame hero_face.py uses to place the brow
+        # (0.60), so the metal stops just above the eyebrows.
         brow = max(1, int(len(slices) * 0.42))
+        anat = head_extent(body, start, end) or (lambda t: t)
+        helm_sign = (1.0 if face_direction(body, head).dot(head["front"]) > 0
+                     else -1.0)
+        # hero_face.py puts the eyebrows at 0.60 of head height; the metal
+        # stops just above them.
+        front_edge, fade = 0.66, 0.10
         shell = []
-        for entry in slices[brow:]:
+        # Rings that sit entirely below the brow are fully tucked, so they
+        # contribute no visible surface -- only the wall between their
+        # hidden front and their exposed side, which showed as a dark tab at
+        # the outer corner of each eye. Start at the brow instead: the cap
+        # still comes down a little at the temples, with no wall to cross
+        # the face.
+        for entry in [e for e in slices[brow:] if anat(e["t"]) >= 0.52]:
             t = entry["t"]
             taper = 1.0 if t < 0.85 else max(0.35, 1.0 - (t - 0.85) * 4.0)
-            shell.append((t, section(
-                n, entry["halfWidth"] * 1.14 * taper, entry["front"] * 1.14 * taper,
-                entry["back"] * 1.16 * taper, 2.9,
-                centre_x=(entry["centre"] - (start + (end - start) * t)).dot(head["side"]),
-                centre_z=(entry["centre"] - (start + (end - start) * t)).dot(head["front"]))))
+            offset = entry["centre"] - (start + (end - start) * t)
+            centre_x = offset.dot(head["side"])
+            centre_z = offset.dot(head["front"])
+            width = entry["halfWidth"] * 1.14 * taper
+            depth = entry["front"] * 1.14 * taper
+            ring = section(n, width, depth, entry["back"] * 1.16 * taper, 2.9,
+                           centre_x=centre_x, centre_z=centre_z)
+            sink = max(0.0, min(1.0, (front_edge - anat(t)) / fade))
+            shell.append((t, tuck_front(ring, centre_x, centre_z, depth, width,
+                                        (1.0 - 0.52 / 1.14) * sink, reach=0.95,
+                                        face_sign=helm_sign)))
         if len(shell) >= 2:
+            helmet_mark = len(b.vertices)
             b.sweep_axis(shell, "metal", lambda t: {}, start, end, cap_start=False)
-            # Rolled brim: out, then tucked back under, so the edge has an
-            # underside and the helmet does not read as a smooth cap.
-            rim = slices[brow]
-            offset_s = (rim["centre"] - (start + (end - start) * rim["t"])).dot(head["side"])
-            offset_f = (rim["centre"] - (start + (end - start) * rim["t"])).dot(head["front"])
-            b.sweep_axis([
-                (rim["t"], section(n, rim["halfWidth"] * 1.14, rim["front"] * 1.14,
-                                   rim["back"] * 1.16, 2.9, centre_x=offset_s, centre_z=offset_f)),
-                (rim["t"] - 0.045, section(n, rim["halfWidth"] * 1.26, rim["front"] * 1.26,
-                                           rim["back"] * 1.28, 3.0, centre_x=offset_s, centre_z=offset_f)),
-                (rim["t"] - 0.085, section(n, rim["halfWidth"] * 1.08, rim["front"] * 1.08,
-                                           rim["back"] * 1.10, 2.9, centre_x=offset_s, centre_z=offset_f)),
-            ], "edge", lambda t: {}, start, end, cap_start=False, cap_end=False)
-            # Cheek guards: two plates framing the face, leaving it open.
-            for sign in (-1, 1):
-                lo = slices[max(0, brow - 2)]
-                hi = slices[brow]
-                for frac in (0.0,):
-                    b.prism([
-                        (hi["centre"].x + sign * hi["halfWidth"] * 0.96, hi["centre"].y),
-                        (hi["centre"].x + sign * hi["halfWidth"] * 1.30, hi["centre"].y - (hi["centre"].y - lo["centre"].y) * 0.25),
-                        (lo["centre"].x + sign * lo["halfWidth"] * 1.16, lo["centre"].y),
-                        (lo["centre"].x + sign * lo["halfWidth"] * 0.86, lo["centre"].y + (hi["centre"].y - lo["centre"].y) * 0.18),
-                    ], hi["centre"].z + hi["front"] * 0.10, hi["front"] * 0.90, "metal", {})
+            regions.append(("helmet", helmet_mark, len(b.vertices)))
+            # There was a rolled brim here, and a pair of cheek guards described
+            # as "framing the face, leaving it open". Measured, both did the
+            # opposite: the brim flared to 1.26 of skull width at its lowest
+            # ring and crossed the eyes as a raised band, and together they left
+            # 70 vertices standing up to 26 mm proud of the face. They were the
+            # last thing still in the face window after the hair was fixed.
+            #
+            # They are gone rather than tuned. Two decorative pieces that have
+            # to be tucked far enough to be invisible are not earning their
+            # geometry, and each extra piece is another thing whose front has to
+            # be argued about. The shell alone is a clean open-face helm.
 
     return b, m, floor, top, height, regions
 
@@ -689,9 +985,56 @@ def to_object(builder, name, materials):
         tint = SURFACES[surface]
         for loop in polygon.loop_indices:
             colours.data[loop].color = (tint[0], tint[1], tint[2], 1.0)
+    add_cylindrical_uvs(mesh)
     obj = bpy.data.objects.new(name, mesh)
     bpy.context.collection.objects.link(obj)
     return obj
+
+
+def add_cylindrical_uvs(mesh, tiles_per_metre=5.0):
+    """Give the garments a UV layer so they can carry a texture at all.
+
+    The garments shipped with COLOR_0 and COLOR_1 and no TEXCOORD_0 whatsoever,
+    which is why every surface is a flat colour: there was nowhere for a
+    texture to land. The body has UVs -- MPFB supplies them -- but nothing that
+    this file builds did.
+
+    Every garment here is lofted around the figure, so a cylindrical projection
+    about the vertical axis is the shape the geometry already has: no unwrap,
+    no seam placement to author, and it is deterministic, which matters for a
+    pipeline that reruns from scratch. It is right for TILING fabric, leather
+    and metal detail; it is not an atlas and could not carry unique painted
+    art, which would need a real unwrap.
+
+    UVs are scaled by arc length rather than by raw angle, so the weave has the
+    same density on a wrist as on a chest instead of smearing round the thin
+    parts.
+    """
+    uv = mesh.uv_layers.new(name="UVMap")
+    heights = [v.co.y for v in mesh.vertices]
+    floor = min(heights) if heights else 0.0
+
+    for polygon in mesh.polygons:
+        # Resolve the wrap seam per FACE. A cylindrical map jumps by a full
+        # turn where atan2 crosses pi, and a face straddling that line would
+        # otherwise stretch the entire texture across itself. Each loop picks
+        # the branch nearest the face's first corner.
+        first = None
+        for loop_index in polygon.loop_indices:
+            co = mesh.vertices[mesh.loops[loop_index].vertex_index].co
+            angle = math.atan2(co.x, co.z)
+            if first is None:
+                first = angle
+            elif angle - first > math.pi:
+                angle -= 2.0 * math.pi
+            elif first - angle > math.pi:
+                angle += 2.0 * math.pi
+            radius = math.hypot(co.x, co.z)
+            uv.data[loop_index].uv = (
+                angle * max(radius, 0.02) * tiles_per_metre,
+                (co.y - floor) * tiles_per_metre,
+            )
+    return uv
 
 
 def implausible_weights(obj, side=None, limit=12):
@@ -797,6 +1140,192 @@ def rebind_in_spread_pose(garments, body, armature, angle=48.0):
             armature.pose.bones[name].matrix_basis = Matrix.Identity(4)
         bpy.context.view_layer.update()
     return {"posed": lifted, "angleDeg": angle, "rebound": rebound}
+
+
+def push_outside_body(garment, body, clearance=0.004, limit=0.05, families=None,
+                      exempt=()):
+    """Guarantee no garment vertex sits inside the skin.
+
+    The systematic leaks -- the bare band at each knee, the toes through the
+    boot -- were missing garment, and extending the tubes fixed those. What is
+    left is a different failure: isolated vertices where a lofted elliptical
+    section simply does not clear a local bump in the body, the shin bone and
+    the ankle being the obvious ones. A section is an ellipse; a shin is not.
+
+    Chasing those with pad values is whack-a-mole, and raising the pad enough
+    to clear the worst bump inflates the whole garment -- which is the blanket
+    scale-up this must not do. So instead each garment vertex is tested
+    against the body it covers and, only if it is inside, pushed out to a
+    fixed clearance along the body's own surface normal. Vertices already
+    outside are untouched, so the silhouette does not change; `limit` caps the
+    correction so a wild sample can never balloon the mesh.
+
+    `exempt` names families that are deliberately inside the skin and must be
+    left there. The hair is the case: its front is tucked under the scalp on
+    purpose, because a closed ring is cheaper and safer than cutting one open,
+    and this pass would otherwise "fix" it back out across the face.
+    """
+    to_body = body.matrix_world.inverted()
+    from_body = body.matrix_world
+    moved = 0
+    worst = 0.0
+    skipped = 0
+    for vertex in garment.data.vertices:
+        if families and vertex.index < len(families) and families[vertex.index] in exempt:
+            skipped += 1
+            continue
+        world = garment.matrix_world @ vertex.co
+        local = to_body @ world
+        hit, location, normal, _f = body.closest_point_on_mesh(local)
+        if not hit:
+            continue
+        signed = (local - location).dot(normal)
+        if signed >= clearance:
+            continue
+        shift = min(clearance - signed, limit)
+        target = from_body @ (location + normal * clearance)
+        corrected = garment.matrix_world.inverted() @ target
+        if (corrected - vertex.co).length <= limit:
+            vertex.co = corrected
+            moved += 1
+            worst = max(worst, shift)
+    garment.data.update()
+    return {"pushed": moved, "of": len(garment.data.vertices),
+            "exempt": skipped,
+            "worstCorrection": round(worst, 5), "clearance": clearance}
+
+
+def sink_face_window(garment, body, armature, families,
+                     targets=("hair", "helmet"), brow=0.66, reach=1.02,
+                     clearance=0.020):
+    """Guarantee the face stays visible.
+
+    `tuck_front` shapes the hairline and the helmet's brow edge, but shaping is
+    parameterised on ring geometry, and it kept producing near-misses: a funnel
+    wall standing 2 mm proud of a cheek, a brim whose top ring grazed the eye
+    line. Each was invisible in everything the builder prints and obvious only
+    in a render -- a bad place to be finding them, and the reason this went
+    round several times.
+
+    So the invariant is enforced against the body instead of argued from ring
+    parameters: within the window the face occupies, any head-piece vertex not
+    already behind the skin is moved to `clearance` behind it along the body's
+    own normal. This is the exact inverse of `push_outside_body`, which is why
+    these families are exempt there.
+
+    `clearance` is deliberately generous. The adapter decimates even LOD0 a
+    little, and an edge collapse across the window boundary lands the merged
+    vertex between a sunk one and an untouched one: at 10 mm the hair came back
+    through the cheek as a faint band, at 20 mm there is room for that to
+    happen and stay hidden. Nothing here is ever seen, so depth is free.
+
+    Measured in the head's own frame -- the same one the helmet's brow edge and
+    hero_face.py's landmarks use -- so it follows whatever skull the macro
+    produced. `reach` extends a little past the head's half width on purpose:
+    the boundary then falls on the silhouette, where the transition is edge-on
+    and cannot show as a rim across the cheek.
+    """
+    data = limb_profile(body, "head", armature, slices=3)
+    group = body.vertex_groups.get("head")
+    if data is None or group is None:
+        return {"applied": False}
+    start, end = data["start"], data["end"]
+    up = (end - start).normalized()
+    front, side = face_direction(body, data), data["side"]
+
+    def frame(point):
+        along = (point - start).dot(up)
+        lateral = point - (start + up * along)
+        return along, lateral.dot(front), lateral.dot(side)
+
+    head = [frame(body.matrix_world @ v.co) for v in body.data.vertices
+            if any(g.group == group.index and g.weight > 0.5 for g in v.groups)]
+    if len(head) < 50:
+        return {"applied": False}
+    low = min(a for a, _f, _s in head)
+    high = max(a for a, _f, _s in head)
+    half_width = max(abs(s) for _a, _f, s in head)
+    if high - low < 1e-6 or half_width < 1e-6:
+        return {"applied": False}
+
+    to_body = body.matrix_world.inverted()
+    inverse = garment.matrix_world.inverted()
+    moved = 0
+    tally = {"candidates": 0, "behind": 0, "aboveBrow": 0, "tooWide": 0,
+             "alreadyIn": 0}
+    for vertex in garment.data.vertices:
+        if vertex.index >= len(families) or families[vertex.index] not in targets:
+            continue
+        tally["candidates"] += 1
+        world = garment.matrix_world @ vertex.co
+        along, forward, lateral = frame(world)
+        if forward <= 0.0:                      # back of the skull: leave it
+            tally["behind"] += 1
+            continue
+        if (along - low) / (high - low) > brow:  # above the brow: helmet's own
+            tally["aboveBrow"] += 1
+            continue
+        if abs(lateral) > half_width * reach:
+            tally["tooWide"] += 1
+            continue
+        local = to_body @ world
+        hit, location, normal, _f = body.closest_point_on_mesh(local)
+        if not hit:
+            continue
+        if (local - location).dot(normal) < -clearance:
+            tally["alreadyIn"] += 1
+            continue                            # already safely inside
+        # Move toward the head's own axis, as far as the skin actually allows,
+        # rather than a fixed step along the surface normal. A fixed step
+        # overshoots wherever the body is thinner than the step: 20 mm at the
+        # jaw drove the vertex clean through the chin and out the far side, so
+        # it measured as protruding again and no extra depth could fix it --
+        # deeper made it worse. Ray-casting out from the axis measures how much
+        # room there is at this exact spot and takes a fraction of it, so the
+        # result is inside by construction on any head.
+        axis_point = start + up * along
+        local_axis = to_body @ axis_point
+        local_dir = local - local_axis
+        if local_dir.length < 1e-6:
+            continue
+        out, surface, _n, _i = body.ray_cast(local_axis, local_dir.normalized())
+        if not out:
+            continue
+        # Take a fraction of the available room, but insist on a minimum
+        # absolute inset where there is room for one. A pure fraction left some
+        # vertices only 3 mm in, and the adapter decimates even LOD0 a little:
+        # an edge collapse of 3 mm put them straight back through the cheek, so
+        # the source measured clean and the shipped asset did not.
+        room = (surface - local_axis).length
+        if room < 1e-6:
+            continue
+        fraction = max(0.30, min(1.0 - clearance / room, 0.78))
+        vertex.co = inverse @ (body.matrix_world @
+                               (local_axis + (surface - local_axis) * fraction))
+        moved += 1
+    garment.data.update()
+    # Verify the invariant instead of trusting the tally. Every earlier round
+    # of this reported a plausible-looking count and still shipped hair across
+    # the cheek, because a count says how many vertices were touched, not
+    # whether any were missed.
+    worst = -9.0
+    for vertex in garment.data.vertices:
+        if vertex.index >= len(families) or families[vertex.index] not in targets:
+            continue
+        world = garment.matrix_world @ vertex.co
+        along, forward, lateral = frame(world)
+        if forward <= 0.0 or (along - low) / (high - low) > brow:
+            continue
+        if abs(lateral) > half_width * reach:
+            continue
+        local = to_body @ world
+        hit, location, normal, _f = body.closest_point_on_mesh(local)
+        if hit:
+            worst = max(worst, (local - location).dot(normal))
+    result = {"applied": True, "sunk": moved, "clearance": clearance,
+              "browLimit": brow, "worstAfter": round(worst, 5)}
+    result.update(tally)
+    return result
 
 
 def region_violations(obj, families, threshold=0.02):
@@ -1032,7 +1561,31 @@ def main():
     parser.add_argument("--input", required=True)
     parser.add_argument("--variant", required=True)
     parser.add_argument("--name", required=True)
+    # A second character reuses this whole pipeline -- the measured lofting,
+    # the weight transfer, the face-window enforcement -- and differs only in
+    # which garments get built. `--kit` swaps the garment set rather than
+    # forking 150 lines of orchestration that would then drift.
+    parser.add_argument("--kit", default=None)
     args = parser.parse_args(argv)
+
+    if args.kit:
+        # Install into THIS module's globals, not by letting the kit patch a
+        # re-imported copy of it. run-blender executes this file as __main__,
+        # so a kit doing `import hero_outfit` gets a second, separate module
+        # object: patching that one changed nothing here, and the build came
+        # out wearing the Hero's coat and sword while reporting success.
+        kit = importlib.import_module(args.kit)
+        SURFACES.update(getattr(kit, "SURFACES_OVERRIDE", {}))
+        MATERIAL_OF.update(getattr(kit, "MATERIAL_OF_OVERRIDE", {}))
+        if hasattr(kit, "MATERIAL_TABLE"):
+            globals()["MATERIAL_TABLE"] = kit.MATERIAL_TABLE
+        for name in ("build_outfit", "build_sword"):
+            if hasattr(kit, name):
+                globals()[name] = getattr(kit, name)
+        print("KIT_INSTALLED %s" % json.dumps({
+            "module": args.kit,
+            "overrides": sorted(n for n in ("build_outfit", "build_sword")
+                                if hasattr(kit, n))}))
 
     for obj in list(bpy.data.objects):
         bpy.data.objects.remove(obj, do_unlink=True)
@@ -1062,11 +1615,14 @@ def main():
     bpy.context.view_layer.update()
 
     materials = {}
-    for name, base, rough, metal in (
-        ("cloth", (0.243, 0.271, 0.325), 0.92, 0.0),
-        ("leather", (0.243, 0.166, 0.106), 0.58, 0.04),
-        ("metal", (0.430, 0.455, 0.492), 0.34, 0.85),
-    ):
+    # Roughness is the only thing separating "worn kit" from "showroom prop"
+    # while there are no textures. At 0.34 the helmet and pauldrons rendered as
+    # polished chrome -- a mirror finish on a character whose whole premise is
+    # surviving a winter. Steel that has been rained on and knocked about sits
+    # far rougher, and the darker base stops it reading as bright silver.
+    #
+    # Leather likewise: 0.58 is a buffed dress shoe, not a boot.
+    for name, base, rough, metal in MATERIAL_TABLE:
         mat = bpy.data.materials.new("Hero_" + name)
         mat.use_nodes = True
         bsdf = mat.node_tree.nodes.get("Principled BSDF")
@@ -1076,6 +1632,40 @@ def main():
             if "Metallic" in bsdf.inputs:
                 bsdf.inputs["Metallic"].default_value = metal
         materials[name] = mat
+    # Detail maps. Without them every surface is one flat colour, because the
+    # GLB carried no images at all.
+    # The detail maps bake the tint in, so they must come from the SAME table
+    # the materials do. Reading a second hard-coded copy is why a kit could
+    # override every surface colour and still export the Hero's palette: the
+    # vertex tints changed and the textures, which are what actually show, did
+    # not.
+    tints = {name: base for name, base, _r, _m in MATERIAL_TABLE}
+    makers = {"cloth": hero_textures.weave,
+              "leather": hero_textures.grain,
+              "metal": hero_textures.worn_metal}
+    # Named per material, not per pattern. Two materials sharing a pattern --
+    # a cloth jacket and a cloth tabard -- both asked for "Hero_weave_detail",
+    # and `_write` removes an existing image before creating one, so the second
+    # call deleted the first material's image out from under it and the build
+    # died on a dangling Image reference.
+    details = {name: makers.get(name, hero_textures.grain)(
+                   tint, name="Hero_%s_detail" % name)
+               for name, tint in tints.items()}
+    for name, image in details.items():
+        hero_textures.attach(materials[name], image)
+    # Normals from the SAME height functions the albedo uses, so the bumps land
+    # where the shading says they are. Without these the weave is only a colour
+    # variation and reads as printed fabric under any light.
+    for name, height_fn, strength in (
+        ("cloth", hero_textures._weave_height, 1.0),
+        ("leather", hero_textures._grain_height, 0.8),
+        ("metal", hero_textures._metal_height, 0.5),
+        ("hair", hero_textures._grain_height, 0.9),
+    ):
+        if name not in materials:
+            continue          # a kit need not use every surface
+        normal = hero_textures.normal_map(height_fn, "Hero_%s_normal" % name)
+        hero_textures.attach_normal(materials[name], normal, strength=strength)
 
     builder, measurements, floor, top, height, regions = build_outfit(
         body, armature, args.variant)
@@ -1100,6 +1690,12 @@ def main():
     # pass 2 needs from it.
     transfer_weights(outfit, body, armature, families=families)
     rebind = rebind_in_spread_pose([(outfit, families)], body, armature)
+    # Only after the weights are settled: this moves geometry, not weights.
+    pushed = push_outside_body(outfit, body, families=families,
+                               exempt=("hair", "helmet"))
+    print("PUSH_OUTSIDE %s" % json.dumps(pushed))
+    sunk = sink_face_window(outfit, body, armature, families)
+    print("SINK_FACE %s" % json.dumps(sunk))
     outfit_gate = region_violations(outfit, families)
     if outfit_gate:
         raise SystemExit("HeroOutfit region binding violated: %s" % outfit_gate[:6])
