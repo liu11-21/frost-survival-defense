@@ -79,37 +79,108 @@ def _write(name, sampler, tint=(1.0, 1.0, 1.0)):
     return image
 
 
+def _weave_height(u, v):
+    """Height of the weave at (u, v). Shared by the albedo and the normal map,
+    so the bumps line up with the shading instead of being two guesses."""
+    warp = 0.5 + 0.5 * math.sin(u * math.pi * 2.0 * 16.0)
+    weft = 0.5 + 0.5 * math.sin(v * math.pi * 2.0 * 16.0)
+    # Threads alternate over and under, which is what makes it read as cloth
+    # rather than as a grid.
+    cross = warp if (int(v * 16.0) % 2 == 0) else weft
+    fibre = _smooth_noise(u, v, 3.0, 32)
+    return 0.78 + 0.16 * cross + 0.10 * (fibre - 0.5)
+
+
 def weave(tint=(1.0, 1.0, 1.0), name="Hero_weave_detail"):
     """Woven wool: crossing warp and weft, roughened by a slow fibre noise."""
-    def sampler(u, v):
-        warp = 0.5 + 0.5 * math.sin(u * math.pi * 2.0 * 16.0)
-        weft = 0.5 + 0.5 * math.sin(v * math.pi * 2.0 * 16.0)
-        # Threads alternate over and under, which is what makes it read as
-        # cloth rather than as a grid.
-        cross = warp if (int(v * 16.0) % 2 == 0) else weft
-        fibre = _smooth_noise(u, v, 3.0, 32)
-        return 0.78 + 0.16 * cross + 0.10 * (fibre - 0.5)
-    return _write(name, sampler, tint)
+    return _write(name, _weave_height, tint)
+
+
+def _grain_height(u, v):
+    cells = _smooth_noise(u, v, 11.0, 12)
+    pebble = _smooth_noise(u, v, 29.0, 48)
+    creases = 1.0 - abs(_smooth_noise(u, v, 7.0, 6) - 0.5) * 2.0
+    return 0.74 + 0.18 * cells + 0.10 * pebble + 0.06 * creases
 
 
 def grain(tint=(1.0, 1.0, 1.0), name="Hero_leather_detail"):
     """Leather: large soft cells with a finer pebble on top."""
-    def sampler(u, v):
-        cells = _smooth_noise(u, v, 11.0, 12)
-        pebble = _smooth_noise(u, v, 29.0, 48)
-        creases = 1.0 - abs(_smooth_noise(u, v, 7.0, 6) - 0.5) * 2.0
-        return 0.74 + 0.18 * cells + 0.10 * pebble + 0.06 * creases
-    return _write(name, sampler, tint)
+    return _write(name, _grain_height, tint)
+
+
+def _metal_height(u, v):
+    streak = _smooth_noise(u * 0.15, v, 17.0, 40)
+    broad = _smooth_noise(u, v, 5.0, 8)
+    scar = 1.0 if _smooth_noise(u, v, 41.0, 64) > 0.93 else 0.0
+    return 0.80 + 0.14 * streak + 0.10 * (broad - 0.5) - 0.18 * scar
 
 
 def worn_metal(tint=(1.0, 1.0, 1.0), name="Hero_metal_detail"):
     """Steel: horizontal hammer/brush streaks with occasional deeper scars."""
-    def sampler(u, v):
-        streak = _smooth_noise(u * 0.15, v, 17.0, 40)
-        broad = _smooth_noise(u, v, 5.0, 8)
-        scar = 1.0 if _smooth_noise(u, v, 41.0, 64) > 0.93 else 0.0
-        return 0.80 + 0.14 * streak + 0.10 * (broad - 0.5) - 0.18 * scar
-    return _write(name, sampler, tint)
+    return _write(name, _metal_height, tint)
+
+
+def normal_map(height_fn, name, strength=2.2):
+    """Tangent-space normals derived from the SAME height function as the albedo.
+
+    Deriving them rather than authoring a second pattern is the whole point: a
+    hand-made normal map beside a hand-made albedo drifts, and the bumps stop
+    landing where the shading says they are. The gradient is central-difference
+    over one texel, so the two are exact by construction.
+
+    Without this the weave is only a colour variation -- it reads as printed
+    fabric under any light, because nothing in the surface actually catches it.
+    """
+    image = bpy.data.images.get(name)
+    if image is not None:
+        bpy.data.images.remove(image)
+    image = bpy.data.images.new(name, width=SIZE, height=SIZE, alpha=False,
+                                is_data=True)
+    step = 1.0 / SIZE
+    pixels = [0.0] * (SIZE * SIZE * 4)
+    for py in range(SIZE):
+        v = py / SIZE
+        row = py * SIZE * 4
+        for px in range(SIZE):
+            u = px / SIZE
+            # Wrap the sample points so the map tiles without a seam.
+            du = (height_fn((u + step) % 1.0, v) - height_fn((u - step) % 1.0, v)) * strength
+            dv = (height_fn(u, (v + step) % 1.0) - height_fn(u, (v - step) % 1.0)) * strength
+            length = math.sqrt(du * du + dv * dv + 1.0)
+            index = row + px * 4
+            pixels[index] = (-du / length) * 0.5 + 0.5
+            pixels[index + 1] = (-dv / length) * 0.5 + 0.5
+            pixels[index + 2] = (1.0 / length) * 0.5 + 0.5
+            pixels[index + 3] = 1.0
+    image.pixels = pixels
+    image.pack()
+    return image
+
+
+def attach_normal(material, image, uv_name="UVMap", strength=1.0):
+    """Wire a tangent-space normal map into a material."""
+    if material is None or not material.use_nodes:
+        return False
+    tree = material.node_tree
+    bsdf = next((n for n in tree.nodes if n.type == "BSDF_PRINCIPLED"), None)
+    if bsdf is None:
+        return False
+    tex = tree.nodes.new("ShaderNodeTexImage")
+    tex.image = image
+    # Non-colour data: gamma-correcting a normal map bends every vector.
+    tex.image.colorspace_settings.name = "Non-Color"
+    tex.location = (bsdf.location.x - 420, bsdf.location.y - 320)
+    uv_node = tree.nodes.new("ShaderNodeUVMap")
+    uv_node.uv_map = uv_name
+    uv_node.location = (tex.location.x - 220, tex.location.y)
+    tree.links.new(uv_node.outputs["UV"], tex.inputs["Vector"])
+    node = tree.nodes.new("ShaderNodeNormalMap")
+    node.uv_map = uv_name
+    node.inputs["Strength"].default_value = strength
+    node.location = (bsdf.location.x - 200, bsdf.location.y - 320)
+    tree.links.new(tex.outputs["Color"], node.inputs["Color"])
+    tree.links.new(node.outputs["Normal"], bsdf.inputs["Normal"])
+    return True
 
 
 def attach(material, image, uv_name="UVMap"):

@@ -1261,6 +1261,16 @@ def main():
                "metal": hero_textures.worn_metal(tints["metal"])}
     for name, image in details.items():
         hero_textures.attach(materials[name], image)
+    # Normals from the SAME height functions the albedo uses, so the bumps land
+    # where the shading says they are. Without these the weave is only a colour
+    # variation and reads as printed fabric under any light.
+    for name, height_fn, strength in (
+        ("cloth", hero_textures._weave_height, 1.0),
+        ("leather", hero_textures._grain_height, 0.8),
+        ("metal", hero_textures._metal_height, 0.5),
+    ):
+        normal = hero_textures.normal_map(height_fn, "Hero_%s_normal" % name)
+        hero_textures.attach_normal(materials[name], normal, strength=strength)
 
     builder, measurements, floor, top, height, regions = build_outfit(
         body, armature, args.variant)
