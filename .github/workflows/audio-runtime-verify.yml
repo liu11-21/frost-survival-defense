@@ -8,11 +8,16 @@ on:
     paths:
       - "public/assets/audio/**"
       - "src/audio/**"
+      - "src/effects/AudioManager.ts"
+      - "src/combat/CombatContext.ts"
       - "src/game/GameInput.ts"
       - "src/game/GameFlow.ts"
       - "src/game/GameLoop.ts"
+      - "src/game/GameSystems.ts"
       - "src/game/MenuRouter.ts"
       - "tests/audio-runtime.spec.ts"
+      - "tests/sfx-runtime.spec.ts"
+      - "docs/audio/**"
       - "package.json"
       - "playwright.config.ts"
       - ".github/workflows/audio-runtime-verify.yml"
@@ -22,9 +27,9 @@ permissions:
 
 jobs:
   audio-runtime:
-    name: State BGM, lifecycle and adaptive runtime
+    name: BGM and Gameplay SFX runtime
     runs-on: ubuntu-latest
-    timeout-minutes: 20
+    timeout-minutes: 30
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -46,13 +51,15 @@ jobs:
         run: npm run typecheck
       - name: Production build
         run: npm run build
-      - name: Verify built music assets
+      - name: Verify built music assets and SFX manifest
         shell: bash
         run: |
           set -euo pipefail
           for file in menu-idle.mp3 preparation.mp3 warning.mp3 combat.mp3 intense.mp3 wave-clear.mp3; do
             test -s "dist/assets/audio/music/$file"
           done
+          test -s docs/audio/SFX_ASSET_MANIFEST.md
+          grep -q "COMMERCIAL READY: NO" docs/audio/SFX_ASSET_MANIFEST.md
       - name: Install Chromium
         run: npx playwright install --with-deps chromium
       - name: Start production preview
