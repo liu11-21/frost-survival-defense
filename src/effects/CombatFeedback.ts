@@ -17,6 +17,31 @@ const SUPPORT_AURA_RINGS = 8;
 
 type HeroSkillKind = "airSupport" | "infiniteFirepower" | "groundSupport" | "seismicWave";
 
+/**
+ * Per-skill shape language.
+ *
+ * Tinting one shared ring/column/afterglow set four different colours is not
+ * differentiation -- every skill still read as the same event. These profiles
+ * vary what the effect *is*: how far it spreads, how many waves it throws,
+ * whether it rises or stays on the ground, and how long it lingers. Each one
+ * is chosen to match what the skill actually does to the simulation:
+ *
+ * - airSupport      three bombardments over a 12-unit radius, then a 10s fire
+ *                   field. Widest spread, most waves, tallest column, longest
+ *                   afterglow, heaviest shake.
+ * - infiniteFirepower  a 5s attack-speed buff on buildings. It touches no
+ *                   ground, so it gets no expanding wave and no scorch at
+ *                   all -- just tight, fast vertical surges. Anything radial
+ *                   here would imply an area effect that does not exist.
+ * - groundSupport   summons three guards for 10s. A rally, not a blast:
+ *                   the converge beat carries it, the release is soft, and
+ *                   the afterglow outlasts the others because the guards
+ *                   remain on the field.
+ * - seismicWave     a forward cone that knocks back. Ground-borne, so no
+ *                   column; fast tight waves and a hard shake instead.
+ *                   HeroSkills already casts it offset ahead of the Hero,
+ *                   which is what makes it read as directional.
+ */
 const SKILL_SHAPE: Record<HeroSkillKind, {
   converge: boolean;
   waves: number;
@@ -60,14 +85,22 @@ interface SkillRing {
   duration: number;
   radius: number;
   delay: number;
+  /**
+   * "expand" is the release wave travelling outward. "converge" is the
+   * anticipation beat: it starts wide and collapses inward, so the cast reads
+   * as gathering before it reads as detonating.
+   */
   mode: "expand" | "converge";
 }
 
+/** The vertical flash and lingering scorch that bracket a cast. */
 interface SkillColumn {
   mesh: Mesh;
   life: number;
   duration: number;
   radius: number;
+  /** Per-cast multiplier, so a rally surge and a bombardment pillar are not
+   * the same shaft in two colours. */
   heightScale: number;
 }
 
@@ -76,6 +109,7 @@ interface SkillAfterglow {
   life: number;
   duration: number;
   radius: number;
+  /** Per-cast multiplier on how long the scorch lingers. */
   durationScale: number;
 }
 
@@ -93,6 +127,10 @@ interface FirePatch {
   phase: number;
 }
 
+/**
+ * Turns combat events into particles, sound and camera shake. Combat code only
+ * ever calls this interface — it never reaches for a particle system directly.
+ */
 export class CombatFeedback implements CombatVfx {
   private readonly point = new Vector3();
   private readonly rings: Mesh[] = [];
@@ -141,12 +179,18 @@ export class CombatFeedback implements CombatVfx {
     const supportMat = materials.unlit("mat.supportAuraRing", [1.0, 0.8, 0.18], 0.8);
     supportMat.backFaceCulling = false;
     for (let i = 0; i < SUPPORT_AURA_RINGS; i++) {
-      const mesh = MeshBuilder.CreateTorus(`supportAuraRing${i}`, { diameter: 2, thickness: 0.09, tessellation: 36 }, scene);
+      const mesh = MeshBuilder.CreateTorus(
+        `supportAuraRing${i}`,
+        { diameter: 2, thickness: 0.09, tessellation: 36 },
+        scene,
+      );
       mesh.material = supportMat;
       mesh.position.y = 0.11;
       mesh.isPickable = false;
       mesh.renderingGroupId = 1;
       mesh.setEnabled(false);
+      // Support aura rings share the SkillRing shape but are driven by their
+      // own loop; they only ever expand.
       this.supportRings.push({ mesh, life: 0, duration: 0.72, radius: 1, delay: 0, mode: "expand" });
     }
     this.skillMaterials = {
@@ -156,20 +200,34 @@ export class CombatFeedback implements CombatVfx {
       seismicWave: materials.unlit("mat.skill.seismicWave", [0.72, 0.55, 0.32], 0.95),
     };
     for (let i = 0; i < SKILL_RINGS; i++) {
-      const mesh = MeshBuilder.CreateTorus(`heroSkillRing${i}`, { diameter: 2, thickness: 0.13, tessellation: 40 }, scene);
+      const mesh = MeshBuilder.CreateTorus(
+        `heroSkillRing${i}`,
+        { diameter: 2, thickness: 0.13, tessellation: 40 },
+        scene,
+      );
       mesh.isPickable = false;
       mesh.position.y = 0.12;
       mesh.renderingGroupId = 1;
       mesh.setEnabled(false);
       this.skillRings.push({ mesh, life: 0, duration: 0.8, radius: 1, delay: 0, mode: "expand" });
     }
+
+    // Vertical light shaft: the cast reads as coming from somewhere rather
+    // than simply appearing flat on the ground plane.
     for (let i = 0; i < SKILL_COLUMNS; i++) {
-      const mesh = MeshBuilder.CreateCylinder(`heroSkillColumn${i}`, { height: 1, diameterTop: 1.05, diameterBottom: 0.75, tessellation: 20 }, scene);
+      const mesh = MeshBuilder.CreateCylinder(
+        `heroSkillColumn${i}`,
+        { height: 1, diameterTop: 1.05, diameterBottom: 0.75, tessellation: 20 },
+        scene,
+      );
       mesh.isPickable = false;
       mesh.renderingGroupId = 1;
       mesh.setEnabled(false);
       this.skillColumns.push({ mesh, life: 0, duration: 0.42, radius: 1, heightScale: 1 });
     }
+
+    // Slow scorch/afterglow so the ground does not snap back to clean the
+    // instant the wave passes.
     for (let i = 0; i < SKILL_AFTERGLOWS; i++) {
       const mesh = MeshBuilder.CreateDisc(`heroSkillAfterglow${i}`, { radius: 1, tessellation: 32 }, scene);
       mesh.rotation.x = Math.PI * 0.5;
@@ -179,6 +237,7 @@ export class CombatFeedback implements CombatVfx {
       mesh.setEnabled(false);
       this.skillAfterglows.push({ mesh, life: 0, duration: 1.15, radius: 1, durationScale: 1 });
     }
+
     const strikeMat = materials.unlit("mat.airStrike.beam", [1.0, 0.78, 0.26], 1);
     const impactMat = materials.unlit("mat.airStrike.impact", [1.0, 0.22, 0.06], 1);
     for (let i = 0; i < 6; i++) {
@@ -195,6 +254,7 @@ export class CombatFeedback implements CombatVfx {
       impact.setEnabled(false);
       this.fallingStrikes.push({ beam, impact, life: -1, x: 0, z: 0 });
     }
+
     const fireGround = materials.unlit("mat.groundFire.ground", [1.0, 0.16, 0.03], 0.9);
     const fireFlame = materials.unlit("mat.groundFire.flame", [1.0, 0.68, 0.08], 1);
     fireGround.backFaceCulling = false;
@@ -217,29 +277,84 @@ export class CombatFeedback implements CombatVfx {
     }
   }
 
-  meleeHit(x: number, z: number): void { this.point.set(x, 0.8, z); this.vfx.burst("slash", this.point, 8); }
-  rangedHit(x: number, z: number): void { this.point.set(x, 0.8, z); this.vfx.burst("pierce", this.point, 6); }
-  areaBlast(x: number, z: number, radius: number): void { this.point.set(x, 0.6, z); this.vfx.burst("blast", this.point, Math.min(34, Math.round(12 + radius * 6))); this.camera.shake(0.035); }
-  heal(x: number, z: number): void { this.point.set(x, 0.7, z); this.vfx.burst("healPuff", this.point, 10); }
-  repair(x: number, z: number): void { this.point.set(x, 0.9, z); this.vfx.burst("repairSpark", this.point, 14); }
-  burstAt(key: string, x: number, z: number, count: number): void { this.point.set(x, 0.8, z); this.vfx.burst(key, this.point, count); }
+  meleeHit(x: number, z: number): void {
+    this.point.set(x, 0.8, z);
+    this.vfx.burst("slash", this.point, 8);
+  }
 
+  rangedHit(x: number, z: number): void {
+    this.point.set(x, 0.8, z);
+    this.vfx.burst("pierce", this.point, 6);
+  }
+
+  areaBlast(x: number, z: number, radius: number): void {
+    this.point.set(x, 0.6, z);
+    this.vfx.burst("blast", this.point, Math.min(34, Math.round(12 + radius * 6)));
+    this.camera.shake(0.035);
+  }
+
+  heal(x: number, z: number): void {
+    this.point.set(x, 0.7, z);
+    this.vfx.burst("healPuff", this.point, 10);
+  }
+
+  repair(x: number, z: number): void {
+    this.point.set(x, 0.9, z);
+    this.vfx.burst("repairSpark", this.point, 14);
+  }
+
+  burstAt(key: string, x: number, z: number, count: number): void {
+    this.point.set(x, 0.8, z);
+    this.vfx.burst(key, this.point, count);
+  }
+
+  /** Two expanding rings plus a dense colour-coded burst make casts unmistakable. */
+  /**
+   * A cast is staged as anticipation -> release -> aftermath rather than a
+   * single pop. W1 fired two expanding rings and a burst on the same frame,
+   * which is what made every skill read as "the result appeared" instead of
+   * "the character did something". The three beats are:
+   *
+   *  1. converge  (t=0)     a ring collapses inward and a light shaft rises
+   *  2. release   (t=0.16)  the outward waves, particle burst and shake
+   *  3. aftermath (t=0.16+) a slow scorch disc fading over about a second
+   *
+   * All meshes come from fixed pools and every beat is driven from the
+   * existing update() tick, so this adds no per-cast allocation and no new
+   * update loop.
+   */
   heroSkill(kind: HeroSkillKind, x: number, z: number, radius: number): void {
     this.skillCasts[kind]++;
     const shape = SKILL_SHAPE[kind];
+
+    // 1. anticipation
     if (shape.converge) this.launchSkillRing(kind, x, z, radius * shape.spread, 0, "converge");
-    for (let i = 0; i < shape.columns; i++) this.launchSkillColumn(kind, x, z, radius, shape.columnHeight, shape.columnWidth, i * 0.07);
-    for (let i = 0; i < shape.waves; i++) this.launchSkillRing(kind, x, z, radius * shape.spread, shape.release + i * shape.waveGap, "expand");
+    for (let i = 0; i < shape.columns; i++) {
+      this.launchSkillColumn(kind, x, z, radius, shape.columnHeight, shape.columnWidth, i * 0.07);
+    }
+
+    // 2. release
+    for (let i = 0; i < shape.waves; i++) {
+      this.launchSkillRing(kind, x, z, radius * shape.spread, shape.release + i * shape.waveGap, "expand");
+    }
+
+    // 3. aftermath
     if (shape.afterglow > 0) this.launchSkillAfterglow(kind, x, z, radius * shape.spread, shape.afterglow);
+
     this.point.set(x, shape.burstHeight, z);
     this.vfx.burst(shape.burst, this.point, shape.burstCount);
     this.camera.shake(shape.shake);
   }
 
-  private launchSkillColumn(kind: HeroSkillKind, x: number, z: number, radius: number, height: number, width: number, delay: number): void {
+  private launchSkillColumn(
+    kind: HeroSkillKind, x: number, z: number, radius: number,
+    height: number, width: number, delay: number,
+  ): void {
     const column = this.skillColumns[this.skillColumnCursor];
     this.skillColumnCursor = (this.skillColumnCursor + 1) % this.skillColumns.length;
     column.mesh.material = this.skillMaterials[kind];
+    // Staggered columns fan out slightly, so three surges read as three
+    // rather than as one thick one.
     const spin = delay * 9.0;
     column.mesh.position.set(x + Math.sin(spin) * radius * 0.22, 0.05, z + Math.cos(spin) * radius * 0.22);
     column.radius = Math.max(0.5, radius * 0.34 * width);
@@ -261,6 +376,7 @@ export class CombatFeedback implements CombatVfx {
     glow.mesh.setEnabled(true);
   }
 
+  /** A bright descending beam followed by a blast ring: distinct from a normal shell. */
   airStrike(x: number, z: number, radius: number): void {
     const strike = this.fallingStrikes[this.strikeCursor];
     this.strikeCursor = (this.strikeCursor + 1) % this.fallingStrikes.length;
@@ -275,6 +391,7 @@ export class CombatFeedback implements CombatVfx {
     strike.impact.setEnabled(false);
   }
 
+  /** Starts or refreshes an obvious ring of ground flames. */
   groundFire(x: number, z: number, radius: number, duration: number): void {
     this.groundFireRemaining = Math.max(this.groundFireRemaining, duration);
     this.groundFireElapsed = 0;
@@ -294,6 +411,7 @@ export class CombatFeedback implements CombatVfx {
     }
   }
 
+  /** A gold pulse clearly marks the Flagbearer's current support radius. */
   supportAura(x: number, z: number, radius: number): void {
     const ring = this.supportRings[this.supportRingCursor];
     this.supportRingCursor = (this.supportRingCursor + 1) % this.supportRings.length;
@@ -308,7 +426,12 @@ export class CombatFeedback implements CombatVfx {
   }
 
   skillEffectSnapshot(): { casts: Record<HeroSkillKind, number>; activeRings: number; fallingStrikes: number; groundFirePatches: number } {
-    return { casts: { ...this.skillCasts }, activeRings: this.skillRings.filter((ring) => ring.mesh.isEnabled()).length, fallingStrikes: this.fallingStrikes.filter((strike) => strike.life >= 0).length, groundFirePatches: this.firePatches.filter((patch) => patch.ground.isEnabled() && patch.flame.isEnabled()).length };
+    return {
+      casts: { ...this.skillCasts },
+      activeRings: this.skillRings.filter((ring) => ring.mesh.isEnabled()).length,
+      fallingStrikes: this.fallingStrikes.filter((strike) => strike.life >= 0).length,
+      groundFirePatches: this.firePatches.filter((patch) => patch.ground.isEnabled() && patch.flame.isEnabled()).length,
+    };
   }
 
   private launchSkillRing(kind: HeroSkillKind, x: number, z: number, radius: number, delay: number, mode: "expand" | "converge" = "expand"): void {
@@ -326,6 +449,7 @@ export class CombatFeedback implements CombatVfx {
     ring.mesh.setEnabled(true);
   }
 
+  /** A short-lived ground ring so the taunt radius is readable at a glance. */
   taunt(x: number, z: number, radius: number): void {
     const ring = this.rings[this.ringCursor];
     this.ringLife[this.ringCursor] = 0.55;
@@ -335,7 +459,10 @@ export class CombatFeedback implements CombatVfx {
     ring.setEnabled(true);
   }
 
-  teleport(x: number, z: number): void { this.point.set(x, 0.7, z); this.vfx.burst("blink", this.point, 16); }
+  teleport(x: number, z: number): void {
+    this.point.set(x, 0.7, z);
+    this.vfx.burst("blink", this.point, 16);
+  }
 
   unitDeath(x: number, z: number, level: number): void {
     this.point.set(x, 0.6, z);
@@ -344,12 +471,35 @@ export class CombatFeedback implements CombatVfx {
     if (level >= 6) this.camera.shake(0.16);
   }
 
-  buildingHit(x: number, z: number): void { this.point.set(x, 1.0, z); this.vfx.burst("debris", this.point, 8); }
-  damageNumber(x: number, y: number, z: number, amount: number, kind: "damage" | "heal"): void { if (EffectSettingsState.damageNumbersEnabled) this.text.spawn(x, y, z, amount, kind); }
-  healthChanged(target: Damageable): void { this.bars.reveal(target); }
-  registerHealthBar(target: Damageable): void { this.bars.reveal(target); }
-  resourceGain(x: number, z: number, kind: "wood" | "stone" | "gold", amount: number): void { this.point.set(x, 1.1, z); this.vfx.burst(kind === "wood" ? "chips" : "debris", this.point, 8); this.text.spawn(x, 1.6, z, amount, "heal"); }
-  sound(name: string, volume = 1, pitch = 1): void { this.audio.play(name as SfxName, volume, pitch); }
+  buildingHit(x: number, z: number): void {
+    this.point.set(x, 1.0, z);
+    this.vfx.burst("debris", this.point, 8);
+  }
+
+  damageNumber(x: number, y: number, z: number, amount: number, kind: "damage" | "heal"): void {
+    if (!EffectSettingsState.damageNumbersEnabled) return;
+    this.text.spawn(x, y, z, amount, kind);
+  }
+
+  /** Reveals the target's bar. Height is chosen from what kind of thing it is. */
+  healthChanged(target: Damageable): void {
+    this.bars.reveal(target);
+  }
+
+  registerHealthBar(target: Damageable): void {
+    this.bars.reveal(target);
+  }
+
+  /** Pickup-style feedback when the hero pulls a unit out of a node. */
+  resourceGain(x: number, z: number, kind: "wood" | "stone" | "gold", amount: number): void {
+    this.point.set(x, 1.1, z);
+    this.vfx.burst(kind === "wood" ? "chips" : "debris", this.point, 8);
+    this.text.spawn(x, 1.6, z, amount, "heal");
+  }
+
+  sound(name: string, volume = 1, pitch = 1): void {
+    this.audio.play(name as SfxName, volume, pitch);
+  }
 
   update(dt: number): void {
     for (let i = 0; i < this.rings.length; i++) {
@@ -362,9 +512,14 @@ export class CombatFeedback implements CombatVfx {
     for (const ring of this.skillRings) {
       if (!ring.mesh.isEnabled()) continue;
       ring.life += dt;
-      if (ring.life < ring.delay) { ring.mesh.visibility = 0; continue; }
+      if (ring.life < ring.delay) {
+        ring.mesh.visibility = 0;
+        continue;
+      }
       const t = Math.min(1, (ring.life - ring.delay) / ring.duration);
       if (ring.mode === "converge") {
+        // Collapses inward and brightens as it closes, then hands off to the
+        // release wave.
         const scale = ring.radius * (1.55 - 1.35 * (t * t));
         ring.mesh.scaling.set(scale, scale, scale);
         ring.mesh.visibility = Math.min(1, t * 2.2) * (1 - Math.pow(t, 4));
@@ -375,11 +530,13 @@ export class CombatFeedback implements CombatVfx {
       }
       if (t >= 1) ring.mesh.setEnabled(false);
     }
+
     for (const column of this.skillColumns) {
       if (!column.mesh.isEnabled()) continue;
       column.life += dt;
       if (column.life < 0) { column.mesh.visibility = 0; continue; }
       const t = Math.min(1, column.life / column.duration);
+      // Shoots up fast, then thins out and fades.
       const height = (1.2 + 9.5 * (1 - Math.pow(1 - t, 2.2))) * column.heightScale;
       const width = column.radius * (1 - 0.55 * t);
       column.mesh.scaling.set(width, height, width);
@@ -387,6 +544,7 @@ export class CombatFeedback implements CombatVfx {
       column.mesh.visibility = Math.max(0, 0.72 * (1 - Math.pow(t, 1.6)));
       if (t >= 1) column.mesh.setEnabled(false);
     }
+
     for (const glow of this.skillAfterglows) {
       if (!glow.mesh.isEnabled()) continue;
       glow.life += dt;
@@ -401,25 +559,29 @@ export class CombatFeedback implements CombatVfx {
       ring.life += dt;
       const t = Math.min(1, ring.life / ring.duration);
       ring.mesh.scaling.setAll(0.25 + ring.radius * (0.48 + t * 0.55));
-      ring.mesh.visibility = Math.max(0, 0.85 * (1 - t));
+      ring.mesh.visibility = Math.max(0, 0.82 * (1 - t));
       if (t >= 1) ring.mesh.setEnabled(false);
     }
     for (const strike of this.fallingStrikes) {
       if (strike.life < 0) continue;
       strike.life += dt;
-      if (strike.life < 0.22) {
-        const t = strike.life / 0.22;
-        strike.beam.position.y = 11.5 - t * 9.7;
-        strike.beam.scaling.y = 1 - t * 0.45;
-      } else if (strike.life < 0.48) {
+      const progress = Math.min(1, strike.life / 0.34);
+      strike.beam.position.y = 11.5 - progress * 10.4;
+      strike.beam.scaling.set(1 + progress * 0.8, 1, 1 + progress * 0.8);
+      if (progress < 1) continue;
+      if (strike.beam.isEnabled()) {
         strike.beam.setEnabled(false);
-        strike.impact.setEnabled(true);
-        const t = (strike.life - 0.22) / 0.26;
         strike.impact.position.set(strike.x, 0.16, strike.z);
-        strike.impact.scaling.setAll(0.4 + t * 3.1);
-        strike.impact.visibility = 1 - t;
-      } else {
-        strike.beam.setEnabled(false);
+        strike.impact.scaling.setAll(0.35);
+        strike.impact.visibility = 1;
+        strike.impact.setEnabled(true);
+        this.point.set(strike.x, 0.7, strike.z);
+        this.vfx.burst("blast", this.point, 64);
+      }
+      const impactProgress = Math.min(1, (strike.life - 0.34) / 0.38);
+      strike.impact.scaling.setAll(0.35 + impactProgress * 3.2);
+      strike.impact.visibility = Math.max(0, 1 - impactProgress);
+      if (impactProgress >= 1) {
         strike.impact.setEnabled(false);
         strike.life = -1;
       }
@@ -427,16 +589,18 @@ export class CombatFeedback implements CombatVfx {
     if (this.groundFireRemaining > 0) {
       this.groundFireRemaining -= dt;
       this.groundFireElapsed += dt;
-      const fade = Math.min(1, this.groundFireRemaining / 0.5);
-      for (let i = 0; i < this.firePatches.length; i++) {
-        const patch = this.firePatches[i];
-        if (!patch.ground.isEnabled()) continue;
-        patch.ground.visibility = 0.34 * fade;
-        patch.flame.visibility = (0.5 + Math.sin(this.groundFireElapsed * 5 + patch.phase) * 0.25) * fade;
-        patch.flame.scaling.y = 0.7 + Math.sin(this.groundFireElapsed * 4.1 + patch.phase) * 0.2;
+      const fade = Math.max(0, Math.min(1, this.groundFireRemaining / 1.2));
+      for (const patch of this.firePatches) {
+        const flicker = 0.78 + Math.sin(this.groundFireElapsed * 9 + patch.phase) * 0.22;
+        patch.ground.visibility = fade * (0.55 + flicker * 0.25);
+        patch.flame.visibility = fade * flicker;
+        patch.flame.scaling.y = 0.72 + flicker * 0.48;
       }
       if (this.groundFireRemaining <= 0) {
-        for (const patch of this.firePatches) { patch.ground.setEnabled(false); patch.flame.setEnabled(false); }
+        for (const patch of this.firePatches) {
+          patch.ground.setEnabled(false);
+          patch.flame.setEnabled(false);
+        }
       }
     }
   }
