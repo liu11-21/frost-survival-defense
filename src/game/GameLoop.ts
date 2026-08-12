@@ -142,7 +142,7 @@ export function renderFrame(s: GameSystems, halted: boolean, simulate: (dt: numb
 
   s.monitor.beginRender();
   s.scene.render();
-  s.monitor.endSimulation();
+  s.monitor.endRender();
 
   s.monitor.sample(
     {
