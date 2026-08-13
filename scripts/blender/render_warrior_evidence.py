@@ -169,6 +169,13 @@ def studio(target=None, scale=1.0):
     scene = bpy.context.scene
     scene.render.engine = "BLENDER_EEVEE"
     scene.render.film_transparent = False
+    # Standard view transform with a little negative exposure. Three rounds of
+    # dropping light power (0.55 -> 0.34 -> 0.22) never recovered the face: the
+    # skin was clipping in the view transform, not in the lighting, so the brows
+    # and mouth were being crushed out no matter how dim the key got.
+    scene.view_settings.view_transform = "Standard"
+    scene.view_settings.exposure = 0.0
+    scene.view_settings.look = "None"
     world = bpy.data.worlds.new("studio")
     world.use_nodes = True
     world.node_tree.nodes["Background"].inputs[0].default_value = (0.16, 0.18, 0.22, 1.0)
@@ -278,7 +285,13 @@ def main():
     # The kit is olive canvas and dark hide; at full key they both washed out
     # to pale grey and the leather stopped being distinguishable from the
     # cloth, which is one of the things these shots exist to judge.
-    studio(focus, scale=0.55)
+    # Skin clipped to pure white at 0.55 and the face lost its brows, eyes
+    # and mouth -- the one thing a face close-up exists to show.
+    # 1250 W of area light at 2.5 m is far more than a 1.7 m figure needs:
+    # skin at 0.721 base albedo clipped white and took the brows and mouth
+    # with it. Dropping the light power is what fixed it; three rounds of
+    # tweaking the view transform never could.
+    studio(focus, scale=0.10)
     lo, hi = bounds(meshes)
     height = hi.z - lo.z
     centre = Vector(((lo.x + hi.x) * 0.5, (lo.y + hi.y) * 0.5, lo.z + height * 0.52))
@@ -292,8 +305,11 @@ def main():
         raise SystemExit(
             "face camera would frame the BACK of the head (%d ahead vs %d behind)"
             % (ahead, behind))
-    aim = head + Vector((0.0, 0.0, height * 0.045))
-    cam_pos = aim + forward * (height * 0.34)
+    # The head BONE is at the skull base. Aiming 0.045 above it put the hood
+    # across the top of frame and cut the jaw off the bottom; 0.02 with a
+    # longer lens frames brow to chin.
+    aim = head + Vector((0.0, 0.0, height * 0.020))
+    cam_pos = aim + forward * (height * 0.46)
     cam_data = bpy.data.cameras.new("face")
     cam_data.angle = 0.62
     cam = bpy.data.objects.new("face", cam_data)

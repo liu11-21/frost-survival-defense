@@ -117,12 +117,24 @@ def build_glove(body, armature, side, thickness_ratio=0.16, diagnostic=False):
     # `to_object`, so nothing had written one, and with the colour now carried
     # in COLOR_0 an untinted mitten renders pure white on an otherwise
     # correctly coloured figure.
-    tint = hero_outfit.SURFACES["leather"]
+    # THIS kit's leather, not hero_outfit.SURFACES["leather"].
+    #
+    # run-blender executes hero_outfit as __main__, so the `import hero_outfit`
+    # at the top of this file is a SECOND module object whose SURFACES table
+    # never receives the kit's overrides. Reading it here handed back the
+    # Hero's 0.372/0.263/0.171 and the mitten shipped in the Hero's tan while
+    # the boots beside it were the Warrior's dark hide. Same trap that once put
+    # the Hero's whole coat on this character.
+    tint = SURFACES_OVERRIDE["leather"]
     colours = mesh.color_attributes.new(name="Tint", type="BYTE_COLOR",
                                         domain="CORNER")
-    for polygon in mesh.polygons:
-        for loop in polygon.loop_indices:
-            colours.data[loop].color = (tint[0], tint[1], tint[2], 1.0)
+    # foreach_set, not a per-loop assignment. Writing `colours.data[loop].color`
+    # one loop at a time on a freshly built mesh produced a rotating permutation
+    # of the three channel values -- 0.074/0.245/0.272 then 0.556/0.243/0.074 --
+    # i.e. the writes were landing at the wrong stride. A flat buffer cannot
+    # misalign.
+    colours.data.foreach_set(
+        "color", [tint[0], tint[1], tint[2], 1.0] * len(mesh.loops))
     hero_outfit.add_cylindrical_uvs(mesh)
     obj = bpy.data.objects.new("HeroGlove_%s" % side, mesh)
     bpy.context.collection.objects.link(obj)
@@ -321,7 +333,9 @@ def build_outfit(body, armature, variant):
     # interpenetrate, and no gap to tune. The faces are retagged after the
     # sweep, which is what `surfaces` being per-face is for.
     width = m["hip"]["halfWidth"]
-    top = m["chest"]["y"]
+    # Below the collarbone. Taken to the chest landmark the surcoat climbed to
+    # the base of the throat and read as a bib in close-up.
+    top = m["chest"]["y"] - height * 0.030
     bottom = m["hem"]["y"]
     tagged = 0
     for index in range(jacket_faces, len(b.faces)):
