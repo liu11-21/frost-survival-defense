@@ -70,6 +70,9 @@ REQUIRED_BONES = (
 # happening to be written to the same path.
 PROTECTED = {"hero.glb", "warrior.glb"}
 LOD_RATIO = (1.0, 0.45, 0.18)
+# Floor on the face count any single mesh keeps after decimation, so small
+# props survive tiers tuned for a body.
+LOD_MIN_FACES = 72
 
 
 def load_profile(name):
@@ -569,9 +572,21 @@ def build_lods(meshes, armature, name):
             # so they are dropped rather than kept as dead weight in the GLB.
             if copy.data.shape_keys:
                 copy.shape_key_clear()
-            if ratio < 1.0:
+            # Decimate proportionally, but never below a floor.
+            #
+            # A ratio that suits a 4600-face body destroys a 130-face weapon:
+            # at LOD2 the axe lost its edge entirely, the silhouette's outermost
+            # geometry went with it, and the tier stopped matching LOD0's
+            # bounds. Small props are a rounding error in the budget and carry
+            # the read -- an axe nobody can see is worse than the triangles it
+            # would have cost.
+            faces = len(copy.data.polygons)
+            effective = ratio
+            if faces:
+                effective = max(ratio, min(1.0, LOD_MIN_FACES / float(faces)))
+            if effective < 1.0:
                 mod = copy.modifiers.new("lod", "DECIMATE")
-                mod.ratio = ratio
+                mod.ratio = effective
                 bpy.context.view_layer.objects.active = copy
                 bpy.ops.object.modifier_apply(modifier=mod.name)
             copy["lodLevel"] = level

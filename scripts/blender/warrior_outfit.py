@@ -59,7 +59,9 @@ MATERIAL_TABLE = (
     # barefoot in a coat.
     ("leather", (0.104, 0.070, 0.044), 0.76, 0.03),
     ("metal", (0.318, 0.334, 0.356), 0.66, 0.78),
-    ("hair", (0.118, 0.094, 0.071), 0.88, 0.0),
+    # No hair material: the Warrior is hooded and no surface in this kit uses
+    # it. It was inherited from the Hero's table and cost a material slot for
+    # geometry that does not exist.
     # Oxide red, matte: the unit marking, and the only saturated thing on him.
     ("tabard", (0.486, 0.213, 0.157), 0.93, 0.0),
 )
@@ -176,20 +178,52 @@ def build_sword(body, armature, height):
     ], "leather", lambda t: {}, butt, tip, cap_start=False, cap_end=False)
     # Head: asymmetric on purpose -- the deep side is the cutting edge, the
     # shallow side the pick. One section carries both.
+    # The head is swept ACROSS the haft, not around it.
     #
-    # THIN across the haft and DEEP along it, with a high exponent so the
-    # section is a flat wedge rather than an ellipse. The first head used
-    # 0.036 across against 0.092 deep at exponent 2.3, which rounded into an
-    # ellipsoid: from the side it read as a wooden mallet, not an axe. The
-    # cutting edge (front) runs long and flares before it tapers; the pick
-    # (back) is short and stays blunt.
+    # Two earlier heads were built by sweeping a closed section ALONG the haft,
+    # which can only ever produce a solid of revolution: however thin and deep
+    # the profile, it rounds into an ellipsoid and reads from the side as a
+    # mallet. An axe is a flat wedge standing out sideways from its handle, so
+    # the edge and the pick are their own sweeps, each running out from the
+    # haft on its own axis, with a section that is THIN across the blade face
+    # and tall along the haft.
+    head_at = butt + (tip - butt) * 0.855
+    # Perpendicular to the haft and horizontal, swung to the side away from the
+    # body so the edge never sweeps into the hip.
+    blade_dir = along.cross(Vector((0.0, 1.0, 0.0)))
+    if blade_dir.length < 1e-6:
+        blade_dir = Vector((1.0, 0.0, 0.0))
+    blade_dir.normalize()
+    if blade_dir.dot(outward) < 0.0:
+        blade_dir = -blade_dir
+    # A real ice axe head spans roughly a fifth of its own haft. At 0.082 of
+    # body height the head was 14 cm on a 67 cm haft and read as a small
+    # pick rather than a weapon.
+    reach = height * 0.125
+
+    # Cutting edge: broad, flaring slightly before it thins to the bit.
     b.sweep_axis([
-        (0.845, section(8, 0.022, 0.034, 0.030, 3.4)),
-        (0.880, section(8, 0.020, 0.118, 0.058, 4.2)),
-        (0.930, section(8, 0.018, 0.126, 0.050, 4.4)),
-        (0.972, section(8, 0.013, 0.104, 0.030, 4.2)),
-        (1.000, section(8, 0.006, 0.030, 0.012, 3.0)),
-    ], "metal", lambda t: {}, butt, tip, cap_start=False, cap_end=True)
+        (0.00, section(6, 0.022, 0.060, 0.046, 3.6)),
+        (0.42, section(6, 0.020, 0.076, 0.062, 4.0)),
+        (0.80, section(6, 0.014, 0.086, 0.072, 4.2)),
+        (1.00, section(6, 0.005, 0.080, 0.066, 3.4)),
+    ], "metal", lambda t: {}, head_at, head_at + blade_dir * reach,
+        cap_start=False, cap_end=True)
+
+    # Pick: the other side, short and square, for a tool that also bites ice.
+    b.sweep_axis([
+        (0.00, section(6, 0.021, 0.052, 0.042, 3.6)),
+        (0.60, section(6, 0.015, 0.034, 0.030, 3.4)),
+        (1.00, section(6, 0.006, 0.014, 0.012, 3.0)),
+    ], "metal", lambda t: {}, head_at, head_at - blade_dir * (reach * 0.62),
+        cap_start=False, cap_end=True)
+
+    # Collar where the head is seated on the haft.
+    b.sweep_axis([
+        (0.828, section(8, 0.026, 0.026, 0.026, 3.0)),
+        (0.884, section(8, 0.028, 0.028, 0.028, 3.0)),
+    ], "metal", lambda t: {}, butt, tip, cap_start=False, cap_end=False)
+
     return b, "hand_r"
 
 
@@ -268,8 +302,13 @@ def build_outfit(body, armature, variant):
     # out as a ragged red blotch where the ribs punched through it.
     # Well clear of the jacket (max pad 0.090). Decimation moves both surfaces,
     # so a 2 cm gap is not enough at LOD0 -- they tore through each other.
-    for key, pad in (("hem", 0.122), ("thighTop", 0.126), ("hip", 0.126),
-                     ("waist", 0.124), ("chest", 0.124), ("upperChest", 0.120)):
+    # The gap has to survive DECIMATION, not just full density. At 0.122 against
+    # the jacket's 0.090 the two surfaces held at LOD0 and tore through each
+    # other at LOD1 and LOD2, where the tabard came out as red shards across
+    # the chest. Coarser tiers move vertices further, so the clearance is sized
+    # for the coarsest one.
+    for key, pad in (("hem", 0.148), ("thighTop", 0.152), ("hip", 0.152),
+                     ("waist", 0.150), ("chest", 0.150), ("upperChest", 0.146)):
         d = m[key]
         ring_pts = section(n, d["halfWidth"] + pad, d["front"] + pad,
                            d["back"] + pad, 3.0)
@@ -284,10 +323,10 @@ def build_outfit(body, armature, variant):
     # belt vanished behind the tabard and survived only as two stubs at the
     # hips, which read as a mistake rather than as a belt.
     b.sweep([
-        (d["y"] - height * 0.020, section(n, d["halfWidth"] + 0.168,
-                                          d["front"] + 0.168, d["back"] + 0.168, 3.2)),
-        (d["y"] + height * 0.020, section(n, d["halfWidth"] + 0.170,
-                                          d["front"] + 0.170, d["back"] + 0.170, 3.2)),
+        (d["y"] - height * 0.020, section(n, d["halfWidth"] + 0.176,
+                                          d["front"] + 0.176, d["back"] + 0.176, 3.2)),
+        (d["y"] + height * 0.020, section(n, d["halfWidth"] + 0.178,
+                                          d["front"] + 0.178, d["back"] + 0.178, 3.2)),
     ], "leather", lambda y: {}, cap_bottom=False, cap_top=False)
     regions.append(("torso", belt_start, len(b.vertices)))
 
