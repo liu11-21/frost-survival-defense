@@ -743,17 +743,40 @@ def emit_ally_contract(root, armature, height):
         axe_tip        out along the haft, driving the swing arc
         attackAnchor   in front of the chest, where a strike lands
     """
+    # Drop anything not bound to the rig. An MPFB import carries a stray
+    # Icosphere through the whole pipeline, and it shipped inside the candidate
+    # GLB: 42 vertices spanning z -1..1, which is not the character and which
+    # corrupts any measurement taken from the file's bounding box.
+    #
+    # Scoped to the ally path deliberately: the Hero's export is signed off and
+    # is not being touched this round.
+    #
+    # Keep COL_* -- the collision box is a deliberate part of the asset, not
+    # debris. A first pass dropped everything unskinned and took it with it.
+    dropped = []
+    for obj in list(bpy.data.objects):
+        if obj.type != "MESH" or obj.name.startswith("COL_"):
+            continue
+        if not any(mod.type == "ARMATURE" for mod in obj.modifiers):
+            dropped.append(obj.name)
+            bpy.data.objects.remove(obj, do_unlink=True)
+
     armature.name = "UnitSkeleton"
     armature.data.name = "UnitSkeleton"
 
-    hand = armature.pose.bones.get("hand.R") or armature.pose.bones.get("hand_r")
+    # REST positions, not pose positions. `pose.bones[...].head` is evaluated in
+    # pose space, and the rig still carries whatever the pose tests left on it,
+    # so the socket was authored 0.21 m from where the exported bind pose puts
+    # the hand. The GLB ships the bind pose; the locators must agree with it.
+    bones = armature.data.bones
+    hand = bones.get("hand.R") or bones.get("hand_r")
     if hand is None:
         raise SystemExit("ally contract needs a right hand bone; rig has none")
-    grip = armature.matrix_world @ hand.head
+    grip = armature.matrix_world @ hand.head_local
     # Down the forearm: the direction the haft runs in a two-hand grip.
-    lower = armature.pose.bones.get("lower_arm.R") or armature.pose.bones.get("lowerarm_r")
+    lower = bones.get("lower_arm.R") or bones.get("lowerarm_r")
     if lower is not None:
-        along = (grip - (armature.matrix_world @ lower.head)).normalized()
+        along = (grip - (armature.matrix_world @ lower.head_local)).normalized()
     else:
         along = Vector((0.0, -1.0, 0.0))
 
@@ -763,7 +786,11 @@ def emit_ally_contract(root, armature, height):
         ("upper_grip", grip),
         ("lower_grip", grip + along * (height * 0.105)),
         ("axe_tip", grip - along * (height * 0.290)),
-        ("attackAnchor", Vector((0.0, height * 0.62, height * 0.32))),
+        # Blender is Z-UP here and the character faces -Y. Writing chest height
+        # into the Y slot put the anchor 0.92 m BEHIND the character at knee
+        # height -- a node-presence check called that a pass; the transform
+        # check did not.
+        ("attackAnchor", Vector((0.0, -height * 0.22, height * 0.62))),
     ):
         node = empty(name, tuple(location), "EXPORT", "PLAIN_AXES")
         node.parent = root
@@ -777,7 +804,8 @@ def emit_ally_contract(root, armature, height):
         marker = empty("LOD%d" % level, (0, 0, 0), "EXPORT", "PLAIN_AXES")
         marker.parent = root
         made.append(marker.name)
-    return {"armature": armature.name, "locators": made}
+    return {"armature": armature.name, "locators": made,
+            "droppedUnskinned": dropped}
 
 
 def main():
