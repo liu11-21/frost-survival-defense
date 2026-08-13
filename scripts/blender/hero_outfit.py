@@ -1838,8 +1838,18 @@ def main():
     print("COLOUR_LAYERS_STRIPPED %s" % json.dumps(stripped))
 
     glb = os.path.join(OUT, "%s.glb" % args.name)
+    # Export ONE colour layer, the active one.
+    #
+    # The exporter defaults to writing every colour attribute it finds, and it
+    # was emitting two channels from a mesh that carries a single "Tint": a
+    # white COLOR_0 and the real tint as COLOR_1. glTF multiplies base colour by
+    # COLOR_0 and ignores the rest, so the correct olive, hide and oxide-red
+    # values shipped on a channel no renderer reads -- which is why neutralising
+    # the textures to let the tint carry the colour produced a white character.
     bpy.ops.export_scene.gltf(filepath=glb, export_format="GLB",
-                              export_skins=True, export_yup=True)
+                              export_skins=True, export_yup=True,
+                              export_vertex_color="ACTIVE",
+                              export_all_vertex_colors=False)
 
     report = {
         "variant": args.variant,

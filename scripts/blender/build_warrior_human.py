@@ -66,7 +66,7 @@ STAGES = [
                     "--input", os.path.join(RUNTIME, "warrior_dressed.glb"),
                     "--profile", "mpfb2-game-engine",
                     "--name", "warrior_candidate",
-                    "--height", "1.70", "--material-budget", "5",
+                    "--height", "1.70", "--material-budget", "3",
                     # Ordinary-unit caps are 7500 / 3200 / 1100 triangles. The
                     # adapter's default leaves LOD0 undecimated, which only a
                     # protagonist can afford; these land all three inside.

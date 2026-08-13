@@ -624,6 +624,15 @@ def export_glb(path):
         use_visible=True,
         export_animation_mode="NLA_TRACKS",
         export_materials="EXPORT",
+        # Keep the active colour layer even when the material graph does not
+        # reference it. The default, "MATERIAL", exports vertex colours only if
+        # a material reads them -- and a GLB round-tripped through Blender
+        # loses that reference, because the glTF importer does not wire COLOR_0
+        # into the materials it builds. So a mesh arriving with correct
+        # per-face tint exported without any COLOR_0 at all, silently, and the
+        # colour was gone by the time the asset shipped.
+        export_vertex_color="ACTIVE",
+        export_all_vertex_colors=False,
     )
 
 

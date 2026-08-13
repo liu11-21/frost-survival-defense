@@ -46,39 +46,39 @@ SURFACES_OVERRIDE = {
 }
 
 
-# MATERIAL CAP: NOT MET, and not faked.
+# One soft material, told apart by the per-face tint in COLOR_0.
 #
 # The cap is three materials INCLUDING the body's skin, so the kit gets two.
-# Two routes were tried and both are recorded here because both look like they
-# should work:
+# Letting the adapter merge to the budget was not an option: it drops leather
+# and the bracers, boots, belt and mittens all render as cloth, which loses the
+# cloth/leather/metal read the brief requires.
 #
-#   Let the adapter merge to the budget. It drops leather, and the bracers,
-#   boots, belt and mittens all render as cloth -- the figure loses the
-#   cloth/leather/metal read entirely, which is a requirement, not a nicety.
+# Carrying colour in COLOR_0 instead needed one bug fixed first. The exporter
+# defaults to writing every colour attribute, and it emitted TWO channels from
+# a mesh holding a single "Tint": a white COLOR_0 and the real tint as COLOR_1.
+# glTF multiplies base colour by COLOR_0 and ignores the rest, so the right
+# values shipped on a channel nothing reads -- and neutralising the textures to
+# let the tint carry the colour produced a pure white character. Exporting only
+# the ACTIVE layer puts Tint on COLOR_0, and this works.
 #
-#   Carry the colours in COLOR_0 instead of in separate materials: one cloth
-#   material, tinted per face, using the same Texture -> Mix(MULTIPLY) ->
-#   Base Color graph common.py documents as exporter-safe. The build succeeded
-#   and reported 3 materials -- and the character came out ENTIRELY WHITE. With
-#   the textures neutralised the colour has nowhere else to come from, so the
-#   tint is being lost somewhere after this file: the adapter's
-#   convert_materials rewrites material graphs to hit the budget, and that is
-#   the next thing to look at.
-#
-# Shipping white to satisfy a counter is worse than being one slot over and
-# saying so, so the kit stays on separate materials until the tint survives
-# export.
-MATERIAL_OF_OVERRIDE = {"tabard": "tabard"}
+# Leather joins cloth because their PBR response is close (0.76 against 0.95
+# roughness, near-zero metallic both), so the merge costs a little sheen and no
+# colour at all. Metal stays separate: 0.78 metallic is a different material
+# response, not a different colour.
+MATERIAL_OF_OVERRIDE = {
+    "tabard": "cloth",
+    "leather": "cloth",
+    "fur": "cloth",
+    "edge": "metal",
+}
+
+VERTEX_TINTED = {"cloth"}
 
 MATERIAL_TABLE = (
-    ("cloth", (0.226, 0.221, 0.169), 0.95, 0.0),
-    # Darkened hard: at 0.196/0.132/0.082 the bracers and boots sat within a
-    # few percent of the skin tone and the figure read as bare-armed and
-    # barefoot in a coat.
-    ("leather", (0.104, 0.070, 0.044), 0.76, 0.03),
+    # White base and a neutral texture: every colour arrives per-face from
+    # SURFACES via COLOR_0. Baking a tint in as well would multiply twice.
+    ("cloth", (1.0, 1.0, 1.0), 0.92, 0.0),
     ("metal", (0.318, 0.334, 0.356), 0.66, 0.78),
-    # Oxide red, matte: the unit marking, and the only saturated thing on him.
-    ("tabard", (0.486, 0.213, 0.157), 0.93, 0.0),
 )
 
 
@@ -113,6 +113,16 @@ def build_glove(body, armature, side, thickness_ratio=0.16, diagnostic=False):
     mesh.update()
     for polygon in mesh.polygons:
         polygon.use_smooth = True
+    # Its own Tint layer. This mesh is built here rather than through
+    # `to_object`, so nothing had written one, and with the colour now carried
+    # in COLOR_0 an untinted mitten renders pure white on an otherwise
+    # correctly coloured figure.
+    tint = hero_outfit.SURFACES["leather"]
+    colours = mesh.color_attributes.new(name="Tint", type="BYTE_COLOR",
+                                        domain="CORNER")
+    for polygon in mesh.polygons:
+        for loop in polygon.loop_indices:
+            colours.data[loop].color = (tint[0], tint[1], tint[2], 1.0)
     hero_outfit.add_cylindrical_uvs(mesh)
     obj = bpy.data.objects.new("HeroGlove_%s" % side, mesh)
     bpy.context.collection.objects.link(obj)

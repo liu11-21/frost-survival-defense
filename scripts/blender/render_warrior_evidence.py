@@ -110,6 +110,49 @@ def load(path):
     return meshes or [o for o in bpy.data.objects if o.type == "MESH"], armature
 
 
+def apply_vertex_colour(meshes):
+    """Wire COLOR_0 into the imported materials, as a glTF runtime would.
+
+    Blender's glTF importer does NOT connect COLOR_0 to base colour, but the
+    spec says a renderer multiplies by it. So a correct asset whose colour
+    lives in the vertex tint imports as pure white here, and a render of it is
+    a picture of the importer rather than of the asset. Reconnecting it is what
+    makes these shots show what Babylon will show.
+    """
+    wired = []
+    for mesh in meshes:
+        if not mesh.data.color_attributes:
+            continue
+        for slot in mesh.material_slots:
+            material = slot.material
+            if material is None or not material.use_nodes:
+                continue
+            if material.get("tintWired"):
+                continue
+            tree = material.node_tree
+            bsdf = next((n for n in tree.nodes if n.type == "BSDF_PRINCIPLED"), None)
+            if bsdf is None:
+                continue
+            base = bsdf.inputs["Base Color"]
+            source = base.links[0].from_socket if base.is_linked else None
+            attribute = tree.nodes.new("ShaderNodeVertexColor")
+            attribute.layer_name = mesh.data.color_attributes[0].name
+            mix = tree.nodes.new("ShaderNodeMix")
+            mix.data_type = "RGBA"
+            mix.blend_type = "MULTIPLY"
+            mix.inputs[0].default_value = 1.0
+            if source is not None:
+                tree.links.new(source, mix.inputs[6])
+            else:
+                mix.inputs[6].default_value = base.default_value
+            tree.links.new(attribute.outputs["Color"], mix.inputs[7])
+            tree.links.new(mix.outputs["Result"], base)
+            material["tintWired"] = True
+            wired.append(material.name)
+    print("TINT_WIRED %s" % sorted(set(wired)))
+    return wired
+
+
 def bounds(meshes):
     lo = Vector((1e9, 1e9, 1e9))
     hi = Vector((-1e9, -1e9, -1e9))
@@ -226,6 +269,7 @@ def main():
     # --- orbit views + action poses -----------------------------------
     clear()
     meshes, armature = load(args.warrior)
+    apply_vertex_colour(meshes)
     focus = bpy.data.objects.new('focus', None)
     bpy.context.collection.objects.link(focus)
     lo0, hi0 = bounds(meshes)
@@ -335,6 +379,7 @@ def main():
         for label, path in (("warrior", args.warrior), ("hero", args.hero)):
             clear()
             subject, arm = load(path)
+            apply_vertex_colour(subject)
             # Force the bind pose on BOTH. The action loop above leaves the
             # scene sitting on a Run frame, and a freshly imported rig with NLA
             # tracks is evaluated at whatever frame is current -- which is why
