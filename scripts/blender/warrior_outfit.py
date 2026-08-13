@@ -24,6 +24,7 @@ tan, issued kit -- against the Hero's dark navy and steel.
 import math
 
 import bpy
+from mathutils import Vector
 
 import hero_outfit
 from authoring import MeshBuilder, section
@@ -127,10 +128,37 @@ def build_sword(body, armature, height):
     if hand is None or lower is None:
         return None, None
     grip = armature.matrix_world @ hand.head_local
-    along = (grip - (armature.matrix_world @ lower.head_local)).normalized()
+    # The haft crosses the palm; it does not fold back along the arm.
+    #
+    # The first version used the forearm direction itself, so the weapon ran
+    # from the hand back toward the elbow and the entire axe was buried inside
+    # the arm and torso. Nothing caught it: the locators shared that axis, so
+    # geometry and contract agreed with each other, and "on the character"
+    # cannot tell inside from outside.
+    #
+    # A held haft is roughly PERPENDICULAR to the forearm. Taking world-down
+    # and removing its forearm component gives that perpendicular, pointing
+    # down, which is where an axe hangs in an A-pose -- clear of the body on
+    # every side.
+    forearm = (grip - (armature.matrix_world @ lower.head_local)).normalized()
+    # DOWN IS -Y HERE. hero_outfit.main parents the whole import to a pivot and
+    # rotates it -90 degrees about X so the builder can stack rings along +Y;
+    # in that space world-down is (0, -1, 0), not (0, 0, -1). Using the Z-up
+    # vector put the haft on a horizontal axis while the adapter -- which runs
+    # in Z-up -- placed axe_tip 0.4 m lower, so the weapon and its own contract
+    # described different objects.
+    down = Vector((0.0, -1.0, 0.0))
+    # Down AND outward. Straight down put 25 of the axe's 77 vertices inside
+    # the thigh: the hand rests beside the hip in an A-pose, so a vertical haft
+    # runs through the leg. Swinging it away from the body's midline clears the
+    # leg and is how a haft actually hangs from a relaxed arm.
+    outward = Vector((grip.x, 0.0, grip.z))
+    outward = outward.normalized() if outward.length > 1e-6 else Vector((1.0, 0.0, 0.0))
+    along = down + outward * 0.62
+    along = along.normalized() if along.length > 1e-6 else down
     # Identical to human_source_adapter.emit_ally_contract.
-    butt = grip + along * (height * 0.105)      # lower_grip
-    tip = grip - along * (height * 0.290)       # axe_tip
+    butt = grip - along * (height * 0.105)      # lower_grip, above the hand
+    tip = grip + along * (height * 0.290)       # axe_tip, the head below it
 
     b = MeshBuilder(0)
     # Haft, butt (t=0) to cutting edge (t=1). upper_grip falls at t = 0.266.
@@ -148,12 +176,19 @@ def build_sword(body, armature, height):
     ], "leather", lambda t: {}, butt, tip, cap_start=False, cap_end=False)
     # Head: asymmetric on purpose -- the deep side is the cutting edge, the
     # shallow side the pick. One section carries both.
+    #
+    # THIN across the haft and DEEP along it, with a high exponent so the
+    # section is a flat wedge rather than an ellipse. The first head used
+    # 0.036 across against 0.092 deep at exponent 2.3, which rounded into an
+    # ellipsoid: from the side it read as a wooden mallet, not an axe. The
+    # cutting edge (front) runs long and flares before it tapers; the pick
+    # (back) is short and stays blunt.
     b.sweep_axis([
-        (0.855, section(8, 0.030, 0.030, 0.026, 2.6)),
-        (0.890, section(8, 0.036, 0.092, 0.062, 2.3)),
-        (0.945, section(8, 0.030, 0.082, 0.048, 2.4)),
-        (0.985, section(8, 0.014, 0.052, 0.022, 2.4)),
-        (1.000, section(8, 0.005, 0.022, 0.010, 2.2)),
+        (0.845, section(8, 0.022, 0.034, 0.030, 3.4)),
+        (0.880, section(8, 0.020, 0.118, 0.058, 4.2)),
+        (0.930, section(8, 0.018, 0.126, 0.050, 4.4)),
+        (0.972, section(8, 0.013, 0.104, 0.030, 4.2)),
+        (1.000, section(8, 0.006, 0.030, 0.012, 3.0)),
     ], "metal", lambda t: {}, butt, tip, cap_start=False, cap_end=True)
     return b, "hand_r"
 
@@ -233,8 +268,8 @@ def build_outfit(body, armature, variant):
     # out as a ragged red blotch where the ribs punched through it.
     # Well clear of the jacket (max pad 0.090). Decimation moves both surfaces,
     # so a 2 cm gap is not enough at LOD0 -- they tore through each other.
-    for key, pad in (("hem", 0.150), ("thighTop", 0.154), ("hip", 0.154),
-                     ("waist", 0.152), ("chest", 0.152), ("upperChest", 0.148)):
+    for key, pad in (("hem", 0.122), ("thighTop", 0.126), ("hip", 0.126),
+                     ("waist", 0.124), ("chest", 0.124), ("upperChest", 0.120)):
         d = m[key]
         ring_pts = section(n, d["halfWidth"] + pad, d["front"] + pad,
                            d["back"] + pad, 3.0)
@@ -385,7 +420,7 @@ def build_outfit(body, armature, variant):
     return b, m, floor, top, height, regions
 
 
-def _hide_sides(ring, half_width, keep=0.52, sink=0.80):
+def _hide_sides(ring, half_width, keep=0.40, sink=0.74):
     """Pull the side segments of a ring inward so a garment beneath hides them.
 
     The mirror of `tuck_front`, which hides the FRONT of a hood under the skin.

@@ -840,19 +840,59 @@ def emit_ally_contract(root, armature, height):
     if hand is None:
         raise SystemExit("ally contract needs a right hand bone; rig has none")
     grip = armature.matrix_world @ hand.head_local
-    # Down the forearm: the direction the haft runs in a two-hand grip.
     lower = bones.get("lower_arm.R") or bones.get("lowerarm_r")
-    if lower is not None:
-        along = (grip - (armature.matrix_world @ lower.head_local)).normalized()
+    # The haft crosses the palm; it does not fold back along the arm.
+    #
+    # The first version used the forearm direction itself, so the weapon ran
+    # from the hand back toward the elbow and the entire axe was buried inside
+    # the arm and torso. Nothing caught it: the locators shared that axis, so
+    # geometry and contract agreed with each other, and "on the character"
+    # cannot tell inside from outside.
+    #
+    # A held haft is roughly PERPENDICULAR to the forearm. Taking world-down
+    # and removing its forearm component gives that perpendicular, pointing
+    # down, which is where an axe hangs in an A-pose -- clear of the body on
+    # every side.
+    # MEASURE THE WEAPON, do not re-derive its axis.
+    #
+    # Both this and the kit computed the haft direction from the same formula,
+    # in different spaces and at different points in the pipeline, and got
+    # different answers: the kit builds in a Y-up pivot space and against a rest
+    # pose the adapter later realigns and rescales. The locators ended up 0.15 m
+    # off the geometry they are supposed to describe -- and an earlier version
+    # was off by the whole weapon.
+    #
+    # The tip of the axe is a fact about the mesh. Read it off the mesh and the
+    # contract cannot drift from the object again.
+    axe = None
+    for obj in bpy.data.objects:
+        if obj.type != "MESH" or not obj.name.startswith("LOD0"):
+            continue
+        if "Sword" in (obj.data.name or "") or "Axe" in (obj.data.name or ""):
+            axe = obj
+            break
+    if axe is not None and len(axe.data.vertices):
+        points = [axe.matrix_world @ v.co for v in axe.data.vertices]
+        far = max(points, key=lambda p: (p - grip).length)
+        along = (far - grip)
+        along = along.normalized() if along.length > 1e-6 else Vector((0.0, 0.0, -1.0))
+        measured_tip = far
+    elif lower is not None:
+        forearm = (grip - (armature.matrix_world @ lower.head_local)).normalized()
+        down = Vector((0.0, 0.0, -1.0))
+        along = (down - forearm * down.dot(forearm))
+        along = along.normalized() if along.length > 1e-6 else Vector((0.0, 0.0, -1.0))
+        measured_tip = grip + along * (height * 0.290)
     else:
-        along = Vector((0.0, -1.0, 0.0))
+        along = Vector((0.0, 0.0, -1.0))
+        measured_tip = grip + along * (height * 0.290)
 
     made = []
     for name, location in (
         ("weapon_socket", grip),
         ("upper_grip", grip),
-        ("lower_grip", grip + along * (height * 0.105)),
-        ("axe_tip", grip - along * (height * 0.290)),
+        ("lower_grip", grip - along * (height * 0.105)),
+        ("axe_tip", measured_tip),
         # Blender is Z-UP here and the character faces -Y. Writing chest height
         # into the Y slot put the anchor 0.92 m BEHIND the character at knee
         # height -- a node-presence check called that a pass; the transform
