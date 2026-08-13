@@ -260,7 +260,11 @@ def build_outfit(body, armature, variant):
     # A high exponent keeps the section boxy rather than tubular, which is how
     # quilted padding actually sits.
     jacket_start = len(b.vertices)
+    jacket_faces = len(b.faces)
     b.sweep([
+        # Down to mid-thigh: the surcoat is part of this surface now, so the
+        # jacket has to reach where the surcoat used to hang.
+        ring("hem", 0.094, 3.0),
         # Reaches the top of the thigh. Cut at the hip it left a band of bare
         # skin between the jacket and the trousers, straight across the groin.
         ring("thighTop", 0.090, 3.1),
@@ -279,54 +283,45 @@ def build_outfit(body, armature, variant):
     # Padding is already carried by the boxy section and the weave normal map;
     # ribs that only survive at full density are not worth the tearing.
 
-    # --- tabard ---------------------------------------------------------
-    # The unit marking, and half the silhouette: a straight vertical slab of
-    # colour against the Hero's flared skirt.
+    # --- surcoat: a COLOURED REGION of the jacket, not a layer on top of it -
     #
-    # Two earlier attempts failed for the same underlying reason -- the panel
-    # was FLAT and the body is round. As a one-sided strip of points the loft
-    # twisted it into a wedge; as a thin flat section standing proud of the
-    # jacket it read from the side as a pair of braces floating clear of the
-    # figure, because its edges stayed at panel depth while the waist fell away
-    # behind them.
+    # It was a separate shell floating 12-15 cm off the jacket, and every
+    # version of that fought decimation: at LOD1 and LOD2 the two surfaces move
+    # independently and tore through each other, spraying red shards across the
+    # chest. Widening the gap stopped the tearing and made the surcoat read as
+    # an apron -- the clearance became the silhouette.
     #
-    # So it is not a panel at all now. It is a thin over-layer that FOLLOWS the
-    # jacket -- same elliptical section, one centimetre further out -- with its
-    # side segments drawn back inside the jacket, where the wool hides them.
-    # What shows is a broad band of colour down the front and back that sits on
-    # the body, and from the side nothing but the edge.
-    tabard_start = len(b.vertices)
-    rings = []
-    # Every pad here must clear the jacket AND its quilting ribs, which reach
-    # 0.100. At 0.094-0.100 the two surfaces interpenetrated and the tabard came
-    # out as a ragged red blotch where the ribs punched through it.
-    # Well clear of the jacket (max pad 0.090). Decimation moves both surfaces,
-    # so a 2 cm gap is not enough at LOD0 -- they tore through each other.
-    # The gap has to survive DECIMATION, not just full density. At 0.122 against
-    # the jacket's 0.090 the two surfaces held at LOD0 and tore through each
-    # other at LOD1 and LOD2, where the tabard came out as red shards across
-    # the chest. Coarser tiers move vertices further, so the clearance is sized
-    # for the coarsest one.
-    for key, pad in (("hem", 0.148), ("thighTop", 0.152), ("hip", 0.152),
-                     ("waist", 0.150), ("chest", 0.150), ("upperChest", 0.146)):
-        d = m[key]
-        ring_pts = section(n, d["halfWidth"] + pad, d["front"] + pad,
-                           d["back"] + pad, 3.0)
-        rings.append((d["y"], _hide_sides(ring_pts, d["halfWidth"] + pad)))
-    b.sweep(rings, "tabard", lambda y: {}, cap_bottom=False, cap_top=False)
-    regions.append(("torso", tabard_start, len(b.vertices)))
+    # A surcoat at this budget is not geometry. It is the front and back of the
+    # jacket in a different colour, so there is no second surface, nothing to
+    # interpenetrate, and no gap to tune. The faces are retagged after the
+    # sweep, which is what `surfaces` being per-face is for.
+    width = m["hip"]["halfWidth"]
+    top = m["chest"]["y"]
+    bottom = m["hem"]["y"]
+    tagged = 0
+    for index in range(jacket_faces, len(b.faces)):
+        points = [b.vertices[v] for v in b.faces[index]]
+        cx = sum(p[0] for p in points) / len(points)
+        cy = sum(p[1] for p in points) / len(points)
+        # Wide enough to be a surcoat rather than a stripe, but short of the
+        # side planes so it still reads as a front and back panel.
+        if abs(cx) <= width * 0.74 and bottom <= cy <= top:
+            b.surfaces[index] = "tabard"
+            tagged += 1
+    print("SURCOAT_FACES %d" % tagged)
 
     # --- wide belt ------------------------------------------------------
     belt_start = len(b.vertices)
     d = m["waist"]
-    # Outside the tabard (pads 0.120-0.126), not under it. Buckled beneath, the
-    # belt vanished behind the tabard and survived only as two stubs at the
-    # hips, which read as a mistake rather than as a belt.
+    # Just clear of the jacket (max pad 0.094). It was pushed out to 0.176 to
+    # clear the old free-standing tabard shell; with the surcoat now painted on
+    # the jacket there is nothing to clear, and that offset left the belt
+    # floating off the body as two detached hoops.
     b.sweep([
-        (d["y"] - height * 0.020, section(n, d["halfWidth"] + 0.176,
-                                          d["front"] + 0.176, d["back"] + 0.176, 3.2)),
-        (d["y"] + height * 0.020, section(n, d["halfWidth"] + 0.178,
-                                          d["front"] + 0.178, d["back"] + 0.178, 3.2)),
+        (d["y"] - height * 0.020, section(n, d["halfWidth"] + 0.104,
+                                          d["front"] + 0.104, d["back"] + 0.104, 3.2)),
+        (d["y"] + height * 0.020, section(n, d["halfWidth"] + 0.106,
+                                          d["front"] + 0.106, d["back"] + 0.106, 3.2)),
     ], "leather", lambda y: {}, cap_bottom=False, cap_top=False)
     regions.append(("torso", belt_start, len(b.vertices)))
 

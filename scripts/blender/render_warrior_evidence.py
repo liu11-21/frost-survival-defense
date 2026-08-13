@@ -231,7 +231,10 @@ def main():
     lo0, hi0 = bounds(meshes)
     focus.location = ((lo0.x + hi0.x) * 0.5, (lo0.y + hi0.y) * 0.5,
                       lo0.z + (hi0.z - lo0.z) * 0.62)
-    studio(focus)
+    # The kit is olive canvas and dark hide; at full key they both washed out
+    # to pale grey and the leather stopped being distinguishable from the
+    # cloth, which is one of the things these shots exist to judge.
+    studio(focus, scale=0.55)
     lo, hi = bounds(meshes)
     height = hi.z - lo.z
     centre = Vector(((lo.x + hi.x) * 0.5, (lo.y + hi.y) * 0.5, lo.z + height * 0.52))
