@@ -1579,12 +1579,12 @@ def main():
         MATERIAL_OF.update(getattr(kit, "MATERIAL_OF_OVERRIDE", {}))
         if hasattr(kit, "MATERIAL_TABLE"):
             globals()["MATERIAL_TABLE"] = kit.MATERIAL_TABLE
-        for name in ("build_outfit", "build_sword"):
+        for name in ("build_outfit", "build_sword", "build_glove"):
             if hasattr(kit, name):
                 globals()[name] = getattr(kit, name)
         print("KIT_INSTALLED %s" % json.dumps({
             "module": args.kit,
-            "overrides": sorted(n for n in ("build_outfit", "build_sword")
+            "overrides": sorted(n for n in ("build_outfit", "build_sword", "build_glove")
                                 if hasattr(kit, n))}))
 
     for obj in list(bpy.data.objects):

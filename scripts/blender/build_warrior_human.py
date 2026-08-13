@@ -15,32 +15,28 @@ difference has to come from build and kit, not from a different base mesh: the
 1.84 m), heavier and broader, so infantry reads as infantry beside the Hero
 even before either is dressed.
 
-STATUS -- this is the pipeline, not the finished character
-----------------------------------------------------------
-Stage 2 currently points at hero_outfit.py, which dresses the Warrior in the
-HERO's coat and sword. That is a pipeline smoke test and nothing more: it
-proves the three stages connect and produce a rigged, LOD'd, animated GLB. It
-is NOT the Warrior design and must not be shipped as one -- the silhouette
-would be the Hero's, which is the one thing the brief rules out.
+Stages
+------
+    MPFB warrior body -> warrior_outfit -> ally production adapter -> GLB
 
-The Warrior kit (hood framing the face, short padded jacket instead of the long
-coat, tabard, heavy bracers, no sword) is the next piece of work and lives in a
-warrior_outfit.py that does not exist yet.
+All headless and script-driven: no hand edits to a .blend anywhere in the
+chain, so a clean rebuild reproduces the shipped candidate.
 
-Known integration gap, carried deliberately
--------------------------------------------
-human_source_adapter.py emits `UnitRoot` and `LOD{n}_PROD_*`, which the ally
-asset contract wants, but not the rest of it: the manifest requires
-`UnitSkeleton`, `weapon_socket`, `attackAnchor`, `upper_grip`, `lower_grip`,
-`axe_tip` and nodes literally named `LOD1`/`LOD2`. The adapter names its
-armature `Human.rig` and exports no weapon locators, because nothing on the
-human path has ever needed them.
+    node scripts/run-blender.mjs scripts/blender/build_warrior_human.py
 
-So an MPFB-derived warrior.glb is NOT yet a drop-in replacement for the
-existing procedural one. Closing that is asset-pipeline work in the adapter
-(emit the locators from the rig's hand bones and alias the armature name); it
-requires no change to SquadManager, combat or any gameplay code, and none is
-proposed here.
+The kit stage runs hero_outfit.py as the shared PIPELINE with `--kit
+warrior_outfit`, which swaps the garment set and the palette. It briefly ran
+without that flag as a smoke test, which dressed the Warrior in the Hero's coat
+and sword while reporting success -- the flag is not optional.
+
+`HERO_OUTFIT_CULL` removes body faces the garments permanently hide. It is off
+by default during fitting, because a garment that swallows the torso would have
+the evidence deleted along with it; here the fit is settled and the hidden
+faces are pure cost.
+
+The adapter runs with `--ally-contract`, without which the export carries no
+UnitSkeleton, no weapon locators and no LOD marker nodes, and is not a drop-in
+for the procedural warrior.glb.
 """
 import os
 import subprocess
@@ -50,26 +46,43 @@ HERE = os.path.dirname(os.path.abspath(__file__))
 ROOT = os.path.abspath(os.path.join(HERE, "..", ".."))
 RUNTIME = os.path.join(ROOT, ".runtime", "mpfb", "variants")
 
+ENV = {
+    # Fitting is settled: drop the body faces the kit permanently hides.
+    "HERO_OUTFIT_CULL": "1",
+    # Every tier must keep the garments, the gloves and the axe. The adapter
+    # refuses to write a candidate that lost one to the LOD pass.
+    "HERO_REQUIRE_GARMENTS": "1",
+    "HUMAN_REQUIRE_PARTS": "HeroOutfit,HeroGlove_l,HeroGlove_r,HeroSword",
+}
+
 STAGES = [
     ("body", ["scripts/blender/mpfb_human_variants.py",
               "--variant", "warrior", "--name", "warrior_base"]),
-    # See STATUS above: this is the Hero kit, used as a smoke test only.
     ("kit", ["scripts/blender/hero_outfit.py",
              "--input", os.path.join(RUNTIME, "warrior_base.glb"),
-             "--variant", "male", "--name", "warrior_dressed"]),
+             "--variant", "warrior", "--kit", "warrior_outfit",
+             "--name", "warrior_dressed"]),
     ("production", ["scripts/blender/human_source_adapter.py",
                     "--input", os.path.join(RUNTIME, "warrior_dressed.glb"),
                     "--profile", "mpfb2-game-engine",
                     "--name", "warrior_candidate",
-                    "--height", "1.70", "--material-budget", "6"]),
+                    "--height", "1.70", "--material-budget", "5",
+                    # Ordinary-unit caps are 7500 / 3200 / 1100 triangles. The
+                    # adapter's default leaves LOD0 undecimated, which only a
+                    # protagonist can afford; these land all three inside.
+                    "--lod-ratio", "0.82,0.345,0.118",
+                    "--legacy-bones",
+                    "--ally-contract"]),
 ]
 
 
 def main():
     for label, argv in STAGES:
         print("WARRIOR_STAGE %s" % label, flush=True)
+        environment = dict(os.environ)
+        environment.update(ENV)
         result = subprocess.run(
-            ["node", "scripts/run-blender.mjs"] + argv, cwd=ROOT)
+            ["node", "scripts/run-blender.mjs"] + argv, cwd=ROOT, env=environment)
         if result.returncode != 0:
             raise SystemExit("stage %s failed (%d)" % (label, result.returncode))
     print("WARRIOR_PIPELINE_OK")

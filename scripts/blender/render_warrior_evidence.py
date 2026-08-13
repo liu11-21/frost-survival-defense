@@ -23,8 +23,21 @@ from mathutils import Vector
 ROOT = os.path.abspath(os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", ".."))
 OUT = os.path.join(ROOT, "reports", "warrior-v1")
 
-ORBITS = (("front", 0.0), ("back", 180.0), ("side", 90.0), ("three-quarter", 38.0))
-POSES = (("melee", "MeleeAttack", 0.38), ("walk", "Walk", 0.30), ("run", "Run", 0.28))
+ORBITS = (("front", 0.0), ("back", 180.0), ("side-left", 90.0),
+          ("side-right", 270.0), ("three-quarter", 38.0))
+# Melee sampled twice: the load, where the haft should be back and both
+# hands on it, and the impact, where the head should be through the arc
+# without the axe crossing the torso or the face.
+POSES = (("melee-load", "MeleeAttack", 0.18), ("melee-impact", "MeleeAttack", 0.52),
+         ("walk", "Walk", 0.30), ("run", "Run", 0.28))
+
+# Close-ups, framed on a rig landmark so they follow the body.
+# (label, bone, aim offset up, distance, fov)
+# (label, bone, aim lift as fraction of height, distance as fraction, fov)
+DETAILS = (("axe", "hand.R", 0.02, 0.62, 0.70),
+           ("grip", "hand.R", -0.02, 0.30, 0.62),
+           ("shoulder-neck", "chest", 0.10, 0.42, 0.66),
+           ("knee-boots", "shin.R", -0.02, 0.46, 0.70))
 
 
 PAIR_W, PAIR_H = 760, 1180
@@ -243,6 +256,32 @@ def main():
     bpy.context.scene.camera = cam
     shoot(os.path.join(OUT, "warrior-face.png"), 900, 900)
 
+    # --- close-ups on rig landmarks ------------------------------------
+    for label, bone_name, lift, span, fov in DETAILS:
+        bone = armature.pose.bones.get(bone_name) if armature else None
+        if bone is None:
+            continue
+        target = (armature.matrix_world @ bone.head) + Vector((0.0, 0.0, height * lift))
+        # Look in from OUTSIDE the body. A fixed azimuth put the camera inside
+        # the sleeve for the hand shots -- 34 degrees from a landmark that sits
+        # at the character's side points straight into the torso, and the
+        # close-up came back as a wall of cloth.
+        away = Vector((target.x - centre.x, target.y - centre.y, 0.0))
+        if away.length < 1e-3:
+            away = Vector((0.0, -1.0, 0.0))
+        away.normalize()
+        # Swing it forward a little so the shot is three-quarter, not flat side.
+        away = (away + Vector((0.0, -0.65, 0.0))).normalized()
+        distance = height * span
+        cam_data = bpy.data.cameras.new(label)
+        cam_data.angle = fov
+        cam = bpy.data.objects.new(label, cam_data)
+        bpy.context.collection.objects.link(cam)
+        cam.location = target + away * distance + Vector((0.0, 0.0, distance * 0.22))
+        cam.rotation_euler = (target - cam.location).to_track_quat("-Z", "Y").to_euler()
+        bpy.context.scene.camera = cam
+        shoot(os.path.join(OUT, "warrior-%s.png" % label), 900, 900)
+
     if armature and armature.animation_data:
         for label, clip, phase in POSES:
             action = bpy.data.actions.get(clip)
@@ -254,6 +293,22 @@ def main():
             bpy.context.view_layer.update()
             camera(centre, height * 2.30, 38.0, height * 0.10, 0.62)
             shoot(os.path.join(OUT, "warrior-%s.png" % label))
+
+    # --- LOD comparison -------------------------------------------------
+    lod_frames = []
+    for level in (0, 1, 2):
+        for obj in meshes:
+            obj.hide_render = ("LOD%d_" % level) not in obj.name
+        rest_pose(armature)
+        camera(centre, height * 2.30, 20.0, height * 0.10, 0.62)
+        frame = os.path.join(OUT, "_lod%d.png" % level)
+        shoot(frame, 620, 1000)
+        lod_frames.append(frame)
+    for obj in meshes:
+        obj.hide_render = False
+    composite(lod_frames, os.path.join(OUT, "warrior-lod-comparison.png"))
+    for frame in lod_frames:
+        os.remove(frame)
 
     # --- silhouette comparison ----------------------------------------
     # Rendered as two separate passes and composited, so NOTHING is moved.

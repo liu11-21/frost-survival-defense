@@ -64,11 +64,98 @@ MATERIAL_TABLE = (
 )
 
 
+def build_glove(body, armature, side, thickness_ratio=0.16, diagnostic=False):
+    """A heavy mitten, swept, rather than a copy of the hand's own surface.
+
+    The shared glove duplicates the body's hand and finger faces and pushes
+    them out. On the Hero that buys five separate fingers; on an ordinary unit
+    it buys 3173 triangles PER HAND -- 6346 of a 14691 budget, 43 per cent of
+    the whole character, for a pair of hands that are a few pixels across at
+    gameplay distance.
+
+    Infantry in this climate wear mittens anyway, so the fingers are not a
+    loss: a swept tube over the hand and finger vertices, closed at the end.
+    Same measured fit as every other limb piece, roughly a twentieth of the
+    cost.
+    """
+    digits = tuple("%s_%02d_%s" % (d, j, side) for d in
+                   ("thumb", "index", "middle", "ring", "pinky") for j in (1, 2, 3))
+    data = limb_profile(body, "hand_%s" % side, armature,
+                        extra_bones=digits, axis_bone="lowerarm_%s" % side)
+    if data is None:
+        return None, {"side": side, "built": False, "reason": "no hand profile"}
+    b = MeshBuilder(0)
+    b.sweep_axis(limb_rings(data, 8, 1.34, 1.30, 2.5,
+                            over_head=0.06, over_tail=0.16, over_taper=0.60),
+                 "leather", lambda t: {}, data["start"], data["end"],
+                 cap_start=True, cap_end=True)
+    mesh = bpy.data.meshes.new("HeroGlove_%s" % side)
+    mesh.from_pydata(b.vertices, [], b.faces)
+    mesh.validate(verbose=False)
+    mesh.update()
+    for polygon in mesh.polygons:
+        polygon.use_smooth = True
+    hero_outfit.add_cylindrical_uvs(mesh)
+    obj = bpy.data.objects.new("HeroGlove_%s" % side, mesh)
+    bpy.context.collection.objects.link(obj)
+    return obj, {"side": side, "built": True, "triangles": len(b.faces)}
+
+
 def build_sword(body, armature, height):
-    """No sword. Infantry carry the ice axe the ally contract already defines;
-    the Hero's sword is his alone and is exactly what this silhouette must not
-    echo."""
-    return None, None
+    """Not a sword -- the Warrior's ice axe. Hooked here because the shared
+    pipeline calls `build_sword` for whatever the character carries.
+
+    A working tool, not a fantasy battle axe: a short haft, a thick steel head
+    with a cutting edge one side and a pick the other. Read at gameplay
+    distance it says close-quarters infantry, and it shares nothing with the
+    Hero's long straight blade.
+
+    Geometry is laid out from the SAME two bones the adapter uses to place
+    `upper_grip`, `lower_grip` and `axe_tip`, in the same rest space, so the
+    locators land on the weapon instead of near it. Deriving the axis from the
+    hand bone's own tangent -- which is what the Hero's sword does -- would put
+    the haft at an angle to the locators and the contract would describe a
+    weapon that is not there.
+
+    Rigid to hand_r: one bone, no split skinning between the hands. The support
+    hand meets the haft because the haft runs through where it grips, not
+    because a second bone drags it there.
+    """
+    bones = armature.data.bones
+    hand = bones.get("hand_r") or bones.get("hand.R")
+    lower = bones.get("lowerarm_r") or bones.get("lower_arm.R")
+    if hand is None or lower is None:
+        return None, None
+    grip = armature.matrix_world @ hand.head_local
+    along = (grip - (armature.matrix_world @ lower.head_local)).normalized()
+    # Identical to human_source_adapter.emit_ally_contract.
+    butt = grip + along * (height * 0.105)      # lower_grip
+    tip = grip - along * (height * 0.290)       # axe_tip
+
+    b = MeshBuilder(0)
+    # Haft, butt (t=0) to cutting edge (t=1). upper_grip falls at t = 0.266.
+    b.sweep_axis([
+        (0.00, section(8, 0.016, 0.016, 0.016, 2.4)),
+        (0.08, section(8, 0.018, 0.018, 0.018, 2.4)),
+        (0.80, section(8, 0.017, 0.017, 0.017, 2.4)),
+        (0.86, section(8, 0.021, 0.021, 0.021, 2.6)),
+    ], "metal", lambda t: {}, butt, tip, cap_start=True, cap_end=False)
+    # Bound grip, covering both hand positions so the support hand has
+    # something to hold rather than bare steel.
+    b.sweep_axis([
+        (0.10, section(8, 0.021, 0.021, 0.021, 2.4)),
+        (0.42, section(8, 0.021, 0.021, 0.021, 2.4)),
+    ], "leather", lambda t: {}, butt, tip, cap_start=False, cap_end=False)
+    # Head: asymmetric on purpose -- the deep side is the cutting edge, the
+    # shallow side the pick. One section carries both.
+    b.sweep_axis([
+        (0.855, section(8, 0.030, 0.030, 0.026, 2.6)),
+        (0.890, section(8, 0.036, 0.092, 0.062, 2.3)),
+        (0.945, section(8, 0.030, 0.082, 0.048, 2.4)),
+        (0.985, section(8, 0.014, 0.052, 0.022, 2.4)),
+        (1.000, section(8, 0.005, 0.022, 0.010, 2.2)),
+    ], "metal", lambda t: {}, butt, tip, cap_start=False, cap_end=True)
+    return b, "hand_r"
 
 
 def build_outfit(body, armature, variant):
@@ -117,22 +204,11 @@ def build_outfit(body, armature, variant):
     ], "coat", lambda y: {}, cap_bottom=False, cap_top=False)
     regions.append(("torso", jacket_start, len(b.vertices)))
 
-    # Quilting: three shallow ribs round the jacket. Padding is the whole point
-    # of a winter garment and a smooth tube does not say padded.
-    for key, pad in (("waist", 0.090), ("lowRib", 0.094), ("chest", 0.100)):
-        mark = len(b.vertices)
-        d = m[key]
-        b.sweep([
-            (d["y"] - height * 0.008, section(n, d["halfWidth"] + pad * 0.86,
-                                              d["front"] + pad * 0.86,
-                                              d["back"] + pad * 0.86, 3.3)),
-            (d["y"], section(n, d["halfWidth"] + pad, d["front"] + pad,
-                             d["back"] + pad, 3.3)),
-            (d["y"] + height * 0.008, section(n, d["halfWidth"] + pad * 0.86,
-                                              d["front"] + pad * 0.86,
-                                              d["back"] + pad * 0.86, 3.3)),
-        ], "coat", lambda y: {}, cap_bottom=False, cap_top=False)
-        regions.append(("torso", mark, len(b.vertices)))
+    # The jacket had three quilting ribs swept 1 cm off its own surface. At
+    # LOD0's decimation ratio the two surfaces move enough to interpenetrate,
+    # and the close-up came back as shattered green patches across the tabard.
+    # Padding is already carried by the boxy section and the weave normal map;
+    # ribs that only survive at full density are not worth the tearing.
 
     # --- tabard ---------------------------------------------------------
     # The unit marking, and half the silhouette: a straight vertical slab of
@@ -155,8 +231,10 @@ def build_outfit(body, armature, variant):
     # Every pad here must clear the jacket AND its quilting ribs, which reach
     # 0.100. At 0.094-0.100 the two surfaces interpenetrated and the tabard came
     # out as a ragged red blotch where the ribs punched through it.
-    for key, pad in (("hem", 0.122), ("thighTop", 0.126), ("hip", 0.126),
-                     ("waist", 0.124), ("chest", 0.124), ("upperChest", 0.120)):
+    # Well clear of the jacket (max pad 0.090). Decimation moves both surfaces,
+    # so a 2 cm gap is not enough at LOD0 -- they tore through each other.
+    for key, pad in (("hem", 0.150), ("thighTop", 0.154), ("hip", 0.154),
+                     ("waist", 0.152), ("chest", 0.152), ("upperChest", 0.148)):
         d = m[key]
         ring_pts = section(n, d["halfWidth"] + pad, d["front"] + pad,
                            d["back"] + pad, 3.0)
@@ -171,10 +249,10 @@ def build_outfit(body, armature, variant):
     # belt vanished behind the tabard and survived only as two stubs at the
     # hips, which read as a mistake rather than as a belt.
     b.sweep([
-        (d["y"] - height * 0.020, section(n, d["halfWidth"] + 0.138,
-                                          d["front"] + 0.138, d["back"] + 0.138, 3.2)),
-        (d["y"] + height * 0.020, section(n, d["halfWidth"] + 0.140,
-                                          d["front"] + 0.140, d["back"] + 0.140, 3.2)),
+        (d["y"] - height * 0.020, section(n, d["halfWidth"] + 0.168,
+                                          d["front"] + 0.168, d["back"] + 0.168, 3.2)),
+        (d["y"] + height * 0.020, section(n, d["halfWidth"] + 0.170,
+                                          d["front"] + 0.170, d["back"] + 0.170, 3.2)),
     ], "leather", lambda y: {}, cap_bottom=False, cap_top=False)
     regions.append(("torso", belt_start, len(b.vertices)))
 

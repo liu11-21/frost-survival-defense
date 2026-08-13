@@ -720,6 +720,73 @@ def load_reference_rig(path):
     return reference
 
 
+def collapse_to_legacy_bones(armature, meshes):
+    """Merge non-contract bones into their nearest contract ancestor.
+
+    The humanoid runtime contract is 18 bones; an MPFB game_engine rig ships
+    53, of which 30 are finger joints. Exporting all of them costs skin data
+    and matrix palette on every ordinary unit for articulation nothing reads at
+    gameplay distance -- and this Warrior wears mittens, so the fingers are not
+    even visible.
+
+    Deleting the bones alone would strand the vertices weighted to them, which
+    is how a hand collapses to the wrist. So each doomed bone's weights are
+    ADDED to the nearest surviving ancestor first: a fingertip's influence ends
+    up on the hand, which is where a mitten's geometry follows anyway.
+    """
+    keep = set(human_rig.LEGACY_BONES)
+    bones = armature.data.bones
+    merged = {}
+    for bone in bones:
+        if bone.name in keep:
+            continue
+        ancestor = bone.parent
+        while ancestor is not None and ancestor.name not in keep:
+            ancestor = ancestor.parent
+        if ancestor is not None:
+            merged[bone.name] = ancestor.name
+
+    moved = 0
+    for mesh in meshes:
+        groups = {g.name: g for g in mesh.vertex_groups}
+        for source, target in merged.items():
+            src = groups.get(source)
+            if src is None:
+                continue
+            dst = groups.get(target) or mesh.vertex_groups.new(name=target)
+            groups[target] = dst
+            for vertex in mesh.data.vertices:
+                for entry in vertex.groups:
+                    if entry.group != src.index:
+                        continue
+                    if entry.weight > 0.0:
+                        existing = 0.0
+                        for other in vertex.groups:
+                            if other.group == dst.index:
+                                existing = other.weight
+                                break
+                        dst.add([vertex.index], min(1.0, existing + entry.weight),
+                                "REPLACE")
+                        moved += 1
+        for source in merged:
+            group = groups.get(source)
+            if group is not None:
+                mesh.vertex_groups.remove(group)
+
+    previous = bpy.context.view_layer.objects.active
+    bpy.context.view_layer.objects.active = armature
+    bpy.ops.object.mode_set(mode="EDIT")
+    edit_bones = armature.data.edit_bones
+    for name in merged:
+        bone = edit_bones.get(name)
+        if bone is not None:
+            edit_bones.remove(bone)
+    bpy.ops.object.mode_set(mode="OBJECT")
+    bpy.context.view_layer.objects.active = previous
+    return {"kept": len(armature.data.bones), "removed": sorted(merged),
+            "weightsMoved": moved}
+
+
 def emit_ally_contract(root, armature, height):
     """Emit the node contract the ALLY asset manifest requires.
 
@@ -818,6 +885,12 @@ def main():
     parser = argparse.ArgumentParser(prog="human_source_adapter")
     parser.add_argument("--input", required=True)
     parser.add_argument("--profile", default="generic-gltf")
+    # The default leaves LOD0 at full density, which suits a protagonist and no
+    # ordinary unit: their triangle cap cannot afford an undecimated tier.
+    parser.add_argument("--lod-ratio", default=None,
+                        help="comma-separated decimate ratios per tier")
+    parser.add_argument("--legacy-bones", action="store_true",
+                        help="collapse the rig to the 18-bone runtime contract")
     parser.add_argument("--ally-contract", action="store_true",
                         help="emit UnitSkeleton, weapon locators and LOD marker "
                              "nodes required by the ally asset manifest")
@@ -901,6 +974,10 @@ def main():
     root["sourceFile"] = os.path.basename(args.input)
     source_root.parent = root
 
+    global LOD_RATIO
+    if args.lod_ratio:
+        LOD_RATIO = tuple(float(v) for v in args.lod_ratio.split(",") if v)
+        print("LOD_RATIO %s" % json.dumps(list(LOD_RATIO)))
     tiers = build_lods(meshes, armature, args.name)
     for made in tiers:
         for obj in made:
@@ -943,6 +1020,13 @@ def main():
                 "tier %d is missing %s; refusing to write a candidate" % (level, missing))
 
     save_source(blend_path)
+    collapsed = None
+    if args.legacy_bones and armature is not None:
+        collapsed = collapse_to_legacy_bones(
+            armature, [o for o in bpy.data.objects if o.type == "MESH"])
+        print("BONE_COLLAPSE %s" % json.dumps(
+            {"kept": collapsed["kept"], "removed": len(collapsed["removed"])}))
+
     ally = None
     if args.ally_contract and armature is not None:
         ally = emit_ally_contract(root, armature, args.height)
@@ -964,6 +1048,7 @@ def main():
         "placementChecks": placement,
         "targetHeightMetres": args.height,
         "allyContract": ally,
+        "boneCollapse": collapsed,
         "removedNodes": removed,
         "synthesisedRoot": synthesised,
         "bones": {
