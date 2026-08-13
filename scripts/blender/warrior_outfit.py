@@ -46,12 +46,30 @@ SURFACES_OVERRIDE = {
 }
 
 
+# MATERIAL CAP: NOT MET, and not faked.
+#
+# The cap is three materials INCLUDING the body's skin, so the kit gets two.
+# Two routes were tried and both are recorded here because both look like they
+# should work:
+#
+#   Let the adapter merge to the budget. It drops leather, and the bracers,
+#   boots, belt and mittens all render as cloth -- the figure loses the
+#   cloth/leather/metal read entirely, which is a requirement, not a nicety.
+#
+#   Carry the colours in COLOR_0 instead of in separate materials: one cloth
+#   material, tinted per face, using the same Texture -> Mix(MULTIPLY) ->
+#   Base Color graph common.py documents as exporter-safe. The build succeeded
+#   and reported 3 materials -- and the character came out ENTIRELY WHITE. With
+#   the textures neutralised the colour has nowhere else to come from, so the
+#   tint is being lost somewhere after this file: the adapter's
+#   convert_materials rewrites material graphs to hit the budget, and that is
+#   the next thing to look at.
+#
+# Shipping white to satisfy a counter is worse than being one slot over and
+# saying so, so the kit stays on separate materials until the tint survives
+# export.
 MATERIAL_OF_OVERRIDE = {"tabard": "tabard"}
 
-# Issued kit against the Hero's tailoring: olive canvas and hide, not navy wool
-# and steel. This has to be the material table and not just the surface tints,
-# because the detail maps bake their tint in -- overriding only SURFACES left
-# every texture the Hero's colour and the Warrior came out navy.
 MATERIAL_TABLE = (
     ("cloth", (0.226, 0.221, 0.169), 0.95, 0.0),
     # Darkened hard: at 0.196/0.132/0.082 the bracers and boots sat within a
@@ -59,9 +77,6 @@ MATERIAL_TABLE = (
     # barefoot in a coat.
     ("leather", (0.104, 0.070, 0.044), 0.76, 0.03),
     ("metal", (0.318, 0.334, 0.356), 0.66, 0.78),
-    # No hair material: the Warrior is hooded and no surface in this kit uses
-    # it. It was inherited from the Hero's table and cost a material slot for
-    # geometry that does not exist.
     # Oxide red, matte: the unit marking, and the only saturated thing on him.
     ("tabard", (0.486, 0.213, 0.157), 0.93, 0.0),
 )

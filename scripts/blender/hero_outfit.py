@@ -53,6 +53,12 @@ SURFACES = {
 # there are no textures: at 0.34 the helmet and pauldrons rendered as polished
 # chrome, a mirror finish on a character whose whole premise is surviving a
 # winter. Leather likewise -- 0.58 is a buffed dress shoe, not a boot.
+# Materials whose colour comes from the per-face tint in COLOR_0 rather than
+# from a baked texture. One such material can carry every surface that shares
+# its PBR response, which is how a kit gets under a material cap without
+# merging distinct colours into one.
+VERTEX_TINTED = set()
+
 MATERIAL_TABLE = (
     # Dark winter wool, so the steel plate over it actually reads. At
     # 0.243/0.271/0.325 the coat sat within a few percent of the armour and the
@@ -968,6 +974,43 @@ def build_glove(body, armature, side, thickness_ratio=0.16, diagnostic=False):
     return obj, record
 
 
+def attach_vertex_tint(material):
+    """Multiply a material's base colour by the mesh's own per-face tint.
+
+    Same node shape common.py already uses and documents: Texture -> Mix
+    (MULTIPLY, RGBA sockets 6/7) -> Base Color, with the colour attribute on
+    the other input. Blender's stock exporter recognises that graph and
+    preserves COLOR_0, so one material can render as many colours as the mesh
+    carries -- an olive jacket, an oxide surcoat and dark hide bracers off a
+    single slot.
+    """
+    if material is None or not material.use_nodes:
+        return False
+    tree = material.node_tree
+    bsdf = next((n for n in tree.nodes if n.type == "BSDF_PRINCIPLED"), None)
+    if bsdf is None:
+        return False
+    base = bsdf.inputs["Base Color"]
+    source = base.links[0].from_socket if base.is_linked else None
+
+    attribute = tree.nodes.new("ShaderNodeVertexColor")
+    attribute.layer_name = "Tint"
+    attribute.location = (bsdf.location.x - 620, bsdf.location.y + 260)
+
+    mix = tree.nodes.new("ShaderNodeMix")
+    mix.data_type = "RGBA"
+    mix.blend_type = "MULTIPLY"
+    mix.inputs[0].default_value = 1.0
+    mix.location = (bsdf.location.x - 200, bsdf.location.y + 120)
+    if source is not None:
+        tree.links.new(source, mix.inputs[6])
+    else:
+        mix.inputs[6].default_value = base.default_value
+    tree.links.new(attribute.outputs["Color"], mix.inputs[7])
+    tree.links.new(mix.outputs["Result"], base)
+    return True
+
+
 def to_object(builder, name, materials):
     mesh = bpy.data.meshes.new(name)
     mesh.from_pydata(builder.vertices, [], builder.faces)
@@ -1579,6 +1622,8 @@ def main():
         MATERIAL_OF.update(getattr(kit, "MATERIAL_OF_OVERRIDE", {}))
         if hasattr(kit, "MATERIAL_TABLE"):
             globals()["MATERIAL_TABLE"] = kit.MATERIAL_TABLE
+        if hasattr(kit, "VERTEX_TINTED"):
+            globals()["VERTEX_TINTED"] = set(kit.VERTEX_TINTED)
         for name in ("build_outfit", "build_sword", "build_glove"):
             if hasattr(kit, name):
                 globals()[name] = getattr(kit, name)
@@ -1648,11 +1693,17 @@ def main():
     # and `_write` removes an existing image before creating one, so the second
     # call deleted the first material's image out from under it and the build
     # died on a dangling Image reference.
+    # A vertex-tinted material must carry a NEUTRAL texture: its colour arrives
+    # per-face in COLOR_0, and baking a tint in as well would multiply twice
+    # and drag every surface toward that one hue.
     details = {name: makers.get(name, hero_textures.grain)(
-                   tint, name="Hero_%s_detail" % name)
+                   (1.0, 1.0, 1.0) if name in VERTEX_TINTED else tint,
+                   name="Hero_%s_detail" % name)
                for name, tint in tints.items()}
     for name, image in details.items():
         hero_textures.attach(materials[name], image)
+        if name in VERTEX_TINTED:
+            attach_vertex_tint(materials[name])
     # Normals from the SAME height functions the albedo uses, so the bumps land
     # where the shading says they are. Without these the weave is only a colour
     # variation and reads as printed fabric under any light.
@@ -1711,7 +1762,11 @@ def main():
             # `to_object` is not used: this is a duplicated surface, not a
             # lofted builder, so it already carries its own topology.
             if not diagnostic:
-                glove.data.materials.append(materials["leather"])
+                # Through MATERIAL_OF, not by surface name: a kit may route
+                # leather onto a shared slot to fit a material cap, and
+                # indexing the name directly raised KeyError the moment one did.
+                glove.data.materials.append(
+                    materials[MATERIAL_OF.get("leather", "leather")])
             transfer_weights(glove, body, armature, smooth_passes=0)
             # Prove it, rather than trusting the fix. An impossible bone on a
             # glove is a build failure, not a note in a report.
