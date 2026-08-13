@@ -1021,6 +1021,14 @@ def to_object(builder, name, materials):
     slots = sorted({MATERIAL_OF[s] for s in builder.surfaces})
     for slot in slots:
         mesh.materials.append(materials[slot])
+    # Tint must be the FIRST colour attribute, because glTF only multiplies
+    # base colour by COLOR_0 and ignores COLOR_1 onward. The mesh arrives with
+    # one already, so Tint was landing in COLOR_1: the exported file carried the
+    # right colours -- olive, hide, oxide red, all correct in the buffer -- on
+    # the one channel no renderer reads. That is why neutralising the textures
+    # to let the tint carry the colour produced a pure white character.
+    while mesh.color_attributes:
+        mesh.color_attributes.remove(mesh.color_attributes[0])
     colours = mesh.color_attributes.new(name="Tint", type="BYTE_COLOR", domain="CORNER")
     for polygon in mesh.polygons:
         surface = builder.surfaces[polygon.index]
@@ -1807,6 +1815,27 @@ def main():
             continue
     pivot.rotation_euler = Euler((0.0, 0.0, 0.0), "XYZ")
     bpy.context.view_layer.update()
+
+    # One colour attribute per mesh, and it must be Tint.
+    #
+    # glTF multiplies base colour by COLOR_0 and ignores COLOR_1 onward. These
+    # meshes were reaching the exporter with a second, white colour layer that
+    # took COLOR_0, so Tint shipped as COLOR_1 -- the buffer held the right
+    # olive, hide and oxide-red values on the one channel no renderer reads.
+    # Clearing it in to_object was not enough: something adds it back between
+    # there and here, so the guarantee is made where it actually matters.
+    stripped = []
+    for obj in bpy.data.objects:
+        if obj.type != "MESH" or not obj.data.color_attributes:
+            continue
+        for layer in [c.name for c in obj.data.color_attributes if c.name != "Tint"]:
+            obj.data.color_attributes.remove(obj.data.color_attributes[layer])
+            stripped.append("%s:%s" % (obj.name, layer))
+        if "Tint" in obj.data.color_attributes:
+            index = obj.data.color_attributes.find("Tint")
+            obj.data.color_attributes.active_color_index = index
+            obj.data.color_attributes.render_color_index = index
+    print("COLOUR_LAYERS_STRIPPED %s" % json.dumps(stripped))
 
     glb = os.path.join(OUT, "%s.glb" % args.name)
     bpy.ops.export_scene.gltf(filepath=glb, export_format="GLB",
