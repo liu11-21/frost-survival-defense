@@ -530,13 +530,34 @@ def build_outfit(body, armature, variant):
             # infantry have none, so the sleeve has to reach up onto the shoulder.
             (f"upperarm_{side}", "coat", 1.30, 1.24, 2.8, (), None, 0.26, 0.16),
             (f"lowerarm_{side}", "leather", 1.34, 1.28, 2.8, (), None, 0.14, 0.08),
-            (f"thigh_{side}", "coat", 1.26, 1.36, 2.9, (), None, 0.20, 0.36),
-            (f"calf_{side}", "coat", 1.42, 1.22, 2.9, (), None, 0.44, 0.12),
+            # The overlap has to shrink DOWNWARDS or the upper tube's open end
+            # stands proud of the lower one. Measured on the built leg it did:
+            # the thigh finished around 0.10 m of radius where the calf was
+            # 0.075, a 25 mm ledge running round the shin, and it showed as a
+            # hard step in the full-body shot. tail_pad 1.14 and over_tail 0.20
+            # bring the thigh's end in and up, under the calf's flared top.
+            (f"thigh_{side}", "coat", 1.26, 1.14, 2.9, (), None, 0.20, 0.20),
+            # tail_pad 0.90, not 1.22: the trouser is TUCKED INTO the boot.
+            # The calf tube is open at the bottom, so as long as its last ring
+            # is wider than the boot top, its cut edge is the outermost surface
+            # and shows as a ragged olive line sawing across the leather.
+            # Widening the boot to swallow it does not work -- the boot is
+            # sized off the FOOT, which is narrower than the calf at the same
+            # station -- so the trouser has to come in instead, which is how
+            # the real garment is worn anyway.
+            (f"calf_{side}", "coat", 1.95, 0.90, 2.9, (), None, 0.44, 0.12),
             # tail_pad 1.78, up from 1.56: the boot ran 2.4 mm inside the
             # outer toe and let a skin-coloured sliver through the side of the
             # foot. Small, and visible in every frame the unit stands in.
-            (f"foot_{side}", "leather", 1.30, 1.78, 2.4, (f"ball_{side}",),
-             f"foot_{side}", 0.12, 0.18),
+            #
+            # pad stays near 1 at the ankle. Widening it to 1.86 to swallow the
+            # trouser cuff scaled the measured BACK depth as well, and the back
+            # of the ankle is the heel: the boot came out 0.360 m long against
+            # a 0.215 m foot, overhanging 106 mm behind, and read from the side
+            # as a flipper. The cuff is closed from the other end instead --
+            # the trouser tucks in, see calf above -- which costs nothing.
+            (f"foot_{side}", "leather", 1.12, 1.78, 2.4, (f"ball_{side}",),
+             f"foot_{side}", 0.08, 0.18),
         ):
             data = limb_profile(body, bone_name, armature,
                                 extra_bones=extra, axis_bone=axis_bone)

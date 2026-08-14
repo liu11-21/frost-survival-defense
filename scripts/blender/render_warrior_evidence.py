@@ -34,10 +34,16 @@ POSES = (("melee-load", "MeleeAttack", 0.18), ("melee-impact", "MeleeAttack", 0.
 # Close-ups, framed on a rig landmark so they follow the body.
 # (label, bone, aim offset up, distance, fov)
 # (label, bone, aim lift as fraction of height, distance as fraction, fov)
+# One landmark per shot. "knee-boots" tried to be both and was neither: aimed
+# at the knee with a frame 0.54 m tall, it covered z 0.23 to 0.77 on a
+# character whose boots sit between 0.01 and 0.20, so the only close-up of the
+# boots did not contain them. The bare toe that shipped through the side of one
+# was found by hand, not by this shot.
 DETAILS = (("axe", "hand.R", 0.02, 0.62, 0.70),
            ("grip", "hand.R", -0.02, 0.30, 0.62),
            ("shoulder-neck", "chest", 0.10, 0.42, 0.66),
-           ("knee-boots", "shin.R", -0.02, 0.46, 0.70))
+           ("knee", "shin.R", 0.02, 0.30, 0.62),
+           ("boots", "foot.R", 0.00, 0.26, 0.66))
 
 
 PAIR_W, PAIR_H = 760, 1180
@@ -277,6 +283,18 @@ def main():
     clear()
     meshes, armature = load(args.warrior)
     apply_vertex_colour(meshes)
+    # BIND POSE FIRST, and before `bounds` -- everything from here to the end
+    # of the close-ups is supposed to be the asset standing still.
+    #
+    # It was not. rest_pose ran only for the LOD sheet and the Hero pair, so
+    # the orbits, the face shot and every close-up were rendered on whatever
+    # frame the scene happened to be sitting on with the NLA tracks live. The
+    # side view showed a character leaning back about 20 degrees -- invisible
+    # from the front, which is why it survived several rounds of review -- and
+    # the close-ups were aimed at rig landmarks in their REST positions while
+    # the mesh was somewhere else, which is how the boot shot came back with no
+    # boot in it. Framing and bounds are both computed after this now.
+    rest_pose(armature)
     focus = bpy.data.objects.new('focus', None)
     bpy.context.collection.objects.link(focus)
     lo0, hi0 = bounds(meshes)
@@ -343,7 +361,16 @@ def main():
         cam.location = target + away * distance + Vector((0.0, 0.0, distance * 0.22))
         cam.rotation_euler = (target - cam.location).to_track_quat("-Z", "Y").to_euler()
         bpy.context.scene.camera = cam
+        # Aim the lights at what is being photographed. They TRACK_TO the
+        # whole-body focus, which is right for the orbits and wrong here: a
+        # boot at z = 0.15 or a grip at the character's side sits at the very
+        # edge of a beam pointed at the chest, and the grip close-up came back
+        # too dark to judge leather against cloth -- which is the one thing it
+        # exists to show.
+        focus.location = target
+        bpy.context.view_layer.update()
         shoot(os.path.join(OUT, "warrior-%s.png" % label), 900, 900)
+    focus.location = centre
 
     if armature and armature.animation_data:
         for label, clip, phase in POSES:
