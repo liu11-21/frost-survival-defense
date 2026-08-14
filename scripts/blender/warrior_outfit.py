@@ -611,12 +611,51 @@ def build_outfit(body, armature, variant):
             centre_z = offset.dot(head_data["front"])
             width = entry["halfWidth"] * grow
             depth = entry["front"] * grow
-            ring_pts = section(n, width, depth, entry["back"] * grow * 1.18, 2.6,
+            # 1.52 on the BACK depth, not 1.18. A direct visibility test from
+            # the rear camera -- ray from the eye to each skin vertex, is the
+            # first thing hit the skin -- found 405 vertices of skull and nape
+            # the hood was not covering, a strip 129 mm tall up the centre
+            # back. The hood is measured off head slices whose rear extent is
+            # shallower than the skull it has to clear.
+            ring_pts = section(n, width, depth, entry["back"] * grow * 1.52, 2.6,
                                centre_x=centre_x, centre_z=centre_z)
             sink = max(0.0, min(1.0, (front_edge - a) / fade))
             shell.append((t, tuck_front(ring_pts, centre_x, centre_z, depth, width,
                                         (1.0 - 0.46 / 1.34) * sink, reach=0.95,
                                         face_sign=sign)))
+        # THE HOOD DRAPES DOWN THE NAPE.
+        #
+        # An object-ID pass from behind found one bare patch on the whole
+        # character: roughly 80 by 60 mm of neck between the bottom of the hood
+        # and the top of the collar. Neither piece could reach it. The collar
+        # is built off the "collar" landmark, which on this body sits ABOVE the
+        # gap; widening its back pad from 0.054 to 0.086 changed the render by
+        # nothing at all. The hood is swept along the head bone, and the head
+        # bone starts above the gap too.
+        #
+        # `sweep_axis` places a ring at start + (end - start) * t and does not
+        # require t to be in [0, 1] -- the crown is already closed with rings
+        # above 1 for the same reason. Two rings BELOW zero carry the hood down
+        # the neck. Their fronts are tucked at full sink, so what reaches past
+        # the jaw is the back of the hood only and the face window is untouched.
+        if shell:
+            base = head_data["slices"][0]
+            offset = base["centre"] - (start + (end - start) * base["t"])
+            cx = offset.dot(head_data["side"])
+            cz = offset.dot(head_data["front"])
+            drape = []
+            for extra_t, grow in ((shell[0][0] - 0.26, 1.24),
+                                  (shell[0][0] - 0.13, 1.30)):
+                w = base["halfWidth"] * grow
+                d = base["front"] * grow
+                # NOT `ring` -- that name is the local ring() helper this
+                # function still needs for the mantle further down.
+                pts = section(n, w, d, base["back"] * grow * 1.26, 2.6,
+                              centre_x=cx, centre_z=cz)
+                drape.append((extra_t,
+                              tuck_front(pts, cx, cz, d, w, 1.0 - 0.46 / 1.34,
+                                         reach=0.95, face_sign=sign)))
+            shell = drape + shell
         if len(shell) >= 2:
             # The head BONE stops short of the head. Measured on this body its
             # axis spans 0.239 m while the head's own vertices run from 0.004 to
@@ -725,8 +764,16 @@ def build_outfit(body, armature, variant):
         ring("shoulder", 0.114, 2.7),
         ring("neck", 0.086, 2.6),
         ring("collar", 0.064, 2.5),
-        at(gorget, 0.048, 0.056, 0.054, 2.4),
-        at(throat, 0.032, 0.040, 0.042, 2.3),
+        # The BACK pad is the largest of the three. The front is held in
+        # deliberately -- see above, cloth in front of the chin makes the cull
+        # eat the jaw -- but nothing constrains the back, and the nape is where
+        # the gap actually was: measured, the collar's rear surface sat 8 mm
+        # INSIDE the skin at z = 1.50, and an object-ID pass from behind showed
+        # a bare patch about 80 by 60 mm below the hood. The hood cannot close
+        # it either, because that band is neck, not head, and the hood is swept
+        # along the head bone.
+        at(gorget, 0.048, 0.056, 0.086, 2.4),
+        at(throat, 0.032, 0.040, 0.078, 2.3),
     ], "coat", lambda y: {}, cap_bottom=False, cap_top=False)
     regions.append(("torso", mantle_start, len(b.vertices)))
 
