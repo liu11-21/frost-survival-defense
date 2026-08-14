@@ -224,7 +224,11 @@ def camera(target, distance, azimuth_deg, elevation, fov):
     return cam
 
 
+WRITTEN = []
+
+
 def shoot(path, width=900, height=1200):
+    WRITTEN.append(os.path.basename(path))
     scene = bpy.context.scene
     scene.render.resolution_x = width
     scene.render.resolution_y = height
@@ -452,7 +456,12 @@ def main():
         for frame in panels:
             os.remove(frame)
 
-    print("WARRIOR_EVIDENCE_OK %s" % ", ".join(sorted(os.listdir(OUT))))
+    # The files this run WROTE, not everything sitting in the directory.
+    # Listing the directory reported `warrior-side.png` and `warrior-melee.png`
+    # as fresh evidence for months after the orbit and pose sets stopped
+    # producing them -- nothing in this script writes those names. Stale
+    # evidence that announces itself as current is worse than no evidence.
+    print("WARRIOR_EVIDENCE_OK %s" % ", ".join(sorted(WRITTEN)))
 
 
 if __name__ == "__main__":
