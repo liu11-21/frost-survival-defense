@@ -3,7 +3,7 @@ name: Gameplay Scene Verification
 on:
   pull_request:
     branches:
-      - art/warrior-production-w1
+      - main
     paths:
       - "src/**"
       - "tests/**"
