@@ -21,6 +21,15 @@ recordings/
 *.log
 *.pyc
 
+# Public-repo hygiene: generated/WIP evidence stays local unless deliberately curated.
+reports/*-ci/
+reports/**/*-ci/
+reports/*-wip/
+reports/**/*-wip/
+reports/human-candidates/
+reports/deform-*.json
+reports/**/deform-*.json
+
 # Local secrets and editor state. Keep the safe template tracked.
 .env
 .env.*
@@ -34,3 +43,7 @@ Thumbs.db
 # Adapter smoke-test output: a pipeline rehearsal, not an asset.
 assets-source/blender/characters/adapter_smoketest.blend
 assets-source/blender/characters/mpfb2_dryrun.blend
+.agents/
+.claude/skills/
+skills-lock.json
+.mcp.json

@@ -31,6 +31,9 @@ on:
       - "package-lock.json"
       - "vite.config.ts"
 
+permissions:
+  contents: read
+
 concurrency:
   group: hero-runtime-${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true

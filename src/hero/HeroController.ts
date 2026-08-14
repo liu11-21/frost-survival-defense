@@ -12,6 +12,7 @@ import type { GameCamera } from "../camera/GameCamera";
 import type { PlayerInput } from "../player/PlayerInput";
 import type { HeroStats } from "./HeroStats";
 import type { AssetRegistry } from "../assets/AssetRegistry";
+import { heroAppearanceVariant, resolveHumanAsset } from "../character/HumanAppearance";
 
 const RETARGET_INTERVAL = 0.35;
 
@@ -70,7 +71,22 @@ export class HeroController implements Damageable {
 
   /** Called after the optional GLB preload; no-op while the procedural fallback is active. */
   applyAuthoredAsset(assets: AssetRegistry): boolean {
-    const instance = assets.instantiate("hero", "hero.player");
+    // Appearance only. `resolveHumanAsset` returns `hero` until the role is in
+    // VARIANT_READY_ROLES, and `hero_male` / `hero_female` once it is, so this
+    // line decides WHICH GLB is instantiated and nothing else -- no stat,
+    // collision volume, attack range, animation timing or AI behaviour reads
+    // it. Both variants carry the same rig and the same seven clips.
+    //
+    // Until this call existed the resolver was dead code: the key was the
+    // literal "hero", so promoting the role changed which asset the resolver
+    // would have returned and nothing ever asked it.
+    //
+    // If the variant asset is missing or fails its contract the registry
+    // reports it unavailable, so fall back to the authored hero rather than
+    // dropping the player to the procedural stand-in.
+    const key = resolveHumanAsset("hero", heroAppearanceVariant());
+    const instance = assets.instantiate(key, "hero.player")
+      ?? (key === "hero" ? null : assets.instantiate("hero", "hero.player"));
     if (!instance) return false;
     this.avatar.attachAuthored(instance);
     this.alignAuthoredFront(instance);

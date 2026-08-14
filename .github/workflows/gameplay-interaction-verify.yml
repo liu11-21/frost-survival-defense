@@ -3,7 +3,7 @@ name: Gameplay Interaction Verification
 on:
   pull_request:
     branches:
-      - art/warrior-production-w1
+      - main
     paths:
       - "src/**"
       - "tests/scene-interaction-rework.spec.ts"
