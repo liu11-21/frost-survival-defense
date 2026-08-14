@@ -1,16 +1,13 @@
 # Blender source workspace
 
-This folder is the source-of-truth for the three baseline authored assets:
+This folder contains editable source assets used by the reproducible Blender → GLB pipeline.
 
-- `blender/characters/hero.blend`
-- `blender/buildings/turret_basic.blend`
-- `blender/buildings/wall_gate.blend`
+Representative source assets include character, building, facility, and environment `.blend` files under `assets-source/blender/`. Runtime exports are written to `public/assets/models/`.
 
-Run `npm run art:template` before hand-authoring. The scripted builders are
-repeatable examples and export to `public/assets/models/`. Blender is optional
-at runtime: if a GLB is missing or fails its node/animation contract, Babylon
-uses the existing procedural factory.
+Run the relevant `npm run art:*` command or the corresponding script under `scripts/blender/` when rebuilding an asset. Blender is optional at runtime: if a GLB is missing or fails its node/animation contract, Babylon can use the project's supported fallback path where one exists.
 
-Current machine status: Blender 5.2.0 LTS is installed from the official
-Blender Foundation Windows ZIP under the user profile. `BLENDER_PATH` points to
-its executable; the runtime also searches common Blender installation roots.
+## Local Blender configuration
+
+A local `BLENDER_PATH` may be set through `.env` when Blender is not discoverable from standard installation locations. Do not commit machine-specific absolute paths, Blender user preferences, MPFB caches, MCP configuration, or downloaded extension directories.
+
+Editable source media follows the repository's Git LFS rules. Production changes should be reproducible from committed scripts/source rather than relying on unrecorded manual edits.
