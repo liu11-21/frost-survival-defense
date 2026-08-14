@@ -58,13 +58,21 @@ test("appearance variants resolve to different assets for the same role", () => 
   expect(resolveHumanCandidateAsset("hero", "male")).toBe("hero_male");
   expect(resolveHumanCandidateAsset("hero", "female")).toBe("hero_female");
 
-  // Nothing is approved yet, so gameplay still resolves to the legacy asset.
-  // This is the gate that keeps an unreviewed bare body out of the build.
-  expect(hasAppearanceVariants("hero")).toBe(false);
+  // Hero is PROMOTED on this integration branch, so gameplay now resolves to
+  // the per-variant assets. This assertion used to pin the opposite -- it was
+  // the gate keeping an unreviewed bare body out of the build -- and it is
+  // inverted here deliberately rather than deleted, so that flipping
+  // VARIANT_READY_ROLES back is still a visible, deliberate edit and never a
+  // silent one.
+  expect(hasAppearanceVariants("hero")).toBe(true);
   const male = resolveHumanAsset("hero", "male");
   const female = resolveHumanAsset("hero", "female");
-  expect(male).toBe("hero");
-  expect(female).toBe("hero");
+  expect(male).toBe("hero_male");
+  expect(female).toBe("hero_female");
+  // The two variants must be DIFFERENT assets for the SAME role: one unit,
+  // two skins. If these ever collapse to one key the variants have stopped
+  // existing; if the role differed they would have become two units.
+  expect(male).not.toBe(female);
 
   // A role without variant assets keeps its legacy key, so the asset layer can
   // call this unconditionally while the migration is part-way through.

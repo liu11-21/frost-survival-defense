@@ -24,6 +24,26 @@ export const AUTHORED_ASSET_MANIFEST: readonly AssetSpec[] = [
     requiredAnimations: ["Idle", "Walk", "Run", "MeleeAttack", "RangedAttack", "Hit", "Death"],
     fallback: "procedural",
   },
+  // The MPFB Hero appearance variants. They ship the same seven clips as the
+  // authored hero, but they are a different asset with a different contract:
+  // the node names above belong to the hand-authored hero.glb, and this
+  // pipeline produces `UnitRoot` over `LOD{n}_PROD_hero_{variant}_{i}` meshes
+  // driven by `Human.rig`. Declaring hero.glb's nodes here would fail the
+  // contract check on every load and silently leave the procedural fallback
+  // active -- which looks like "the new Hero did nothing" rather than a
+  // configuration error.
+  //
+  // `weapon_socket.R` and `ranged_socket` are deliberately absent: nothing in
+  // HeroController reads them, and claiming a node the file does not contain
+  // is how a validator stops meaning anything.
+  ...(["male", "female"] as const).map((variant) => ({
+    key: `hero_${variant}`,
+    rootUrl: withBase("assets/models/characters/"),
+    fileName: `hero_${variant}.glb`,
+    requiredNodes: ["UnitRoot", "Human.rig", `LOD0_PROD_hero_${variant}_4`],
+    requiredAnimations: ["Idle", "Walk", "Run", "MeleeAttack", "RangedAttack", "Hit", "Death"],
+    fallback: "procedural" as const,
+  })),
   {
     key: "turret_basic",
     rootUrl: withBase("assets/models/buildings/"),
