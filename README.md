@@ -4,6 +4,18 @@ A browser-based 3D **tower-defense / survival** game built with **Vite + TypeScr
 
 > Project status: active development. Runtime systems are playable; character/environment art and production polish are still being upgraded. A technical pass is not a claim of commercial-ready art.
 
+## Why this repository is open
+
+Frostbound Furnace is both a playable game project and a practical reference for an open browser-3D production workflow:
+
+- Babylon.js gameplay with runtime asset contracts and procedural fallbacks;
+- reproducible Blender/MPFB → GLB authoring rather than untracked manual asset edits;
+- automated model-contract, interaction, audio, Hero, Warrior, and scene regression checks;
+- Playwright-driven runtime evidence for claims that cannot be proven by static validation alone;
+- GitHub Actions / Pages deployment and a scoped multi-workstream contribution model.
+
+Contributions are welcome. The project keeps gameplay, art, audio, UI, and tooling changes reviewable as separate responsibilities so external work can be evaluated without silently changing unrelated balance or runtime behavior.
+
 ## Play
 
 GitHub Pages deployment target:
@@ -118,23 +130,24 @@ See [`CONTRIBUTING.md`](CONTRIBUTING.md) before opening a pull request. Keep cha
 
 Security issues and exposed credentials must **not** be posted in public issues; see [`SECURITY.md`](SECURITY.md).
 
-## Licensing and asset provenance
+## License and asset provenance
 
-The repository is in a public-readiness transition. A repository-wide code/assets license split is being finalized; **public visibility by itself does not grant permission to reuse project material** unless a file or upstream dependency explicitly provides such rights.
+This is a **mixed-license repository**:
 
-See:
+- project source code is licensed under **Apache-2.0** — see [`LICENSE`](LICENSE);
+- original non-code game assets are not automatically licensed under Apache-2.0 — see [`ASSET_LICENSE.md`](ASSET_LICENSE.md);
+- third-party and generated-asset provenance is recorded in [`THIRD_PARTY_NOTICES.md`](THIRD_PARTY_NOTICES.md).
 
-- [`THIRD_PARTY_NOTICES.md`](THIRD_PARTY_NOTICES.md)
-- [`docs/PUBLIC_READINESS.md`](docs/PUBLIC_READINESS.md)
+The character pipeline uses MakeHuman/MPFB-derived material. Upstream MakeHuman/MPFB core graphical assets and exports are documented as CC0; any separately downloaded community asset must be reviewed under its own license.
 
-The character pipeline uses MakeHuman/MPFB-derived assets; upstream core assets/exports are documented by MakeHuman Community as CC0, while MPFB program source has its own software license. The committed BGM tracks are project-generated with Google Gemini/Lyria and are being documented separately for redistribution/commercial provenance.
+The committed BGM was generated with Google Gemini/Lyria according to the project owner. It is documented separately from the Apache-2.0 code license and is not presented as an Apache-licensed software asset.
 
 ## Public-repo hygiene
 
 - Never commit `.env`, credentials, local MCP configuration, editor state, or private paths.
 - Keep generated CI output, deformation dumps, temporary screenshots, and WIP captures out of Git unless intentionally curated as acceptance evidence.
 - Do not force-push `main`.
-- `main` is intended to require reviewed pull requests once repository protection settings are enabled.
+- Public contributions should go through reviewed pull requests.
 
 ## Known limitations
 
@@ -143,4 +156,4 @@ The character pipeline uses MakeHuman/MPFB-derived assets; upstream core assets/
 - Real-GPU performance should be measured with the in-game performance monitor; CI/browser automation does not substitute for hardware validation.
 - Enemy navigation uses project-specific perimeter/steering logic rather than a general navmesh.
 
-For design history and implementation details, see `docs/`, `CHANGELOG.md`, and the curated reports retained in `reports/`.
+For current public-readiness/security status, see [`docs/PUBLIC_READINESS.md`](docs/PUBLIC_READINESS.md). For design history and implementation details, see `docs/`, `CHANGELOG.md`, and the curated reports retained in `reports/`.
