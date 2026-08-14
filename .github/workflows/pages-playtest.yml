@@ -33,7 +33,7 @@ jobs:
         # .wav, .mp4 and .psd are LFS-tracked, and none of them ship, so the
         # default checkout is both sufficient and much faster.
 
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@v7
         with:
           node-version: "20"
           cache: npm
