@@ -886,27 +886,68 @@ def emit_ally_contract(root, armature, height):
         if "Sword" in (obj.data.name or "") or "Axe" in (obj.data.name or ""):
             axe = obj
             break
-    if axe is not None and len(axe.data.vertices):
+    if axe is not None and len(axe.data.vertices) > 8:
+        # Find the head by SHAPE, not by distance and not from a coordinate the
+        # kit hands over.
+        #
+        # "Furthest vertex from the hand" is the butt of the shaft on anything
+        # held near its head. Passing the tip across as a custom property failed
+        # differently: the kit builds in a Y-up pivot space and the adapter runs
+        # in Z-up, so the vector arrived with height in the depth slot and put
+        # axe_tip on the floor.
+        #
+        # A shaft is long and thin, so the weapon's longest axis IS the shaft.
+        # The head is what stands off that axis. Measuring the perpendicular
+        # offset finds it without any frame conversion at all.
+        points = [axe.matrix_world @ v.co for v in axe.data.vertices]
+        far = max(points, key=lambda p: (p - grip).length)
+        shaft = (far - grip)
+        shaft = shaft.normalized() if shaft.length > 1e-6 else Vector((0.0, 0.0, -1.0))
+
+        def sideways(point):
+            offset = point - grip
+            return (offset - shaft * offset.dot(shaft)).length
+
+        measured_tip = max(points, key=sideways)
+        # The SUPPORT HAND RUNS DOWN THE HAFT, NOT AWAY FROM THE HEAD.
+        #
+        # lower_grip used to be derived from the direction of the head, on the
+        # reasoning that the head is at one end and the butt at the other. That
+        # holds for a sword and not for an axe: the head stands out SIDEWAYS,
+        # so "opposite the head" is sideways too. With the head rolled where
+        # the animation search wanted it, the three locators collapsed into a
+        # 6 mm band -- upper_grip 1.053, axe_tip 1.056, lower_grip 1.050 -- and
+        # described a weapon with no length at all. It read as correct for a
+        # while only because an earlier roll happened to point the edge upward.
+        grip_axis = shaft
+        print("WEAPON_HEAD %s" % json.dumps(
+            {"sidewaysOffset": round(sideways(measured_tip), 4),
+             "shaftEnd": round((far - grip).length, 4)}))
+    elif axe is not None and len(axe.data.vertices):
         points = [axe.matrix_world @ v.co for v in axe.data.vertices]
         far = max(points, key=lambda p: (p - grip).length)
         along = (far - grip)
         along = along.normalized() if along.length > 1e-6 else Vector((0.0, 0.0, -1.0))
         measured_tip = far
+        grip_axis = -along
     elif lower is not None:
         forearm = (grip - (armature.matrix_world @ lower.head_local)).normalized()
         down = Vector((0.0, 0.0, -1.0))
         along = (down - forearm * down.dot(forearm))
         along = along.normalized() if along.length > 1e-6 else Vector((0.0, 0.0, -1.0))
         measured_tip = grip + along * (height * 0.290)
+        grip_axis = -along
     else:
         along = Vector((0.0, 0.0, -1.0))
         measured_tip = grip + along * (height * 0.290)
+        grip_axis = -along
 
     made = []
     for name, location in (
         ("weapon_socket", grip),
         ("upper_grip", grip),
-        ("lower_grip", grip - along * (height * 0.105)),
+        # Down the shaft from the hand, where a support hand would sit.
+        ("lower_grip", grip + grip_axis * (height * 0.105)),
         ("axe_tip", measured_tip),
         # Blender is Z-UP here and the character faces -Y. Writing chest height
         # into the Y slot put the anchor 0.92 m BEHIND the character at knee

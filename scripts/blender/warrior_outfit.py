@@ -23,13 +23,19 @@ tan, issued kit -- against the Hero's dark navy and steel.
 """
 import math
 
+import bmesh
 import bpy
-from mathutils import Vector
+from mathutils import Matrix, Vector
 
 import hero_outfit
 from authoring import MeshBuilder, section
 from hero_outfit import (limb_profile, limb_rings, measure, tuck_front,
                          head_extent, face_direction)
+
+# Roll of the axe head about its own haft, in degrees; zero points the cutting
+# edge straight away from the body. See build_sword for why it is zero and why
+# that took a search to establish.
+HEAD_ROLL_DEG = 0.0
 
 # Issued kit, not the Hero's tailoring. Overrides the shared surface table so
 # `to_object` tints and slots these the same way it does the Hero's.
@@ -103,8 +109,18 @@ def build_glove(body, armature, side, thickness_ratio=0.16, diagnostic=False):
     if data is None:
         return None, {"side": side, "built": False, "reason": "no hand profile"}
     b = MeshBuilder(0)
-    b.sweep_axis(limb_rings(data, 8, 1.34, 1.30, 2.5,
-                            over_head=0.06, over_tail=0.16, over_taper=0.60),
+    # These numbers are silhouette, not coverage: the mitten REPLACES the hand,
+    # see cull_hand below.
+    #
+    # Chasing coverage with them does not converge. The sweep lays a roughly
+    # round section on the forearm's axis while the fingers curl away from it,
+    # so no radius contains the whole hand without turning into a boxing glove.
+    # 1.34/1.30 left the thumb standing 26 mm proud -- a bare skin-coloured
+    # spur beside the grip, one of the seams the brief names outright. Widening
+    # to 1.80/1.62 swallowed the thumb and still left 16 mm of knuckle through
+    # the front.
+    b.sweep_axis(limb_rings(data, 8, 1.55, 1.45, 2.5,
+                            over_head=0.06, over_tail=0.34, over_taper=0.60),
                  "leather", lambda t: {}, data["start"], data["end"],
                  cap_start=True, cap_end=True)
     mesh = bpy.data.meshes.new("HeroGlove_%s" % side)
@@ -138,7 +154,54 @@ def build_glove(body, armature, side, thickness_ratio=0.16, diagnostic=False):
     hero_outfit.add_cylindrical_uvs(mesh)
     obj = bpy.data.objects.new("HeroGlove_%s" % side, mesh)
     bpy.context.collection.objects.link(obj)
-    return obj, {"side": side, "built": True, "triangles": len(b.faces)}
+    removed = cull_hand(body, side, digits)
+    return obj, {"side": side, "built": True, "triangles": len(b.faces),
+                 "handFacesCulled": removed}
+
+
+def cull_hand(body, side, digits):
+    """Delete the body's own hand: the mitten is the hand now.
+
+    `cull_hidden_body` cannot do this, and the reason is worth keeping. It
+    keeps any vertex it cannot see a garment ABOVE, along the vertex normal --
+    right for a coat over a chest, useless for a fist inside a mitten, where
+    the knuckles sit outside the sweep and their normals point into open air.
+    Left to it, 133 vertices stood up to 16 mm proud of the leather as bare
+    skin-coloured specks on both hands, and no amount of padding closed them.
+
+    Deleting by SKIN WEIGHT rather than by line of sight is the production
+    answer, and here it is unconditional: infantry in this climate have no bare
+    hands in any frame, so the hand mesh is not something to fit a mitten
+    around, it is something to remove. It pays for itself too -- the fingers
+    are the densest part of the body mesh and none of it was ever going to be
+    seen.
+
+    The wrist survives. A vertex has to be MOSTLY hand or digit to go, so the
+    band where the forearm still dominates stays, and the sleeve and the
+    mitten's own cuff overlap across it.
+    """
+    names = {"hand_%s" % side} | set(digits)
+    groups = {g.index for g in body.vertex_groups if g.name in names}
+    if not groups:
+        return 0
+    doomed_verts = set()
+    for vertex in body.data.vertices:
+        total = sum(g.weight for g in vertex.groups)
+        mine = sum(g.weight for g in vertex.groups if g.group in groups)
+        if total > 1e-6 and mine / total > 0.5:
+            doomed_verts.add(vertex.index)
+    mesh = bmesh.new()
+    mesh.from_mesh(body.data)
+    mesh.verts.ensure_lookup_table()
+    doomed = [f for f in mesh.faces if all(v.index in doomed_verts for v in f.verts)]
+    removed = len(doomed)
+    bmesh.ops.delete(mesh, geom=doomed, context="FACES")
+    bmesh.ops.delete(mesh, geom=[v for v in mesh.verts if not v.link_faces],
+                     context="VERTS")
+    mesh.to_mesh(body.data)
+    mesh.free()
+    body.data.update()
+    return removed
 
 
 def build_sword(body, armature, height):
@@ -196,8 +259,15 @@ def build_sword(body, armature, height):
     along = down + outward * 0.62
     along = along.normalized() if along.length > 1e-6 else down
     # Identical to human_source_adapter.emit_ally_contract.
-    butt = grip - along * (height * 0.105)      # lower_grip, above the hand
-    tip = grip + along * (height * 0.290)       # axe_tip, the head below it
+    # THE HEAD SITS AT THE TOP OF THE HAFT, JUST ABOVE THE HAND.
+    #
+    # It was the other way round: the butt was above the fist and the head hung
+    # 0.49 m below it, so the character carried the thing like a hoe -- gripping
+    # the very top of a long shaft with the blade swinging near his knee. An ice
+    # axe is held at the head end; the shaft runs DOWN from the hand and the
+    # steel is a hand's width above it.
+    butt = grip + along * (height * 0.300)      # shaft end, below the hand
+    tip = grip - along * (height * 0.110)       # head end, just above it
 
     b = MeshBuilder(0)
     # Haft, butt (t=0) to cutting edge (t=1). upper_grip falls at t = 0.266.
@@ -224,19 +294,49 @@ def build_sword(body, armature, height):
     # the edge and the pick are their own sweeps, each running out from the
     # haft on its own axis, with a section that is THIN across the blade face
     # and tall along the haft.
-    head_at = butt + (tip - butt) * 0.855
-    # Perpendicular to the haft and horizontal, swung to the side away from the
-    # body so the edge never sweeps into the hip.
-    blade_dir = along.cross(Vector((0.0, 1.0, 0.0)))
+    head_at = butt + (tip - butt) * 0.880
+    # Perpendicular to the haft and pointing AWAY FROM THE MIDLINE.
+    #
+    # This was `along.cross(up)`, which sounds lateral and is not: the
+    # horizontal part of `along` IS `outward`, so crossing it with up returns
+    # something perpendicular to outward -- a fore-aft vector. The edge stood
+    # out in front of and behind the hip, exactly the plane the arm swings in,
+    # and Walk and Run drove it through the body. The guard below it never
+    # fired either: a vector perpendicular to `outward` has dot(outward) == 0,
+    # so which way the edge faced was down to floating-point noise.
+    #
+    # Projecting `outward` off the haft gives the true perpendicular that still
+    # leans away from the body. Arm swing then moves the edge fore-aft through
+    # air beside the hip instead of into it.
+    blade_dir = outward - along * outward.dot(along)
     if blade_dir.length < 1e-6:
-        blade_dir = Vector((1.0, 0.0, 0.0))
+        blade_dir = Vector((1.0, 0.0, 0.0)) if grip.x >= 0.0 else Vector((-1.0, 0.0, 0.0))
     blade_dir.normalize()
-    if blade_dir.dot(outward) < 0.0:
-        blade_dir = -blade_dir
-    # A real ice axe head spans roughly a fifth of its own haft. At 0.082 of
-    # body height the head was 14 cm on a 67 cm haft and read as a small
-    # pick rather than a weapon.
-    reach = height * 0.125
+    # HOW FAR THE HEAD STANDS OFF THE HAFT, AND WHY IT IS THIS SMALL.
+    #
+    # This wants to be big. A real ice axe head spans roughly a fifth of its
+    # haft, and an earlier 0.082 of body height read as a small pick rather
+    # than a weapon, which is why it had been pushed up to 0.125.
+    #
+    # What settles it is that the hand hangs 27 mm from the coat. The head is
+    # rigid in hand space and the head station sits within a few centimetres of
+    # the grip, so the edge sweeps a disc centred beside the hip: at 0.125 of
+    # height some part of that disc is inside the character in almost any
+    # orientation. Searching the roll angle over all seven animations only
+    # traded one animation against another -- the floor was 46 mm of steel
+    # inside the coat, at a roll that also turned the edge inward where it
+    # reads worst.
+    #
+    # Below 0.60 of that reach the disc fits in the air beside the body and the
+    # clipping does not merely get smaller, it stops: zero contacts at EVERY
+    # roll angle. That buys back the orientation, so the edge can face straight
+    # out from the body where it is most legible from a tower-defence camera.
+    # A slightly small head that never clips beats a correct one that does.
+    reach = height * 0.0645
+
+    # Everything from here on is the HEAD, and it gets rolled about the haft
+    # as a finished solid once it is built. See HEAD_ROLL_DEG.
+    head_start = len(b.vertices)
 
     # Cutting edge: broad, flaring slightly before it thins to the bit.
     b.sweep_axis([
@@ -248,11 +348,19 @@ def build_sword(body, armature, height):
         cap_start=False, cap_end=True)
 
     # Pick: the other side, short and square, for a tool that also bites ice.
+    #
+    # It points INWARD, back across the hip, so its length is what decides
+    # whether the weapon clips the coat. At 0.62 of the edge's reach it stood
+    # 13 cm inboard of the grip and dipped into the jacket on Hit and on the
+    # recovery half of MeleeAttack. Nothing else was ever inside the body --
+    # the skin mesh was clean throughout -- so the pick alone was shortened
+    # rather than moving the whole weapon further off the body, which would
+    # have made the arm read as held out at an angle.
     b.sweep_axis([
         (0.00, section(6, 0.021, 0.052, 0.042, 3.6)),
         (0.60, section(6, 0.015, 0.034, 0.030, 3.4)),
         (1.00, section(6, 0.006, 0.014, 0.012, 3.0)),
-    ], "metal", lambda t: {}, head_at, head_at - blade_dir * (reach * 0.62),
+    ], "metal", lambda t: {}, head_at, head_at - blade_dir * (reach * 0.34),
         cap_start=False, cap_end=True)
 
     # Collar where the head is seated on the haft.
@@ -261,7 +369,35 @@ def build_sword(body, armature, height):
         (0.884, section(8, 0.028, 0.028, 0.028, 3.0)),
     ], "metal", lambda t: {}, butt, tip, cap_start=False, cap_end=False)
 
-    return b, "hand_r"
+    # ROLL THE FINISHED HEAD ABOUT THE HAFT.
+    #
+    # Which way the edge faces has to be measured against the animations, not
+    # chosen: the head is rigid in hand space, so a direction that clears the
+    # body in the rest pose swings into the torso as soon as the arm moves.
+    #
+    # It is applied HERE, to built geometry, rather than by rotating
+    # `blade_dir` before the sweeps -- and that distinction is the whole
+    # reason this works. `sweep_axis` derives its own frame from the axis it
+    # is handed, so turning `blade_dir` does not turn the finished wedge; it
+    # rebuilds a differently-shaped one. A search that assumed otherwise
+    # predicted a deepest contact of 0.046 m and the build that came out of it
+    # measured 0.193 m. Rotating the solid after the fact is the operation the
+    # search actually models, so the number it reports is the number the asset
+    # has.
+    roll = Matrix.Rotation(math.radians(HEAD_ROLL_DEG), 4, along)
+
+    def rolled(point):
+        return head_at + (roll @ (point - head_at))
+
+    for i in range(head_start, len(b.vertices)):
+        b.vertices[i] = tuple(rolled(Vector(b.vertices[i])))
+
+    # Hand the tip back explicitly. The adapter otherwise takes the vertex
+    # furthest from the hand, and with the head now at the TOP the furthest
+    # point is the butt of the shaft -- it would have pinned axe_tip to the
+    # wrong end of the weapon.
+    blade_tip = rolled(head_at + blade_dir * reach)
+    return b, "hand_r", blade_tip
 
 
 def build_outfit(body, armature, variant):
@@ -378,7 +514,10 @@ def build_outfit(body, armature, variant):
             (f"lowerarm_{side}", "leather", 1.34, 1.28, 2.8, (), None, 0.14, 0.08),
             (f"thigh_{side}", "coat", 1.26, 1.36, 2.9, (), None, 0.20, 0.36),
             (f"calf_{side}", "coat", 1.42, 1.22, 2.9, (), None, 0.44, 0.12),
-            (f"foot_{side}", "leather", 1.30, 1.56, 2.4, (f"ball_{side}",),
+            # tail_pad 1.78, up from 1.56: the boot ran 2.4 mm inside the
+            # outer toe and let a skin-coloured sliver through the side of the
+            # foot. Small, and visible in every frame the unit stands in.
+            (f"foot_{side}", "leather", 1.30, 1.78, 2.4, (f"ball_{side}",),
              f"foot_{side}", 0.12, 0.18),
         ):
             data = limb_profile(body, bone_name, armature,
@@ -481,12 +620,61 @@ def build_outfit(body, armature, variant):
     # the two surfaces sat within 4 mm of each other and interpenetrated over
     # the shoulders, opening a hole on each side that only showed under strong
     # light -- the studio render found it, the softer one did not.
+    #
+    # It has to carry ON UP past the collar landmark and close under the chin.
+    # Stopping at the collar left the throat open by 50 mm, and because the
+    # neck skin beneath is culled as hidden, that gap was not bare skin -- it
+    # was a hole. The face render looked straight through the character's
+    # throat to the inside of the tabard behind it.
+    #
+    # Capped just under the chin, measured off the head group rather than
+    # scaled off body height: the same fix, and the same reason, as the Hero's
+    # fur collar, which read as a head sunk into a cowl when a fixed fraction
+    # put its top ring 66 mm above the chin.
+    head_group = body.vertex_groups.get("head")
+    chin = min([(body.matrix_world @ v.co).y for v in body.data.vertices
+                if any(g.group == head_group.index and g.weight > 0.5
+                       for g in v.groups)] or [0.0]) if head_group else 0.0
+    # Just ABOVE the chin, not just below it. The neck skin under the collar is
+    # culled as hidden, and `cull_hidden_body` deletes whole faces, so what it
+    # leaves behind is a stair-stepped boundary. Ending the collar 8 mm short
+    # of the chin put that boundary on the skyline: a row of ragged dark teeth
+    # under the jaw. The top ring has to overlap it. Six millimetres above the
+    # LOWEST vertex of the head group is still far below the mouth, so the face
+    # keeps its read.
+    throat = (min(m["collar"]["y"] + height * 0.058, chin + 0.006)
+              if chin else m["collar"]["y"] + height * 0.048)
+    # Never below the ring it grows from, or a short-necked build folds the
+    # mantle back through itself.
+    throat = max(throat, m["collar"]["y"] + height * 0.010)
+    gorget = m["collar"]["y"] + (throat - m["collar"]["y"]) * 0.55
+
+    # HIGH, but TIGHT: the front pad is only a little larger than the sides.
+    #
+    # Reaching the collar forward under the jaw to close the sightline seemed
+    # obvious and backfired. `cull_hidden_body` deletes any skin face with a
+    # garment above it along the vertex normal, within 0.075 of body height --
+    # so a collar sitting out in front of the chin is a garment above the CHIN,
+    # and the cull ate the jaw. What that left was worse than the gap it
+    # closed: a ragged hole in the face with the dark inside of the hood
+    # showing through it.
+    #
+    # A ring that hugs the neck clears the chin's normals, so the jaw survives,
+    # and being above the cull boundary is enough to hide the stair-stepped
+    # edge the cull leaves on the neck. Height closes the gap; width does not.
+    def at(y, pad, front_pad, back_pad, exp):
+        d = m["collar"]
+        return (y, section(n, d["halfWidth"] + pad, d["front"] + front_pad,
+                           d["back"] + back_pad, exp))
+
     b.sweep([
         ring("chest", 0.134, 2.9),
         ring("upperChest", 0.126, 2.8),
         ring("shoulder", 0.114, 2.7),
         ring("neck", 0.086, 2.6),
         ring("collar", 0.064, 2.5),
+        at(gorget, 0.048, 0.052, 0.054, 2.4),
+        at(throat, 0.030, 0.032, 0.040, 2.3),
     ], "coat", lambda y: {}, cap_bottom=False, cap_top=False)
     regions.append(("torso", mantle_start, len(b.vertices)))
 

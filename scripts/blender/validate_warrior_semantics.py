@@ -158,15 +158,64 @@ def main():
         check("lower_grip is a hand's spacing below upper_grip",
               height * 0.05 < down.length < height * 0.22,
               {"metres": round(down.length, 4)})
-        check("axe_tip is further out than lower_grip and beyond it",
-              out.length > down.length * 1.5 and out.length < height * 0.55,
-              {"tip": round(out.length, 4), "grip": round(down.length, 4)})
-        # The two grips and the tip lie along one haft: the tip must run
-        # OPPOSITE the lower grip, not off at an angle.
-        if down.length > 1e-6 and out.length > 1e-6:
-            cosine = down.normalized().dot(out.normalized())
-            check("grips and tip are collinear along one haft", cosine < -0.9,
-                  {"cosine": round(cosine, 4)})
+        # THE LOCATORS ARE CHECKED AGAINST THE WEAPON MESH, NOT AGAINST AN
+        # ASSUMED WEAPON SHAPE.
+        #
+        # What stood here was "axe_tip is further from the hand than lower_grip
+        # is, and roughly opposite it" -- true of a sword, where the point is
+        # the far end of the axis, and false of this weapon. An ice axe is held
+        # AT THE HEAD: the steel is a hand's width from the grip and the far end
+        # is the butt of the haft. The rule would have passed a weapon with
+        # axe_tip pinned to the shaft butt and failed the correct one, so
+        # loosening its threshold was not the fix -- the premise was wrong.
+        #
+        # These replace it and are strictly harder to satisfy: they compare the
+        # locators to the exported geometry, so a contract that describes a
+        # weapon that is not there cannot pass, whatever shape it claims to be.
+        axe_mesh = None
+        for obj in meshes:
+            name = (obj.data.name or "")
+            if "Sword" in name or "Axe" in name:
+                axe_mesh = obj
+                break
+        if axe_mesh is not None and len(axe_mesh.data.vertices) > 8:
+            points = [axe_mesh.matrix_world @ v.co for v in axe_mesh.data.vertices]
+            grip_point = places["upper_grip"]
+            butt = max(points, key=lambda p: (p - grip_point).length)
+            haft = (butt - grip_point)
+            haft = haft.normalized() if haft.length > 1e-6 else Vector((0.0, 0.0, -1.0))
+
+            def off_axis(point):
+                v = point - grip_point
+                return (v - haft * v.dot(haft)).length
+
+            # lower_grip has to be ON the haft, not merely somewhere below the
+            # hand: a support hand that misses the shaft is a broken contract.
+            stray = off_axis(places["lower_grip"])
+            check("lower_grip lies on the haft",
+                  stray < height * 0.020,
+                  {"offAxisMetres": round(stray, 4),
+                   "limit": round(height * 0.020, 4)})
+            check("lower_grip runs toward the butt, not away from it",
+                  down.normalized().dot(haft) > 0.9,
+                  {"cosine": round(down.normalized().dot(haft), 4)})
+
+            # axe_tip has to be ON the head: the point of the weapon standing
+            # furthest off the haft, and actually on the surface.
+            widest = max(off_axis(p) for p in points)
+            tip_off = off_axis(places["axe_tip"])
+            check("axe_tip is the point standing furthest off the haft",
+                  widest > 1e-6 and tip_off > widest * 0.98,
+                  {"tipOffAxis": round(tip_off, 4),
+                   "widestOnMesh": round(widest, 4)})
+            on_mesh = min((places["axe_tip"] - p).length for p in points)
+            check("axe_tip sits on the weapon surface",
+                  on_mesh < height * 0.010,
+                  {"metresToNearestVertex": round(on_mesh, 5)})
+            # And the head has to be a head -- big enough to read, not a nub.
+            check("the head stands proud enough to read as an axe",
+                  height * 0.035 < widest < height * 0.30,
+                  {"headReachMetres": round(widest, 4)})
 
     # --- nothing stranded in the wrong coordinate system ----------------
     reach = height * 0.75

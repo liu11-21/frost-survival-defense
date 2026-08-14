@@ -1795,11 +1795,18 @@ def main():
             g.name, [m.name if m else None for m in g.data.materials],
             sorted({p.material_index for p in g.data.polygons})))
 
-    sword_builder, sword_bone = build_sword(body, armature, height)
+    # A kit may return a third value: where the weapon's business end is. The
+    # adapter cannot infer it -- "furthest vertex from the hand" is the butt of
+    # the shaft on anything held near its head.
+    carried = build_sword(body, armature, height)
+    sword_builder, sword_bone = carried[0], carried[1]
+    weapon_tip = carried[2] if len(carried) > 2 else None
     sword = None
     if sword_builder is not None:
         sword = to_object(sword_builder, "HeroSword", materials)
         rigid_weights(sword, armature, sword_bone)
+        if weapon_tip is not None:
+            sword["weaponTip"] = [weapon_tip.x, weapon_tip.y, weapon_tip.z]
 
     body_before = triangles(body)
     # Cull is OFF during fitting. A wrong garment swallows the torso and the
@@ -1849,7 +1856,13 @@ def main():
     bpy.ops.export_scene.gltf(filepath=glb, export_format="GLB",
                               export_skins=True, export_yup=True,
                               export_vertex_color="ACTIVE",
-                              export_all_vertex_colors=False)
+                              export_all_vertex_colors=False,
+                              # Carries the weaponTip custom property through to
+                              # the adapter. Without it the adapter falls back
+                              # to "furthest vertex from the hand", which on a
+                              # weapon held at its head is the butt of the shaft
+                              # -- axe_tip landed on the wrong end.
+                              export_extras=True)
 
     report = {
         "variant": args.variant,
