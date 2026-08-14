@@ -21,6 +21,7 @@ a difference in trim colour would not.
 The palette separates too: the Warrior is canvas and hide -- olive-drab and
 tan, issued kit -- against the Hero's dark navy and steel.
 """
+import json
 import math
 
 import bmesh
@@ -327,12 +328,29 @@ def build_sword(body, armature, height):
     # inside the coat, at a roll that also turned the edge inward where it
     # reads worst.
     #
-    # Below 0.60 of that reach the disc fits in the air beside the body and the
+    # Below 0.68 of that reach the disc fits in the air beside the body and the
     # clipping does not merely get smaller, it stops: zero contacts at EVERY
     # roll angle. That buys back the orientation, so the edge can face straight
     # out from the body where it is most legible from a tower-defence camera.
-    # A slightly small head that never clips beats a correct one that does.
-    reach = height * 0.0645
+    #
+    # The ceiling was found twice, and the first answer -- 0.60 -- was too
+    # cautious because the search that produced it discarded any sample more
+    # than 0.12 m from a garment surface, to suppress false positives from
+    # single-axis ray parity on a multi-shell coat. That threw away exactly the
+    # samples that matter: a head deep inside the torso is FURTHER from the
+    # cloth than one grazing it, so the worst penetrations were scored as
+    # clean, and the sweep was non-monotonic in a way that should have been the
+    # tell. Voting four independent axes rejects the far-field noise without
+    # discarding depth, and it puts the real ceiling 14 per cent higher.
+    #
+    # The rest of that headroom went back into SAMPLING, and the sequence is
+    # the point: nine frames per animation passed 0.0838, thirteen found 30 mm
+    # of steel inside the coat, seventeen found 16 mm at 0.0737. Every time the
+    # sampling got denser it found a worse frame, always in MeleeAttack --
+    # the fastest thing the character does and so the easiest to step over.
+    # Sampling that one animation at forty-one frames is what actually
+    # converged, and it puts the ceiling here.
+    reach = height * 0.0690
 
     # Everything from here on is the HEAD, and it gets rolled about the haft
     # as a finished solid once it is built. See HEAD_ROLL_DEG.
@@ -635,19 +653,32 @@ def build_outfit(body, armature, variant):
     chin = min([(body.matrix_world @ v.co).y for v in body.data.vertices
                 if any(g.group == head_group.index and g.weight > 0.5
                        for g in v.groups)] or [0.0]) if head_group else 0.0
-    # Just ABOVE the chin, not just below it. The neck skin under the collar is
-    # culled as hidden, and `cull_hidden_body` deletes whole faces, so what it
-    # leaves behind is a stair-stepped boundary. Ending the collar 8 mm short
-    # of the chin put that boundary on the skyline: a row of ragged dark teeth
-    # under the jaw. The top ring has to overlap it. Six millimetres above the
-    # LOWEST vertex of the head group is still far below the mouth, so the face
-    # keeps its read.
-    throat = (min(m["collar"]["y"] + height * 0.058, chin + 0.006)
+    # Above the chin, and on this body that is not the constraint it sounds
+    # like. Measured here: chin 1.4722, collar landmark 1.4916 -- the landmark
+    # is ALREADY above the jaw, because "collar" is 0.875 of body height and
+    # this build's chin falls at 0.864. So the floor below, not the chin clamp,
+    # is what actually sets the ring, at 1.5086.
+    #
+    # Which also explains why raising this further does nothing visible, and
+    # that is correct behaviour rather than a bug to chase: `sink_face_window`
+    # runs afterwards and pushes any garment intruding on the face window back
+    # behind the skin. The collar closes the neck at the SIDES and BACK; the
+    # throat under the jaw stays open because a hood with a face opening is
+    # supposed to leave it open. Two rounds went into trying to close it --
+    # first by reaching the collar forward, which made the cull eat the jaw,
+    # then by raising it, which the face window silently undid.
+    throat = (min(m["collar"]["y"] + height * 0.070, chin + 0.026)
               if chin else m["collar"]["y"] + height * 0.048)
     # Never below the ring it grows from, or a short-necked build folds the
     # mantle back through itself.
     throat = max(throat, m["collar"]["y"] + height * 0.010)
     gorget = m["collar"]["y"] + (throat - m["collar"]["y"]) * 0.55
+    print("WARRIOR_COLLAR %s" % json.dumps(
+        {"chin": round(chin, 4), "collarY": round(m["collar"]["y"], 4),
+         "byHeight": round(m["collar"]["y"] + height * 0.070, 4),
+         "byChin": round(chin + 0.026, 4) if chin else None,
+         "throat": round(throat, 4), "gorget": round(gorget, 4),
+         "height": round(height, 4)}))
 
     # HIGH, but TIGHT: the front pad is only a little larger than the sides.
     #
@@ -673,8 +704,8 @@ def build_outfit(body, armature, variant):
         ring("shoulder", 0.114, 2.7),
         ring("neck", 0.086, 2.6),
         ring("collar", 0.064, 2.5),
-        at(gorget, 0.048, 0.052, 0.054, 2.4),
-        at(throat, 0.030, 0.032, 0.040, 2.3),
+        at(gorget, 0.048, 0.056, 0.054, 2.4),
+        at(throat, 0.032, 0.040, 0.042, 2.3),
     ], "coat", lambda y: {}, cap_bottom=False, cap_top=False)
     regions.append(("torso", mantle_start, len(b.vertices)))
 
