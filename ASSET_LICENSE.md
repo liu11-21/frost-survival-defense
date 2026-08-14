@@ -28,7 +28,7 @@ Third-party MakeHuman community assets, if ever added, must be recorded individu
 
 ## Generated audio
 
-The committed BGM was generated with Google Gemini/Lyria according to the project owner. Google states that it does not claim ownership over original generated content, while users remain responsible for complying with applicable law and third-party rights. The project does not grant the BGM a separate open-source asset license through `LICENSE`.
+The committed BGM was generated with Google Gemini according to the project owner. Google states that it does not claim ownership over original generated content, while users remain responsible for complying with applicable law and third-party rights. The project does not grant the BGM a separate open-source asset license through `LICENSE`.
 
 Because copyright treatment of AI-generated material can vary by jurisdiction and by the human contribution involved, this file does not claim exclusive copyright in portions that applicable law may not protect.
 
