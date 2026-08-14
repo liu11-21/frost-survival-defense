@@ -86,6 +86,15 @@ def composite(panels, path):
     out.filepath_raw = path
     out.file_format = "PNG"
     out.save()
+    # The composite is a deliverable; the panels it was joined from are
+    # scratch and get deleted by the caller. Record the one and forget the
+    # others, or the evidence listing names five files that are not there and
+    # omits the two that are.
+    WRITTEN.append(os.path.basename(path))
+    for panel in panels:
+        name = os.path.basename(panel)
+        if name in WRITTEN:
+            WRITTEN.remove(name)
 
 
 def clear():
