@@ -18,7 +18,7 @@ Run `npm run dev` for local playtesting. Blender is only required for art-pipeli
 - One feature/fix per pull request. Do not mix gameplay, art, audio, and unrelated cleanup.
 - Explain what changed, why, how it was tested, and any known limitations.
 - Runtime claims require runtime evidence; green structural validation alone is not a visual sign-off.
-- Do not commit `.env`, tokens, credentials, local MCP configuration, caches, temporary captures, or generated debug dumps.
+- Do not commit `.env`, tokens, credentials, private MCP configuration, caches, temporary captures, or generated debug dumps.
 - Large editable media must use the repository's Git LFS rules.
 
 ## Tests
@@ -38,9 +38,11 @@ Authored source lives under `assets-source/blender/`; runtime GLBs live under `p
 
 ## Licensing and provenance
 
-Only contribute code, art, audio, fonts, models, textures, or other content that you created or are legally permitted to redistribute in this repository. Include the source and license/provenance when adding third-party material.
+Only contribute code, art, audio, fonts, models, textures, or other content that you created or are legally permitted to redistribute in this repository. Include source/license/provenance when adding third-party or generated material.
 
-The repository-wide public license split is still being finalized during the public-readiness transition. Do not assume that public visibility grants reuse rights to project assets unless a file explicitly says so.
+By submitting a code contribution for inclusion in the project, you agree that the contribution may be distributed under the repository's Apache-2.0 code license unless you explicitly state otherwise before it is merged.
+
+Non-code assets are **not automatically Apache-2.0**. Read `ASSET_LICENSE.md` and `THIRD_PARTY_NOTICES.md` before contributing art/audio/media. New third-party or generated assets must identify their provenance and redistribution terms in the same pull request.
 
 ## Security
 
