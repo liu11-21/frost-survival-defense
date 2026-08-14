@@ -1,0 +1,8 @@
+# Repository owner retains final review authority for public contributions.
+* @liu11-21
+
+# Sensitive project-control surfaces.
+/.github/ @liu11-21
+/scripts/ @liu11-21
+/assets-source/ @liu11-21
+/public/assets/ @liu11-21
