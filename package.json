@@ -1,9 +1,18 @@
 {
-  "name": "frostbound-expanse",
+  "name": "frost-survival-defense",
   "private": true,
   "version": "1.0.0",
   "type": "module",
-  "description": "Frostbound Expanse - a Babylon.js frost-themed territory expansion vertical slice",
+  "description": "Frostbound Furnace — an open-source Babylon.js 3D tower-defense and survival game with a reproducible Blender-to-GLB asset pipeline.",
+  "license": "Apache-2.0",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/liu11-21/frost-survival-defense.git"
+  },
+  "homepage": "https://liu11-21.github.io/frost-survival-defense/",
+  "bugs": {
+    "url": "https://github.com/liu11-21/frost-survival-defense/issues"
+  },
   "scripts": {
     "dev": "vite",
     "build": "tsc --noEmit && vite build",
