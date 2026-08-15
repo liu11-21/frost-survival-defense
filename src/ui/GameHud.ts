@@ -7,7 +7,7 @@ import type { GameEvents } from "../game/GameEvents";
 import type { Furnace } from "../heat/Furnace";
 import type { HeroController } from "../hero/HeroController";
 import type { HeroStats } from "../hero/HeroStats";
-import { entityName, t } from "../localization";
+import { entityName, t, translatedOr } from "../localization";
 import type { RunController } from "../modes/RunController";
 import type { PerformanceMonitor } from "../performance/PerformanceMonitor";
 import { previewText } from "../enemies/WavePreview";
@@ -63,7 +63,7 @@ export class GameHud {
       ),
       events.on("wavePreview", (p) =>
         this.notifications.show({
-          title: t("notification.waveIncoming"),
+          title: t("notification.waveIncoming", { wave: p.wave }),
           message: previewText(p.lanes),
           type: p.boss ? "danger" : "info",
           durationMs: 4200,
@@ -71,7 +71,7 @@ export class GameHud {
       ),
       events.on("waveStarted", (p) =>
         this.notifications.show({
-          title: t("wave.incoming"),
+          title: t("wave.incoming", { wave: p.wave }),
           message: t(p.boss ? "wave.startedBoss" : "wave.started"),
           type: p.boss ? "danger" : "info",
           durationMs: p.boss ? 4200 : 2600,
@@ -79,7 +79,10 @@ export class GameHud {
       ),
       events.on("eliteEnemySpawned", (p) =>
         this.notifications.show({
-          title: t("notification.elite", { level: p.level }),
+          title: t("notification.elite", {
+            level: p.level,
+            name: translatedOr(`enemy.${p.enemyId}.name`, p.name),
+          }),
           message: t("notification.eliteBody", { wave: p.wave }),
           type: "danger",
           durationMs: 2600,
@@ -89,7 +92,9 @@ export class GameHud {
         this.furnaceAlertRemaining = 0.9;
         refs.furnaceAlert.classList.add("show");
       }),
-      events.on("squadRecruited", (p) => this.toast(t("notification.recruited", { name: unitName(p.name) }))),
+      events.on("squadRecruited", (p) =>
+        this.toast(t("notification.recruited", { name: entityName("unit", p.defId, p.name) })),
+      ),
       events.on("furnaceUpgraded", (p) =>
         this.notifications.show({
           title: t("notification.furnaceUpgrade"),
@@ -305,13 +310,4 @@ export class GameHud {
 
 export function typeName(type: string): string {
   return entityName("building", type, type);
-}
-
-function unitName(fallback: string): string {
-  const ids: Record<string, string> = {
-    戰士: "warrior", 盾兵: "shield", 弓箭手: "archer", 醫療兵: "medic", 掌旗者: "flagbearer",
-    魔法師: "mage", 突擊手: "assault", 工程兵: "engineer", 火槍手: "musketeer", 冰霜術士: "frostmage",
-  };
-  const id = ids[fallback];
-  return id ? entityName("unit", id, fallback) : fallback;
 }
