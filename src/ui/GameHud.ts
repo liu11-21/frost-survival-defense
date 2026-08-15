@@ -1,4 +1,5 @@
 import type { BuildingManager } from "../buildings/BuildingManager";
+import { demolishRefund } from "../buildings/Demolition";
 import type { SquadManager } from "../combat/SquadManager";
 import type { WaveManager } from "../enemies/WaveManager";
 import type { ResourceStore } from "../economy/ResourceStore";
@@ -6,9 +7,9 @@ import type { GameEvents } from "../game/GameEvents";
 import type { Furnace } from "../heat/Furnace";
 import type { HeroController } from "../hero/HeroController";
 import type { HeroStats } from "../hero/HeroStats";
+import { entityName, t } from "../localization";
 import type { RunController } from "../modes/RunController";
 import type { PerformanceMonitor } from "../performance/PerformanceMonitor";
-import { demolishRefund } from "../buildings/Demolition";
 import { previewText } from "../enemies/WavePreview";
 import { costText } from "./CostLine";
 import { Notifications, type ToastType } from "./Notifications";
@@ -28,10 +29,7 @@ export interface HudDeps {
   monitor: PerformanceMonitor;
 }
 
-/**
- * Pushes live numbers into the HUD. Everything here is a player-facing value —
- * no coordinates, no state-machine names, no internal ids.
- */
+/** Player-facing live HUD values. Gameplay state remains the source of truth. */
 export class GameHud {
   private hintTimer = 14;
   private fpsTimer = 0;
@@ -55,8 +53,9 @@ export class GameHud {
         refs.wood.textContent = String(Math.floor(p.wood));
         refs.stone.textContent = String(Math.floor(p.stone));
         refs.gold.textContent = String(Math.floor(p.gold));
-        refs.capacityNote.textContent =
-          p.capacity === Infinity ? "倉庫已建 · 容量無限" : `上限 ${p.capacity}`;
+        refs.capacityNote.textContent = p.capacity === Infinity
+          ? t("hud.capacityUnlimited")
+          : t("hud.capacity", { capacity: p.capacity });
         refs.capacityNote.classList.toggle("good", p.capacity === Infinity);
       }),
       events.on("notify", (p) =>
@@ -64,7 +63,7 @@ export class GameHud {
       ),
       events.on("wavePreview", (p) =>
         this.notifications.show({
-          title: `${p.name}即將來襲`,
+          title: t("notification.waveIncoming"),
           message: previewText(p.lanes),
           type: p.boss ? "danger" : "info",
           durationMs: 4200,
@@ -72,16 +71,16 @@ export class GameHud {
       ),
       events.on("waveStarted", (p) =>
         this.notifications.show({
-          title: p.name,
-          message: p.boss ? "Boss 出現，全力防守" : "敵人正在推進",
+          title: t("wave.incoming"),
+          message: t(p.boss ? "wave.startedBoss" : "wave.started"),
           type: p.boss ? "danger" : "info",
           durationMs: p.boss ? 4200 : 2600,
         }),
       ),
       events.on("eliteEnemySpawned", (p) =>
         this.notifications.show({
-          title: `高威脅接觸：Lv.${p.level} ${p.name}`,
-          message: `第 ${p.wave} 波精英單位已進場`,
+          title: t("notification.elite", { level: p.level }),
+          message: t("notification.eliteBody", { wave: p.wave }),
           type: "danger",
           durationMs: 2600,
         }),
@@ -90,34 +89,39 @@ export class GameHud {
         this.furnaceAlertRemaining = 0.9;
         refs.furnaceAlert.classList.add("show");
       }),
-      events.on("squadRecruited", (p) => this.toast(`已招募 ${p.name}`)),
+      events.on("squadRecruited", (p) => this.toast(t("notification.recruited", { name: unitName(p.name) }))),
       events.on("furnaceUpgraded", (p) =>
-        this.notifications.show({ title: "火爐升級", message: `等級 ${p.level}`, type: "success" }),
+        this.notifications.show({
+          title: t("notification.furnaceUpgrade"),
+          message: t("notification.level", { level: p.level }),
+          type: "success",
+        }),
       ),
-      events.on("buildingDestroyed", (p) => this.toast(`${typeName(p.type)}被摧毀`, "failure")),
-      events.on("buildingRebuilt", (p) => this.toast(`自動重建完成：${typeName(p.type)}`, "success")),
+      events.on("buildingDestroyed", (p) => this.toast(t("notification.destroyed", { name: typeName(p.type) }), "failure")),
+      events.on("buildingRebuilt", (p) => this.toast(t("notification.rebuilt", { name: typeName(p.type) }), "success")),
       events.on("buildingDemolishStarted", (p) =>
         this.notifications.show({
-          title: `開始拆除：${typeName(p.type)}`,
-          message: `完成後返還 ${costText(demolishRefund(p.type, d.buildings.slot(p.slotId)?.building?.constructionCost))}。`,
+          title: t("notification.demolishStart", { name: typeName(p.type) }),
+          message: t("notification.demolishRefund", {
+            cost: costText(demolishRefund(p.type, d.buildings.slot(p.slotId)?.building?.constructionCost)),
+          }),
           iconId: p.type,
         }),
       ),
       events.on("buildingDemolished", (p) =>
         this.notifications.show({
-          title: `已拆除：${typeName(p.type)}`,
-          message: `返還 ${costText(p.refund)}。此點位現在可以建造其他允許的設施。`,
+          title: t("notification.demolished", { name: typeName(p.type) }),
+          message: t("notification.demolishedBody", { cost: costText(p.refund) }),
           iconId: p.type,
           type: "success",
         }),
       ),
-      events.on("heroDown", () => this.toast("主角倒地，8 秒後於火爐旁復活", "failure")),
+      events.on("heroDown", () => this.toast(t("notification.heroDown"), "failure")),
     );
 
     refs.banner.classList.remove("show");
   }
 
-  /** Drives the top-of-screen boss bar. Hidden while no boss is alive. */
   setBoss(
     active: boolean,
     name: string,
@@ -131,20 +135,18 @@ export class GameHud {
     r.bossBar.classList.toggle("show", active);
     if (!active) return;
     r.bossName.textContent = name;
-    r.bossPhase.textContent = ["第一階段", "第二階段 · 震地", "第三階段 · 適應"][phase - 1] ?? "";
+    r.bossPhase.textContent = [t("boss.phase1"), t("boss.phase2"), t("boss.phase3")][phase - 1] ?? "";
     const pct = Math.max(0, Math.min(100, (health / Math.max(1, maxHealth)) * 100));
     r.bossFill.style.width = pct + "%";
     r.bossText.textContent = Math.ceil(health) + " / " + maxHealth;
-    r.bossWarn.textContent =
-      slamProgress >= 0
-        ? "震地施放中 " + Math.round(slamProgress * 100) + "%"
-        : resistant
-          ? "對砲塔傷害減免"
-          : "";
+    r.bossWarn.textContent = slamProgress >= 0
+      ? t("boss.slam", { progress: Math.round(slamProgress * 100) })
+      : resistant
+        ? t("boss.resistant")
+        : "";
     r.bossWarn.classList.toggle("danger", slamProgress >= 0);
   }
 
-  /** Tutorial card: one task at a time, or hidden. */
   setTutorial(title: string, body: string, progress: string): void {
     const el = this.d.refs.tutorial;
     if (!title) {
@@ -153,13 +155,12 @@ export class GameHud {
     }
     el.classList.add("show");
     el.innerHTML =
-      '<div class="tut-step">教學 ' + progress + "</div>" +
-      '<div class="tut-title">' + title + "</div>" +
-      '<div class="tut-body">' + body + "</div>" +
-      '<button class="mini-btn tight" id="ui-tut-skip">跳過教學</button>';
+      `<div class="tut-step">${t("tutorial.label", { progress })}</div>` +
+      `<div class="tut-title">${title}</div>` +
+      `<div class="tut-body">${body}</div>` +
+      `<button class="mini-btn tight" id="ui-tut-skip">${t("tutorial.skip")}</button>`;
   }
 
-  /** The single contextual E prompt, or blank when nothing is in reach. */
   setPrompt(label: string, detail: string, enabled: boolean): void {
     const el = this.d.refs.prompt;
     if (!label) {
@@ -184,11 +185,6 @@ export class GameHud {
     this.hintTimer = Math.min(this.hintTimer, 1.5);
   }
 
-  /**
-   * Formal HUD element, always on by default — this is not the F3 panel and
-   * does not require it. Both read the same `PerformanceMonitor`, so the
-   * number here and the one in F3 can never disagree.
-   */
   setFpsVisible(visible: boolean): void {
     this.fpsVisible = visible;
     this.d.refs.fpsBox.classList.toggle("hidden", !visible);
@@ -202,85 +198,88 @@ export class GameHud {
       if (this.furnaceAlertRemaining <= 0) refs.furnaceAlert.classList.remove("show");
     }
 
-    // hero
     const hp = Math.max(0, Math.ceil(hero.health));
     const hpMax = heroStats.maxHealth;
     refs.heroText.textContent = hero.isDown
-      ? `倒地 ${hero.downRemaining.toFixed(1)}s`
+      ? t("hud.heroDown", { seconds: hero.downRemaining.toFixed(1) })
       : `${hp} / ${hpMax}`;
     refs.heroBar.style.width = `${Math.max(0, Math.min(100, (hp / hpMax) * 100))}%`;
     refs.heroBar.classList.toggle("low", hp / hpMax < 0.3);
-    refs.heroStats.textContent =
-      `遠程 ${Math.round(heroStats.rangedAttack)} · 近戰 ${Math.round(heroStats.meleeAttack)}` +
-      ` · 攻速 ${heroStats.attackInterval.toFixed(2)}s`;
+    refs.heroStats.textContent = t("hud.heroStats", {
+      ranged: Math.round(heroStats.rangedAttack),
+      melee: Math.round(heroStats.meleeAttack),
+      interval: heroStats.attackInterval.toFixed(2),
+    });
 
     const rates = buildings.productionEfficiency(run.productionRate);
     refs.woodRate.textContent = `+${rates.wood.toFixed(1)}/s`;
     refs.stoneRate.textContent = `+${rates.stone.toFixed(1)}/s`;
     refs.goldRate.textContent = `+${rates.gold.toFixed(1)}/s`;
 
-    // furnace
     const fh = Math.max(0, Math.ceil(furnace.health));
     refs.furnaceText.textContent = `${fh} / ${furnace.maxHealth}`;
     refs.furnaceLevel.textContent = `Lv.${furnace.currentLevel}`;
     refs.furnaceBar.style.width = `${Math.max(0, furnace.healthPercent * 100)}%`;
     refs.furnaceBar.classList.toggle("low", furnace.healthPercent < 0.35);
 
-    // waves
     const phase = waves.currentPhase;
     if (phase === "prep") {
-      refs.waveLabel.textContent = "準備階段";
-      refs.waveTimer.textContent = `${waves.timeToNextWave.toFixed(0)} 秒後開戰`;
+      refs.waveLabel.textContent = t("wave.preparation");
+      refs.waveTimer.textContent = t("wave.startsIn", { seconds: waves.timeToNextWave.toFixed(0) });
     } else if (phase === "intermission") {
-      refs.waveLabel.textContent = `第 ${waves.currentWave} 波已清除`;
-      refs.waveTimer.textContent = `${waves.timeToNextWave.toFixed(0)} 秒後下一波`;
+      refs.waveLabel.textContent = t("wave.cleared", { wave: waves.currentWave });
+      refs.waveTimer.textContent = t("wave.nextIn", { seconds: waves.timeToNextWave.toFixed(0) });
     } else if (phase === "finished") {
-      refs.waveLabel.textContent = "全部波次結束";
+      refs.waveLabel.textContent = t("wave.finished");
       refs.waveTimer.textContent = "--";
     } else {
       const total = waves.totalWaves;
-      refs.waveLabel.textContent = total > 0 ? `第 ${waves.currentWave} / ${total} 波` : `第 ${waves.currentWave} 波`;
-      refs.waveTimer.textContent = "作戰中";
+      refs.waveLabel.textContent = total > 0
+        ? t("wave.currentTotal", { wave: waves.currentWave, total })
+        : t("wave.current", { wave: waves.currentWave });
+      refs.waveTimer.textContent = t("wave.combat");
     }
     refs.enemyCount.textContent = String(squads.livingEnemyUnits);
     const canCall = phase === "prep" || phase === "intermission";
     refs.callWaveButton.disabled = !canCall;
     refs.callWaveButton.classList.toggle("hidden", !canCall);
-    // Throttled to this same per-frame HUD refresh, which already runs well
-    // under 4 Hz — no need for its own timer.
     const reward = canCall ? run.previewEarlyWaveReward() : 0;
-    refs.callWaveButton.textContent = reward > 0 ? `立刻開始下一波 (N)　+${reward}金幣` : "立刻開始下一波 (N)";
+    refs.callWaveButton.textContent = reward > 0
+      ? t("hud.callWaveReward", { reward })
+      : t("hud.callWave");
 
-    // squads + furnace upgrade
     refs.squadCount.textContent = `${squads.allySquadSlotsUsed} / ${run.squadLimit}`;
     const cost = run.furnaceUpgradeCost;
     refs.upgradeButton.disabled = !run.canUpgradeFurnace;
     refs.upgradeButton.textContent = run.allowFurnaceUpgrade
-      ? `升級火爐 (U) ${cost.wood}木 ${cost.stone}石 ${cost.gold}金`
-      : "本關不開放升級";
+      ? t("hud.upgradeFurnace", { wood: cost.wood ?? 0, stone: cost.stone ?? 0, gold: cost.gold ?? 0 })
+      : t("hud.upgradeLocked");
 
-    // auto rebuild
     const hasRebuilder = buildings.hasAutoRebuilder;
     refs.rebuildBox.classList.toggle("hidden", !hasRebuilder);
     if (hasRebuilder) {
-      refs.rebuildToggle.textContent = buildings.autoRebuildEnabled ? "啟用中 (T)" : "已停用 (T)";
+      refs.rebuildToggle.textContent = buildings.autoRebuildEnabled ? t("hud.rebuildEnabled") : t("hud.rebuildDisabled");
       refs.rebuildToggle.classList.toggle("off", !buildings.autoRebuildEnabled);
       const head = buildings.rebuildQueue.head;
       const cooldown = buildings.rebuildCooldownRemaining;
       if (!head) {
-        refs.rebuildInfo.textContent = cooldown > 0 ? `冷卻 ${cooldown.toFixed(1)}s` : "佇列 0";
+        refs.rebuildInfo.textContent = cooldown > 0
+          ? t("hud.queueCooldown", { seconds: cooldown.toFixed(1) })
+          : t("hud.queueEmpty");
       } else {
         const affordable = this.d.store.canAfford(head.rebuildCost);
-        const label = `佇列 ${buildings.rebuildQueue.length} · 下一項 ${typeName(head.buildingType)}`;
+        const label = t("hud.queueNext", {
+          count: buildings.rebuildQueue.length,
+          name: typeName(head.buildingType),
+        });
         refs.rebuildInfo.textContent = cooldown > 0
-          ? `${label} · 冷卻 ${cooldown.toFixed(1)}s`
+          ? `${label} · ${t("hud.queueCooldown", { seconds: cooldown.toFixed(1) })}`
           : affordable
-            ? `${label} · 重建中`
-            : `${label} · 資源不足`;
+            ? `${label} · ${t("hud.rebuilding")}`
+            : `${label} · ${t("hud.insufficient")}`;
       }
     }
 
-    // fps, smoothed and throttled so the digits do not flicker every frame
     if (this.fpsVisible) {
       this.fpsTimer -= dt;
       if (this.fpsTimer <= 0) {
@@ -292,7 +291,6 @@ export class GameHud {
       }
     }
 
-    // transient elements
     this.notifications.update(dt);
     if (this.hintTimer > 0) {
       this.hintTimer -= dt;
@@ -305,18 +303,15 @@ export class GameHud {
   }
 }
 
-const NAMES: Record<string, string> = {
-  mine: "礦場",
-  goldMine: "金礦",
-  lumberyard: "伐木場",
-  warehouse: "倉庫",
-  recruitHall: "招募所",
-  autoCollector: "自動收取設施",
-  autoRebuilder: "自動重建站",
-  tower: "砲塔",
-  wall: "城牆",
-};
-
 export function typeName(type: string): string {
-  return NAMES[type] ?? type;
+  return entityName("building", type, type);
+}
+
+function unitName(fallback: string): string {
+  const ids: Record<string, string> = {
+    戰士: "warrior", 盾兵: "shield", 弓箭手: "archer", 醫療兵: "medic", 掌旗者: "flagbearer",
+    魔法師: "mage", 突擊手: "assault", 工程兵: "engineer", 火槍手: "musketeer", 冰霜術士: "frostmage",
+  };
+  const id = ids[fallback];
+  return id ? entityName("unit", id, fallback) : fallback;
 }

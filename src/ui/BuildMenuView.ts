@@ -4,7 +4,8 @@ import type { CombatWorld } from "../combat/CombatWorld";
 import { LANES, type LaneDefinition } from "../data/BuildSlotDefinitions";
 import { computeLaneCoverage, laneCoverageText } from "../buildings/AttackRangeGeometry";
 import { BUILDINGS, BUILDING_BY_ID, type BuildingDefinition } from "../data/BuildingDefinitions";
-import { BUILD_MENU_CATEGORY_NAMES, buildMenuCategoryOf, type BuildMenuCategory } from "../data/BuildMenuCategories";
+import { buildMenuCategoryOf, type BuildMenuCategory } from "../data/BuildMenuCategories";
+import { entityDescription, entityName, t } from "../localization";
 import { classifyEntry, sortClassified, type ClassifiedEntry } from "./BuildMenuSort";
 import { buildingThumbnailHtml } from "./BuildingThumbnails";
 import { costLine } from "./CostLine";
@@ -22,9 +23,7 @@ export function tabsForSlot(slot: BuildSlot): BuildMenuTab[] {
 }
 
 export function tabLabel(tab: BuildMenuTab): string {
-  if (tab === "all") return "全部";
-  if (tab === "wall") return "防線";
-  return BUILD_MENU_CATEGORY_NAMES[tab];
+  return t(`build.tab.${tab}`);
 }
 
 function candidatesFor(slot: BuildSlot): BuildingDefinition[] {
@@ -65,30 +64,24 @@ export function renderTabsHtml(
   counts: Map<BuildMenuTab, number>,
 ): string {
   return `<div class="build-tabs" role="tablist" tabindex="0">${tabs
-    .map(
-      (tab) =>
-        `<button type="button" class="build-tab${tab === active ? " on" : ""}" role="tab" aria-selected="${tab === active}" data-tab="${tab}">${tabLabel(tab)}<b>${counts.get(tab) ?? 0}</b></button>`,
+    .map((tab) =>
+      `<button type="button" class="build-tab${tab === active ? " on" : ""}" role="tab" aria-selected="${tab === active}" data-tab="${tab}">${tabLabel(tab)}<b>${counts.get(tab) ?? 0}</b></button>`,
     )
     .join("")}</div>`;
 }
 
 function stateTag(entry: ClassifiedEntry): string {
-  if (entry.tier === 1) return `<span class="tag ok">可建</span>`;
-  if (entry.tier === 2) return `<span class="tag warn">差一點</span>`;
-  if (entry.tier === 3) return `<span class="tag bad">不足</span>`;
-  if (entry.tier === 4) return `<span class="tag bad">未解鎖</span>`;
-  return `<span class="tag bad">不可建</span>`;
+  const keys: Record<number, string> = {
+    1: "build.state.ready",
+    2: "build.state.close",
+    3: "build.state.short",
+    4: "build.state.locked",
+    5: "build.state.invalid",
+  };
+  const cls = entry.tier === 1 ? "ok" : entry.tier === 2 ? "warn" : "bad";
+  return `<span class="tag ${cls}">${t(keys[entry.tier])}</span>`;
 }
 
-/**
- * Thumbnail-first build card. The build panel is a compact command surface,
- * not a second encyclopedia: visible content is identity + cost + availability
- * + sky marker. Full role, numeric combat data and descriptions remain in Codex.
- *
- * Range coverage is still calculated here from the real winding path contract
- * and exposed through the native tooltip/aria label, while ActionPanels keeps
- * the actual hover range preview in the 3D scene.
- */
 export function renderEntryHtml(
   entry: ClassifiedEntry,
   rangeContext?: { slot: BuildSlot; world: CombatWorld; activeLaneCount: number },
@@ -111,18 +104,20 @@ export function renderEntryHtml(
       ),
     );
   }
+  const name = entityName("building", def.id, def.name);
+  const description = entityDescription("building", def.id, def.description);
   const reason = entry.reasonText || entry.shortfallText;
-  const tooltip = [def.description, coverage, reason].filter(Boolean).join(" · ").replace(/"/g, "&quot;");
+  const tooltip = [description, coverage, reason].filter(Boolean).join(" · ").replace(/"/g, "&quot;");
   return `
     <button class="entry build-icon-card" data-build-type="${def.id}" ${disabled ? "disabled" : ""}
-      title="${tooltip}" aria-label="${def.name}${coverage ? `，${coverage}` : ""}">
+      title="${tooltip}" aria-label="${name}${coverage ? `, ${coverage}` : ""}">
       <div class="entry-icon build-icon-large">${buildingThumbnailHtml(def.id)}</div>
       <div class="entry-main build-icon-main">
-        <div class="entry-name build-icon-name">${def.name}${stateTag(entry)}</div>
+        <div class="entry-name build-icon-name">${name}${stateTag(entry)}</div>
       </div>
       <div class="entry-cost build-icon-cost">
         ${costLine(entry.cost)}
-        ${rangeContext?.slot.surface === "sky" ? `<span class="tag sky">天空強化</span>` : ""}
+        ${rangeContext?.slot.surface === "sky" ? `<span class="tag sky">${t("build.skyBoost")}</span>` : ""}
       </div>
     </button>`;
 }

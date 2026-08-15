@@ -1,4 +1,5 @@
 import type { HeroSkills } from "../hero/HeroSkills";
+import { t } from "../localization";
 
 interface SkillSlotRefs {
   el: HTMLElement;
@@ -10,11 +11,7 @@ interface SkillSlotRefs {
   cdText: HTMLElement;
 }
 
-/**
- * Renders the 1/2/3/AUTO labels, short descriptions and cooldowns. Reads straight from
- * `HeroSkills.states()` — the same source `tryUse` checks — so the HUD can
- * never show "ready" while a cast would actually still fail.
- */
+/** Localized presentation over the same HeroSkills runtime state. */
 export class HeroSkillHud {
   private readonly slots: SkillSlotRefs[];
 
@@ -36,14 +33,14 @@ export class HeroSkillHud {
       const state = states[i];
       const { el, key, name, description, count, fill, cdText } = this.slots[i];
       key.textContent = state.keyLabel;
-      name.textContent = state.name;
-      description.textContent = state.shortDescription;
+      name.textContent = t(`skill.${state.id}.name`);
+      description.textContent = t(`skill.${state.id}.short`);
       count.textContent = state.activeAttackBuildings === undefined ? "" : String(state.activeAttackBuildings);
       count.classList.toggle("show", state.activeAttackBuildings !== undefined);
       const frac = state.cooldown > 0 ? 1 - state.remaining / state.cooldown : 1;
       fill.style.width = `${Math.max(0, Math.min(100, frac * 100))}%`;
       cdText.textContent = state.activeRemaining > 0
-        ? `持續 ${state.activeRemaining.toFixed(1)}`
+        ? t("skill.active", { seconds: state.activeRemaining.toFixed(1) })
         : state.ready
           ? ""
           : state.remaining.toFixed(1);

@@ -7,6 +7,7 @@ import type { CombatWorld } from "../combat/CombatWorld";
 import type { WaveManager } from "../enemies/WaveManager";
 import { LANES } from "../data/BuildSlotDefinitions";
 import { computeLaneCoverage, laneCoverageText } from "../buildings/AttackRangeGeometry";
+import { entityDescription, entityName, t } from "../localization";
 import { costText } from "./CostLine";
 import { buildingIconSvg } from "./ResourceIcons";
 
@@ -14,10 +15,6 @@ export interface InfoActions {
   onDemolish(slot: BuildSlot, building: Building): void;
 }
 
-/**
- * The card shown for a slot that already holds something: what it is, how it is
- * doing, and the only action available on it — taking it down.
- */
 export function renderBuildingInfo(
   list: HTMLElement,
   slot: BuildSlot,
@@ -29,33 +26,50 @@ export function renderBuildingInfo(
   actions: InfoActions,
 ): void {
   const def = building.def;
+  const name = entityName("building", def.id, def.name);
+  const description = entityDescription("building", def.id, def.description);
   const hp = def.canBeAttacked
-    ? `生命 ${Math.ceil(building.health)} / ${building.maxHealth}`
-    : "不可被攻擊";
+    ? t("buildingInfo.hp", { health: Math.ceil(building.health), max: building.maxHealth })
+    : t("buildingInfo.invulnerable");
 
   let status: string;
   if (building.isDemolishing) {
     const left = ((1 - building.demolishFraction) * 1.4).toFixed(1);
-    status = `拆除中 ${(building.demolishFraction * 100).toFixed(0)}% · 剩餘 ${left} 秒`;
+    status = t("buildingInfo.demolishing", {
+      progress: (building.demolishFraction * 100).toFixed(0),
+      seconds: left,
+    });
   } else if (!building.isComplete) {
-    status = `建造中 ${(building.buildProgress * 100).toFixed(0)}% · 剩餘 ${building.buildRemaining.toFixed(1)} 秒`;
+    status = t("buildingInfo.building", {
+      progress: (building.buildProgress * 100).toFixed(0),
+      seconds: building.buildRemaining.toFixed(1),
+    });
   } else if (def.produces) {
-    status = `運作中 · 暫存 ${Math.floor(building.storedAmount)}`;
+    status = t("buildingInfo.producing", { amount: Math.floor(building.storedAmount) });
   } else if (def.attackKind) {
-    status = `運作中 · 攻擊 ${Math.round(building.attackPower)} · 每 ${def.attackInterval} 秒攻擊一次 · 距離 ${def.attackRange ?? 0}`;
+    status = t("buildingInfo.attacking", {
+      attack: Math.round(building.attackPower),
+      interval: def.attackInterval ?? 0,
+      range: def.attackRange ?? 0,
+    });
   } else {
-    status = "運作中";
+    status = t("buildingInfo.operating");
   }
 
   const queuePos = buildings.rebuildQueue.all.findIndex((i) => i.slotId === slot.id);
   const extras: string[] = [];
-  if (queuePos >= 0) extras.push(`自動重建佇列第 ${queuePos + 1} 位`);
+  if (queuePos >= 0) extras.push(t("buildingInfo.rebuildQueue", { position: queuePos + 1 }));
   if (building.type === "wall") {
     const rebuilds = buildings.wallRebuildCount(slot.id);
-    if (rebuilds > 1) extras.push(`本波已重建 ${rebuilds - 1} 次，強度 ${Math.round((building.maxHealth / def.maxHealth) * 100)}%`);
+    if (rebuilds > 1) {
+      extras.push(t("buildingInfo.wallRebuild", {
+        count: rebuilds - 1,
+        strength: Math.round((building.maxHealth / def.maxHealth) * 100),
+      }));
+    }
   }
   if (building.secondsSinceDamaged < DEMOLISH_REFUND.combatLockout) {
-    extras.push(`${building.secondsSinceDamaged.toFixed(1)} 秒前受到攻擊`);
+    extras.push(t("buildingInfo.damagedAgo", { seconds: building.secondsSinceDamaged.toFixed(1) }));
   }
   if (def.attackKind && building.isComplete) {
     const liveLanes = LANES.filter((l) => l.index < waves.activeLaneCount);
@@ -77,17 +91,17 @@ export function renderBuildingInfo(
     <div class="entry static">
       <div class="entry-icon">${buildingIconSvg(building.type, 30)}</div>
       <div class="entry-main">
-        <div class="entry-name">${def.name}<span class="tag ok">火爐 Lv.${building.level}</span></div>
-        <div class="entry-desc">${def.description}</div>
+        <div class="entry-name">${name}<span class="tag ok">${t("buildingInfo.level", { level: building.level })}</span></div>
+        <div class="entry-desc">${description}</div>
         <div class="entry-desc">${status} · ${hp}</div>
         ${extras.map((e) => `<div class="entry-desc">${e}</div>`).join("")}
       </div>
     </div>
     <button class="entry demolish" id="ui-demolish" ${check.ok ? "" : "disabled"}>
       <div class="entry-main">
-        <div class="entry-name">拆除設施</div>
-        <div class="entry-desc">返還 ${costText(refund)}（金幣不返還）</div>
-        <div class="entry-desc">拆除後此點位可重新建造其他允許的設施。</div>
+        <div class="entry-name">${t("buildingInfo.demolish")}</div>
+        <div class="entry-desc">${t("buildingInfo.refund", { cost: costText(refund) })}</div>
+        <div class="entry-desc">${t("buildingInfo.demolishDesc")}</div>
       </div>
       ${check.ok ? "" : `<div class="entry-cost"><span class="bad">${check.reason ?? ""}</span></div>`}
     </button>`;

@@ -1,14 +1,9 @@
 import { audioDirector } from "../audio/AudioDirector";
 import { audioGameplayAdapter } from "../audio/AudioGameplayAdapter";
+import { bindStaticUiLocalization, t } from "../localization";
 import type { GameSystems } from "./GameSystems";
 
-/**
- * Starts a run from a clean slate.
- *
- * Every per-run system is reset here in one place, which is what guarantees the
- * "nothing carries between stages" rule: resources, buildings, squads, nodes,
- * the furnace, the watchdog and the boss all go back to their opening state.
- */
+/** Starts a run from a clean slate. */
 export function beginRun(s: GameSystems, mode: "stage" | "endless", levelId?: string): void {
   audioGameplayAdapter.reset();
   audioDirector.attachGameplayEvents(s.events);
@@ -37,9 +32,9 @@ export function beginRun(s: GameSystems, mode: "stage" | "endless", levelId?: st
   s.gates.refresh();
   s.laneMarkers.clearWarnings();
   s.laneMarkers.setLiveLaneCount(s.waves.activeLaneCount);
-  // A fresh run must not inherit the previous one's bodies.
   s.templates.clearPools();
-  s.hud.showBanner(s.run.levelName, "建造、招募、守住火爐", 4);
+  bindStaticUiLocalization(s.refs.root);
+  s.hud.showBanner(t("notification.runStart"), t("notification.runStartBody"), 4);
   s.audio.unlock();
 }
 

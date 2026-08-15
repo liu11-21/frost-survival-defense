@@ -1,6 +1,7 @@
 import type { SquadManager } from "../combat/SquadManager";
 import type { RunController } from "../modes/RunController";
 import { ALLY_BY_ID } from "../data/UnitDefinitions";
+import { entityName, t } from "../localization";
 import { unitThumb } from "./UnitThumbs";
 
 const WIPE_NOTICE = 3;
@@ -24,15 +25,6 @@ interface Row {
   category: RosterCategory;
 }
 
-const STATUS_TEXT: Record<Status, string> = {
-  normal: "正常",
-  hurt: "受傷",
-  danger: "危險",
-  wiped: "全滅",
-};
-
-/** Renders ordinary squads in the bottom-centre roster and Engineers in their
- * own compact right-side HUD. Both show live average HP and current power. */
 export class SquadStatusHud {
   private timer = 0;
   private dirty = true;
@@ -119,7 +111,7 @@ export class SquadStatusHud {
       if (!row) {
         row = {
           defId: squad.def.id,
-          name: squad.def.name,
+          name: entityName("unit", squad.def.id, squad.def.name),
           squads: 0,
           alive: 0,
           total: 0,
@@ -156,7 +148,7 @@ export class SquadStatusHud {
       if (!def || Boolean(def.canRepair) !== engineers) continue;
       rows.push({
         defId,
-        name: def.name,
+        name: entityName("unit", def.id, def.name),
         squads: 0,
         alive: 0,
         total: 0,
@@ -177,21 +169,18 @@ export class SquadStatusHud {
     const engineerRows = this.collect(true);
     const combatEmpty = combatRows.length === 0;
     const engineerEmpty = engineerRows.length === 0;
-    // Presentation state only: the roster managers remain the source of truth.
-    // CSS uses these flags to collapse empty chrome without changing gameplay.
     this.host.classList.toggle("empty", combatEmpty);
     this.host.dataset.state = combatEmpty ? "empty" : "active";
     this.engineerHost.classList.toggle("empty", engineerEmpty);
     this.engineerHost.dataset.state = engineerEmpty ? "empty" : "active";
-    this.header.textContent = `我方小隊 ${this.squads.allySquadSlotsUsed}/${this.run.squadLimit}`;
-    this.engineerHeader.textContent =
-      `工程兵 ${this.squads.engineerSquadsUsed}/${this.run.engineerLimit}`;
+    this.header.textContent = t("squad.header", { used: this.squads.allySquadSlotsUsed, limit: this.run.squadLimit });
+    this.engineerHeader.textContent = t("squad.engineerHeader", { used: this.squads.engineerSquadsUsed, limit: this.run.engineerLimit });
     this.list.innerHTML = combatRows.length > 0
       ? this.categoryHtml(combatRows)
-      : '<div class="squad-empty">尚未招募任何小隊</div>';
+      : `<div class="squad-empty">${t("squad.empty")}</div>`;
     this.engineerList.innerHTML = engineerRows.length > 0
       ? this.rowsHtml(engineerRows, false)
-      : '<div class="squad-empty">尚無工程兵</div>';
+      : `<div class="squad-empty">${t("squad.engineerEmpty")}</div>`;
   }
 
   private rowsHtml(rows: Row[], allowHighlight: boolean): string {
@@ -202,14 +191,18 @@ export class SquadStatusHud {
       const currentPower = row.samples > 0 ? row.attackPower / row.samples : 0;
       const healthRatio = avgMax > 0 ? Math.max(0, Math.min(1, avgHealth / avgMax)) : 0;
       const healthText = row.status === "wiped"
-        ? "全滅"
-        : `平均 HP ${Math.round(avgHealth)}/${Math.round(avgMax)} · 攻擊 ${Math.round(currentPower)}`;
+        ? t("squad.status.wiped")
+        : t("squad.avgStats", {
+            hp: Math.round(avgHealth),
+            max: Math.round(avgMax),
+            attack: Math.round(currentPower),
+          });
       return `<button class="squad-row ${row.status}${on}" data-def="${row.defId}"
-          ${allowHighlight ? "" : "disabled"} title="${row.name}　${healthText}">
+          ${allowHighlight ? "" : "disabled"} title="${row.name} ${healthText}">
           <span class="squad-thumb">${unitThumb(row.defId, 22)}</span>
           <span class="squad-name">${row.name} Lv.${row.furnaceLevel}</span>
           <span class="squad-count">${row.status === "wiped" ? "—" : `×${row.squads}`}</span>
-          <span class="squad-state">${STATUS_TEXT[row.status]}</span>
+          <span class="squad-state">${t(`squad.status.${row.status}`)}</span>
           <span class="squad-health"><i style="width:${Math.round(healthRatio * 100)}%"></i><em>${Math.round(avgHealth)}/${Math.round(avgMax)}</em></span>
           <small class="squad-live-stats">${healthText}</small>
         </button>`;
@@ -217,14 +210,10 @@ export class SquadStatusHud {
   }
 
   private categoryHtml(rows: Row[]): string {
-    const groups: Array<[RosterCategory, string]> = [
-      ["melee", "近戰"],
-      ["ranged", "遠程"],
-      ["support", "支援"],
-    ];
-    return groups.map(([category, label]) => {
+    const groups: RosterCategory[] = ["melee", "ranged", "support"];
+    return groups.map((category) => {
       const subset = rows.filter((row) => row.category === category);
-      return `<section class="squad-category ${category}"><h4>${label}</h4>${subset.length > 0 ? this.rowsHtml(subset, true) : '<div class="squad-category-empty">—</div>'}</section>`;
+      return `<section class="squad-category ${category}"><h4>${t(`squad.${category}`)}</h4>${subset.length > 0 ? this.rowsHtml(subset, true) : '<div class="squad-category-empty">—</div>'}</section>`;
     }).join("");
   }
 }
