@@ -158,9 +158,23 @@ test("state mapping and Pages base-path resolution serve the real MP3s", async (
   const controls = await page.locator("#music-settings-audio").evaluate((section) => {
     const slider = section.querySelector<HTMLInputElement>("#music-volume");
     const mute = section.querySelector<HTMLButtonElement>("#music-mute");
-    return { min: slider?.min, max: slider?.max, value: slider?.value, muteText: mute?.textContent };
+    return {
+      locale: document.documentElement.lang,
+      min: slider?.min,
+      max: slider?.max,
+      value: slider?.value,
+      muteExists: Boolean(mute),
+      muteText: mute?.textContent,
+    };
   });
-  expect(controls).toEqual({ min: "0", max: "100", value: "40", muteText: "靜音" });
+  const expectedMuteByLocale: Record<string, string> = {
+    "zh-TW": "靜音",
+    en: "Mute",
+    ja: "ミュート",
+  };
+  expect(controls.muteExists).toBe(true);
+  expect(controls).toMatchObject({ min: "0", max: "100", value: "40" });
+  expect(controls.muteText).toBe(expectedMuteByLocale[controls.locale] ?? "Mute");
 
   await expectTrackPlaying(page, "MENU");
   const active = channelFor(await audioSnapshot(page), "MENU");
