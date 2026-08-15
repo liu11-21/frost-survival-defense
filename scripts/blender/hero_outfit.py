@@ -1823,26 +1823,43 @@ def main():
     pivot.rotation_euler = Euler((0.0, 0.0, 0.0), "XYZ")
     bpy.context.view_layer.update()
 
-    # One colour attribute per mesh, and it must be Tint.
+    # WHETHER COLOUR SHIPS IN COLOR_0 DEPENDS ON WHERE THE COLOUR ALREADY IS.
     #
-    # glTF multiplies base colour by COLOR_0 and ignores COLOR_1 onward. These
-    # meshes were reaching the exporter with a second, white colour layer that
-    # took COLOR_0, so Tint shipped as COLOR_1 -- the buffer held the right
-    # olive, hide and oxide-red values on the one channel no renderer reads.
-    # Clearing it in to_object was not enough: something adds it back between
-    # there and here, so the guarantee is made where it actually matters.
+    # glTF multiplies base colour by COLOR_0 unconditionally and ignores
+    # COLOR_1 onward, so the same buffer is either the whole palette or a
+    # second coat of paint, depending on what the textures carry.
+    #
+    #   A VERTEX-TINTED build (VERTEX_TINTED non-empty -- the Warrior) bakes
+    #   nothing into its textures; they are neutral white and every surface
+    #   colour arrives per-face. Tint has to be COLOR_0 or the character ships
+    #   white. These meshes were reaching the exporter with a second, white
+    #   layer that took COLOR_0, so Tint went out as COLOR_1: the right olive,
+    #   hide and oxide-red values on the one channel no renderer reads.
+    #
+    #   A TEXTURE-TINTED build (VERTEX_TINTED empty -- the Hero) has its colour
+    #   in the albedo already. Promoting Tint to COLOR_0 there multiplies it in
+    #   a second time, and the Hero's coat is 0.127 grey, so a rebuild came out
+    #   nearly black. Those layers have to go instead.
+    #
+    # The Hero shipped from #25 with a white COLOR_0 and Tint stranded on
+    # COLOR_1, which renders correctly by accident. Dropping the layers gives
+    # identical shading -- an absent COLOR_0 is (1,1,1,1) by spec -- without
+    # carrying a megabyte of buffer no renderer reads.
     stripped = []
+    keep = "Tint" if VERTEX_TINTED else None
     for obj in bpy.data.objects:
         if obj.type != "MESH" or not obj.data.color_attributes:
             continue
-        for layer in [c.name for c in obj.data.color_attributes if c.name != "Tint"]:
+        for layer in [c.name for c in obj.data.color_attributes if c.name != keep]:
             obj.data.color_attributes.remove(obj.data.color_attributes[layer])
             stripped.append("%s:%s" % (obj.name, layer))
-        if "Tint" in obj.data.color_attributes:
-            index = obj.data.color_attributes.find("Tint")
+        if keep and keep in obj.data.color_attributes:
+            index = obj.data.color_attributes.find(keep)
             obj.data.color_attributes.active_color_index = index
             obj.data.color_attributes.render_color_index = index
     print("COLOUR_LAYERS_STRIPPED %s" % json.dumps(stripped))
+    print("COLOUR_CARRIER %s" % json.dumps(
+        {"vertexTinted": sorted(VERTEX_TINTED), "shipsColor0": bool(VERTEX_TINTED)}))
 
     glb = os.path.join(OUT, "%s.glb" % args.name)
     # Export ONE colour layer, the active one.
