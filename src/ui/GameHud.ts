@@ -7,7 +7,7 @@ import type { GameEvents } from "../game/GameEvents";
 import type { Furnace } from "../heat/Furnace";
 import type { HeroController } from "../hero/HeroController";
 import type { HeroStats } from "../hero/HeroStats";
-import { entityName, t, translatedOr } from "../localization";
+import { entityName, subscribeLocale, t, translatedOr } from "../localization";
 import type { RunController } from "../modes/RunController";
 import type { PerformanceMonitor } from "../performance/PerformanceMonitor";
 import { previewText } from "../enemies/WavePreview";
@@ -35,6 +35,7 @@ export class GameHud {
   private fpsTimer = 0;
   private fpsVisible = true;
   private furnaceAlertRemaining = 0;
+  private lastCapacity: number | null = null;
   private readonly unsubscribes: Array<() => void> = [];
   readonly notifications: Notifications;
 
@@ -49,14 +50,15 @@ export class GameHud {
     );
 
     this.unsubscribes.push(
+      subscribeLocale(() => {
+        if (this.lastCapacity !== null) this.renderCapacity(this.lastCapacity);
+      }),
       events.on("resourcesChanged", (p) => {
         refs.wood.textContent = String(Math.floor(p.wood));
         refs.stone.textContent = String(Math.floor(p.stone));
         refs.gold.textContent = String(Math.floor(p.gold));
-        refs.capacityNote.textContent = p.capacity === Infinity
-          ? t("hud.capacityUnlimited")
-          : t("hud.capacity", { capacity: p.capacity });
-        refs.capacityNote.classList.toggle("good", p.capacity === Infinity);
+        this.lastCapacity = p.capacity;
+        this.renderCapacity(p.capacity);
       }),
       events.on("notify", (p) =>
         this.notifications.show({ title: p.title, message: p.body, durationMs: (p.duration ?? 3.2) * 1000 }),
@@ -125,6 +127,14 @@ export class GameHud {
     );
 
     refs.banner.classList.remove("show");
+  }
+
+  private renderCapacity(capacity: number): void {
+    const note = this.d.refs.capacityNote;
+    note.textContent = capacity === Infinity
+      ? t("hud.capacityUnlimited")
+      : t("hud.capacity", { capacity });
+    note.classList.toggle("good", capacity === Infinity);
   }
 
   setBoss(
