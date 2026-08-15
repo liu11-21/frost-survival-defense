@@ -10,8 +10,10 @@ on:
       - "tests/localization-v1.spec.ts"
       - "package.json"
       - "package-lock.json"
+      - "playwright.config.ts"
       - "vite.config.ts"
       - ".github/workflows/gameplay-interaction-verify.yml"
+  workflow_dispatch:
 
 permissions:
   contents: read
