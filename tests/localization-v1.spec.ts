@@ -135,7 +135,7 @@ test("dynamic capacity and event identity survive locale and DOM rebinding", asy
   await page.locator("button[data-settings]").click();
   await page.locator('button[data-locale="ja"]').first().click();
   await expect.poll(() => page.evaluate((key) => localStorage.getItem(key), STORAGE_KEY)).toBe("ja");
-  await expect(page.locator("#ui-cap")).toContainText("237");
+  await expect(page.locator("#ui-cap")).toHaveText("上限 237");
   await expect(page.locator("#ui-cap")).not.toContainText("100");
 
   await page.evaluate(() => {
@@ -152,6 +152,7 @@ test("dynamic capacity and event identity survive locale and DOM rebinding", asy
   await expect(page.locator("#ui-cap")).toHaveText("倉庫完成 · 容量無制限");
 
   await page.locator('button[data-locale="en"]').first().click();
+  await expect(page.locator("#ui-cap")).toHaveText("Warehouse built · Unlimited capacity");
   await page.locator("button[data-back]").click();
 
   await page.evaluate(() => {
