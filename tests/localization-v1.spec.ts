@@ -153,7 +153,6 @@ test("dynamic capacity and event identity survive locale and DOM rebinding", asy
 
   await page.locator('button[data-locale="en"]').first().click();
   await page.locator("button[data-back]").click();
-  await page.locator("button[data-resume]").click();
 
   await page.evaluate(() => {
     const s = (window as any).frostbound.game.s;
