@@ -1,9 +1,15 @@
 import { audioDirector } from "../audio/AudioDirector";
 import { audioGameplayAdapter } from "../audio/AudioGameplayAdapter";
-import { bindStaticUiLocalization, t } from "../localization";
+import { bindStaticUiLocalization, levelName, t } from "../localization";
 import type { GameSystems } from "./GameSystems";
 
-/** Starts a run from a clean slate. */
+/**
+ * Starts a run from a clean slate.
+ *
+ * Every per-run system is reset here in one place, which is what guarantees the
+ * "nothing carries between stages" rule: resources, buildings, squads, nodes,
+ * the furnace, the watchdog and the boss all go back to their opening state.
+ */
 export function beginRun(s: GameSystems, mode: "stage" | "endless", levelId?: string): void {
   audioGameplayAdapter.reset();
   audioDirector.attachGameplayEvents(s.events);
@@ -32,9 +38,11 @@ export function beginRun(s: GameSystems, mode: "stage" | "endless", levelId?: st
   s.gates.refresh();
   s.laneMarkers.clearWarnings();
   s.laneMarkers.setLiveLaneCount(s.waves.activeLaneCount);
+  // A fresh run must not inherit the previous one's bodies.
   s.templates.clearPools();
   bindStaticUiLocalization(s.refs.root);
-  s.hud.showBanner(t("notification.runStart"), t("notification.runStartBody"), 4);
+  const runLevelId = mode === "stage" ? (levelId ?? "stage-1") : "endless";
+  s.hud.showBanner(levelName(runLevelId, s.run.levelName), t("notification.runStartBody"), 4);
   s.audio.unlock();
 }
 
