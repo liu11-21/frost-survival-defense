@@ -63,14 +63,14 @@ STAGES = [
 
 def main():
     for label, argv in STAGES:
-        print("WARRIOR_STAGE %s" % label, flush=True)
+        print("SHIELD_STAGE %s" % label, flush=True)
         environment = dict(os.environ)
         environment.update(ENV)
         result = subprocess.run(
             ["node", "scripts/run-blender.mjs"] + argv, cwd=ROOT, env=environment)
         if result.returncode != 0:
             raise SystemExit("stage %s failed (%d)" % (label, result.returncode))
-    print("WARRIOR_PIPELINE_OK")
+    print("SHIELD_PIPELINE_OK")
 
 
 if __name__ == "__main__":
