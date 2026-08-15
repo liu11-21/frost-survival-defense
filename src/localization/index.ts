@@ -138,7 +138,6 @@ function applyStaticUiTranslations(root: HTMLElement): void {
   resourceName(root, "ui-wood", "resource.wood");
   resourceName(root, "ui-stone", "resource.stone");
   resourceName(root, "ui-gold", "resource.gold");
-  setText(root.querySelector("#ui-cap"), t("hud.capacity", { capacity: 100 }));
   setLeadingText(root.querySelector("#ui-hero-text")?.parentElement ?? null, t("hud.hero"));
   setLeadingText(root.querySelector("#ui-furnace-level")?.parentElement ?? null, t("hud.furnace"));
   setLeadingText(root.querySelector("#ui-squads")?.parentElement ?? null, t("hud.squads"));
