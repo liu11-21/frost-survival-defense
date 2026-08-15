@@ -1798,15 +1798,38 @@ def main():
     # A kit may return a third value: where the weapon's business end is. The
     # adapter cannot infer it -- "furthest vertex from the hand" is the butt of
     # the shaft on anything held near its head.
+    #
+    # ONE ITEM PER BONE, AND A KIT MAY CARRY MORE THAN ONE.
+    #
+    # `rigid_weights` puts every vertex of an object on a single bone, which is
+    # the point -- a weapon whose weights are spread across two hands deforms
+    # instead of being carried. It also means one object cannot hold a shield
+    # on the left arm AND a sidearm in the right hand, so a kit may return a
+    # LIST of (builder, bone, tip) in place of one tuple.
+    #
+    # The single-tuple form is untouched, and it is what the Hero and the
+    # Warrior return, so both build exactly as before.
     carried = build_sword(body, armature, height)
-    sword_builder, sword_bone = carried[0], carried[1]
-    weapon_tip = carried[2] if len(carried) > 2 else None
-    sword = None
-    if sword_builder is not None:
-        sword = to_object(sword_builder, "HeroSword", materials)
-        rigid_weights(sword, armature, sword_bone)
+    entries = carried if isinstance(carried, list) else [carried]
+    carried_objects = []
+    for index, entry in enumerate(entries):
+        builder, bone_name = entry[0], entry[1]
+        weapon_tip = entry[2] if len(entry) > 2 else None
+        if builder is None:
+            continue
+        # The first item keeps the historical name: the adapter's required
+        # parts list and the runtime manifests are written against "HeroSword".
+        name = "HeroSword" if not carried_objects else "HeroCarried_%d" % index
+        obj = to_object(builder, name, materials)
+        rigid_weights(obj, armature, bone_name)
         if weapon_tip is not None:
-            sword["weaponTip"] = [weapon_tip.x, weapon_tip.y, weapon_tip.z]
+            obj["weaponTip"] = [weapon_tip.x, weapon_tip.y, weapon_tip.z]
+        # Tracked here and NOT written onto the object. `export_extras` is on,
+        # so a custom property becomes a glTF `extras` field: adding one
+        # changed the merged Warrior's bytes, which is a contract change for an
+        # asset that is supposed to rebuild identically.
+        carried_objects.append((obj, bone_name))
+    sword = carried_objects[0][0] if carried_objects else None
 
     body_before = triangles(body)
     # Cull is OFF during fitting. A wrong garment swallows the torso and the
@@ -1895,14 +1918,16 @@ def main():
             "bodyFacesCulled": culled,
             "outfit": triangles(outfit),
             "gloves": sum(triangles(g) for g in gloves),
-            "sword": triangles(sword) if sword else 0,
+            "sword": sum(triangles(o) for o, _b in carried_objects),
             "totalLod0": (triangles(body) + triangles(outfit)
                           + sum(triangles(g) for g in gloves)
-                          + (triangles(sword) if sword else 0)),
+                          + sum(triangles(o) for o, _b in carried_objects)),
         },
         "materials": sorted(materials),
         "gloveChecks": glove_checks,
-        "swordBone": sword_bone,
+        "swordBone": carried_objects[0][1] if carried_objects else None,
+        "carried": [{"name": o.name, "bone": b, "triangles": triangles(o)}
+                    for o, b in carried_objects],
     }
     with open(os.path.join(OUT, "%s.json" % args.name), "w", encoding="utf-8") as handle:
         json.dump(report, handle, indent=2, sort_keys=True)

@@ -56,6 +56,21 @@ VARIANTS = {
     # the silhouette has to come from build and kit or they read as the same
     # person in different coats. Shorter and thicker-set reads as infantry
     # beside the Hero's taller, leaner outline at gameplay distance.
+    # The front rank. Broader and heavier than the Warrior and shorter than
+    # both, so the mass sits low: this one holds a line rather than closing on
+    # it. The width has to come from build and kit, not from inflating the
+    # body -- the three share a base mesh and a rig, and a body scaled wide
+    # deforms badly at the shoulder the moment an arm swings.
+    "shield": {
+        "gender": 0.96,
+        "age": 0.58,
+        "muscle": 0.82,
+        "weight": 0.80,
+        "height": 0.38,
+        "proportions": 0.34,
+        "cupsize": 0.0,
+        "firmness": 0.62,
+    },
     "warrior": {
         "gender": 0.95,
         "age": 0.62,
