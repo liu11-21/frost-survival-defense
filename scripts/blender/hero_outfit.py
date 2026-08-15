@@ -18,6 +18,7 @@ seen, they z-fight against the garment, and on a 26k body they are most of the
 triangles.
 """
 import argparse
+import importlib
 import json
 import math
 import os
@@ -46,6 +47,29 @@ SURFACES = {
     "accent":  (0.902, 0.560, 0.157),
     "hair":    (0.106, 0.078, 0.061),
 }
+# name, base colour, roughness, metallic. A kit may replace this entirely.
+#
+# Roughness is the only thing separating "worn kit" from "showroom prop" while
+# there are no textures: at 0.34 the helmet and pauldrons rendered as polished
+# chrome, a mirror finish on a character whose whole premise is surviving a
+# winter. Leather likewise -- 0.58 is a buffed dress shoe, not a boot.
+# Materials whose colour comes from the per-face tint in COLOR_0 rather than
+# from a baked texture. One such material can carry every surface that shares
+# its PBR response, which is how a kit gets under a material cap without
+# merging distinct colours into one.
+VERTEX_TINTED = set()
+
+MATERIAL_TABLE = (
+    # Dark winter wool, so the steel plate over it actually reads. At
+    # 0.243/0.271/0.325 the coat sat within a few percent of the armour and the
+    # whole figure flattened into one pale grey mass.
+    ("cloth", (0.128, 0.145, 0.184), 0.94, 0.0),
+    ("leather", (0.222, 0.152, 0.098), 0.72, 0.04),
+    ("metal", (0.352, 0.372, 0.402), 0.62, 0.82),
+    # Dark brown and very matte, or it reads as a leather cap.
+    ("hair", (0.106, 0.078, 0.061), 0.88, 0.0),
+)
+
 MATERIAL_OF = {
     "coat": "cloth", "fur": "cloth",
     "leather": "leather",
@@ -950,6 +974,43 @@ def build_glove(body, armature, side, thickness_ratio=0.16, diagnostic=False):
     return obj, record
 
 
+def attach_vertex_tint(material):
+    """Multiply a material's base colour by the mesh's own per-face tint.
+
+    Same node shape common.py already uses and documents: Texture -> Mix
+    (MULTIPLY, RGBA sockets 6/7) -> Base Color, with the colour attribute on
+    the other input. Blender's stock exporter recognises that graph and
+    preserves COLOR_0, so one material can render as many colours as the mesh
+    carries -- an olive jacket, an oxide surcoat and dark hide bracers off a
+    single slot.
+    """
+    if material is None or not material.use_nodes:
+        return False
+    tree = material.node_tree
+    bsdf = next((n for n in tree.nodes if n.type == "BSDF_PRINCIPLED"), None)
+    if bsdf is None:
+        return False
+    base = bsdf.inputs["Base Color"]
+    source = base.links[0].from_socket if base.is_linked else None
+
+    attribute = tree.nodes.new("ShaderNodeVertexColor")
+    attribute.layer_name = "Tint"
+    attribute.location = (bsdf.location.x - 620, bsdf.location.y + 260)
+
+    mix = tree.nodes.new("ShaderNodeMix")
+    mix.data_type = "RGBA"
+    mix.blend_type = "MULTIPLY"
+    mix.inputs[0].default_value = 1.0
+    mix.location = (bsdf.location.x - 200, bsdf.location.y + 120)
+    if source is not None:
+        tree.links.new(source, mix.inputs[6])
+    else:
+        mix.inputs[6].default_value = base.default_value
+    tree.links.new(attribute.outputs["Color"], mix.inputs[7])
+    tree.links.new(mix.outputs["Result"], base)
+    return True
+
+
 def to_object(builder, name, materials):
     mesh = bpy.data.meshes.new(name)
     mesh.from_pydata(builder.vertices, [], builder.faces)
@@ -960,6 +1021,14 @@ def to_object(builder, name, materials):
     slots = sorted({MATERIAL_OF[s] for s in builder.surfaces})
     for slot in slots:
         mesh.materials.append(materials[slot])
+    # Tint must be the FIRST colour attribute, because glTF only multiplies
+    # base colour by COLOR_0 and ignores COLOR_1 onward. The mesh arrives with
+    # one already, so Tint was landing in COLOR_1: the exported file carried the
+    # right colours -- olive, hide, oxide red, all correct in the buffer -- on
+    # the one channel no renderer reads. That is why neutralising the textures
+    # to let the tint carry the colour produced a pure white character.
+    while mesh.color_attributes:
+        mesh.color_attributes.remove(mesh.color_attributes[0])
     colours = mesh.color_attributes.new(name="Tint", type="BYTE_COLOR", domain="CORNER")
     for polygon in mesh.polygons:
         surface = builder.surfaces[polygon.index]
@@ -1543,7 +1612,33 @@ def main():
     parser.add_argument("--input", required=True)
     parser.add_argument("--variant", required=True)
     parser.add_argument("--name", required=True)
+    # A second character reuses this whole pipeline -- the measured lofting,
+    # the weight transfer, the face-window enforcement -- and differs only in
+    # which garments get built. `--kit` swaps the garment set rather than
+    # forking 150 lines of orchestration that would then drift.
+    parser.add_argument("--kit", default=None)
     args = parser.parse_args(argv)
+
+    if args.kit:
+        # Install into THIS module's globals, not by letting the kit patch a
+        # re-imported copy of it. run-blender executes this file as __main__,
+        # so a kit doing `import hero_outfit` gets a second, separate module
+        # object: patching that one changed nothing here, and the build came
+        # out wearing the Hero's coat and sword while reporting success.
+        kit = importlib.import_module(args.kit)
+        SURFACES.update(getattr(kit, "SURFACES_OVERRIDE", {}))
+        MATERIAL_OF.update(getattr(kit, "MATERIAL_OF_OVERRIDE", {}))
+        if hasattr(kit, "MATERIAL_TABLE"):
+            globals()["MATERIAL_TABLE"] = kit.MATERIAL_TABLE
+        if hasattr(kit, "VERTEX_TINTED"):
+            globals()["VERTEX_TINTED"] = set(kit.VERTEX_TINTED)
+        for name in ("build_outfit", "build_sword", "build_glove"):
+            if hasattr(kit, name):
+                globals()[name] = getattr(kit, name)
+        print("KIT_INSTALLED %s" % json.dumps({
+            "module": args.kit,
+            "overrides": sorted(n for n in ("build_outfit", "build_sword", "build_glove")
+                                if hasattr(kit, n))}))
 
     for obj in list(bpy.data.objects):
         bpy.data.objects.remove(obj, do_unlink=True)
@@ -1580,16 +1675,7 @@ def main():
     # far rougher, and the darker base stops it reading as bright silver.
     #
     # Leather likewise: 0.58 is a buffed dress shoe, not a boot.
-    for name, base, rough, metal in (
-        # Dark winter wool, so the steel plate over it actually reads. At
-        # 0.243/0.271/0.325 the coat sat within a few percent of the armour and
-        # the whole figure flattened into one pale grey mass.
-        ("cloth", (0.128, 0.145, 0.184), 0.94, 0.0),
-        ("leather", (0.222, 0.152, 0.098), 0.72, 0.04),
-        ("metal", (0.352, 0.372, 0.402), 0.62, 0.82),
-        # Dark brown and very matte, or it reads as a leather cap.
-        ("hair", (0.106, 0.078, 0.061), 0.88, 0.0),
-    ):
+    for name, base, rough, metal in MATERIAL_TABLE:
         mat = bpy.data.materials.new("Hero_" + name)
         mat.use_nodes = True
         bsdf = mat.node_tree.nodes.get("Principled BSDF")
@@ -1601,16 +1687,31 @@ def main():
         materials[name] = mat
     # Detail maps. Without them every surface is one flat colour, because the
     # GLB carried no images at all.
-    tints = {"hair": (0.106, 0.078, 0.061),
-             "cloth": (0.128, 0.145, 0.184),
-             "leather": (0.222, 0.152, 0.098),
-             "metal": (0.352, 0.372, 0.402)}
-    details = {"hair": hero_textures.grain(tints["hair"], name="Hero_hair_detail"),
-               "cloth": hero_textures.weave(tints["cloth"]),
-               "leather": hero_textures.grain(tints["leather"]),
-               "metal": hero_textures.worn_metal(tints["metal"])}
+    # The detail maps bake the tint in, so they must come from the SAME table
+    # the materials do. Reading a second hard-coded copy is why a kit could
+    # override every surface colour and still export the Hero's palette: the
+    # vertex tints changed and the textures, which are what actually show, did
+    # not.
+    tints = {name: base for name, base, _r, _m in MATERIAL_TABLE}
+    makers = {"cloth": hero_textures.weave,
+              "leather": hero_textures.grain,
+              "metal": hero_textures.worn_metal}
+    # Named per material, not per pattern. Two materials sharing a pattern --
+    # a cloth jacket and a cloth tabard -- both asked for "Hero_weave_detail",
+    # and `_write` removes an existing image before creating one, so the second
+    # call deleted the first material's image out from under it and the build
+    # died on a dangling Image reference.
+    # A vertex-tinted material must carry a NEUTRAL texture: its colour arrives
+    # per-face in COLOR_0, and baking a tint in as well would multiply twice
+    # and drag every surface toward that one hue.
+    details = {name: makers.get(name, hero_textures.grain)(
+                   (1.0, 1.0, 1.0) if name in VERTEX_TINTED else tint,
+                   name="Hero_%s_detail" % name)
+               for name, tint in tints.items()}
     for name, image in details.items():
         hero_textures.attach(materials[name], image)
+        if name in VERTEX_TINTED:
+            attach_vertex_tint(materials[name])
     # Normals from the SAME height functions the albedo uses, so the bumps land
     # where the shading says they are. Without these the weave is only a colour
     # variation and reads as printed fabric under any light.
@@ -1620,6 +1721,8 @@ def main():
         ("metal", hero_textures._metal_height, 0.5),
         ("hair", hero_textures._grain_height, 0.9),
     ):
+        if name not in materials:
+            continue          # a kit need not use every surface
         normal = hero_textures.normal_map(height_fn, "Hero_%s_normal" % name)
         hero_textures.attach_normal(materials[name], normal, strength=strength)
 
@@ -1667,7 +1770,11 @@ def main():
             # `to_object` is not used: this is a duplicated surface, not a
             # lofted builder, so it already carries its own topology.
             if not diagnostic:
-                glove.data.materials.append(materials["leather"])
+                # Through MATERIAL_OF, not by surface name: a kit may route
+                # leather onto a shared slot to fit a material cap, and
+                # indexing the name directly raised KeyError the moment one did.
+                glove.data.materials.append(
+                    materials[MATERIAL_OF.get("leather", "leather")])
             transfer_weights(glove, body, armature, smooth_passes=0)
             # Prove it, rather than trusting the fix. An impossible bone on a
             # glove is a build failure, not a note in a report.
@@ -1688,11 +1795,18 @@ def main():
             g.name, [m.name if m else None for m in g.data.materials],
             sorted({p.material_index for p in g.data.polygons})))
 
-    sword_builder, sword_bone = build_sword(body, armature, height)
+    # A kit may return a third value: where the weapon's business end is. The
+    # adapter cannot infer it -- "furthest vertex from the hand" is the butt of
+    # the shaft on anything held near its head.
+    carried = build_sword(body, armature, height)
+    sword_builder, sword_bone = carried[0], carried[1]
+    weapon_tip = carried[2] if len(carried) > 2 else None
     sword = None
     if sword_builder is not None:
         sword = to_object(sword_builder, "HeroSword", materials)
         rigid_weights(sword, armature, sword_bone)
+        if weapon_tip is not None:
+            sword["weaponTip"] = [weapon_tip.x, weapon_tip.y, weapon_tip.z]
 
     body_before = triangles(body)
     # Cull is OFF during fitting. A wrong garment swallows the torso and the
@@ -1709,9 +1823,63 @@ def main():
     pivot.rotation_euler = Euler((0.0, 0.0, 0.0), "XYZ")
     bpy.context.view_layer.update()
 
+    # WHETHER COLOUR SHIPS IN COLOR_0 DEPENDS ON WHERE THE COLOUR ALREADY IS.
+    #
+    # glTF multiplies base colour by COLOR_0 unconditionally and ignores
+    # COLOR_1 onward, so the same buffer is either the whole palette or a
+    # second coat of paint, depending on what the textures carry.
+    #
+    #   A VERTEX-TINTED build (VERTEX_TINTED non-empty -- the Warrior) bakes
+    #   nothing into its textures; they are neutral white and every surface
+    #   colour arrives per-face. Tint has to be COLOR_0 or the character ships
+    #   white. These meshes were reaching the exporter with a second, white
+    #   layer that took COLOR_0, so Tint went out as COLOR_1: the right olive,
+    #   hide and oxide-red values on the one channel no renderer reads.
+    #
+    #   A TEXTURE-TINTED build (VERTEX_TINTED empty -- the Hero) has its colour
+    #   in the albedo already. Promoting Tint to COLOR_0 there multiplies it in
+    #   a second time, and the Hero's coat is 0.127 grey, so a rebuild came out
+    #   nearly black. Those layers have to go instead.
+    #
+    # The Hero shipped from #25 with a white COLOR_0 and Tint stranded on
+    # COLOR_1, which renders correctly by accident. Dropping the layers gives
+    # identical shading -- an absent COLOR_0 is (1,1,1,1) by spec -- without
+    # carrying a megabyte of buffer no renderer reads.
+    stripped = []
+    keep = "Tint" if VERTEX_TINTED else None
+    for obj in bpy.data.objects:
+        if obj.type != "MESH" or not obj.data.color_attributes:
+            continue
+        for layer in [c.name for c in obj.data.color_attributes if c.name != keep]:
+            obj.data.color_attributes.remove(obj.data.color_attributes[layer])
+            stripped.append("%s:%s" % (obj.name, layer))
+        if keep and keep in obj.data.color_attributes:
+            index = obj.data.color_attributes.find(keep)
+            obj.data.color_attributes.active_color_index = index
+            obj.data.color_attributes.render_color_index = index
+    print("COLOUR_LAYERS_STRIPPED %s" % json.dumps(stripped))
+    print("COLOUR_CARRIER %s" % json.dumps(
+        {"vertexTinted": sorted(VERTEX_TINTED), "shipsColor0": bool(VERTEX_TINTED)}))
+
     glb = os.path.join(OUT, "%s.glb" % args.name)
+    # Export ONE colour layer, the active one.
+    #
+    # The exporter defaults to writing every colour attribute it finds, and it
+    # was emitting two channels from a mesh that carries a single "Tint": a
+    # white COLOR_0 and the real tint as COLOR_1. glTF multiplies base colour by
+    # COLOR_0 and ignores the rest, so the correct olive, hide and oxide-red
+    # values shipped on a channel no renderer reads -- which is why neutralising
+    # the textures to let the tint carry the colour produced a white character.
     bpy.ops.export_scene.gltf(filepath=glb, export_format="GLB",
-                              export_skins=True, export_yup=True)
+                              export_skins=True, export_yup=True,
+                              export_vertex_color="ACTIVE",
+                              export_all_vertex_colors=False,
+                              # Carries the weaponTip custom property through to
+                              # the adapter. Without it the adapter falls back
+                              # to "furthest vertex from the hand", which on a
+                              # weapon held at its head is the butt of the shaft
+                              # -- axe_tip landed on the wrong end.
+                              export_extras=True)
 
     report = {
         "variant": args.variant,

@@ -70,6 +70,9 @@ REQUIRED_BONES = (
 # happening to be written to the same path.
 PROTECTED = {"hero.glb", "warrior.glb"}
 LOD_RATIO = (1.0, 0.45, 0.18)
+# Floor on the face count any single mesh keeps after decimation, so small
+# props survive tiers tuned for a body.
+LOD_MIN_FACES = 72
 
 
 def load_profile(name):
@@ -569,9 +572,21 @@ def build_lods(meshes, armature, name):
             # so they are dropped rather than kept as dead weight in the GLB.
             if copy.data.shape_keys:
                 copy.shape_key_clear()
-            if ratio < 1.0:
+            # Decimate proportionally, but never below a floor.
+            #
+            # A ratio that suits a 4600-face body destroys a 130-face weapon:
+            # at LOD2 the axe lost its edge entirely, the silhouette's outermost
+            # geometry went with it, and the tier stopped matching LOD0's
+            # bounds. Small props are a rounding error in the budget and carry
+            # the read -- an axe nobody can see is worse than the triangles it
+            # would have cost.
+            faces = len(copy.data.polygons)
+            effective = ratio
+            if faces:
+                effective = max(ratio, min(1.0, LOD_MIN_FACES / float(faces)))
+            if effective < 1.0:
                 mod = copy.modifiers.new("lod", "DECIMATE")
-                mod.ratio = ratio
+                mod.ratio = effective
                 bpy.context.view_layer.objects.active = copy
                 bpy.ops.object.modifier_apply(modifier=mod.name)
             copy["lodLevel"] = level
@@ -720,6 +735,242 @@ def load_reference_rig(path):
     return reference
 
 
+def collapse_to_legacy_bones(armature, meshes):
+    """Merge non-contract bones into their nearest contract ancestor.
+
+    The humanoid runtime contract is 18 bones; an MPFB game_engine rig ships
+    53, of which 30 are finger joints. Exporting all of them costs skin data
+    and matrix palette on every ordinary unit for articulation nothing reads at
+    gameplay distance -- and this Warrior wears mittens, so the fingers are not
+    even visible.
+
+    Deleting the bones alone would strand the vertices weighted to them, which
+    is how a hand collapses to the wrist. So each doomed bone's weights are
+    ADDED to the nearest surviving ancestor first: a fingertip's influence ends
+    up on the hand, which is where a mitten's geometry follows anyway.
+    """
+    keep = set(human_rig.LEGACY_BONES)
+    bones = armature.data.bones
+    merged = {}
+    for bone in bones:
+        if bone.name in keep:
+            continue
+        ancestor = bone.parent
+        while ancestor is not None and ancestor.name not in keep:
+            ancestor = ancestor.parent
+        if ancestor is not None:
+            merged[bone.name] = ancestor.name
+
+    moved = 0
+    for mesh in meshes:
+        groups = {g.name: g for g in mesh.vertex_groups}
+        for source, target in merged.items():
+            src = groups.get(source)
+            if src is None:
+                continue
+            dst = groups.get(target) or mesh.vertex_groups.new(name=target)
+            groups[target] = dst
+            for vertex in mesh.data.vertices:
+                for entry in vertex.groups:
+                    if entry.group != src.index:
+                        continue
+                    if entry.weight > 0.0:
+                        existing = 0.0
+                        for other in vertex.groups:
+                            if other.group == dst.index:
+                                existing = other.weight
+                                break
+                        dst.add([vertex.index], min(1.0, existing + entry.weight),
+                                "REPLACE")
+                        moved += 1
+        for source in merged:
+            group = groups.get(source)
+            if group is not None:
+                mesh.vertex_groups.remove(group)
+
+    previous = bpy.context.view_layer.objects.active
+    bpy.context.view_layer.objects.active = armature
+    bpy.ops.object.mode_set(mode="EDIT")
+    edit_bones = armature.data.edit_bones
+    for name in merged:
+        bone = edit_bones.get(name)
+        if bone is not None:
+            edit_bones.remove(bone)
+    bpy.ops.object.mode_set(mode="OBJECT")
+    bpy.context.view_layer.objects.active = previous
+    return {"kept": len(armature.data.bones), "removed": sorted(merged),
+            "weightsMoved": moved}
+
+
+def emit_ally_contract(root, armature, height):
+    """Emit the node contract the ALLY asset manifest requires.
+
+    An MPFB-derived character satisfies the human half of the contract already
+    -- UnitRoot, LOD{n}_PROD_* meshes, the legacy bone set -- but the ally spec
+    also names an armature `UnitSkeleton`, two LOD marker nodes, and five weapon
+    locators that the procedural units carry. Nothing on the human path ever
+    needed them, so nothing emitted them, and an MPFB warrior could not be a
+    drop-in for the procedural one no matter how good it looked.
+
+    This is asset-layer only: it renames the armature and adds empties. No
+    gameplay code is involved, and the runtime reads these by name.
+
+    The locators are placed from the RIG rather than typed in, so they follow
+    whatever body the macro produced:
+
+        upper_grip     the right hand itself, where a haft is held
+        lower_grip     a haft's length below it, along the forearm
+        weapon_socket  coincident with upper_grip, which is what the procedural
+                       warrior does and what the swing code expects
+        axe_tip        out along the haft, driving the swing arc
+        attackAnchor   in front of the chest, where a strike lands
+    """
+    # Drop anything not bound to the rig. An MPFB import carries a stray
+    # Icosphere through the whole pipeline, and it shipped inside the candidate
+    # GLB: 42 vertices spanning z -1..1, which is not the character and which
+    # corrupts any measurement taken from the file's bounding box.
+    #
+    # Scoped to the ally path deliberately: the Hero's export is signed off and
+    # is not being touched this round.
+    #
+    # Keep COL_* -- the collision box is a deliberate part of the asset, not
+    # debris. A first pass dropped everything unskinned and took it with it.
+    dropped = []
+    for obj in list(bpy.data.objects):
+        if obj.type != "MESH" or obj.name.startswith("COL_"):
+            continue
+        if not any(mod.type == "ARMATURE" for mod in obj.modifiers):
+            dropped.append(obj.name)
+            bpy.data.objects.remove(obj, do_unlink=True)
+
+    armature.name = "UnitSkeleton"
+    armature.data.name = "UnitSkeleton"
+
+    # REST positions, not pose positions. `pose.bones[...].head` is evaluated in
+    # pose space, and the rig still carries whatever the pose tests left on it,
+    # so the socket was authored 0.21 m from where the exported bind pose puts
+    # the hand. The GLB ships the bind pose; the locators must agree with it.
+    bones = armature.data.bones
+    hand = bones.get("hand.R") or bones.get("hand_r")
+    if hand is None:
+        raise SystemExit("ally contract needs a right hand bone; rig has none")
+    grip = armature.matrix_world @ hand.head_local
+    lower = bones.get("lower_arm.R") or bones.get("lowerarm_r")
+    # The haft crosses the palm; it does not fold back along the arm.
+    #
+    # The first version used the forearm direction itself, so the weapon ran
+    # from the hand back toward the elbow and the entire axe was buried inside
+    # the arm and torso. Nothing caught it: the locators shared that axis, so
+    # geometry and contract agreed with each other, and "on the character"
+    # cannot tell inside from outside.
+    #
+    # A held haft is roughly PERPENDICULAR to the forearm. Taking world-down
+    # and removing its forearm component gives that perpendicular, pointing
+    # down, which is where an axe hangs in an A-pose -- clear of the body on
+    # every side.
+    # MEASURE THE WEAPON, do not re-derive its axis.
+    #
+    # Both this and the kit computed the haft direction from the same formula,
+    # in different spaces and at different points in the pipeline, and got
+    # different answers: the kit builds in a Y-up pivot space and against a rest
+    # pose the adapter later realigns and rescales. The locators ended up 0.15 m
+    # off the geometry they are supposed to describe -- and an earlier version
+    # was off by the whole weapon.
+    #
+    # The tip of the axe is a fact about the mesh. Read it off the mesh and the
+    # contract cannot drift from the object again.
+    axe = None
+    for obj in bpy.data.objects:
+        if obj.type != "MESH" or not obj.name.startswith("LOD0"):
+            continue
+        if "Sword" in (obj.data.name or "") or "Axe" in (obj.data.name or ""):
+            axe = obj
+            break
+    if axe is not None and len(axe.data.vertices) > 8:
+        # Find the head by SHAPE, not by distance and not from a coordinate the
+        # kit hands over.
+        #
+        # "Furthest vertex from the hand" is the butt of the shaft on anything
+        # held near its head. Passing the tip across as a custom property failed
+        # differently: the kit builds in a Y-up pivot space and the adapter runs
+        # in Z-up, so the vector arrived with height in the depth slot and put
+        # axe_tip on the floor.
+        #
+        # A shaft is long and thin, so the weapon's longest axis IS the shaft.
+        # The head is what stands off that axis. Measuring the perpendicular
+        # offset finds it without any frame conversion at all.
+        points = [axe.matrix_world @ v.co for v in axe.data.vertices]
+        far = max(points, key=lambda p: (p - grip).length)
+        shaft = (far - grip)
+        shaft = shaft.normalized() if shaft.length > 1e-6 else Vector((0.0, 0.0, -1.0))
+
+        def sideways(point):
+            offset = point - grip
+            return (offset - shaft * offset.dot(shaft)).length
+
+        measured_tip = max(points, key=sideways)
+        # The SUPPORT HAND RUNS DOWN THE HAFT, NOT AWAY FROM THE HEAD.
+        #
+        # lower_grip used to be derived from the direction of the head, on the
+        # reasoning that the head is at one end and the butt at the other. That
+        # holds for a sword and not for an axe: the head stands out SIDEWAYS,
+        # so "opposite the head" is sideways too. With the head rolled where
+        # the animation search wanted it, the three locators collapsed into a
+        # 6 mm band -- upper_grip 1.053, axe_tip 1.056, lower_grip 1.050 -- and
+        # described a weapon with no length at all. It read as correct for a
+        # while only because an earlier roll happened to point the edge upward.
+        grip_axis = shaft
+        print("WEAPON_HEAD %s" % json.dumps(
+            {"sidewaysOffset": round(sideways(measured_tip), 4),
+             "shaftEnd": round((far - grip).length, 4)}))
+    elif axe is not None and len(axe.data.vertices):
+        points = [axe.matrix_world @ v.co for v in axe.data.vertices]
+        far = max(points, key=lambda p: (p - grip).length)
+        along = (far - grip)
+        along = along.normalized() if along.length > 1e-6 else Vector((0.0, 0.0, -1.0))
+        measured_tip = far
+        grip_axis = -along
+    elif lower is not None:
+        forearm = (grip - (armature.matrix_world @ lower.head_local)).normalized()
+        down = Vector((0.0, 0.0, -1.0))
+        along = (down - forearm * down.dot(forearm))
+        along = along.normalized() if along.length > 1e-6 else Vector((0.0, 0.0, -1.0))
+        measured_tip = grip + along * (height * 0.290)
+        grip_axis = -along
+    else:
+        along = Vector((0.0, 0.0, -1.0))
+        measured_tip = grip + along * (height * 0.290)
+        grip_axis = -along
+
+    made = []
+    for name, location in (
+        ("weapon_socket", grip),
+        ("upper_grip", grip),
+        # Down the shaft from the hand, where a support hand would sit.
+        ("lower_grip", grip + grip_axis * (height * 0.105)),
+        ("axe_tip", measured_tip),
+        # Blender is Z-UP here and the character faces -Y. Writing chest height
+        # into the Y slot put the anchor 0.92 m BEHIND the character at knee
+        # height -- a node-presence check called that a pass; the transform
+        # check did not.
+        ("attackAnchor", Vector((0.0, -height * 0.22, height * 0.62))),
+    ):
+        node = empty(name, tuple(location), "EXPORT", "PLAIN_AXES")
+        node.parent = root
+        node.matrix_world = Matrix.Translation(location)
+        made.append(name)
+
+    # The manifest wants nodes literally named LOD1 and LOD2. The tiers live in
+    # Blender COLLECTIONS of that name, and collections are not exported as
+    # glTF nodes, so the contract saw nothing.
+    for level in (1, 2):
+        marker = empty("LOD%d" % level, (0, 0, 0), "EXPORT", "PLAIN_AXES")
+        marker.parent = root
+        made.append(marker.name)
+    return {"armature": armature.name, "locators": made,
+            "droppedUnskinned": dropped}
+
+
 def main():
     # run-blender.mjs already inserts the "--" separator, so a caller who also
     # writes one produces two. Strip any leading separators rather than failing
@@ -730,6 +981,15 @@ def main():
     parser = argparse.ArgumentParser(prog="human_source_adapter")
     parser.add_argument("--input", required=True)
     parser.add_argument("--profile", default="generic-gltf")
+    # The default leaves LOD0 at full density, which suits a protagonist and no
+    # ordinary unit: their triangle cap cannot afford an undecimated tier.
+    parser.add_argument("--lod-ratio", default=None,
+                        help="comma-separated decimate ratios per tier")
+    parser.add_argument("--legacy-bones", action="store_true",
+                        help="collapse the rig to the 18-bone runtime contract")
+    parser.add_argument("--ally-contract", action="store_true",
+                        help="emit UnitSkeleton, weapon locators and LOD marker "
+                             "nodes required by the ally asset manifest")
     parser.add_argument("--name", default="hero_human_candidate")
     parser.add_argument("--height", type=float, default=1.86)
     parser.add_argument("--material-budget", type=int, default=4)
@@ -810,6 +1070,10 @@ def main():
     root["sourceFile"] = os.path.basename(args.input)
     source_root.parent = root
 
+    global LOD_RATIO
+    if args.lod_ratio:
+        LOD_RATIO = tuple(float(v) for v in args.lod_ratio.split(",") if v)
+        print("LOD_RATIO %s" % json.dumps(list(LOD_RATIO)))
     tiers = build_lods(meshes, armature, args.name)
     for made in tiers:
         for obj in made:
@@ -836,7 +1100,13 @@ def main():
     glb_path = os.path.join(args.out_dir, out_name)
     # Hard gate: every tier must carry every garment. A candidate missing a
     # glove is not a candidate, and this has silently shipped twice.
-    REQUIRED = ("HeroOutfit", "HeroSword", "HeroGlove_l", "HeroGlove_r")
+    # The gate exists so a candidate can never ship with a garment silently
+    # dropped by the LOD pass. Which parts are mandatory is per-character,
+    # though: the Warrior carries no sword, and hard-coding the Hero's list
+    # made the adapter refuse a correct Warrior build.
+    REQUIRED = tuple(part for part in os.environ.get(
+        "HUMAN_REQUIRE_PARTS",
+        "HeroOutfit,HeroSword,HeroGlove_l,HeroGlove_r").split(",") if part)
     for level, made in enumerate(tiers):
         present = {obj.get("sourceName", "") for obj in made}
         print("LODTRACE_PRE_EXPORT tier=%d objects=%s" % (level, sorted(o.name for o in made)))
@@ -846,6 +1116,18 @@ def main():
                 "tier %d is missing %s; refusing to write a candidate" % (level, missing))
 
     save_source(blend_path)
+    collapsed = None
+    if args.legacy_bones and armature is not None:
+        collapsed = collapse_to_legacy_bones(
+            armature, [o for o in bpy.data.objects if o.type == "MESH"])
+        print("BONE_COLLAPSE %s" % json.dumps(
+            {"kept": collapsed["kept"], "removed": len(collapsed["removed"])}))
+
+    ally = None
+    if args.ally_contract and armature is not None:
+        ally = emit_ally_contract(root, armature, args.height)
+        print("ALLY_CONTRACT %s" % json.dumps(ally))
+
     export_glb(glb_path)
 
     joints = human_rig.verify_skin_contract(glb_path, human_rig.LEGACY_BONES)
@@ -861,6 +1143,8 @@ def main():
         "normalisation": scale_info,
         "placementChecks": placement,
         "targetHeightMetres": args.height,
+        "allyContract": ally,
+        "boneCollapse": collapsed,
         "removedNodes": removed,
         "synthesisedRoot": synthesised,
         "bones": {
