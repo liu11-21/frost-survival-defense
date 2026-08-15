@@ -51,11 +51,13 @@ STAGES = [
                     # Ordinary-unit caps are 7500 / 3200 / 1100 triangles. The
                     # adapter's default leaves LOD0 undecimated, which only a
                     # protagonist can afford; these land all three inside.
-                    # Lower than the Warrior's 0.82/0.335/0.100. The helm starts at the
-                    # brow rather than reaching down over the face, so the cull no
-                    # longer deletes the head faces it used to hide, and LOD0 came
-                    # out at 8999 against a 7500 cap.
-                    "--lod-ratio", "0.66,0.272,0.077",
+                    # Back to the Warrior's ratios. They were dropped to 0.66 when
+                    # the helm first started at the brow and stopped hiding the
+                    # head faces the cull used to remove -- LOD0 hit 8999
+                    # against a 7500 cap. The neck guard added afterwards covers
+                    # that skin again, so the source shrank and 0.66 was
+                    # decimating a mesh that no longer needed it.
+                    "--lod-ratio", "0.82,0.335,0.100",
                     "--legacy-bones",
                     "--ally-contract"]),
 ]

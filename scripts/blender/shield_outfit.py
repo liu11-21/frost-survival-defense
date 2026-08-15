@@ -514,6 +514,42 @@ def build_outfit(body, armature, variant):
             shell.append((t, tuck_front(ring_pts, centre_x, centre_z, depth, width,
                                         (1.0 - 0.48 / 1.22) * sink, reach=0.95,
                                         face_sign=sign)))
+        # A NECK GUARD, because starting the helm at the brow opens the nape.
+        #
+        # The live inspection is what caught this: from behind, 180 skin
+        # vertices were the first thing the camera hit, 172 of them on the back
+        # of the neck. The 380-pixel orbit renders did not show it, and the
+        # Warrior's equivalent number is 1.
+        #
+        # It cannot be closed from below. The gorget is built off the "collar"
+        # landmark, which sits above the jaw on these bodies, and reaching its
+        # front forward puts cloth ABOVE the chin, which makes
+        # `cull_hidden_body` delete the jaw -- that mistake cost the Warrior two
+        # rounds. So the helm comes down instead, at the back only: rings below
+        # the brow with the front tucked at full sink, which is the same trick
+        # that closes the crown above t = 1.
+        if shell:
+            base = head_data["slices"][0]
+            offset = base["centre"] - (start + (end - start) * base["t"])
+            bx = offset.dot(head_data["side"])
+            bz = offset.dot(head_data["front"])
+            # Three rings, and they have to reach well below the head bone.
+            # Two at -0.30 and -0.15 landed around the ears and left 104
+            # vertices of nape open in a band at z 1.45 to 1.50, about 150 mm
+            # across. The gap is below where the head bone starts, so the
+            # offsets are what matter, not the width.
+            drape = []
+            for extra_t, grow, back in ((shell[0][0] - 0.62, 1.08, 1.95),
+                                        (shell[0][0] - 0.40, 1.14, 1.84),
+                                        (shell[0][0] - 0.19, 1.22, 1.68)):
+                w = base["halfWidth"] * grow
+                d = base["front"] * grow
+                pts = section(n, w, d, base["back"] * grow * back, 3.4,
+                              centre_x=bx, centre_z=bz)
+                drape.append((extra_t,
+                              tuck_front(pts, bx, bz, d, w, 1.0 - 0.48 / 1.22,
+                                         reach=0.95, face_sign=sign)))
+            shell = drape + shell
         if len(shell) >= 2:
             last = head_data["slices"][-1]
             offset = last["centre"] - (start + (end - start) * last["t"])
@@ -566,6 +602,19 @@ def build_outfit(body, armature, variant):
         ring("collar", 0.062, 2.6),
         at(gorget, 0.046, 0.050, 0.086, 2.5),
         at(throat, 0.030, 0.038, 0.078, 2.4),
+        # A REAR FLANGE, and the front pad is NEGATIVE on purpose.
+        #
+        # Starting the helm at the brow left a bare band across the back of the
+        # neck -- 6 to 8 cm of it, plainly visible in a close-up, and the live
+        # inspection is what found it. Extending the helm down covers some of
+        # it but the helm is swept along the HEAD bone, which starts above the
+        # gap, so the last of it has to be closed from below.
+        #
+        # Raising this ring evenly would put cloth above the chin, and
+        # `cull_hidden_body` then deletes the jaw -- the Warrior spent two
+        # rounds learning that. Pulling the front INSIDE the neck means the
+        # ring exists only behind and beside, where the gap is.
+        at(throat + height * 0.026, 0.024, -0.082, 0.104, 2.4),
     ], "metal", lambda y: {}, cap_bottom=False, cap_top=False)
     regions.append(("torso", gorget_start, len(b.vertices)))
 
