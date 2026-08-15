@@ -103,6 +103,84 @@ test("locale switching is immediate, persisted, responsive, and reaches Settings
   await expect(page.locator('button[data-locale="ja"]').first()).toHaveAttribute("aria-pressed", "true");
 });
 
+test("dynamic capacity and event identity survive locale and DOM rebinding", async ({ page }) => {
+  await page.setViewportSize({ width: 1920, height: 1080 });
+  await page.goto(`${BASE}?uiVerification=1`, { waitUntil: "networkidle" });
+  await page.waitForFunction(() => Boolean((window as any).frostbound?.game?.s), null, { timeout: 60_000 });
+  await page.waitForSelector("#ui-screen.show", { timeout: 20_000 });
+  await chooseLocale(page, "en");
+  await page.locator('button[data-stage="stage-1"]').click();
+  await page.waitForSelector(".hud", { state: "visible", timeout: 60_000 });
+
+  await expect(page.locator("#ui-banner-title")).toHaveText("Stage 1 · Dual-Lane Defense");
+
+  await page.evaluate(() => {
+    const s = (window as any).frostbound.game.s;
+    s.events.emit("resourcesChanged", { wood: 11, stone: 22, gold: 33, capacity: 237 });
+  });
+  await expect(page.locator("#ui-cap")).toHaveText("Cap 237");
+
+  await page.evaluate(() => {
+    const probe = document.createElement("span");
+    probe.dataset.i18nMutationProbe = "1";
+    document.getElementById("uiRoot")?.appendChild(probe);
+    probe.remove();
+  });
+  await page.waitForTimeout(100);
+  await expect(page.locator("#ui-cap")).toHaveText("Cap 237");
+  await expect(page.locator("#ui-cap")).not.toContainText("100");
+
+  await page.keyboard.press("Escape");
+  await page.waitForSelector("#ui-screen.show", { timeout: 20_000 });
+  await page.locator("button[data-settings]").click();
+  await page.locator('button[data-locale="ja"]').first().click();
+  await expect.poll(() => page.evaluate((key) => localStorage.getItem(key), STORAGE_KEY)).toBe("ja");
+  await expect(page.locator("#ui-cap")).toContainText("237");
+  await expect(page.locator("#ui-cap")).not.toContainText("100");
+
+  await page.evaluate(() => {
+    const s = (window as any).frostbound.game.s;
+    s.events.emit("resourcesChanged", { wood: 11, stone: 22, gold: 33, capacity: Infinity });
+  });
+  await expect(page.locator("#ui-cap")).toHaveText("倉庫完成 · 容量無制限");
+  await page.evaluate(() => {
+    const probe = document.createElement("span");
+    document.getElementById("uiRoot")?.appendChild(probe);
+    probe.remove();
+  });
+  await page.waitForTimeout(100);
+  await expect(page.locator("#ui-cap")).toHaveText("倉庫完成 · 容量無制限");
+
+  await page.locator('button[data-locale="en"]').first().click();
+  await page.locator("button[data-back]").click();
+  await page.locator("button[data-resume]").click();
+
+  await page.evaluate(() => {
+    const s = (window as any).frostbound.game.s;
+    s.events.emit("wavePreview", { wave: 7, name: "第 7 波", boss: false, lanes: [], seconds: 4 });
+  });
+  await expect(page.locator("#ui-banner-title")).toHaveText("Wave 7 Incoming");
+
+  await page.evaluate(() => {
+    const s = (window as any).frostbound.game.s;
+    s.events.emit("waveStarted", { wave: 8, name: "第 8 波", boss: false, total: 10 });
+  });
+  await expect(page.locator("#ui-banner-title")).toHaveText("Wave 8");
+
+  await page.evaluate(() => {
+    const s = (window as any).frostbound.game.s;
+    s.events.emit("eliteEnemySpawned", { wave: 8, enemyId: "juggernaut", name: "重裝壁壘", level: 4 });
+  });
+  await expect(page.locator("#ui-banner-title")).toContainText("Lv.4 Heavy Bulwark");
+  await expect(page.locator("#ui-banner-body")).toContainText("wave 8");
+
+  await page.evaluate(() => {
+    const s = (window as any).frostbound.game.s;
+    s.events.emit("squadRecruited", { defId: "warrior", name: "非中文顯示名" });
+  });
+  await expect(page.locator("#ui-toast")).toContainText("Recruited Warrior");
+});
+
 test("English runtime HUD, recruitment and build surfaces use localized player copy", async ({ page }) => {
   await bootMenu(page);
   await chooseLocale(page, "en");
