@@ -20,6 +20,9 @@ Gameplay SFX V1 intentionally uses temporary procedural Web Audio synthesis so t
 | Magic attack | `src/effects/AudioManager.ts` procedural synthesis | 3 | No | Project-authored runtime synthesis; no third-party sample | TEMP |
 | Artillery explosion | `src/effects/AudioManager.ts` procedural synthesis | 3 | No | Project-authored runtime synthesis; no third-party sample | TEMP |
 | Build / place | `src/effects/AudioManager.ts` procedural synthesis | 2 | No | Project-authored runtime synthesis; no third-party sample | TEMP |
+| Build completion accent | `src/effects/AudioManager.ts` layered clunk + confirmation synthesis | 2 | No | Project-authored runtime synthesis; no third-party sample | TEMP |
+| Boss slam accent | `src/effects/AudioManager.ts` layered impact + sub synthesis | 2 | No | Project-authored runtime synthesis; no third-party sample | TEMP |
+| Hero skill accents | `src/effects/AudioManager.ts` frost / barrage / rally synthesis | 2 each | No | Project-authored runtime synthesis; no third-party sample | TEMP |
 | UI confirm / error | `src/effects/AudioManager.ts` procedural synthesis | 1 + 1 | No | Project-authored runtime synthesis; no third-party sample | TEMP |
 | Furnace ambience / cold wind | `src/effects/AudioManager.ts` oscillator + generated noise loops | 2 loops | No | Project-authored runtime synthesis; no third-party sample | TEMP |
 

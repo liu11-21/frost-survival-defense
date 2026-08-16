@@ -11,6 +11,7 @@ export type CoreSfxName =
   | "magicAttack"
   | "artilleryExplosion"
   | "buildPlace"
+  | "buildComplete"
   | "uiConfirm"
   | "uiError"
   | "footstep"
@@ -25,7 +26,11 @@ export type CoreSfxName =
   | "gatherWood"
   | "gatherStone"
   | "bossWindup"
+  | "bossSlam"
   | "commanderHorn"
+  | "heroSkillFrost"
+  | "heroSkillBarrage"
+  | "heroSkillRally"
   | "heroDown"
   | "heroRevive";
 
@@ -42,20 +47,15 @@ export type SfxName = CoreSfxName
   | "furnaceDamaged"
   | "furnaceHeal"
   | "buildStage"
-  | "buildComplete"
   | "buildFail"
   | "engineerRepair"
   | "musketFire"
   | "frostCast"
   | "bossSlamWindup"
-  | "bossSlam"
   | "freezeZoneSlam"
   | "armorBreak"
   | "bomberWarn"
-  | "bomberBlast"
-  | "heroSkillFrost"
-  | "heroSkillBarrage"
-  | "heroSkillRally";
+  | "bomberBlast";
 
 type RecipeKind =
   | "whoosh"
@@ -65,6 +65,7 @@ type RecipeKind =
   | "magic"
   | "explosion"
   | "build"
+  | "complete"
   | "confirm"
   | "error"
   | "step"
@@ -79,7 +80,11 @@ type RecipeKind =
   | "wood"
   | "stone"
   | "windup"
+  | "slam"
   | "horn"
+  | "frostSkill"
+  | "barrageSkill"
+  | "rallySkill"
   | "down"
   | "revive";
 
@@ -201,6 +206,10 @@ const SFX: Record<CoreSfxName, SfxDefinition> = {
     variations: [V("build", 330, 1450, 0.22), V("build", 390, 1750, 0.2)],
     cooldown: 0.04, concurrency: 2, priority: 72, positional: false, pitchJitter: 0.02, volumeJitter: 0.035,
   },
+  buildComplete: {
+    variations: [V("complete", 392, 1500, 0.62), V("complete", 440, 1800, 0.58)],
+    cooldown: 0.12, concurrency: 2, priority: 82, positional: false, pitchJitter: 0.015, volumeJitter: 0.025,
+  },
   uiConfirm: {
     variations: [V("confirm", 587, 0, 0.2)],
     cooldown: 0.04, concurrency: 2, priority: 85, positional: false, pitchJitter: 0, volumeJitter: 0,
@@ -257,9 +266,25 @@ const SFX: Record<CoreSfxName, SfxDefinition> = {
     variations: [V("windup", 70, 0, 0.9)],
     cooldown: 0.15, concurrency: 1, priority: 92, positional: true, pitchJitter: 0.015, volumeJitter: 0.025,
   },
+  bossSlam: {
+    variations: [V("slam", 58, 420, 0.82), V("slam", 66, 520, 0.76)],
+    cooldown: 0.12, concurrency: 2, priority: 98, positional: false, pitchJitter: 0.018, volumeJitter: 0.03,
+  },
   commanderHorn: {
     variations: [V("horn", 220, 0, 0.55), V("horn", 196, 0, 0.62)],
     cooldown: 0.2, concurrency: 2, priority: 82, positional: true, pitchJitter: 0.015, volumeJitter: 0.025,
+  },
+  heroSkillFrost: {
+    variations: [V("frostSkill", 880, 3600, 0.78), V("frostSkill", 990, 4200, 0.72)],
+    cooldown: 0.16, concurrency: 1, priority: 95, positional: false, pitchJitter: 0.015, volumeJitter: 0.025,
+  },
+  heroSkillBarrage: {
+    variations: [V("barrageSkill", 160, 1900, 0.72), V("barrageSkill", 185, 2250, 0.66)],
+    cooldown: 0.12, concurrency: 2, priority: 94, positional: false, pitchJitter: 0.018, volumeJitter: 0.03,
+  },
+  heroSkillRally: {
+    variations: [V("rallySkill", 220, 900, 0.88), V("rallySkill", 196, 1100, 0.82)],
+    cooldown: 0.18, concurrency: 1, priority: 94, positional: false, pitchJitter: 0.015, volumeJitter: 0.025,
   },
   heroDown: {
     variations: [V("down", 220, 0, 0.68)],
@@ -292,20 +317,15 @@ const ALIASES: Record<LegacyAliasName, CoreSfxName> = {
   furnaceDamaged: "enemyHit",
   furnaceHeal: "healing",
   buildStage: "buildPlace",
-  buildComplete: "buildPlace",
   buildFail: "uiError",
   engineerRepair: "buildPlace",
   musketFire: "squadGunshot",
   frostCast: "magicAttack",
   bossSlamWindup: "bossWindup",
-  bossSlam: "artilleryExplosion",
   freezeZoneSlam: "artilleryExplosion",
   armorBreak: "enemyHit",
   bomberWarn: "uiError",
   bomberBlast: "artilleryExplosion",
-  heroSkillFrost: "magicAttack",
-  heroSkillBarrage: "artilleryExplosion",
-  heroSkillRally: "commanderHorn",
 };
 
 const VARIATION_COUNTS = Object.fromEntries(
@@ -650,6 +670,12 @@ export class AudioManager {
         addTone("square", recipe.tone * pitch, recipe.tone * 1.25 * pitch, duration, 0.09);
         addNoise(duration * 0.7, 0.16, recipe.colour, "bandpass");
         break;
+      case "complete":
+        addTone("square", recipe.tone * 0.55 * pitch, recipe.tone * 0.34 * pitch, 0.18, 0.1);
+        addNoise(0.18, 0.14, recipe.colour * pitch, "bandpass");
+        addTone("sine", recipe.tone * pitch, recipe.tone * pitch, 0.34, 0.07, 0.12);
+        addTone("sine", recipe.tone * 1.5 * pitch, recipe.tone * 1.5 * pitch, 0.24, 0.055, 0.24);
+        break;
       case "confirm":
         addTone("sine", recipe.tone, recipe.tone, duration * 0.7, 0.07);
         addTone("sine", recipe.tone * 1.33, recipe.tone * 1.33, duration * 0.55, 0.06, 0.07);
@@ -709,9 +735,36 @@ export class AudioManager {
       case "windup":
         addTone("sawtooth", recipe.tone * pitch, recipe.tone * 2.2 * pitch, duration, 0.13);
         break;
+      case "slam":
+        addNoise(duration * 0.9, 0.48, recipe.colour * pitch, "lowpass");
+        addTone("sine", recipe.tone * pitch, 24 * pitch, duration, 0.42);
+        addTone("square", recipe.tone * 3 * pitch, recipe.tone * 0.9 * pitch, 0.14, 0.12);
+        addNoise(0.18, 0.18, recipe.colour * 2 * pitch, "bandpass", 0.035);
+        break;
       case "horn":
         addTone("sawtooth", recipe.tone * pitch, recipe.tone * 1.18 * pitch, duration, 0.1);
         addTone("sine", recipe.tone * 0.5 * pitch, recipe.tone * 0.55 * pitch, duration * 0.9, 0.055);
+        break;
+      case "frostSkill":
+        addNoise(duration * 0.75, 0.12, recipe.colour * pitch, "highpass");
+        addTone("sine", recipe.tone * 1.6 * pitch, recipe.tone * 0.8 * pitch, duration * 0.72, 0.085);
+        addTone("triangle", recipe.tone * 2.15 * pitch, recipe.tone * 1.2 * pitch, duration * 0.55, 0.065, 0.08);
+        addTone("sine", recipe.tone * 0.5 * pitch, recipe.tone * 1.1 * pitch, duration * 0.5, 0.06, 0.18);
+        break;
+      case "barrageSkill":
+        addTone("sine", recipe.tone * 0.55 * pitch, 34 * pitch, duration, 0.22);
+        addNoise(0.16, 0.22, recipe.colour * pitch, "highpass");
+        addNoise(0.16, 0.2, recipe.colour * 1.1 * pitch, "highpass", 0.12);
+        addNoise(0.16, 0.18, recipe.colour * 1.2 * pitch, "highpass", 0.24);
+        addTone("square", recipe.tone * 4 * pitch, recipe.tone * 1.2 * pitch, 0.15, 0.1);
+        addTone("square", recipe.tone * 4.4 * pitch, recipe.tone * 1.3 * pitch, 0.15, 0.09, 0.12);
+        addTone("square", recipe.tone * 4.8 * pitch, recipe.tone * 1.4 * pitch, 0.15, 0.08, 0.24);
+        break;
+      case "rallySkill":
+        addTone("sawtooth", recipe.tone * pitch, recipe.tone * 1.12 * pitch, duration * 0.72, 0.11);
+        addTone("sine", recipe.tone * 0.5 * pitch, recipe.tone * 0.58 * pitch, duration * 0.7, 0.06);
+        addTone("sine", recipe.tone * 1.5 * pitch, recipe.tone * 1.5 * pitch, 0.35, 0.06, 0.18);
+        addNoise(duration * 0.62, 0.07, recipe.colour * pitch, "bandpass");
         break;
       case "down":
         addTone("sawtooth", recipe.tone, 60, duration, 0.15);
