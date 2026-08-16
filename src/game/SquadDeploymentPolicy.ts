@@ -37,7 +37,6 @@ interface DeploymentMeta {
 
 const deploymentBySquad = new WeakMap<Squad, DeploymentMeta>();
 const fallbackHomeBySquad = new WeakMap<Squad, { x: number; z: number } | null>();
-const scratch = new Vector3();
 
 function centralLaneIndex(x: number, z: number): number {
   if (Math.abs(z) >= Math.abs(x)) return z >= 0 ? 0 : 2;
@@ -115,6 +114,12 @@ function setSquadHome(squad: Squad, x: number, z: number): void {
     if (!member.alive) continue;
     if (member.home) member.home.set(x, 0, z);
     else member.home = new Vector3(x, 0, z);
+  }
+}
+
+function clearSquadHome(squad: Squad): void {
+  for (const member of squad.members) {
+    if (member.alive) member.home = null;
   }
 }
 
@@ -226,8 +231,10 @@ function restoreCombatHome(squad: Squad): void {
     setSquadHome(squad, meta.homeX, meta.homeZ);
     return;
   }
-  const fallback = fallbackHomeBySquad.get(squad);
+  if (!fallbackHomeBySquad.has(squad)) return;
+  const fallback = fallbackHomeBySquad.get(squad) ?? null;
   if (fallback) setSquadHome(squad, fallback.x, fallback.z);
+  else clearSquadHome(squad);
 }
 
 /**
@@ -272,6 +279,4 @@ export function updateSquadDeploymentPolicy(s: GameSystems, enemiesPresent: bool
 
     restoreCombatHome(squad);
   }
-
-  void scratch;
 }
