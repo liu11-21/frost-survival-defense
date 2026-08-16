@@ -2,6 +2,15 @@ import { expect, test, type Page } from "@playwright/test";
 
 const BASE_URL = process.env.FROSTBOUND_BASE_URL ?? "http://127.0.0.1:4173";
 
+type RecruitTab = "melee" | "ranged" | "support" | "engineer";
+
+function recruitTab(defId: string): RecruitTab {
+  if (defId === "engineer") return "engineer";
+  if (defId === "medic" || defId === "flagbearer") return "support";
+  if (defId === "warrior" || defId === "shield" || defId === "assault") return "melee";
+  return "ranged";
+}
+
 async function call(page: Page, name: string, ...args: unknown[]): Promise<any> {
   return page.evaluate(
     ({ name, args }) => {
@@ -59,6 +68,12 @@ async function openRecruitPanel(page: Page): Promise<void> {
 
 async function dragRecruit(page: Page, defId: string, x: number, z: number): Promise<void> {
   await openRecruitPanel(page);
+  const tab = recruitTab(defId);
+  const tabButton = page.locator(`.recruit-tab[data-recruit-tab="${tab}"]`);
+  await expect(tabButton).toBeVisible();
+  await tabButton.click();
+  await step(page, 0.016, 1);
+
   const source = page.locator(`.recruit-icon-card[data-recruit="${defId}"]`);
   await expect(source).toBeVisible();
   await expect(source).toHaveAttribute("draggable", "true");
