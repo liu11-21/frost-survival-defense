@@ -8,6 +8,7 @@ import { CombatWorld } from "../combat/CombatWorld";
 import { HumanoidTemplateCache } from "../combat/LiteHumanoid";
 import { ProjectilePool } from "../combat/ProjectilePool";
 import { SquadManager } from "../combat/SquadManager";
+import { AudioCombatFeedbackAdapter } from "../audio/AudioCombatFeedbackAdapter";
 import { AudioManager } from "../effects/AudioManager";
 import { CombatFeedback } from "../effects/CombatFeedback";
 import { EffectSettingsState } from "../effects/EffectSettingsState";
@@ -193,17 +194,18 @@ export class GameSystems {
       this.healthBars,
       this.combatText,
     );
+    const combatFeedback = new AudioCombatFeedbackAdapter(this.feedback, this.audio);
     this.store = new ResourceStore(this.events);
     this.pickups = new PickupPool(this.scene, this.materials, 90);
 
-    this.ctx = createCombatContext(this.world, this.collision, this.projectiles, this.feedback, this.scaling, {
+    this.ctx = createCombatContext(this.world, this.collision, this.projectiles, combatFeedback, this.scaling, {
       onKill: (unit) => this.run.reportKill(unit),
       onStructureHit: (target, x, z) => {
         this.feedback.buildingHit(x, z);
-        this.audio.play(target.kind === "wall" ? "wallHit" : "wallHit", 0.4, 0.9 + Math.random() * 0.2);
+        this.audio.playAt(target.kind === "wall" ? "wallHit" : "wallHit", x, z, 0.4, 0.9 + Math.random() * 0.2);
       },
       onFurnaceHit: () => {
-        this.audio.play("furnaceDamaged", 0.5, 0.9 + Math.random() * 0.2);
+        this.audio.playAt("furnaceDamaged", 0, 0, 0.5, 0.9 + Math.random() * 0.2, 12);
         this.camera.shake(0.05);
       },
     });
@@ -234,6 +236,7 @@ export class GameSystems {
     this.heroStats = new HeroStats(this.upgrades);
     this.hero = new HeroController(this.scene, this.materials, this.heroStats, this.ctx, this.collision);
     this.world.hero = this.hero;
+    combatFeedback.bindHero(() => this.hero);
     this.heroSkills = new HeroSkills(this.hero, this.ctx, this.buildings, this.squads);
 
     this.waves = new WaveManager(this.squads, this.events);

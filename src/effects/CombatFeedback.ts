@@ -467,7 +467,7 @@ export class CombatFeedback implements CombatVfx {
   unitDeath(x: number, z: number, level: number): void {
     this.point.set(x, 0.6, z);
     this.vfx.burst("iceShards", this.point, level >= 4 ? 18 : 9);
-    this.audio.play("enemyDeath", level >= 4 ? 0.8 : 0.35, 1.2 - level * 0.07);
+    this.audio.playAt("enemyDeath", x, z, level >= 4 ? 0.8 : 0.35, 1.2 - level * 0.07, Math.min(18, level * 3));
     if (level >= 6) this.camera.shake(0.16);
   }
 

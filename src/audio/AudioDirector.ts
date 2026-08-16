@@ -1,14 +1,12 @@
 import type { GameEvents } from "../game/GameEvents";
+import { audioMixSettings } from "./AudioMixSettings";
 import {
-  DEFAULT_MUSIC_VOLUME,
   MUSIC_CROSSFADE_SECONDS,
   MUSIC_TRACKS,
   resolveMusicAssetPath,
   type MusicState,
 } from "./MusicCatalog";
 
-const VOLUME_KEY = "frostbound.music.volume";
-const MUTED_KEY = "frostbound.music.muted";
 const CHANNEL_COUNT = 2;
 
 interface MusicChannel {
@@ -31,7 +29,11 @@ export interface MusicSnapshot {
   readonly requestedState: MusicState | null;
   readonly activeState: MusicState | null;
   readonly unlocked: boolean;
+  /** Backward-compatible alias for musicPercent. */
   readonly volumePercent: number;
+  readonly masterVolumePercent: number;
+  readonly musicVolumePercent: number;
+  readonly sfxVolumePercent: number;
   readonly muted: boolean;
   readonly transitionCount: number;
   readonly crossfadeSeconds: number;
@@ -46,7 +48,9 @@ export interface MusicSnapshot {
 
 /**
  * Central BGM owner. Gameplay only sends semantic music states; this class owns
- * media elements, Web Audio routing, persistence, lifecycle and crossfades.
+ * media elements, Web Audio routing, lifecycle and crossfades. Master/Music/SFX
+ * preferences live in AudioMixSettings so the BGM and SFX contexts share one
+ * logical mixer without forcing the stable BGM runtime into an SFX refactor.
  */
 export class AudioDirector {
   private ctx: AudioContext | null = null;
@@ -56,8 +60,6 @@ export class AudioDirector {
   private requestedState: MusicState | null = null;
   private activeState: MusicState | null = null;
   private unlocked = false;
-  private volume = this.loadVolume();
-  private muted = this.loadMuted();
   private transitionCount = 0;
   private readonly cleanupTimers = new Set<number>();
   private boundEvents: GameEvents | null = null;
@@ -90,6 +92,7 @@ export class AudioDirector {
   };
 
   constructor() {
+    audioMixSettings.subscribe(() => this.applyVolume());
     this.installVerificationApi();
     this.installLifecycleListeners();
   }
@@ -142,43 +145,60 @@ export class AudioDirector {
   }
 
   get volumePercent(): number {
-    return Math.round(this.volume * 100);
+    return audioMixSettings.snapshot().musicPercent;
+  }
+
+  get masterVolumePercent(): number {
+    return audioMixSettings.snapshot().masterPercent;
+  }
+
+  get sfxVolumePercent(): number {
+    return audioMixSettings.snapshot().sfxPercent;
   }
 
   get isMuted(): boolean {
-    return this.muted;
+    return audioMixSettings.isMuted;
   }
 
+  /** Backward-compatible BGM setter. */
   setVolumePercent(percent: number): void {
-    const clamped = Math.max(0, Math.min(100, Math.round(percent)));
-    this.volume = clamped / 100;
-    this.writeStorage(VOLUME_KEY, String(this.volume));
-    this.applyVolume();
+    audioMixSettings.setMusicPercent(percent);
+  }
+
+  setMasterVolumePercent(percent: number): void {
+    audioMixSettings.setMasterPercent(percent);
+  }
+
+  setSfxVolumePercent(percent: number): void {
+    audioMixSettings.setSfxPercent(percent);
   }
 
   setMuted(muted: boolean): void {
-    this.muted = muted;
-    this.writeStorage(MUTED_KEY, muted ? "1" : "0");
-    this.applyVolume();
+    audioMixSettings.setMuted(muted);
   }
 
   toggleMuted(): void {
-    this.setMuted(!this.muted);
+    this.setMuted(!this.isMuted);
   }
 
-  /** Adds only the required music controls to the existing settings screen. */
+  /** Adds only the required audio controls to the existing settings screen. */
   mountSettingsControls(container: HTMLElement): void {
     container.querySelector("#music-settings-audio")?.remove();
+    const mix = audioMixSettings.snapshot();
 
     const section = document.createElement("section");
     section.id = "music-settings-audio";
     section.innerHTML = `
-      <h2>音樂</h2>
-      <p class="muted">背景音樂音量會儲存在這台瀏覽器。</p>
+      <h2>音訊</h2>
+      <p class="muted">主音量、背景音樂與音效音量會儲存在這台瀏覽器。</p>
       <div class="menu-buttons center">
-        <label for="music-volume" class="muted">BGM <b id="music-volume-value">${this.volumePercent}%</b></label>
-        <input id="music-volume" type="range" min="0" max="100" step="1" value="${this.volumePercent}" aria-label="背景音樂音量" style="width:min(420px,70vw)" />
-        <button class="big-btn tight" id="music-mute" type="button">${this.muted ? "解除靜音" : "靜音"}</button>
+        <label for="master-volume" class="muted">Master <b id="master-volume-value">${mix.masterPercent}%</b></label>
+        <input id="master-volume" type="range" min="0" max="100" step="1" value="${mix.masterPercent}" aria-label="主音量" style="width:min(420px,70vw)" />
+        <label for="music-volume" class="muted">BGM <b id="music-volume-value">${mix.musicPercent}%</b></label>
+        <input id="music-volume" type="range" min="0" max="100" step="1" value="${mix.musicPercent}" aria-label="背景音樂音量" style="width:min(420px,70vw)" />
+        <label for="sfx-volume" class="muted">SFX <b id="sfx-volume-value">${mix.sfxPercent}%</b></label>
+        <input id="sfx-volume" type="range" min="0" max="100" step="1" value="${mix.sfxPercent}" aria-label="音效音量" style="width:min(420px,70vw)" />
+        <button class="big-btn tight" id="music-mute" type="button">${mix.muted ? "解除靜音" : "靜音"}</button>
       </div>
     `;
 
@@ -187,17 +207,31 @@ export class AudioDirector {
     if (backRow?.parentElement === container) container.insertBefore(section, backRow);
     else container.appendChild(section);
 
-    const slider = section.querySelector<HTMLInputElement>("#music-volume");
-    const label = section.querySelector<HTMLElement>("#music-volume-value");
-    const mute = section.querySelector<HTMLButtonElement>("#music-mute");
-    slider?.addEventListener("input", () => {
-      const value = Number(slider.value);
-      this.setVolumePercent(value);
-      if (label) label.textContent = `${this.volumePercent}%`;
+    const masterSlider = section.querySelector<HTMLInputElement>("#master-volume");
+    const masterLabel = section.querySelector<HTMLElement>("#master-volume-value");
+    masterSlider?.addEventListener("input", () => {
+      this.setMasterVolumePercent(Number(masterSlider.value));
+      if (masterLabel) masterLabel.textContent = `${this.masterVolumePercent}%`;
     });
+
+    const musicSlider = section.querySelector<HTMLInputElement>("#music-volume");
+    const musicLabel = section.querySelector<HTMLElement>("#music-volume-value");
+    musicSlider?.addEventListener("input", () => {
+      this.setVolumePercent(Number(musicSlider.value));
+      if (musicLabel) musicLabel.textContent = `${this.volumePercent}%`;
+    });
+
+    const sfxSlider = section.querySelector<HTMLInputElement>("#sfx-volume");
+    const sfxLabel = section.querySelector<HTMLElement>("#sfx-volume-value");
+    sfxSlider?.addEventListener("input", () => {
+      this.setSfxVolumePercent(Number(sfxSlider.value));
+      if (sfxLabel) sfxLabel.textContent = `${this.sfxVolumePercent}%`;
+    });
+
+    const mute = section.querySelector<HTMLButtonElement>("#music-mute");
     mute?.addEventListener("click", () => {
       this.toggleMuted();
-      mute.textContent = this.muted ? "解除靜音" : "靜音";
+      mute.textContent = this.isMuted ? "解除靜音" : "靜音";
     });
   }
 
@@ -206,12 +240,16 @@ export class AudioDirector {
   }
 
   snapshot(): MusicSnapshot {
+    const mix = audioMixSettings.snapshot();
     return {
       requestedState: this.requestedState,
       activeState: this.activeState,
       unlocked: this.unlocked,
-      volumePercent: this.volumePercent,
-      muted: this.muted,
+      volumePercent: mix.musicPercent,
+      masterVolumePercent: mix.masterPercent,
+      musicVolumePercent: mix.musicPercent,
+      sfxVolumePercent: mix.sfxPercent,
+      muted: mix.muted,
       transitionCount: this.transitionCount,
       crossfadeSeconds: MUSIC_CROSSFADE_SECONDS,
       tracks: {
@@ -332,7 +370,8 @@ export class AudioDirector {
 
     const ctx = new AudioContextCtor();
     const musicGain = ctx.createGain();
-    musicGain.gain.value = this.muted ? 0 : this.volume;
+    const mix = audioMixSettings.snapshot();
+    musicGain.gain.value = mix.muted ? 0 : (mix.masterPercent / 100) * (mix.musicPercent / 100);
     musicGain.connect(ctx.destination);
     this.ctx = ctx;
     this.musicGain = musicGain;
@@ -412,34 +451,9 @@ export class AudioDirector {
     const ctx = this.ctx;
     const gain = this.musicGain;
     if (!ctx || !gain) return;
-    gain.gain.setTargetAtTime(this.muted ? 0 : this.volume, ctx.currentTime, 0.04);
-  }
-
-  private loadVolume(): number {
-    const raw = this.readStorage(VOLUME_KEY);
-    if (raw === null) return DEFAULT_MUSIC_VOLUME;
-    const parsed = Number(raw);
-    return Number.isFinite(parsed) ? Math.max(0, Math.min(1, parsed)) : DEFAULT_MUSIC_VOLUME;
-  }
-
-  private loadMuted(): boolean {
-    return this.readStorage(MUTED_KEY) === "1";
-  }
-
-  private readStorage(key: string): string | null {
-    try {
-      return window.localStorage.getItem(key);
-    } catch {
-      return null;
-    }
-  }
-
-  private writeStorage(key: string, value: string): void {
-    try {
-      window.localStorage.setItem(key, value);
-    } catch {
-      // Storage may be disabled; audio still works for the current page.
-    }
+    const mix = audioMixSettings.snapshot();
+    const value = mix.muted ? 0 : (mix.masterPercent / 100) * (mix.musicPercent / 100);
+    gain.gain.setTargetAtTime(value, ctx.currentTime, 0.04);
   }
 
   private installVerificationApi(): void {
@@ -449,6 +463,8 @@ export class AudioDirector {
         unlock(): void;
         setState(state: MusicState): void;
         setVolumePercent(percent: number): void;
+        setMasterVolumePercent(percent: number): void;
+        setSfxVolumePercent(percent: number): void;
         setMuted(muted: boolean): void;
         snapshot(): MusicSnapshot;
         resolveForBase(state: MusicState, basePath: string): string;
@@ -458,6 +474,8 @@ export class AudioDirector {
       unlock: () => this.unlock(),
       setState: (state) => this.setState(state),
       setVolumePercent: (percent) => this.setVolumePercent(percent),
+      setMasterVolumePercent: (percent) => this.setMasterVolumePercent(percent),
+      setSfxVolumePercent: (percent) => this.setSfxVolumePercent(percent),
       setMuted: (muted) => this.setMuted(muted),
       snapshot: () => this.snapshot(),
       resolveForBase: (state, basePath) => this.resolveForBase(state, basePath),

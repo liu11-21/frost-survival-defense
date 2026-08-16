@@ -49,6 +49,7 @@ export const ALLY_UNITS: UnitDefinition[] = [
     moveSpeed: 3.6,
     scale: 0.95,
     visual: "warrior",
+    attackSoundOverride: "allyAttack",
     maxAreaTargets: 5,
   },
   {
@@ -67,6 +68,7 @@ export const ALLY_UNITS: UnitDefinition[] = [
     moveSpeed: 3.0,
     scale: 1.05,
     visual: "shield",
+    attackSoundOverride: "wallHit",
     maxAreaTargets: 5,
   },
   {
@@ -82,6 +84,7 @@ export const ALLY_UNITS: UnitDefinition[] = [
     moveSpeed: 3.5,
     scale: 0.9,
     visual: "archer",
+    attackSoundOverride: "heroRanged",
   },
   {
     id: "medic",
@@ -96,6 +99,7 @@ export const ALLY_UNITS: UnitDefinition[] = [
     moveSpeed: 3.4,
     scale: 0.9,
     visual: "medic",
+    attackSoundOverride: "medicHeal",
   },
   {
     id: "flagbearer",
@@ -133,6 +137,7 @@ export const ALLY_UNITS: UnitDefinition[] = [
     scale: 0.95,
     visual: "mage",
     projectileKind: "arcaneMeteor",
+    attackSoundOverride: "frostCast",
     maxAreaTargets: 8,
   },
   {
@@ -149,6 +154,7 @@ export const ALLY_UNITS: UnitDefinition[] = [
     moveSpeed: 4.2,
     scale: 0.88,
     visual: "assault",
+    attackSoundOverride: "allyAttack",
     maxAreaTargets: 5,
     ambushOnSpawn: true,
     ambushInvulnerableTime: ASSAULT_RULES.invulnerableSeconds,
