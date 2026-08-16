@@ -139,7 +139,7 @@ jobs:
 
       - name: Upload Hero runtime evidence
         if: always()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: hero-runtime-verification-${{ github.run_id }}
           if-no-files-found: warn
