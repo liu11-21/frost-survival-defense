@@ -10,15 +10,13 @@ import { beginRun, leaveRun } from "./GameFlow";
 import { renderFrame, runFrame } from "./GameLoop";
 import { GameSystems } from "./GameSystems";
 import { SupportSystems } from "./SupportSystems";
+import { tryDeployRecruit } from "./SquadDeploymentPolicy";
 import { PointerRouter } from "../input/PointerRouter";
 import { InputDebugOverlay } from "../ui/InputDebugOverlay";
 import { updateHaltedDeathLifecycle } from "../combat/HaltedDeathLifecycle";
 import { HeroReviewMode } from "../hero/HeroReviewMode";
 import { HeroGameplayReviewMode } from "../hero/HeroGameplayReviewMode";
 import { WarriorReviewMode } from "../warrior/WarriorReviewMode";
-import { LANES, nearestLanePoint } from "../data/BuildSlotDefinitions";
-
-const RECRUIT_DROP_MAX_ROAD_DISTANCE = 4.5;
 
 /** Owns the engine loop and the glue between input, rules and presentation. */
 export class Game {
@@ -86,59 +84,15 @@ export class Game {
   }
 
   /**
-   * A roster drag spends nothing until the drop is accepted by a real lane.
-   * `RunController.tryRecruit` stays the single source of truth for hall/cost/
-   * capacity rules and emits the existing squadRecruited event; this method
-   * only relocates that newly-created squad onto the chosen lane and records
-   * its lane/home metadata for AI.
+   * Recruitment spending stays inside RunController. The deployment policy
+   * validates the full road from the furnace circle outward, the two-squad
+   * central reserve and Engineer-only furnace deployment before any cost is
+   * paid, then records the squad's lane/home metadata for AI.
    */
   private handleRecruitDrop(defId: string, x: number, z: number): void {
-    const s = this.s;
-    const drop = nearestLanePoint(x, z, RECRUIT_DROP_MAX_ROAD_DISTANCE);
-    if (!drop) {
-      s.hud.toast("請把兵種拖到進攻路線上", "failure");
-      return;
-    }
-
-    const before = s.squads.allySquads.length;
-    const failure = s.run.tryRecruit(defId);
-    if (failure) {
-      s.hud.toast(failure, "failure");
-      return;
-    }
-    const squad = s.squads.allySquads[s.squads.allySquads.length - 1];
-    if (!squad || s.squads.allySquads.length <= before) {
-      s.hud.toast("招募完成但部署失敗，請重新嘗試", "failure");
-      return;
-    }
-
-    const lane = LANES[drop.laneIndex];
-    const from = lane.path[drop.segmentIndex];
-    const to = lane.path[Math.min(lane.path.length - 1, drop.segmentIndex + 1)];
-    const tx = to.x - from.x;
-    const tz = to.z - from.z;
-    const len = Math.hypot(tx, tz) || 1;
-    const sideX = -tz / len;
-    const sideZ = tx / len;
-    const inwardYaw = Math.atan2(to.x - drop.x, to.z - drop.z);
-
-    for (let i = 0; i < squad.members.length; i++) {
-      const member = squad.members[i];
-      const offset = (i - (squad.members.length - 1) * 0.5) * 0.9;
-      const px = drop.x + sideX * offset;
-      const pz = drop.z + sideZ * offset;
-      member.laneIndex = drop.laneIndex;
-      member.setPosition(px, pz);
-      member.setYaw(inwardYaw);
-      member.home = member.position.clone();
-    }
-
-    // Assault's existing instant-ambush code runs during tryRecruit. Resetting
-    // to the drop above intentionally prevents a global ambush from violating
-    // the lane contract; it still retains its combat stats and protection.
-    s.squadHud.markDirty();
-    s.hud.toast(`${squad.def.name}已部署至${lane.shortName}`);
-    s.audio.play("uiConfirm", 0.65);
+    const result = tryDeployRecruit(this.s, defId, x, z);
+    this.s.hud.toast(result.message, result.ok ? undefined : "failure");
+    if (result.ok) this.s.audio.play("uiConfirm", 0.65);
   }
 
   /** Game-event reactions: audio, VFX, boss tracking and run transitions. */
