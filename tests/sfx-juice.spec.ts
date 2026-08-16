@@ -87,4 +87,4 @@ test("juice events still obey the shared 16-voice ceiling", async ({ page }) => 
   const current = await snapshot(page);
   expect(current.totalConcurrencyCap).toBe(16);
   expect(current.activeCount).toBeLessThanOrEqual(16);
-}
+});
