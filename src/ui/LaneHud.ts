@@ -2,10 +2,9 @@ import type { CombatWorld } from "../combat/CombatWorld";
 import { LANES } from "../data/BuildSlotDefinitions";
 import type { LaneGateManager } from "../enemies/LaneGates";
 import type { WaveManager } from "../enemies/WaveManager";
+import { laneName, laneShortName, t } from "../localization";
 
 const REFRESH_INTERVAL = 0.3;
-
-const GATE_TEXT = { open: "未設防", partial: "部分封閉", sealed: "完全封閉" };
 
 interface LaneRow {
   index: number;
@@ -15,17 +14,9 @@ interface LaneRow {
   boss: boolean;
   gate: "open" | "partial" | "sealed";
   breached: boolean;
-  /** This lane's wall side's HP fraction, or null while nothing has ever stood there. */
   wallPct: number | null;
 }
 
-/**
- * The compact lane strip: where the enemies are coming from, how many are left
- * on each approach, and whether that approach is walled.
- *
- * Deliberately not a pathfinding readout — it answers "which way do I need to
- * be facing" and nothing else.
- */
 export class LaneHud {
   private timer = 0;
 
@@ -57,12 +48,11 @@ export class LaneHud {
       const wall = gate.breachTarget;
       rows.push({
         index: i,
-        name: lane.name,
-        shortName: lane.shortName,
+        name: laneName(i, lane.name),
+        shortName: laneShortName(i, lane.shortName),
         remaining: 0,
         boss: false,
         gate: gate.state,
-        // A lane counts as breached once something is inside the ring on it.
         breached: false,
         wallPct: wall ? wall.health / wall.maxHealth : null,
       });
@@ -90,26 +80,22 @@ export class LaneHud {
       const wallLow = row.wallPct !== null && row.wallPct < 0.5 && row.gate !== "open";
       return row.remaining === 0 && !row.boss && !row.breached && !wallLow;
     });
-    // Quiet is a visual-priority signal only. Lane count, gates and WaveManager
-    // remain untouched and continue to render from the same read-only rows.
     this.host.classList.toggle("quiet", quiet);
     this.host.dataset.state = quiet ? "quiet" : "active";
-    this.list.innerHTML = rows
-      .map((row) => {
-        const tags: string[] = [GATE_TEXT[row.gate]];
-        if (row.gate !== "open" && row.wallPct !== null) tags.push(`牆 ${Math.round(row.wallPct * 100)}%`);
-        if (row.breached) tags.push("已突破");
-        const wallLow = row.wallPct !== null && row.wallPct < 0.5 && row.gate !== "open";
-        const cls = [row.boss ? "boss" : row.remaining > 0 ? "hot" : "", wallLow ? "wall-low" : ""]
-          .filter(Boolean)
-          .join(" ");
-        const count = row.boss ? "Boss" : String(row.remaining);
-        return `<div class="lane-row ${cls}">
-            <b class="lane-name">${row.name}</b>
-            <span class="lane-count">${count}</span>
-            <span class="lane-gate ${row.gate}">${tags.join(" · ")}</span>
-          </div>`;
-      })
-      .join("");
+    this.list.innerHTML = rows.map((row) => {
+      const tags: string[] = [t(`lane.${row.gate}`)];
+      if (row.gate !== "open" && row.wallPct !== null) tags.push(t("lane.wall", { percent: Math.round(row.wallPct * 100) }));
+      if (row.breached) tags.push(t("lane.breached"));
+      const wallLow = row.wallPct !== null && row.wallPct < 0.5 && row.gate !== "open";
+      const cls = [row.boss ? "boss" : row.remaining > 0 ? "hot" : "", wallLow ? "wall-low" : ""]
+        .filter(Boolean)
+        .join(" ");
+      const count = row.boss ? "Boss" : String(row.remaining);
+      return `<div class="lane-row ${cls}">
+          <b class="lane-name">${row.name}</b>
+          <span class="lane-count">${count}</span>
+          <span class="lane-gate ${row.gate}">${tags.join(" · ")}</span>
+        </div>`;
+    }).join("");
   }
 }

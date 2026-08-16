@@ -1,5 +1,6 @@
 import { ALLY_UNITS } from "../data/UnitDefinitions";
 import { RECRUIT_DRAG_MIME } from "../input/RecruitDrag";
+import { entityName, t } from "../localization";
 import { resourceIcon } from "./ResourceIcons";
 import { unitThumbnailSvg } from "./UnitThumbnails";
 import type { PanelDeps, PanelResult } from "./ActionPanels";
@@ -7,13 +8,6 @@ import type { PanelDeps, PanelResult } from "./ActionPanels";
 export type RecruitMenuTab = "melee" | "ranged" | "support" | "engineer";
 
 export const RECRUIT_MENU_TABS: readonly RecruitMenuTab[] = ["melee", "ranged", "support", "engineer"];
-
-const RECRUIT_TAB_LABELS: Record<RecruitMenuTab, string> = {
-  melee: "近戰",
-  ranged: "遠程",
-  support: "支援",
-  engineer: "工程",
-};
 
 function recruitCategory(defId: string): RecruitMenuTab {
   if (defId === "engineer") return "engineer";
@@ -25,7 +19,7 @@ function recruitCategory(defId: string): RecruitMenuTab {
 export function renderRecruitTabsHtml(active: RecruitMenuTab): string {
   return `<div class="build-tabs recruit-tabs" role="tablist" tabindex="0">${RECRUIT_MENU_TABS.map(
     (tab) =>
-      `<button type="button" class="build-tab recruit-tab${tab === active ? " on" : ""}" role="tab" aria-selected="${tab === active}" data-recruit-tab="${tab}">${RECRUIT_TAB_LABELS[tab]}</button>`,
+      `<button type="button" class="build-tab recruit-tab${tab === active ? " on" : ""}" role="tab" aria-selected="${tab === active}" data-recruit-tab="${tab}">${t(`recruit.tab.${tab}`)}</button>`,
   ).join("")}</div>`;
 }
 
@@ -35,12 +29,6 @@ export interface RecruitMenuCallbacks {
   onRerender(): void;
 }
 
-/**
- * Compact roster. The panel is intentionally not a second codex: cards carry
- * only identity, price and availability. Full stats/special rules stay in the
- * existing Codex screen. A legal card exports a drag payload; spending does not
- * happen until the canvas accepts the drop on a real lane.
- */
 export function renderRecruitList(
   d: PanelDeps,
   callbacks: RecruitMenuCallbacks,
@@ -51,34 +39,45 @@ export function renderRecruitList(
   const count = squads.allySquadSlotsUsed;
   const limit = run.squadLimit;
   refs.recruitHeader.textContent = hasHall
-    ? `小隊 ${count}/${limit} · 工程 ${squads.engineerSquadsUsed}/${run.engineerLimit} · 金 ${Math.floor(store.gold)}`
-    : "招募所尚未完成";
+    ? t("recruit.header", {
+        count,
+        limit,
+        engineers: squads.engineerSquadsUsed,
+        engineerLimit: run.engineerLimit,
+        gold: Math.floor(store.gold),
+      })
+    : t("recruit.noHall");
 
   const list = refs.recruitList;
   list.innerHTML = hasHall
-    ? '<div class="panel-note recruit-drag-hint">拖曳兵種縮略圖到進攻路線部署。完整數值與特殊規則請查看圖鑑。</div>'
-    : '<div class="panel-note">先建造招募所，才能拖曳部署小隊。</div>';
+    ? `<div class="panel-note recruit-drag-hint">${t("recruit.dragHint")}</div>`
+    : `<div class="panel-note">${t("recruit.buildHallFirst")}</div>`;
 
   const visible = ALLY_UNITS.filter((def) => recruitCategory(def.id) === activeTab);
   for (const def of visible) {
     const cost = run.recruitCost(def.id);
     const engineer = def.canRepair === true;
     let reason = "";
-    if (!hasHall) reason = "招募所未完成";
-    else if (engineer && squads.engineerSquadsUsed >= run.engineerLimit) reason = `工程上限 ${run.engineerLimit}`;
-    else if (!engineer && count >= limit) reason = `小隊上限 ${limit}`;
-    else if (store.gold < cost) reason = `缺 ${Math.ceil(cost - store.gold)} 金`;
+    if (!hasHall) reason = t("recruit.reasonHall");
+    else if (engineer && squads.engineerSquadsUsed >= run.engineerLimit) {
+      reason = t("recruit.reasonEngineerCap", { limit: run.engineerLimit });
+    } else if (!engineer && count >= limit) {
+      reason = t("recruit.reasonSquadCap", { limit });
+    } else if (store.gold < cost) {
+      reason = t("recruit.reasonGold", { amount: Math.ceil(cost - store.gold) });
+    }
 
+    const name = entityName("unit", def.id, def.name);
     const button = document.createElement("button");
     button.type = "button";
     button.className = "entry recruit-icon-card";
     button.dataset.recruit = def.id;
     button.disabled = Boolean(reason);
     button.draggable = !reason;
-    button.title = reason || `${def.name}：拖曳到路線部署`;
+    button.title = reason || t("recruit.dragTitle", { name });
     button.innerHTML = `
       <span class="recruit-icon-wrap">${unitThumbnailSvg(def.id)}</span>
-      <span class="recruit-icon-name">${def.name}</span>
+      <span class="recruit-icon-name">${name}</span>
       <strong class="recruit-icon-cost">${resourceIcon("gold", 16)} ${cost}</strong>
       ${reason ? `<span class="bad recruit-icon-reason">${reason}</span>` : ""}`;
 
@@ -96,8 +95,8 @@ export function renderRecruitList(
     button.addEventListener("click", () => {
       callbacks.onResult({
         ok: false,
-        title: def.name,
-        message: reason || "請按住此縮略圖，拖曳到任一進攻路線上部署。",
+        title: name,
+        message: reason || t("recruit.dragInstruction"),
         iconId: "gold",
       });
     });

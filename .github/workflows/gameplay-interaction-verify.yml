@@ -7,35 +7,48 @@ on:
     paths:
       - "src/**"
       - "tests/scene-interaction-rework.spec.ts"
+      - "tests/localization-v1.spec.ts"
       - "package.json"
       - "package-lock.json"
       - "playwright.config.ts"
+      - "vite.config.ts"
       - ".github/workflows/gameplay-interaction-verify.yml"
   workflow_dispatch:
 
 permissions:
   contents: read
 
+concurrency:
+  group: gameplay-interaction-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
 jobs:
-  gameplay-interaction:
-    name: Real pointer and recruit drag regression
+  verify:
+    name: Real pointer recruit and menu regression
     runs-on: ubuntu-latest
+    timeout-minutes: 20
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+
       - name: Use repository Node version
         uses: actions/setup-node@v4
         with:
           node-version: 22
           cache: npm
+
       - name: Install dependencies
         run: npm ci
+
       - name: TypeScript check
         run: npm run typecheck
+
       - name: Production build
         run: npm run build
+
       - name: Install Chromium
         run: npx playwright install --with-deps chromium
+
       - name: Start production preview
         shell: bash
         run: |
@@ -47,10 +60,12 @@ jobs:
           done
           cat "$RUNNER_TEMP/gameplay-interaction-preview.log"
           exit 1
-      - name: Pointer and recruit drag regression
+
+      - name: Pointer recruit drag and localization regression
         run: |
-          mkdir -p .runtime/g1-evidence
-          npx playwright test tests/scene-interaction-rework.spec.ts
+          mkdir -p .runtime/g1-evidence .runtime/localization-v1
+          npx playwright test tests/scene-interaction-rework.spec.ts tests/localization-v1.spec.ts
+
       - name: Upload runtime evidence
         if: always()
         uses: actions/upload-artifact@v4
@@ -58,6 +73,7 @@ jobs:
           name: gameplay-interaction-verification-${{ github.run_id }}
           path: |
             .runtime/g1-evidence/
+            .runtime/localization-v1/
             test-results/
             ${{ runner.temp }}/gameplay-interaction-preview.log
           if-no-files-found: warn

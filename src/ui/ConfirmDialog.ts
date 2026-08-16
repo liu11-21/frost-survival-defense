@@ -1,8 +1,8 @@
-/** A single line of the dialog body. Plain text only — never markup. */
+import { t } from "../localization";
+
 export interface ConfirmLine {
   label: string;
   value: string;
-  /** Renders in the warning colour, for anything the player stands to lose. */
   warn?: boolean;
 }
 
@@ -17,32 +17,17 @@ export interface ConfirmOptions {
   onCancel?: () => void;
 }
 
-/**
- * The blocking yes/no card used for anything irreversible.
- *
- * Demolition goes through here rather than a single keypress because the plot
- * is freed and the refund is fixed at 50% — a mis-click would be expensive and
- * cannot be undone.
- */
 export class ConfirmDialog {
   private options: ConfirmOptions | null = null;
 
-  constructor(
-    private readonly host: HTMLElement,
-    private readonly body: HTMLElement,
-  ) {}
+  constructor(private readonly host: HTMLElement, private readonly body: HTMLElement) {}
 
-  get isOpen(): boolean {
-    return this.options !== null;
-  }
+  get isOpen(): boolean { return this.options !== null; }
 
   open(options: ConfirmOptions): void {
     this.options = options;
     const rows = (options.lines ?? [])
-      .map(
-        (line) =>
-          `<div class="confirm-row${line.warn ? " warn" : ""}"><span></span><b></b></div>`,
-      )
+      .map((line) => `<div class="confirm-row${line.warn ? " warn" : ""}"><span></span><b></b></div>`)
       .join("");
     this.body.innerHTML = `
       <div class="confirm-title"></div>
@@ -53,7 +38,6 @@ export class ConfirmDialog {
         <button class="big-btn tight ghost" data-no="1"></button>
       </div>`;
 
-    // Text is written as text, so nothing a caller passes can become markup.
     setText(this.body, ".confirm-title", options.title);
     setText(this.body, ".confirm-message", options.message);
     const rowEls = this.body.querySelectorAll<HTMLElement>(".confirm-row");
@@ -66,7 +50,7 @@ export class ConfirmDialog {
       if (value) value.textContent = line.value;
     });
     setText(this.body, "[data-yes]", options.confirmLabel);
-    setText(this.body, "[data-no]", options.cancelLabel ?? "取消");
+    setText(this.body, "[data-no]", options.cancelLabel ?? t("common.cancel"));
 
     this.body.querySelector("[data-yes]")?.addEventListener("click", () => {
       const confirm = this.options?.onConfirm;

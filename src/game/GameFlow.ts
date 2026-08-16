@@ -1,5 +1,6 @@
 import { audioDirector } from "../audio/AudioDirector";
 import { audioGameplayAdapter } from "../audio/AudioGameplayAdapter";
+import { bindStaticUiLocalization, levelName, t } from "../localization";
 import type { GameSystems } from "./GameSystems";
 
 /**
@@ -39,7 +40,9 @@ export function beginRun(s: GameSystems, mode: "stage" | "endless", levelId?: st
   s.laneMarkers.setLiveLaneCount(s.waves.activeLaneCount);
   // A fresh run must not inherit the previous one's bodies.
   s.templates.clearPools();
-  s.hud.showBanner(s.run.levelName, "建造、招募、守住火爐", 4);
+  bindStaticUiLocalization(s.refs.root);
+  const runLevelId = mode === "stage" ? (levelId ?? "stage-1") : "endless";
+  s.hud.showBanner(levelName(runLevelId, s.run.levelName), t("notification.runStartBody"), 4);
   s.audio.unlock();
 }
 

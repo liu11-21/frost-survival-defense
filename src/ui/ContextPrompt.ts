@@ -1,9 +1,9 @@
 import type { BuildSlot } from "../buildings/BuildSlot";
 import type { BuildingManager } from "../buildings/BuildingManager";
 import { BUILDING_BY_ID } from "../data/BuildingDefinitions";
-import { RESOURCE_LABELS } from "../data/EconomyConfig";
 import type { Furnace } from "../heat/Furnace";
 import type { HeroController } from "../hero/HeroController";
+import { entityName, t } from "../localization";
 import type { NaturalResourceNode } from "../resources/NaturalResourceNode";
 import type { ResourceNodeManager } from "../resources/ResourceNodeManager";
 import type { RunController } from "../modes/RunController";
@@ -12,45 +12,16 @@ export type InteractionKind = "none" | "buildSlot" | "furnace" | "collect" | "no
 
 export interface Interaction {
   kind: InteractionKind;
-  /** The `E` label, e.g. "E　建造設施". */
   label: string;
-  /** Secondary line: cost, stock, or why it is unavailable. */
   detail: string;
   slot: BuildSlot | null;
   node: NaturalResourceNode | null;
-  /** Blocked interactions still show, so the player learns the rule. */
   enabled: boolean;
 }
 
-const NONE: Interaction = {
-  kind: "none",
-  label: "",
-  detail: "",
-  slot: null,
-  node: null,
-  enabled: false,
-};
-
+const NONE: Interaction = { kind: "none", label: "", detail: "", slot: null, node: null, enabled: false };
 const REACH = { slot: 3.4, furnace: 4.2, node: 3.0 };
 
-/**
- * Decides the single most relevant thing the player can press `E` on.
- *
- * Only one prompt is ever shown — the nearest valid one — so the screen never
- * fills with competing hints.
- *
- * Every occupied slot resolves to `"buildSlot"` unless it has resources
- * waiting to be collected. That single kind is what opens the build panel,
- * and the build panel always shows a completed building's info card with its
- * demolish button (see `ActionPanels.renderBuild` / `BuildingInfoPanel`) —
- * regardless of whether the building can be attacked. Recruiting and the
- * auto-rebuild toggle both have their own always-available keys (`R` and
- * `T`), so routing `E` through the same info panel for the recruit hall and
- * the auto-rebuilder costs nothing and is what makes them demolishable at
- * all: previously `E` on those two ran their quick action instead of ever
- * opening a panel, so their demolish button was unreachable through the
- * prompt the game actually tells the player to use.
- */
 export class ContextPrompt {
   private current: Interaction = NONE;
 
@@ -68,30 +39,25 @@ export class ContextPrompt {
   evaluate(hero: HeroController): Interaction {
     const x = hero.position.x;
     const z = hero.position.z;
-
     let best: Interaction = NONE;
     let bestDist = Infinity;
-
     const consider = (dist: number, make: () => Interaction): void => {
       if (dist >= bestDist) return;
       bestDist = dist;
       best = make();
     };
 
-    // --- build slots -------------------------------------------------------
     const slot = this.nearestSlot(x, z);
     if (slot) {
       const dist = Math.hypot(slot.x - x, slot.z - z);
       if (dist <= REACH.slot) consider(dist, () => this.describeSlot(slot));
     }
 
-    // --- the furnace -------------------------------------------------------
     const furnaceDist = Math.hypot(x, z);
     if (furnaceDist <= this.furnace.hitRadius + REACH.furnace) {
       consider(furnaceDist, () => this.describeFurnace());
     }
 
-    // --- a resource node ---------------------------------------------------
     const node = this.nodes.findNearestAny(x, z, REACH.node);
     if (node) {
       const dist = Math.sqrt(node.distanceSqTo(x, z));
@@ -119,62 +85,69 @@ export class ContextPrompt {
 
   private describeSlot(slot: BuildSlot): Interaction {
     const building = slot.building;
-
     if (building?.alive) {
       const def = building.def;
+      const name = entityName("building", def.id, def.name);
       if (!building.isComplete) {
         return {
           kind: "buildSlot",
-          label: `E　查看建造進度：${def.name}`,
-          detail: `進度 ${(building.buildProgress * 100).toFixed(0)}% · 剩餘 ${building.buildRemaining.toFixed(1)} 秒`,
+          label: t("prompt.buildProgress", { name }),
+          detail: t("prompt.progressDetail", {
+            progress: (building.buildProgress * 100).toFixed(0),
+            seconds: building.buildRemaining.toFixed(1),
+          }),
           slot,
           node: null,
           enabled: true,
         };
       }
       if (def.produces && building.storedAmount >= 1) {
-        const label = RESOURCE_LABELS[def.produces];
+        const resource = t(`resource.${def.produces}`);
         return {
           kind: "collect",
-          label: `E　收取 ${Math.floor(building.storedAmount)} ${label}`,
-          detail: building.storedAmount >= (def.bufferCap ?? 100) ? "暫存已滿" : def.name,
+          label: t("prompt.collect", { amount: Math.floor(building.storedAmount), resource }),
+          detail: building.storedAmount >= (def.bufferCap ?? 100) ? t("prompt.bufferFull") : name,
           slot,
           node: null,
           enabled: true,
         };
       }
-      const hp = def.canBeAttacked
-        ? `生命 ${Math.ceil(building.health)} / ${building.maxHealth}`
-        : "不可被攻擊";
+      const status = def.canBeAttacked
+        ? t("prompt.health", { health: Math.ceil(building.health), max: building.maxHealth })
+        : t("prompt.invulnerable");
       return {
         kind: "buildSlot",
-        label: `E　查看設施：${def.name}`,
-        detail: `${hp} · 可拆除`,
+        label: t("prompt.inspect", { name }),
+        detail: t("prompt.demolishable", { status }),
         slot,
         node: null,
         enabled: true,
       };
     }
 
-    // Empty slot: say exactly what may go here, or exactly why nothing can.
     if (!slot.isUnlocked(this.furnace.currentLevel)) {
       return {
         kind: "buildSlot",
-        label: "火爐升級後解鎖",
-        detail: `${slot.name} · 火爐 Lv.${slot.unlockLevel} 解鎖${slot.surface === "sky" ? " · 天空攻擊平台" : ""}`,
+        label: t("prompt.unlock"),
+        detail: t("prompt.unlockDetail", {
+          level: slot.unlockLevel,
+          sky: slot.surface === "sky" ? t("prompt.skyPlatform") : "",
+        }),
         slot,
         node: null,
         enabled: false,
       };
     }
+
     const pending = this.buildings.rebuildQueue.all.findIndex((i) => i.slotId === slot.id);
     if (pending >= 0) {
       const item = this.buildings.rebuildQueue.all[pending];
       const def = BUILDING_BY_ID.get(item.buildingType);
+      const name = def ? entityName("building", def.id, def.name) : item.buildingType;
       return {
         kind: "buildSlot",
-        label: "E　建造設施",
-        detail: `等待自動重建：${def?.name ?? item.buildingType}（佇列第 ${pending + 1} 位）`,
+        label: t("prompt.build"),
+        detail: t("prompt.waitRebuild", { name, position: pending + 1 }),
         slot,
         node: null,
         enabled: true,
@@ -182,26 +155,19 @@ export class ContextPrompt {
     }
 
     const detail = slot.category === "wall"
-      ? slot.name
+      ? t("prompt.wallSlot")
       : slot.surface === "sky"
-        ? `${slot.name} · 僅可建造攻擊型設施 · 天空設施不受地面敵人攻擊`
-        : `${slot.name} · 可建造任何一般設施`;
-    return {
-      kind: "buildSlot",
-      label: "E　建造設施",
-      detail,
-      slot,
-      node: null,
-      enabled: true,
-    };
+        ? t("prompt.skySlot")
+        : t("prompt.generalSlot");
+    return { kind: "buildSlot", label: t("prompt.build"), detail, slot, node: null, enabled: true };
   }
 
   private describeFurnace(): Interaction {
     if (!this.run.allowFurnaceUpgrade) {
       return {
         kind: "furnace",
-        label: "E　查看火爐",
-        detail: "本關卡禁止升級火爐",
+        label: t("prompt.viewFurnace"),
+        detail: t("prompt.upgradeDisabled"),
         slot: null,
         node: null,
         enabled: true,
@@ -210,8 +176,13 @@ export class ContextPrompt {
     const cost = this.run.furnaceUpgradeCost;
     return {
       kind: "furnace",
-      label: "E　查看火爐升級",
-      detail: `Lv.${this.furnace.currentLevel} · ${cost.wood ?? 0} 木 ${cost.stone ?? 0} 石 ${cost.gold ?? 0} 金`,
+      label: t("prompt.viewFurnaceUpgrade"),
+      detail: t("prompt.upgradeCost", {
+        level: this.furnace.currentLevel,
+        wood: cost.wood ?? 0,
+        stone: cost.stone ?? 0,
+        gold: cost.gold ?? 0,
+      }),
       slot: null,
       node: null,
       enabled: true,
@@ -219,11 +190,11 @@ export class ContextPrompt {
   }
 
   private describeNode(node: NaturalResourceNode): Interaction {
-    const label = RESOURCE_LABELS[node.kind];
+    const resource = t(`resource.${node.kind}`);
     if (node.isDepleted) {
       return {
         kind: "node",
-        label: node.kind === "wood" ? "此樹木已耗盡" : "此礦點已耗盡",
+        label: t(node.kind === "wood" ? "prompt.treeDepleted" : "prompt.oreDepleted"),
         detail: "",
         slot: null,
         node,
@@ -232,8 +203,8 @@ export class ContextPrompt {
     }
     return {
       kind: "node",
-      label: `靠近自動採集 ${label}`,
-      detail: `剩餘 ${node.remaining} / ${node.capacity}`,
+      label: t("prompt.autoCollect", { resource }),
+      detail: t("prompt.remaining", { remaining: node.remaining, capacity: node.capacity }),
       slot: null,
       node,
       enabled: false,

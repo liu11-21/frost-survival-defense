@@ -1,5 +1,6 @@
 import { audioDirector } from "../audio/AudioDirector";
 import type { UpgradeId } from "../data/UpgradeDefinitions";
+import { bindStaticUiLocalization, setLocale } from "../localization";
 import type { MenuChoice } from "../ui/GameMenus";
 import type { GameSystems } from "./GameSystems";
 
@@ -9,14 +10,10 @@ export interface MenuActions {
   openMainMenu(): void;
   resume(): void;
   openCodex(): void;
-  /** Called when a choice puts the player back into the running game. */
   leaveMenu(): void;
 }
 
-/**
- * Turns a menu selection into the thing it does. Split out of `Game` so the
- * frame loop and the input glue stay readable; nothing here decides rules.
- */
+/** Menu routing remains the existing behavior owner; locale is one new presentation choice. */
 export function routeMenuChoice(s: GameSystems, choice: MenuChoice, actions: MenuActions): void {
   switch (choice.kind) {
     case "stage":
@@ -42,6 +39,12 @@ export function routeMenuChoice(s: GameSystems, choice: MenuChoice, actions: Men
       break;
     case "settings":
       showSettings(s, choice.from);
+      break;
+    case "locale":
+      setLocale(choice.locale);
+      bindStaticUiLocalization(s.refs.root);
+      if (choice.from === "settings") showSettings(s);
+      else actions.openMainMenu();
       break;
     case "quality":
       s.quality.setSetting(choice.level as never);
@@ -88,4 +91,5 @@ function showSettings(s: GameSystems, from?: "pause"): void {
     from,
   );
   audioDirector.mountSettingsControls(s.refs.screenBody);
+  bindStaticUiLocalization(s.refs.root);
 }
