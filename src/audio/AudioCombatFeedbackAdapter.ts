@@ -3,6 +3,8 @@ import type { Damageable } from "../combat/Damageable";
 import type { AudioManager, SfxName } from "../effects/AudioManager";
 import type { HeroController } from "../hero/HeroController";
 
+const FLAG_AURA_CUE_INTERVAL_SECONDS = 4;
+
 /**
  * Audio-only adapter around the existing CombatFeedback. It preserves every
  * visual call while giving combat code one positional sound hook. No gameplay
@@ -10,6 +12,7 @@ import type { HeroController } from "../hero/HeroController";
  */
 export class AudioCombatFeedbackAdapter implements CombatVfx {
   private heroGetter: (() => HeroController) | null = null;
+  private lastFlagAuraCueAt = -Infinity;
 
   constructor(
     private readonly inner: CombatVfx,
@@ -50,7 +53,16 @@ export class AudioCombatFeedbackAdapter implements CombatVfx {
   ): void { this.inner.heroSkill(kind, x, z, radius); }
   airStrike(x: number, z: number, radius: number): void { this.inner.airStrike(x, z, radius); }
   groundFire(x: number, z: number, radius: number, duration: number): void { this.inner.groundFire(x, z, radius, duration); }
-  supportAura(x: number, z: number, radius: number): void { this.inner.supportAura(x, z, radius); }
+  supportAura(x: number, z: number, radius: number): void {
+    this.inner.supportAura(x, z, radius);
+    const now = performance.now() / 1000;
+    if (now - this.lastFlagAuraCueAt < FLAG_AURA_CUE_INTERVAL_SECONDS) return;
+    this.lastFlagAuraCueAt = now;
+    // TEMP restrained banner presence: low volume, low priority and a long
+    // cadence so the non-attacking Flagbearer is audible without becoming a
+    // repeating horn wall in large formations.
+    this.audio.playAt("commanderHorn", x, z, 0.1, 1.35, -28);
+  }
   taunt(x: number, z: number, radius: number): void { this.inner.taunt(x, z, radius); }
   teleport(x: number, z: number): void { this.inner.teleport(x, z); }
   unitDeath(x: number, z: number, level: number): void { this.inner.unitDeath(x, z, level); }
