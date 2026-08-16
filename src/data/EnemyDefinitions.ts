@@ -20,6 +20,7 @@ export const ENEMY_UNITS: UnitDefinition[] = [
     moveSpeed: 2.9,
     scale: 0.9,
     visual: "grunt",
+    attackSoundOverride: "enemyAttack",
     maxAreaTargets: 4,
   },
   {
@@ -36,6 +37,7 @@ export const ENEMY_UNITS: UnitDefinition[] = [
     moveSpeed: 2.8,
     scale: 0.86,
     visual: "slinger",
+    attackSoundOverride: "heroRanged",
   },
   {
     id: "bruiser",
@@ -53,6 +55,7 @@ export const ENEMY_UNITS: UnitDefinition[] = [
     moveSpeed: 2.6,
     scale: 1.0,
     visual: "bruiser",
+    attackSoundOverride: "wallHit",
   },
   {
     id: "marksman",
@@ -68,6 +71,7 @@ export const ENEMY_UNITS: UnitDefinition[] = [
     moveSpeed: 2.9,
     scale: 0.92,
     visual: "marksman",
+    attackSoundOverride: "heroRanged",
   },
   {
     id: "juggernaut",
@@ -86,6 +90,7 @@ export const ENEMY_UNITS: UnitDefinition[] = [
     moveSpeed: 2.1,
     scale: 1.45,
     visual: "juggernaut",
+    attackSoundOverride: "wallHit",
   },
   {
     id: "bombardier",
@@ -103,6 +108,7 @@ export const ENEMY_UNITS: UnitDefinition[] = [
     moveSpeed: 2.4,
     scale: 1.2,
     visual: "bombardier",
+    attackSoundOverride: "bomberBlast",
     maxAreaTargets: 6,
   },
   {
@@ -121,6 +127,7 @@ export const ENEMY_UNITS: UnitDefinition[] = [
     moveSpeed: 1.9,
     scale: 2.1,
     visual: "boss",
+    attackSoundOverride: "bossSlam",
     maxAreaTargets: 8,
   },
   {
@@ -141,6 +148,7 @@ export const ENEMY_UNITS: UnitDefinition[] = [
     moveSpeed: 2.3,
     scale: 1.3,
     visual: "breacher",
+    attackSoundOverride: "wallHit",
   },
   {
     id: "icearmor",
@@ -157,6 +165,7 @@ export const ENEMY_UNITS: UnitDefinition[] = [
     moveSpeed: 2.0,
     scale: 1.35,
     visual: "icearmor",
+    attackSoundOverride: "armorBreak",
   },
   {
     id: "commander",
@@ -218,6 +227,7 @@ export const ENEMY_UNITS: UnitDefinition[] = [
     scale: 0.78,
     visual: "flyingMelee",
     isFlying: true,
+    attackSoundOverride: "enemyAttack",
     maxAreaTargets: 4,
   },
   {
@@ -235,6 +245,7 @@ export const ENEMY_UNITS: UnitDefinition[] = [
     scale: 0.8,
     visual: "flyingEliteArcher",
     isFlying: true,
+    attackSoundOverride: "heroRanged",
   },
   {
     id: "flyingBomber",
@@ -253,6 +264,7 @@ export const ENEMY_UNITS: UnitDefinition[] = [
     scale: 1,
     visual: "flyingBomber",
     isFlying: true,
+    attackSoundOverride: "bomberBlast",
     maxAreaTargets: 6,
   },
   {
@@ -272,6 +284,7 @@ export const ENEMY_UNITS: UnitDefinition[] = [
     scale: 1.65,
     visual: "flyingColossus",
     isFlying: true,
+    attackSoundOverride: "bossSlam",
     maxAreaTargets: 8,
   },
 ];

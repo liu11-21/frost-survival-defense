@@ -18,6 +18,9 @@ import { audioGameplayAdapter } from "../audio/AudioGameplayAdapter";
 export function runFrame(s: GameSystems, dt: number, support: SupportSystems): void {
   s.world.rebuildIndex();
   s.hero.update(dt, s.input, s.camera, false);
+  // Positional SFX follows the player/listener; this is read-only presentation
+  // state and never feeds back into combat targeting or movement.
+  s.audio.setListenerPosition(s.hero.position.x, s.hero.position.z);
   s.heroSkills.update(dt);
   const enemiesPresent = s.squads.livingEnemyUnits > 0;
   updateSquadDeploymentPolicy(s, enemiesPresent);

@@ -26,6 +26,16 @@ export function createCombatContext(
   const damage = (target: Damageable, amount: number, fromX: number, fromZ: number, source: DamageSource = "skill"): void => {
     if (!target.alive || amount <= 0) return;
     target.applyDamage(amount, fromX, fromZ, source);
+
+    // Audio observes the canonical damage result but never changes it.
+    // Hit feedback lives here because faction/kind is authoritative here.
+    // Death feedback remains owned by the existing unitDeath(x,z) callback so
+    // a fatal hit cannot emit the same death event through two independent paths.
+    if (target.kind === "unit" && target.faction === "enemy") {
+      const level = Math.max(1, target.level);
+      vfx.soundAt?.("enemyHit", target.position.x, target.position.z, Math.min(0.58, 0.3 + level * 0.025), 1, Math.min(12, level * 2));
+    }
+
     if (target.kind === "furnace") {
       hooks.onFurnaceHit();
     } else if (target.kind !== "unit" && target.kind !== "hero") {
