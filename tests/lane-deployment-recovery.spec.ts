@@ -135,12 +135,15 @@ test("the road is deployable from the furnace circle outward and the central res
   await dragRecruit(page, "shield", -4, 0);
   status = (await call(page, "allyLaneStatus")) as Array<any>;
   const beforeThird = uniqueSquads(status);
+  const warriorSquadsBeforeThird = uniqueSquads(status.filter((unit) => unit.id === "warrior"));
 
   // A third ordinary central squad is rejected before RunController spends.
-  await dragRecruit(page, "mage", 0, -4);
+  // Re-use the affordable Warrior card so the assertion reaches the central
+  // reserve gate instead of being intercepted by the resource-cap contract.
+  await dragRecruit(page, "warrior", 0, -4);
   status = (await call(page, "allyLaneStatus")) as Array<any>;
   expect(uniqueSquads(status)).toBe(beforeThird);
-  expect(status.some((unit) => unit.id === "mage")).toBe(false);
+  expect(uniqueSquads(status.filter((unit) => unit.id === "warrior"))).toBe(warriorSquadsBeforeThird);
 });
 
 test("with no enemies ordinary allies return inside the real furnace heal aura and recover", async ({ page }) => {
