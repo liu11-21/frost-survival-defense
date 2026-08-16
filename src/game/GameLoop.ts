@@ -2,6 +2,7 @@ import { CAMERA } from "./GameConfig";
 import type { GameSystems } from "./GameSystems";
 import type { SupportSystems } from "./SupportSystems";
 import { updateFrameUi } from "./GameLoopUi";
+import { updateSquadDeploymentPolicy } from "./SquadDeploymentPolicy";
 import { computeLaneCoverage } from "../buildings/AttackRangeGeometry";
 import { LANES } from "../data/BuildSlotDefinitions";
 import { BUILDING_BY_ID } from "../data/BuildingDefinitions";
@@ -18,7 +19,12 @@ export function runFrame(s: GameSystems, dt: number, support: SupportSystems): v
   s.world.rebuildIndex();
   s.hero.update(dt, s.input, s.camera, false);
   s.heroSkills.update(dt);
-  s.squads.update(dt, s.hero.alive ? s.hero.position : null);
+  const enemiesPresent = s.squads.livingEnemyUnits > 0;
+  updateSquadDeploymentPolicy(s, enemiesPresent);
+  // No enemies means every squad rallies on the furnace instead of following
+  // the Hero. Ordinary squads keep their authored deployment homes in the
+  // policy module and resume them when combat returns.
+  s.squads.update(dt, enemiesPresent && s.hero.alive ? s.hero.position : null);
   s.navigator.update(dt);
   s.buildings.update(dt, s.ctx, s.hero.position, s.run.productionRate, s.furnace.currentLevel);
   s.projectiles.update(dt);
