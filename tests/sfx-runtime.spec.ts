@@ -398,32 +398,36 @@ test("real gameplay separates Hero swing from hit and produces ranged, enemy-hit
   await page.waitForTimeout(260);
   await gameCall(page, "startStage", "stage-1");
   await gameCall(page, "setHeroSkillCooldown", "seismicWave", 999);
-  await page.evaluate(() => {
-    const target = window as any;
-    const audio = target.frostbound?.game?.s?.audio;
-    const original = audio.playAt.bind(audio);
-    target.__enemyHitAudioProbe = { calls: 0, activeAtTrigger: false, positional: false };
-    audio.playAt = (name: string, ...args: unknown[]) => {
-      original(name, ...args);
-      if (name !== "enemyHit") return;
-      const voices = audio.snapshot().activeVoices as SfxVoice[];
-      const voice = voices
-        .filter((candidate) => candidate.requestedName === "enemyHit")
-        .sort((a, b) => b.id - a.id)[0];
-      target.__enemyHitAudioProbe.calls++;
-      target.__enemyHitAudioProbe.activeAtTrigger ||= voice?.sourceState === "playing";
-      target.__enemyHitAudioProbe.positional ||= voice?.positional === true;
-    };
-  });
   await gameCall(page, "teleport", 0, -5);
   await gameCall(page, "spawnEnemy", "bruiser", 0, -3.5);
   await stepUntilVoice(page, "heroMeleeSwing", 24, "heroMelee");
-  snapshot = await stepUntilVoice(page, "heroMeleeHit", 24);
-  expect(playing(snapshot, "heroMeleeHit").length).toBeGreaterThan(0);
-  const enemyHitProbe = await page.evaluate(() => (window as any).__enemyHitAudioProbe);
-  expect(enemyHitProbe.calls).toBeGreaterThan(0);
-  expect(enemyHitProbe.activeAtTrigger).toBe(true);
-  expect(enemyHitProbe.positional).toBe(true);
+
+  const hitEvidence = await page.evaluate(() => {
+    const target = window as any;
+    let enemyHit = false;
+    let enemyHitPositional = false;
+    let heroMeleeHit = false;
+    for (let frame = 0; frame < 120; frame++) {
+      target.frostbound.step(0.01, 1, false);
+      const current = target.frostboundSfx.snapshot();
+      const enemyVoice = current.activeVoices.find(
+        (voice: SfxVoice) => voice.requestedName === "enemyHit" && voice.sourceState === "playing",
+      );
+      const heroVoice = current.activeVoices.find(
+        (voice: SfxVoice) => voice.event === "heroMeleeHit" && voice.sourceState === "playing",
+      );
+      if (enemyVoice) {
+        enemyHit = true;
+        enemyHitPositional ||= enemyVoice.positional === true;
+      }
+      if (heroVoice) heroMeleeHit = true;
+      if (enemyHit && heroMeleeHit) break;
+    }
+    return { enemyHit, enemyHitPositional, heroMeleeHit };
+  });
+  expect(hitEvidence.heroMeleeHit).toBe(true);
+  expect(hitEvidence.enemyHit).toBe(true);
+  expect(hitEvidence.enemyHitPositional).toBe(true);
 
   // CombatDirector owns enemyHit; the existing unitDeath(x,z) callback owns
   // exactly one positional enemyDeath voice when the unit actually dies.
