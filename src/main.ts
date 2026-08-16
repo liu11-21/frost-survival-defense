@@ -1,9 +1,12 @@
 import { Game } from "./game/Game";
 import { showFatalError } from "./ui/LoadingScreen";
+import { installMainMenuV2 } from "./ui/MainMenuV2";
 import "./styles.css";
 import "./ui.css";
 import "./ui-hud.css";
 import "./ui-scene-rework.css";
+import "./main-menu-v2.css";
+import "./main-menu-v2-tuning.css";
 
 /** Entry point: find the canvas, start the game, report fatal failures visibly. */
 async function bootstrap(): Promise<void> {
@@ -20,6 +23,10 @@ async function bootstrap(): Promise<void> {
     return;
   }
 
+  // Presentation-only adapter: GameMenus keeps ownership of routing and the
+  // Babylon scene remains the live background. Install before async startup so
+  // the first main-menu render is upgraded instead of flashing the old layout.
+  installMainMenuV2();
   game.start().catch(showFatal);
 
   const params = new URLSearchParams(window.location.search);

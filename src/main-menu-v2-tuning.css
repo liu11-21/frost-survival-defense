@@ -1,0 +1,82 @@
+/* Final production hardening kept separate from the visual system so the
+ * behavior adapter remains small and reviewable. */
+.menu-v2-shell {
+  box-sizing: border-box;
+  max-width: 100%;
+  max-height: 100%;
+  isolation: isolate;
+}
+
+.menu-v2-legacy-actions {
+  display: none !important;
+}
+
+.menu-v2-ambient {
+  z-index: 0;
+}
+
+/* The live Babylon furnace sits at the visual centre. This restrained animated
+ * halo reinforces its existing bloom without adding another gameplay light or
+ * touching scene state. It reads as the last warm source inside the cold map. */
+.menu-v2-shell::before {
+  content: "";
+  position: absolute;
+  z-index: 0;
+  left: 50%;
+  top: 50.5%;
+  width: clamp(250px, 22vw, 430px);
+  aspect-ratio: 1;
+  pointer-events: none;
+  transform: translate(-50%, -50%) scale(0.96);
+  border-radius: 50%;
+  background:
+    radial-gradient(circle,
+      rgba(255, 194, 121, 0.31) 0%,
+      rgba(232, 137, 62, 0.18) 13%,
+      rgba(199, 91, 31, 0.085) 30%,
+      rgba(113, 47, 18, 0.025) 47%,
+      transparent 68%);
+  filter: blur(7px);
+  mix-blend-mode: screen;
+  animation: menu-v2-furnace-breathe 4.4s ease-in-out infinite;
+}
+
+/* A very slow cold haze gives the distant snow field depth while the simulation
+ * is intentionally halted on the menu. It stays below all text and controls. */
+.menu-v2-shell::after {
+  content: "";
+  position: absolute;
+  z-index: 0;
+  inset: 0;
+  pointer-events: none;
+  opacity: 0.5;
+  background:
+    radial-gradient(ellipse at 48% 26%, rgba(171, 205, 225, 0.07), transparent 38%),
+    linear-gradient(112deg, transparent 28%, rgba(164, 195, 214, 0.035) 48%, transparent 67%);
+  transform: translate3d(-0.8%, 0, 0);
+  animation: menu-v2-cold-haze 12s ease-in-out infinite alternate;
+}
+
+.menu-v2-brand,
+.menu-v2-panel {
+  position: relative;
+  z-index: 1;
+}
+
+@keyframes menu-v2-furnace-breathe {
+  0%, 100% { opacity: 0.72; transform: translate(-50%, -50%) scale(0.93); }
+  38% { opacity: 1; transform: translate(-50%, -50%) scale(1.035); }
+  62% { opacity: 0.82; transform: translate(-50%, -50%) scale(0.975); }
+}
+
+@keyframes menu-v2-cold-haze {
+  0% { opacity: 0.36; transform: translate3d(-1.2%, 0, 0) scale(1); }
+  100% { opacity: 0.58; transform: translate3d(1.1%, 0.6%, 0) scale(1.018); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .menu-v2-shell::before,
+  .menu-v2-shell::after {
+    animation: none !important;
+  }
+}
