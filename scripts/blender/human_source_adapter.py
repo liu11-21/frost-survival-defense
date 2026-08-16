@@ -851,11 +851,48 @@ def emit_ally_contract(root, armature, height):
     # so the socket was authored 0.21 m from where the exported bind pose puts
     # the hand. The GLB ships the bind pose; the locators must agree with it.
     bones = armature.data.bones
-    hand = bones.get("hand.R") or bones.get("hand_r")
+
+    # WHICH HAND IS A FACT ABOUT THE MESH, not a constant.
+    #
+    # This used to read `hand.R` unconditionally, which was true of every
+    # character built so far and silently wrong for the first one that is not:
+    # a weapon rigid to the left hand still exported, still passed its triangle
+    # budget, and left `weapon_socket`, `upper_grip` and `axe_tip` sitting on
+    # the empty right hand a metre away from the thing they describe.
+    #
+    # A carried item is rigid on exactly ONE bone -- that is the contract the
+    # carried-item validator enforces -- so the bone can be read straight off
+    # its weights, for the same reason the tip is read off its geometry a few
+    # lines below: a fact taken from the object cannot drift from the object.
+    # Right-handed characters resolve to `hand.R` because that IS their bone,
+    # so nothing already shipped changes.
+    carried = None
+    for obj in bpy.data.objects:
+        if obj.type != "MESH" or not obj.name.startswith("LOD0"):
+            continue
+        if "Sword" in (obj.data.name or "") or "Axe" in (obj.data.name or ""):
+            carried = obj
+            break
+    grip_bone = "hand.R"
+    if carried is not None and carried.vertex_groups:
+        weight = {}
+        names = {g.index: g.name for g in carried.vertex_groups}
+        for vertex in carried.data.vertices:
+            for entry in vertex.groups:
+                if entry.weight > 1e-4:
+                    key = names.get(entry.group, "")
+                    weight[key] = weight.get(key, 0.0) + entry.weight
+        if weight:
+            grip_bone = max(weight, key=weight.get)
+    side = ".L" if grip_bone.endswith((".L", "_l")) else ".R"
+    hand = (bones.get(grip_bone) or bones.get("hand%s" % side)
+            or bones.get("hand_%s" % side[-1].lower()))
     if hand is None:
-        raise SystemExit("ally contract needs a right hand bone; rig has none")
+        raise SystemExit("ally contract needs a hand bone; rig has none")
+    print("WEAPON_GRIP_BONE %s" % json.dumps({"bone": hand.name}))
     grip = armature.matrix_world @ hand.head_local
-    lower = bones.get("lower_arm.R") or bones.get("lowerarm_r")
+    lower = (bones.get("lower_arm%s" % side)
+             or bones.get("lowerarm_%s" % side[-1].lower()))
     # The haft crosses the palm; it does not fold back along the arm.
     #
     # The first version used the forearm direction itself, so the weapon ran
@@ -879,13 +916,7 @@ def emit_ally_contract(root, armature, height):
     #
     # The tip of the axe is a fact about the mesh. Read it off the mesh and the
     # contract cannot drift from the object again.
-    axe = None
-    for obj in bpy.data.objects:
-        if obj.type != "MESH" or not obj.name.startswith("LOD0"):
-            continue
-        if "Sword" in (obj.data.name or "") or "Axe" in (obj.data.name or ""):
-            axe = obj
-            break
+    axe = carried
     if axe is not None and len(axe.data.vertices) > 8:
         # Find the head by SHAPE, not by distance and not from a coordinate the
         # kit hands over.
@@ -908,7 +939,25 @@ def emit_ally_contract(root, armature, height):
             offset = point - grip
             return (offset - shaft * offset.dot(shaft)).length
 
-        measured_tip = max(points, key=sideways)
+        # WHICH END IS THE BUSINESS END DEPENDS ON THE WEAPON, SO THE KIT SAYS.
+        #
+        # "Furthest off the long axis" is an AXE rule: the head is the thing
+        # standing out sideways from a haft. On a musket it picks the lock
+        # plate or the trigger guard, because a firearm is almost entirely
+        # axis and its business end is the far end OF that axis.
+        #
+        # The kit declares a rule, not a coordinate. Passing the tip across as
+        # a vector was tried and failed: the kit builds in a Y-up pivot and the
+        # adapter runs in Z-up, so the height arrived in the depth slot and
+        # axe_tip landed on the floor. A string survives any frame.
+        #
+        # Default is "offaxis", so the Hero, the Warrior and the Shield are
+        # unaffected -- none of them sets it.
+        rule = (axe.get("tipRule") or "offaxis")
+        measured_tip = (far if rule == "far" else max(points, key=sideways))
+        print("WEAPON_TIP_RULE %s" % json.dumps(
+            {"rule": rule, "offAxis": round(sideways(measured_tip), 4),
+             "alongAxis": round((measured_tip - grip).dot(shaft), 4)}))
         # The SUPPORT HAND RUNS DOWN THE HAFT, NOT AWAY FROM THE HEAD.
         #
         # lower_grip used to be derived from the direction of the head, on the

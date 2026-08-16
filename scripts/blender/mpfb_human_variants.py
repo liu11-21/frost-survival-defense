@@ -61,6 +61,21 @@ VARIANTS = {
     # it. The width has to come from build and kit, not from inflating the
     # body -- the three share a base mesh and a rig, and a body scaled wide
     # deforms badly at the shoulder the moment an arm swings.
+    # The ranged line. TALL and NARROW on purpose -- the Shield is the
+    # broadest thing in the roster and this is the opposite pole, so the two
+    # never read as the same body under different kit. Lighter and younger than
+    # the others: a musketeer's job is standing still and reloading, not
+    # absorbing a charge.
+    "musketeer": {
+        "gender": 0.93,
+        "age": 0.44,
+        "muscle": 0.52,
+        "weight": 0.34,
+        "height": 0.72,
+        "proportions": 0.62,
+        "cupsize": 0.0,
+        "firmness": 0.7,
+    },
     "shield": {
         "gender": 0.96,
         "age": 0.58,
