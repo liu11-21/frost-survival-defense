@@ -222,7 +222,9 @@ test("variation pools play real WebAudio sources with bounded pitch and volume j
     expect(voice?.pitch).toBeGreaterThan(0.95);
     expect(voice?.pitch).toBeLessThan(1.05);
     picked.push(voice!.variation);
-    await page.waitForTimeout(60);
+    // Wait for the longest swing recipe to end so this test measures variation
+    // selection, not the intentional per-event concurrency cap of two voices.
+    await page.waitForTimeout(220);
   }
   expect(picked[1]).not.toBe(picked[0]);
   expect(picked[2]).not.toBe(picked[1]);
@@ -381,6 +383,7 @@ test("Master, Music and SFX controls are independent and shared mute reaches bot
 test("real gameplay separates Hero swing from hit and produces ranged, enemy-hit and death SFX", async ({ page }) => {
   await boot(page);
   await gameCall(page, "startStage", "stage-1");
+  await gameCall(page, "setHeroSkillCooldown", "seismicWave", 999);
   await gameCall(page, "teleport", 0, -5);
   await gameCall(page, "spawnEnemy", "grunt", 0, -3.5);
 
@@ -394,6 +397,7 @@ test("real gameplay separates Hero swing from hit and produces ranged, enemy-hit
 
   await page.waitForTimeout(260);
   await gameCall(page, "startStage", "stage-1");
+  await gameCall(page, "setHeroSkillCooldown", "seismicWave", 999);
   await gameCall(page, "teleport", 0, -5);
   await gameCall(page, "spawnEnemy", "bruiser", 0, -3.5);
   await stepUntilVoice(page, "heroMeleeSwing", 24, "heroMelee");
@@ -409,6 +413,7 @@ test("real gameplay separates Hero swing from hit and produces ranged, enemy-hit
 
   await page.waitForTimeout(750);
   await gameCall(page, "startStage", "stage-1");
+  await gameCall(page, "setHeroSkillCooldown", "seismicWave", 999);
   await gameCall(page, "teleport", 0, -5);
   await gameCall(page, "spawnEnemy", "bruiser", 0, 1.5);
   snapshot = await stepUntilVoice(page, "heroRangedShot", 40, "heroRanged");
