@@ -23,10 +23,18 @@ Gameplay SFX V1 intentionally uses temporary procedural Web Audio synthesis so t
 | Build completion accent | `src/effects/AudioManager.ts` layered clunk + confirmation synthesis | 2 | No | Project-authored runtime synthesis; no third-party sample | TEMP |
 | Boss slam accent | `src/effects/AudioManager.ts` layered impact + sub synthesis | 2 | No | Project-authored runtime synthesis; no third-party sample | TEMP |
 | Hero skill accents | `src/effects/AudioManager.ts` frost / barrage / rally synthesis | 2 each | No | Project-authored runtime synthesis; no third-party sample | TEMP |
+| Character roster attack routing | Existing procedural melee / shot / magic / impact / artillery / horn families selected by unit definition | Family pool | No | Project-authored runtime synthesis; no third-party sample | TEMP |
+| Flagbearer aura presence | Existing procedural horn family, throttled to one low-priority cue per 4 seconds | 2 | No | Project-authored runtime synthesis; no third-party sample | TEMP |
 | UI confirm / error | `src/effects/AudioManager.ts` procedural synthesis | 1 + 1 | No | Project-authored runtime synthesis; no third-party sample | TEMP |
 | Furnace ambience / cold wind | `src/effects/AudioManager.ts` oscillator + generated noise loops | 2 loops | No | Project-authored runtime synthesis; no third-party sample | TEMP |
 
 No third-party SFX binary assets are introduced by Gameplay SFX V1. The generated noise buffer and oscillator tones are created at runtime and are not downloaded media.
+
+## Character roster routing
+
+Every current attack-capable ally, temporary escort and enemy definition declares an explicit attack-sound family. Roles are grouped by readable weapon language rather than receiving loud unique samples: melee swishes, shield/heavy impacts, arrows, muskets, magic casts, artillery blasts, horns and giant impacts. The Hero retains its separate swing / hit / ranged semantics.
+
+Non-attacking roles use their real action instead of fabricating an attack: Medic healing, Engineer repair, Flagbearer aura presence and Ice Bomber warning / detonation. Cooldown, priority and concurrency controls remain authoritative, so larger rosters do not bypass the shared noise-wall protection.
 
 ## Voice architecture
 
