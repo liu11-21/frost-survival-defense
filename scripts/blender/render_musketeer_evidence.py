@@ -28,7 +28,16 @@ ORBITS = (("front", 0.0), ("back", 180.0), ("side-left", 90.0),
 # Melee sampled twice: the load, where the haft should be back and both
 # hands on it, and the impact, where the head should be through the arc
 # without the axe crossing the torso or the face.
-POSES = (("melee-load", "MeleeAttack", 0.18), ("melee-impact", "MeleeAttack", 0.52),
+# RangedAttack gets three of the four combat shots because it is the primary
+# combat animation of a ranged unit and because it is the one that was rebuilt:
+# the load, where the musket comes up out of the carry; the aim, where the
+# muzzle has to be on the target and the right hand on the fore-stock; and the
+# release, which is the recoil frame. The shared clip that shipped before this
+# never pointed the barrel within ninety degrees of the target on any frame,
+# and a single mid-clip screenshot would not have shown that.
+POSES = (("ranged-load", "RangedAttack", 0.24), ("ranged-aim", "RangedAttack", 0.55),
+         ("ranged-release", "RangedAttack", 0.68),
+         ("melee-load", "MeleeAttack", 0.30), ("melee-impact", "MeleeAttack", 0.55),
          ("walk", "Walk", 0.30), ("run", "Run", 0.28))
 
 # Close-ups, framed on a rig landmark so they follow the body.

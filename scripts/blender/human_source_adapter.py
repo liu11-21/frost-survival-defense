@@ -39,6 +39,7 @@ until a candidate has passed human review.
 """
 import argparse
 import hashlib
+import importlib
 import json
 import math
 import os
@@ -1039,6 +1040,21 @@ def main():
     parser.add_argument("--ally-contract", action="store_true",
                         help="emit UnitSkeleton, weapon locators and LOD marker "
                              "nodes required by the ally asset manifest")
+    # A character whose weapon changes what a clip MEANS can replace the
+    # retargeted motion for named clips with its own. Opt-in and defaulted off,
+    # so the three characters that share the reference motion are untouched.
+    #
+    # The shared clip set is retargeted from the procedural Hero and it is
+    # correct for a swordsman. On a musketeer it is measurably not: over the
+    # whole of RangedAttack the barrel's best alignment with the character's
+    # facing is cos = -0.013 -- ninety degrees off, on every frame -- the
+    # muzzle descends from 1.48 m to 1.09 m instead of rising to the shoulder,
+    # and the right hand never comes within 0.25 m of the firearm. For a melee
+    # unit a wrong ranged clip is a deferred cosmetic issue; for the ranged
+    # line it is the primary combat animation.
+    parser.add_argument("--clip-authors", default=None,
+                        help="module exposing author(armature, height, meshes) "
+                             "that replaces named clips with authored motion")
     parser.add_argument("--name", default="hero_human_candidate")
     parser.add_argument("--height", type=float, default=1.86)
     parser.add_argument("--material-budget", type=int, default=4)
@@ -1103,6 +1119,16 @@ def main():
         retarget = human_rig.build_retargeted_actions(
             armature, reference["captured"], reference["restRelative"],
             height_ratio=args.height / max(1e-6, reference.get("height") or 1.0))
+
+    # Authored motion goes in HERE: after retargeting, so it can overwrite the
+    # shared clips channel by channel and keep their torso and leg work, and
+    # before the legacy collapse and the export, so it travels the same route
+    # every other clip does rather than being stitched into a finished GLB.
+    authored = None
+    if args.clip_authors and armature is not None:
+        module = importlib.import_module(args.clip_authors)
+        authored = module.author(armature, args.height, meshes)
+        print("CLIPS_AUTHORED %s" % json.dumps(authored))
 
     materials = convert_materials(meshes, args.material_budget, enforce=True)
     poses = human_rig.pose_tests(armature) if armature else {"allPassed": False}
@@ -1176,6 +1202,31 @@ def main():
     if args.ally_contract and armature is not None:
         ally = emit_ally_contract(root, armature, args.height)
         print("ALLY_CONTRACT %s" % json.dumps(ally))
+
+    # BUILD-ONLY PROPERTIES DO NOT SHIP.
+    #
+    # `tipRule` is how a kit tells this adapter which end of its weapon is the
+    # tip -- the axe rule picks the point furthest OFF the long axis, which on
+    # a firearm is the trigger guard. It is an instruction to the build, it is
+    # consumed above, and the answer it produced is already baked into the
+    # `axe_tip` locator. But the intermediate export runs with
+    # `export_extras=True`, so it rides through as glTF `extras` on every LOD
+    # tier of the weapon -- three copies of a string the runtime has no use for
+    # and no code to read.
+    #
+    # Only this key is removed, and only here. `weaponTip`, `lodLevel`,
+    # `authoredRole`, `weightedSkinning` and `sourceName` are extras the
+    # merged Warrior and Shield already ship, so touching any of them would
+    # change assets that are not this branch's to change. Characters that never
+    # declare a rule have nothing to strip and are byte-identical either way.
+    stripped = []
+    for obj in bpy.data.objects:
+        if "tipRule" in obj.keys():
+            del obj["tipRule"]
+            stripped.append(obj.name)
+    if stripped:
+        print("BUILD_PROPS_STRIPPED %s" % json.dumps(
+            {"key": "tipRule", "objects": stripped}))
 
     export_glb(glb_path)
 

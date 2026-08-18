@@ -90,7 +90,29 @@ def main():
                 up = (chest - pelvis)
                 across = (hip_r - hip_l)
                 if up.length > 1e-6 and across.length > 1e-6:
-                    facing = across.normalized().cross(up.normalized())
+                    # THIS CROSS PRODUCT WAS THE WRONG WAY ROUND, and had been
+                    # since it was written. Measured on the shipped rig:
+                    #
+                    #   across x up            = (0.000, +0.975, +0.222)
+                    #   attackAnchor - pelvis  = y -0.550
+                    #
+                    # The attack anchor is in front of the character by
+                    # definition -- `validate_warrior_semantics.py` asserts it
+                    # and every shipped asset passes that assertion -- so
+                    # forward is -Y and this vector pointed at the character's
+                    # back. `reachesForward` has therefore been measuring how
+                    # far the right hand reaches BEHIND the pelvis.
+                    #
+                    # It went unnoticed because a sword swing travels far in
+                    # both directions, so a wind-up satisfied a test meant for
+                    # a strike. It surfaced on the first character whose right
+                    # hand stays in front for the whole clip: a support hand on
+                    # a fore-stock, 0.26 m forward at its nearest, reported as
+                    # -0.26 and failed.
+                    #
+                    # Fixing the direction changes no asset. It does change
+                    # what the report says about one: see the note in the PR.
+                    facing = up.normalized().cross(across.normalized())
 
             joints = {}
             for name in ("root", "pelvis", "chest", "head", "hand.L", "hand.R",
