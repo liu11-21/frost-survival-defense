@@ -351,7 +351,7 @@ def build_outfit(body, armature, variant):
     n_limb = 12
 
     H = {
-        "hem": 0.24, "thighTop": 0.52, "hip": 0.56, "waist": 0.62,
+        "hem": 0.24, "seat": 0.487, "thighTop": 0.52, "hip": 0.56, "waist": 0.62,
         "lowRib": 0.68, "chest": 0.74, "upperChest": 0.79,
         "shoulder": 0.83, "neck": 0.86, "collar": 0.875,
         "knee": 0.28, "calf": 0.18, "ankle": 0.08,
@@ -383,6 +383,13 @@ def build_outfit(body, armature, variant):
     coat_start = len(b.vertices)
     b.sweep([
         ring("hem", 0.068, 3.0),
+        # A ring ON THE SEAT. Between hem and thighTop the skirt was a straight
+        # loft, and a straight loft between two rings cuts the corner off
+        # whatever bulges between them -- 42 vertices of bare backside at
+        # z 0.858 to 0.895, which is 0.477 to 0.497 of height, almost exactly
+        # half way. Sampled there, the coat follows the body instead of
+        # chording past it.
+        ring("seat", 0.092, 3.2),
         ring("thighTop", 0.062, 3.1),
         ring("hip", 0.056, 3.0),
         ring("waist", 0.044, 2.9),
@@ -456,9 +463,21 @@ def build_outfit(body, armature, variant):
             # TASSET. Both are the Shield's vocabulary, and in brown the whole
             # figure came back as a recoloured Warrior. Close sleeves, close
             # legs, and let the long coat be the only wide thing.
-            (f"upperarm_{side}", "coat", 1.13, 1.10, 2.8, (), None, 0.06, 0.14),
-            (f"lowerarm_{side}", "coat", 1.15, 1.12, 2.8, (), None, 0.14, 0.08),
-            (f"thigh_{side}", "coat", 1.13, 1.06, 2.9, (), None, 0.12, 0.20),
+            # 0.06 of over-head was too far the other way: it killed the
+            # pauldron read and opened 24 vertices of bare deltoid and
+            # collarbone at z 1.42-1.43 where the sleeve no longer met the
+            # coat's shoulder ring. 0.13 closes it and is still half what the
+            # first pass had.
+            #
+            # AND THEN BACK OUT BY A FEW MILLIMETRES. 1.13 of a 0.05 m arm is
+            # 6 mm of clearance and the decimator eats that: the live LOD
+            # comparison has LOD0 clean and LOD1/LOD2 with skin coming through
+            # at the shoulders, upper arms and thighs, where the merged Warrior
+            # and Shield -- looser sleeves -- show only a sliver at the ankle.
+            # The cost is 3 mm a side and it is still well short of 1.24.
+            (f"upperarm_{side}", "coat", 1.20, 1.16, 2.8, (), None, 0.13, 0.14),
+            (f"lowerarm_{side}", "coat", 1.21, 1.18, 2.8, (), None, 0.14, 0.08),
+            (f"thigh_{side}", "coat", 1.19, 1.12, 2.9, (), None, 0.12, 0.20),
             (f"calf_{side}", "leather", 1.68, 0.90, 2.9, (), None, 0.44, 0.12),
             # Trouser tucks INTO the boot; the boot's ankle ring stays near 1,
             # because widening it scales the measured BACK depth and the back
@@ -538,9 +557,22 @@ def build_outfit(body, armature, variant):
             bx = offset.dot(head_data["side"])
             bz = offset.dot(head_data["front"])
             drape = []
-            for extra_t, grow, back in ((shell[0][0] - 0.58, 1.04, 1.86),
-                                        (shell[0][0] - 0.36, 1.08, 1.74),
-                                        (shell[0][0] - 0.17, 1.14, 1.58)):
+            # FOUR RINGS, AND FURTHER DOWN. Three stopping at -0.58 left a
+            # 370-vertex band of bare nape between z 1.548 and 1.634 -- the
+            # Shield's defect, in the same place, found the same way: the
+            # 380-pixel orbit renders showed nothing and the live inspection
+            # showed a neck. The lowest ring now reaches past where the collar
+            # arrives, so the two overlap instead of meeting.
+            # FURTHER STILL, because lowering the collar to clear the chin
+            # lowered its BACK by the same amount -- one ring height serves
+            # both -- and the nape went from 370 exposed vertices to 449. The
+            # front of the collar and the back of the neck want opposite
+            # things, so the drape is what closes the back and the collar is
+            # free to sit under the jaw where it belongs.
+            for extra_t, grow, back in ((shell[0][0] - 1.70, 1.00, 1.98),
+                                        (shell[0][0] - 1.28, 1.03, 1.94),
+                                        (shell[0][0] - 0.86, 1.07, 1.86),
+                                        (shell[0][0] - 0.44, 1.12, 1.66)):
                 w = base["halfWidth"] * grow
                 d = base["front"] * grow
                 pts = section(n, w, d, base["back"] * grow * back, 3.0,
@@ -582,7 +614,13 @@ def build_outfit(body, armature, variant):
     chin = min([(body.matrix_world @ v.co).y for v in body.data.vertices
                 if any(g.group == head_group.index and g.weight > 0.5
                        for g in v.groups)] or [0.0]) if head_group else 0.0
-    throat = (min(m["collar"]["y"] + height * 0.062, chin + 0.022)
+    # BELOW THE CHIN, NOT LEVEL WITH IT. The comment above says exactly what
+    # goes wrong and it happened anyway: at `chin + 0.022` the collar's top
+    # ring sat above the jaw, `cull_hidden_body` deleted the faces under it,
+    # and the live inspection shows the mouth cut off by a stepped cloth edge
+    # with the chin missing entirely. Measured: collar front reaching z 1.597
+    # against a chin at 1.484. The clearance is now negative on purpose.
+    throat = (min(m["collar"]["y"] + height * 0.062, chin - 0.026)
               if chin else m["collar"]["y"] + height * 0.044)
     throat = max(throat, m["collar"]["y"] + height * 0.010)
     gorget = m["collar"]["y"] + (throat - m["collar"]["y"]) * 0.55
@@ -601,7 +639,15 @@ def build_outfit(body, armature, variant):
         ring("collar", 0.038, 2.6),
         at(gorget, 0.030, 0.034, 0.070, 2.5),
         at(throat, 0.022, 0.026, 0.064, 2.4),
-        at(throat + height * 0.024, 0.018, -0.078, 0.086, 2.4),
+        at(throat + height * 0.008, 0.018, -0.078, 0.092, 2.4),
+        # A REAR FLANGE, above the collar proper. The front and the back of a
+        # collar want opposite heights -- under the jaw, and up the nape -- and
+        # one ring cannot be at two heights. This one keeps the same negative
+        # front pad, so it adds nothing under the chin, and carries a much
+        # larger back pad, so it rises behind the neck to meet the cap's drape
+        # coming down. Between them the nape closes without the collar ever
+        # reaching the jaw.
+        at(throat + height * 0.046, 0.013, -0.078, 0.112, 2.4),
     ], "coat", lambda y: {}, cap_bottom=False, cap_top=False)
     regions.append(("torso", collar_start, len(b.vertices)))
 

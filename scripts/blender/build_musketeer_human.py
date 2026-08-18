@@ -58,7 +58,7 @@ STAGES = [
                     # gained a one-piece stock and the coat gained the rings
                     # that closed the hip -- the source mesh grew, so the
                     # ratios had to shrink to hold the same budget.
-                    "--lod-ratio", "0.756,0.313,0.092",
+                    "--lod-ratio", "0.786,0.327,0.096",
                     # Musket motion for the two clips whose meaning the
                     # weapon changes; the other five retarget unaltered.
                     "--clip-authors", "musketeer_clips",
