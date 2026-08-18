@@ -1,6 +1,6 @@
 import type { AbstractMesh, Scene } from "@babylonjs/core";
 import { AssetContainer } from "@babylonjs/core";
-import { AUTHORED_ASSET_MANIFEST, authoredAssetSpec } from "./AssetManifest";
+import { AUTHORED_ASSET_MANIFEST, CRITICAL_ASSET_KEYS, authoredAssetSpec } from "./AssetManifest";
 import { validateAssetContainer } from "./AssetValidator";
 import { ModelLoader } from "./ModelLoader";
 import type { AssetInstance, AssetKey, AssetValidationReport } from "./AssetTypes";
@@ -13,6 +13,9 @@ export class AssetRegistry {
   private readonly reports = new Map<AssetKey, AssetValidationReport>();
   private readonly unavailable = new Set<AssetKey>();
   private ready = false;
+  private deferred: Promise<void> | null = null;
+  /** Fires once every deferred asset has settled, loaded or not. */
+  onDeferredComplete: (() => void) | null = null;
 
   constructor(scene: Scene) {
     this.loader = new ModelLoader(scene);
@@ -22,34 +25,74 @@ export class AssetRegistry {
   get manifest(): readonly typeof AUTHORED_ASSET_MANIFEST[number][] { return AUTHORED_ASSET_MANIFEST; }
 
   async preload(): Promise<void> {
-    await Promise.all(AUTHORED_ASSET_MANIFEST.map(async (spec) => {
-      const path = `${spec.rootUrl}${spec.fileName}`;
-      try {
-        // A GET probe (rather than HEAD) is supported by Vite's static server
-        // and avoids an aborted HEAD request being reported as a browser
-        // network error by the playtest harness. The body is consumed only on
-        // a successful probe; missing files stay a clean HTTP fallback state.
-        const response = await fetch(path, { method: "GET", cache: "no-store" });
-        if (!response.ok) {
-          this.markUnavailable(spec.key, "missing", path, `HTTP ${response.status}`);
-          return;
-        }
-        await response.arrayBuffer();
-        const container = await this.loader.load(spec);
-        const report = validateAssetContainer(spec, container);
-        this.reports.set(spec.key, report);
-        if (report.status !== "loaded") {
-          this.unavailable.add(spec.key);
-          console.warn(`[assets] ${path} failed the authored contract; procedural fallback remains active`, report);
-          return;
-        }
-        this.containers.set(spec.key, container);
-        this.loaded.set(spec.key, container.meshes);
-      } catch (error) {
-        this.markUnavailable(spec.key, "error", path, error instanceof Error ? error.message : String(error));
-      }
-    }));
+    // REVIEW ENTRY POINTS BLOCK ON EVERYTHING, and they have to.
+    //
+    // A review mode is opened by query parameter, boots straight into its
+    // subject and reports `ready` when that subject is on screen. Deferring
+    // the character it exists to inspect does not make it slower, it makes it
+    // hang: the Warrior review spec sat on `__warriorReviewState.ready` until
+    // the 180-second timeout, because the asset it was waiting for was in a
+    // background queue nobody had told it about. These paths are diagnostic,
+    // they are never what a player loads, and their cost is not the cost this
+    // split exists to cut.
+    const isReviewEntry = typeof window !== "undefined"
+      && /review|candidate/i.test(window.location.search);
+    const critical = isReviewEntry
+      ? AUTHORED_ASSET_MANIFEST
+      : AUTHORED_ASSET_MANIFEST.filter((spec) => CRITICAL_ASSET_KEYS.includes(spec.key));
+    const rest = isReviewEntry
+      ? []
+      : AUTHORED_ASSET_MANIFEST.filter((spec) => !CRITICAL_ASSET_KEYS.includes(spec.key));
+    await Promise.all(critical.map((spec) => this.fetchOne(spec)));
     this.ready = true;
+    // The rest continues without being awaited, and with a concurrency cap.
+    // Forty-four simultaneous requests do not go faster than six; they go the
+    // same speed with every one of them finishing late, which is exactly the
+    // behaviour that made the critical set arrive slowly too.
+    this.deferred = this.loadQueue(rest, 6).then(() => this.onDeferredComplete?.());
+  }
+
+  /** Resolves when the background set has settled. Test and tooling hook. */
+  whenFullyLoaded(): Promise<void> { return this.deferred ?? Promise.resolve(); }
+
+  private async loadQueue(specs: readonly typeof AUTHORED_ASSET_MANIFEST[number][], width: number): Promise<void> {
+    let next = 0;
+    const worker = async (): Promise<void> => {
+      for (;;) {
+        const index = next++;
+        if (index >= specs.length) return;
+        await this.fetchOne(specs[index]);
+      }
+    };
+    await Promise.all(Array.from({ length: Math.min(width, specs.length) }, worker));
+  }
+
+  private async fetchOne(spec: typeof AUTHORED_ASSET_MANIFEST[number]): Promise<void> {
+    const path = `${spec.rootUrl}${spec.fileName}`;
+    try {
+      // A GET probe (rather than HEAD) is supported by Vite's static server
+      // and avoids an aborted HEAD request being reported as a browser
+      // network error by the playtest harness. The body is consumed only on
+      // a successful probe; missing files stay a clean HTTP fallback state.
+      const response = await fetch(path, { method: "GET", cache: "no-store" });
+      if (!response.ok) {
+        this.markUnavailable(spec.key, "missing", path, `HTTP ${response.status}`);
+        return;
+      }
+      await response.arrayBuffer();
+      const container = await this.loader.load(spec);
+      const report = validateAssetContainer(spec, container);
+      this.reports.set(spec.key, report);
+      if (report.status !== "loaded") {
+        this.unavailable.add(spec.key);
+        console.warn(`[assets] ${path} failed the authored contract; procedural fallback remains active`, report);
+        return;
+      }
+      this.containers.set(spec.key, container);
+      this.loaded.set(spec.key, container.meshes);
+    } catch (error) {
+      this.markUnavailable(spec.key, "error", path, error instanceof Error ? error.message : String(error));
+    }
   }
 
   get(key: string): AbstractMesh[] | null { return this.loaded.get(key as AssetKey) ?? null; }

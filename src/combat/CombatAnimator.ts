@@ -30,7 +30,16 @@ export class CombatAnimator {
   hitFrame = 0.45;
   onHitFrame: (() => void) | null = null;
 
-  constructor(private readonly rig: LiteRig) {}
+  /**
+   * `prefersRangedAttack` is passed in rather than inferred from the clip set.
+   * A unit that merely HAS a RangedAttack clip is not a ranged unit -- every
+   * character on the shared human pipeline ships all seven -- so choosing by
+   * availability would have put the Warrior through a firing animation.
+   */
+  constructor(
+    private readonly rig: LiteRig,
+    private readonly prefersRangedAttack = false,
+  ) {}
 
   get currentState(): CombatAnimState {
     return this.state;
@@ -182,7 +191,9 @@ export class CombatAnimator {
     const candidates = this.state === "walk"
       ? ["Walk"]
       : this.state === "attack"
-        ? ["Attack", "MeleeAttack"]
+        ? (this.prefersRangedAttack
+          ? ["RangedAttack", "Attack", "MeleeAttack"]
+          : ["Attack", "MeleeAttack"])
         : this.state === "cast"
           ? ["Cast"]
           : this.state === "death"
@@ -201,6 +212,9 @@ export class CombatAnimator {
     // left streaming behind a unit whose attack was interrupted.
     const trail = weaponTrailFor(authored);
     if (trail) {
+      // Not on RangedAttack. The trail is a blade swoosh; on a musket being
+      // levelled and fired it would draw a streak off a barrel that never
+      // swung.
       if (state === "MeleeAttack" || state === "Attack") trail.start();
       else trail.stop();
     }

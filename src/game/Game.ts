@@ -284,6 +284,18 @@ export class Game {
       new Promise<void>((resolve) => window.setTimeout(resolve, 5000)),
     ]);
     this.s.nodes.attachAuthoredAssets(this.s.assets);
+    // The background set lands after the first frame, so anything it brings
+    // has to be attached a second time. Without this, `preload` returning
+    // early is not a load-time optimisation -- it is a way to ship every unit
+    // whose GLB had not arrived yet in its procedural fallback, permanently,
+    // with nothing in the log to say so.
+    this.s.assets.onDeferredComplete = () => {
+      this.s.nodes.attachAuthoredAssets(this.s.assets);
+      if (this.s.hero.modelSource !== "GLB") {
+        this.s.hero.applyAuthoredAsset(this.s.assets);
+        this.heroReview?.refreshAuthored();
+      }
+    };
     const heroApplied = this.s.hero.applyAuthoredAsset(this.s.assets);
     if (!heroApplied) {
       void authoredPreload.then(() => {
