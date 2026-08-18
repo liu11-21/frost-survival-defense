@@ -41,9 +41,17 @@ function readGltfJson(path) {
 
 function contractFromManifest() {
   const src = readFileSync(resolve(process.cwd(), "src/assets/AssetManifest.ts"), "utf8");
-  const nodes = src.match(/key === "warrior"\s*\?\s*\[([^\]]+)\]/);
+  // Read the ALLY contract by its shape, not by a key comparison. The manifest
+  // used to special-case `key === "warrior"` inline and both of these
+  // validators matched on that literal; the moment a second character needed
+  // its own entry the regex stopped matching and the validators threw instead
+  // of failing, which is the worst of the three outcomes. The node list is
+  // identified by the locator that only the ally contract carries.
+  const nodes = src.match(/requiredNodes:\s*\[([^\]]*axe_tip[^\]]*)\]/);
   const anims = src.match(/ALLY_MELEE_ANIMATIONS\s*=\s*\[([^\]]+)\]/);
-  if (!nodes || !anims) throw new Error("could not read the ally contract from AssetManifest.ts");
+  if (!nodes || !anims) {
+    throw new Error("could not read the melee ally contract from AssetManifest.ts");
+  }
   const parse = (block) => block.split(",").map((s) => s.trim().replace(/^["']|["']$/g, "")).filter(Boolean);
   return { nodes: parse(nodes[1]), animations: parse(anims[1]) };
 }

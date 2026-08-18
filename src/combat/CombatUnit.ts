@@ -117,7 +117,8 @@ export class CombatUnit implements Damageable {
   ) {
     this.maxHealthValue = Math.max(1, Math.round(def.maxHealth * healthMultiplier));
     this.healthValue = this.maxHealthValue;
-    this.animator = new CombatAnimator(rig);
+    this.animator = new CombatAnimator(
+      rig, def.attackType === "rangedSingle" || def.attackType === "rangedArea");
     this.animator.onHitFrame = () => this.resolveAttack();
     this.abilities = new CombatUnitAbilities(this, ctx);
     // Elites and the boss carry their own effect. The mandate is that a high
