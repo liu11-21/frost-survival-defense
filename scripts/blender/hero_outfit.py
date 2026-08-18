@@ -1824,6 +1824,15 @@ def main():
         rigid_weights(obj, armature, bone_name)
         if weapon_tip is not None:
             obj["weaponTip"] = [weapon_tip.x, weapon_tip.y, weapon_tip.z]
+        # A kit may name which END of its weapon is the business end, as a
+        # fourth value. The adapter's default rule -- furthest OFF the long
+        # axis -- finds an axe head and finds a musket's trigger guard, so a
+        # firearm has to say "far". A string, not a vector: coordinates do not
+        # survive the pivot between the kit's Y-up space and the adapter's
+        # Z-up, and a vector that did not survive is what once put axe_tip on
+        # the floor.
+        if len(entry) > 3 and entry[3]:
+            obj["tipRule"] = entry[3]
         # Tracked here and NOT written onto the object. `export_extras` is on,
         # so a custom property becomes a glTF `extras` field: adding one
         # changed the merged Warrior's bytes, which is a contract change for an

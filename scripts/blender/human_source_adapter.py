@@ -39,6 +39,7 @@ until a candidate has passed human review.
 """
 import argparse
 import hashlib
+import importlib
 import json
 import math
 import os
@@ -851,11 +852,48 @@ def emit_ally_contract(root, armature, height):
     # so the socket was authored 0.21 m from where the exported bind pose puts
     # the hand. The GLB ships the bind pose; the locators must agree with it.
     bones = armature.data.bones
-    hand = bones.get("hand.R") or bones.get("hand_r")
+
+    # WHICH HAND IS A FACT ABOUT THE MESH, not a constant.
+    #
+    # This used to read `hand.R` unconditionally, which was true of every
+    # character built so far and silently wrong for the first one that is not:
+    # a weapon rigid to the left hand still exported, still passed its triangle
+    # budget, and left `weapon_socket`, `upper_grip` and `axe_tip` sitting on
+    # the empty right hand a metre away from the thing they describe.
+    #
+    # A carried item is rigid on exactly ONE bone -- that is the contract the
+    # carried-item validator enforces -- so the bone can be read straight off
+    # its weights, for the same reason the tip is read off its geometry a few
+    # lines below: a fact taken from the object cannot drift from the object.
+    # Right-handed characters resolve to `hand.R` because that IS their bone,
+    # so nothing already shipped changes.
+    carried = None
+    for obj in bpy.data.objects:
+        if obj.type != "MESH" or not obj.name.startswith("LOD0"):
+            continue
+        if "Sword" in (obj.data.name or "") or "Axe" in (obj.data.name or ""):
+            carried = obj
+            break
+    grip_bone = "hand.R"
+    if carried is not None and carried.vertex_groups:
+        weight = {}
+        names = {g.index: g.name for g in carried.vertex_groups}
+        for vertex in carried.data.vertices:
+            for entry in vertex.groups:
+                if entry.weight > 1e-4:
+                    key = names.get(entry.group, "")
+                    weight[key] = weight.get(key, 0.0) + entry.weight
+        if weight:
+            grip_bone = max(weight, key=weight.get)
+    side = ".L" if grip_bone.endswith((".L", "_l")) else ".R"
+    hand = (bones.get(grip_bone) or bones.get("hand%s" % side)
+            or bones.get("hand_%s" % side[-1].lower()))
     if hand is None:
-        raise SystemExit("ally contract needs a right hand bone; rig has none")
+        raise SystemExit("ally contract needs a hand bone; rig has none")
+    print("WEAPON_GRIP_BONE %s" % json.dumps({"bone": hand.name}))
     grip = armature.matrix_world @ hand.head_local
-    lower = bones.get("lower_arm.R") or bones.get("lowerarm_r")
+    lower = (bones.get("lower_arm%s" % side)
+             or bones.get("lowerarm_%s" % side[-1].lower()))
     # The haft crosses the palm; it does not fold back along the arm.
     #
     # The first version used the forearm direction itself, so the weapon ran
@@ -879,13 +917,7 @@ def emit_ally_contract(root, armature, height):
     #
     # The tip of the axe is a fact about the mesh. Read it off the mesh and the
     # contract cannot drift from the object again.
-    axe = None
-    for obj in bpy.data.objects:
-        if obj.type != "MESH" or not obj.name.startswith("LOD0"):
-            continue
-        if "Sword" in (obj.data.name or "") or "Axe" in (obj.data.name or ""):
-            axe = obj
-            break
+    axe = carried
     if axe is not None and len(axe.data.vertices) > 8:
         # Find the head by SHAPE, not by distance and not from a coordinate the
         # kit hands over.
@@ -908,7 +940,25 @@ def emit_ally_contract(root, armature, height):
             offset = point - grip
             return (offset - shaft * offset.dot(shaft)).length
 
-        measured_tip = max(points, key=sideways)
+        # WHICH END IS THE BUSINESS END DEPENDS ON THE WEAPON, SO THE KIT SAYS.
+        #
+        # "Furthest off the long axis" is an AXE rule: the head is the thing
+        # standing out sideways from a haft. On a musket it picks the lock
+        # plate or the trigger guard, because a firearm is almost entirely
+        # axis and its business end is the far end OF that axis.
+        #
+        # The kit declares a rule, not a coordinate. Passing the tip across as
+        # a vector was tried and failed: the kit builds in a Y-up pivot and the
+        # adapter runs in Z-up, so the height arrived in the depth slot and
+        # axe_tip landed on the floor. A string survives any frame.
+        #
+        # Default is "offaxis", so the Hero, the Warrior and the Shield are
+        # unaffected -- none of them sets it.
+        rule = (axe.get("tipRule") or "offaxis")
+        measured_tip = (far if rule == "far" else max(points, key=sideways))
+        print("WEAPON_TIP_RULE %s" % json.dumps(
+            {"rule": rule, "offAxis": round(sideways(measured_tip), 4),
+             "alongAxis": round((measured_tip - grip).dot(shaft), 4)}))
         # The SUPPORT HAND RUNS DOWN THE HAFT, NOT AWAY FROM THE HEAD.
         #
         # lower_grip used to be derived from the direction of the head, on the
@@ -990,6 +1040,21 @@ def main():
     parser.add_argument("--ally-contract", action="store_true",
                         help="emit UnitSkeleton, weapon locators and LOD marker "
                              "nodes required by the ally asset manifest")
+    # A character whose weapon changes what a clip MEANS can replace the
+    # retargeted motion for named clips with its own. Opt-in and defaulted off,
+    # so the three characters that share the reference motion are untouched.
+    #
+    # The shared clip set is retargeted from the procedural Hero and it is
+    # correct for a swordsman. On a musketeer it is measurably not: over the
+    # whole of RangedAttack the barrel's best alignment with the character's
+    # facing is cos = -0.013 -- ninety degrees off, on every frame -- the
+    # muzzle descends from 1.48 m to 1.09 m instead of rising to the shoulder,
+    # and the right hand never comes within 0.25 m of the firearm. For a melee
+    # unit a wrong ranged clip is a deferred cosmetic issue; for the ranged
+    # line it is the primary combat animation.
+    parser.add_argument("--clip-authors", default=None,
+                        help="module exposing author(armature, height, meshes) "
+                             "that replaces named clips with authored motion")
     parser.add_argument("--name", default="hero_human_candidate")
     parser.add_argument("--height", type=float, default=1.86)
     parser.add_argument("--material-budget", type=int, default=4)
@@ -1054,6 +1119,16 @@ def main():
         retarget = human_rig.build_retargeted_actions(
             armature, reference["captured"], reference["restRelative"],
             height_ratio=args.height / max(1e-6, reference.get("height") or 1.0))
+
+    # Authored motion goes in HERE: after retargeting, so it can overwrite the
+    # shared clips channel by channel and keep their torso and leg work, and
+    # before the legacy collapse and the export, so it travels the same route
+    # every other clip does rather than being stitched into a finished GLB.
+    authored = None
+    if args.clip_authors and armature is not None:
+        module = importlib.import_module(args.clip_authors)
+        authored = module.author(armature, args.height, meshes)
+        print("CLIPS_AUTHORED %s" % json.dumps(authored))
 
     materials = convert_materials(meshes, args.material_budget, enforce=True)
     poses = human_rig.pose_tests(armature) if armature else {"allPassed": False}
@@ -1127,6 +1202,31 @@ def main():
     if args.ally_contract and armature is not None:
         ally = emit_ally_contract(root, armature, args.height)
         print("ALLY_CONTRACT %s" % json.dumps(ally))
+
+    # BUILD-ONLY PROPERTIES DO NOT SHIP.
+    #
+    # `tipRule` is how a kit tells this adapter which end of its weapon is the
+    # tip -- the axe rule picks the point furthest OFF the long axis, which on
+    # a firearm is the trigger guard. It is an instruction to the build, it is
+    # consumed above, and the answer it produced is already baked into the
+    # `axe_tip` locator. But the intermediate export runs with
+    # `export_extras=True`, so it rides through as glTF `extras` on every LOD
+    # tier of the weapon -- three copies of a string the runtime has no use for
+    # and no code to read.
+    #
+    # Only this key is removed, and only here. `weaponTip`, `lodLevel`,
+    # `authoredRole`, `weightedSkinning` and `sourceName` are extras the
+    # merged Warrior and Shield already ship, so touching any of them would
+    # change assets that are not this branch's to change. Characters that never
+    # declare a rule have nothing to strip and are byte-identical either way.
+    stripped = []
+    for obj in bpy.data.objects:
+        if "tipRule" in obj.keys():
+            del obj["tipRule"]
+            stripped.append(obj.name)
+    if stripped:
+        print("BUILD_PROPS_STRIPPED %s" % json.dumps(
+            {"key": "tipRule", "objects": stripped}))
 
     export_glb(glb_path)
 
