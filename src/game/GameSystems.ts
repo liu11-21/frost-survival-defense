@@ -1,5 +1,5 @@
 import { Engine, Scene, Vector3 } from "@babylonjs/core";
-import type { DefaultRenderingPipeline } from "@babylonjs/core";
+import type { SSAO2RenderingPipeline, DefaultRenderingPipeline } from "@babylonjs/core";
 import { BuildingManager } from "../buildings/BuildingManager";
 import { GameCamera } from "../camera/GameCamera";
 import { createCombatContext } from "../combat/CombatDirector";
@@ -87,6 +87,7 @@ export class GameSystems {
   /** Authored GLB cache. Missing/invalid assets deliberately fall back to procedural visuals. */
   readonly assets: AssetRegistry;
   readonly pipeline: DefaultRenderingPipeline;
+  readonly ssao: SSAO2RenderingPipeline | null;
   readonly events = new GameEvents();
   readonly materials: MaterialFactory;
   readonly collision = new CollisionWorld();
@@ -166,6 +167,7 @@ export class GameSystems {
     const bundle = createScene(this.engine);
     this.scene = bundle.scene;
     this.pipeline = bundle.pipeline;
+    this.ssao = bundle.ssao;
     this.assets = new AssetRegistry(this.scene);
 
     this.materials = new MaterialFactory(this.scene);
@@ -248,7 +250,7 @@ export class GameSystems {
     this.watchdog = new AIWatchdog(this.squads, this.world);
     this.residueGuard = new DeathResidueGuard(this.world);
     this.monitor = new PerformanceMonitor(this.engine, this.scene);
-    this.quality = new AdaptiveQualityManager(this.engine, this.scene, this.pipeline);
+    this.quality = new AdaptiveQualityManager(this.engine, this.scene, this.pipeline, this.ssao);
     // `particleScale` was defined on every quality profile but never actually
     // read anywhere; wiring it here is what makes "effect quality" real.
     this.vfx.particleScale = this.quality.profile.particleScale;

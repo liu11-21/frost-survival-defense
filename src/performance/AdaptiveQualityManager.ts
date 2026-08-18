@@ -1,5 +1,8 @@
 import type { Engine, Scene } from "@babylonjs/core";
-import type { DefaultRenderingPipeline } from "@babylonjs/core";
+import type {
+  DefaultRenderingPipeline,
+  SSAO2RenderingPipeline,
+} from "@babylonjs/core";
 
 export type QualityLevel = "low" | "medium" | "high";
 export type QualitySetting = QualityLevel | "auto";
@@ -13,6 +16,14 @@ export interface QualityProfile {
   bloom: boolean;
   fxaa: boolean;
   shadows: boolean;
+  /**
+   * Screen-space ambient occlusion. Off at low, and off with a different
+   * meaning from `shadows`: shadows going away costs the scene its sun, which
+   * is obvious, while AO going away costs contact darkening, which reads as
+   * "slightly flatter" rather than "broken". That makes it the right thing to
+   * drop first on a machine that is struggling.
+   */
+  ssao: boolean;
   /** Beyond this distance, non-essential effects are skipped. */
   effectDistance: number;
 }
@@ -25,6 +36,7 @@ export const QUALITY_PROFILES: Record<QualityLevel, QualityProfile> = {
     bloom: true,
     fxaa: true,
     shadows: true,
+    ssao: true,
     effectDistance: 45,
   },
   medium: {
@@ -34,6 +46,7 @@ export const QUALITY_PROFILES: Record<QualityLevel, QualityProfile> = {
     bloom: true,
     fxaa: true,
     shadows: true,
+    ssao: true,
     effectDistance: 32,
   },
   low: {
@@ -43,6 +56,7 @@ export const QUALITY_PROFILES: Record<QualityLevel, QualityProfile> = {
     bloom: false,
     fxaa: false,
     shadows: false,
+    ssao: false,
     effectDistance: 22,
   },
 };
@@ -64,6 +78,7 @@ export class AdaptiveQualityManager {
   private sampleFrames = 0;
   private sampleFpsTotal = 0;
   private decided = false;
+  private ssaoAttached = false;
 
   onChanged: ((level: QualityLevel, profile: QualityProfile) => void) | null = null;
 
@@ -71,6 +86,7 @@ export class AdaptiveQualityManager {
     private readonly engine: Engine,
     private readonly scene: Scene,
     private readonly pipeline: DefaultRenderingPipeline,
+    private readonly ssao: SSAO2RenderingPipeline | null = null,
   ) {
     this.setting = loadSetting();
     if (this.setting !== "auto") {
@@ -135,6 +151,22 @@ export class AdaptiveQualityManager {
     this.pipeline.bloomEnabled = p.bloom;
     this.pipeline.fxaaEnabled = p.fxaa;
     this.scene.shadowsEnabled = p.shadows;
+    // Detaching rather than a flag: SSAO2 keeps rendering its depth and
+    // normal passes while merely disabled, which is most of its cost. On a
+    // device that dropped to low, paying for a buffer nobody samples is the
+    // opposite of what the drop was for.
+    if (this.ssao) {
+      const attached = this.ssaoAttached;
+      if (p.ssao && !attached) {
+        this.scene.postProcessRenderPipelineManager.attachCamerasToRenderPipeline(
+          this.ssao.name, this.scene.cameras);
+        this.ssaoAttached = true;
+      } else if (!p.ssao && attached) {
+        this.scene.postProcessRenderPipelineManager.detachCamerasFromRenderPipeline(
+          this.ssao.name, this.scene.cameras);
+        this.ssaoAttached = false;
+      }
+    }
     this.onChanged?.(level, p);
   }
 }
