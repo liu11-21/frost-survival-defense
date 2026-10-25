@@ -86,7 +86,7 @@ jobs:
           fi
       - name: Upload audio verification evidence
         if: always()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: audio-runtime-verification-${{ github.run_id }}
           path: |

@@ -54,7 +54,7 @@ jobs:
           npx playwright test tests/scene-lane-rework.spec.ts tests/g1-closure.spec.ts
       - name: Upload runtime evidence
         if: always()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: gameplay-scene-verification-${{ github.run_id }}
           path: |
