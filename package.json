@@ -43,9 +43,9 @@
     "@babylonjs/loaders": "^7.54.3"
   },
   "devDependencies": {
-    "@playwright/test": "^1.62.1",
-    "@types/node": "^24.13.3",
-    "typescript": "^5.6.3",
-    "vite": "^6.4.5"
+    "@playwright/test": "^1.64.1",
+    "@types/node": "^26.6.6",
+    "typescript": "^7.0.2",
+    "vite": "^8.3.5"
   }
 }
